@@ -1,14 +1,14 @@
 # RangeLink QA Test Cases — v1.0.0 → v1.1.0
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting v1.1.0. Created at commit 6102749d.
+#        main branch tip, targeting v1.1.0.
 #
 # Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)
-#   feature:         Feature area / CHANGELOG section
+#   feature:         Feature area
 #   scenario:        One-line description of the specific scenario being tested
 #   preconditions:   List of required setup steps before executing
 #   steps:           Ordered list of test actions
@@ -24,42 +24,40 @@ test_cases:
     feature: 'R-M Status Bar Menu'
     scenario: 'Status bar item visible with correct text and tooltip in unbound state'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace is open'
     steps:
       - 'Look at the VS Code status bar (bottom bar)'
       - 'Locate the RangeLink item'
       - 'Hover over it to see the tooltip'
     expected_result: "Status bar shows $(link) RangeLink. Tooltip reads 'RangeLink Menu'."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-002
     feature: 'R-M Status Bar Menu'
     scenario: 'Clicking the status bar item opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace is open'
     steps:
       - 'Click the $(link) RangeLink item in the status bar'
     expected_result: "A QuickPick menu opens titled 'RangeLink Menu'. Menu items are visible."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-003
     feature: 'R-M Status Bar Menu'
     scenario: 'Cmd+R Cmd+M keybinding opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace open with editor focus'
     steps:
       - 'Press Cmd+R Cmd+M'
     expected_result: 'Same QuickPick menu opens as clicking the status bar item.'
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-004
+    labels:
+      - ubuntu
     feature: 'R-M Status Bar Menu'
     scenario: 'Ctrl+R Ctrl+M keybinding opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace open with editor focus'
     steps:
       - 'Press Ctrl+R Ctrl+M'
@@ -75,7 +73,7 @@ test_cases:
       - 'Open the R-M menu (keybinding or status bar click)'
       - 'Observe the menu items'
     expected_result: "Menu contains 'Jump to Bound Destination' with the destination name shown. 'Unbind Destination' is also visible."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-006
     feature: 'R-M Status Bar Menu'
@@ -86,7 +84,7 @@ test_cases:
       - 'Open the R-M menu'
       - 'Observe the first item'
     expected_result: "Menu shows a bind item that opens the destination picker. 'Jump to Bound Destination' is absent."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-007
     feature: 'R-M Status Bar Menu'
@@ -97,66 +95,29 @@ test_cases:
       - 'Open the R-M menu'
       - "Select 'Unbind Destination'"
     expected_result: "The destination is unbound. A notification confirms. R-M menu no longer shows 'Jump to Bound Destination' next time."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-008
     feature: 'R-M Status Bar Menu'
     scenario: 'R-M menu Go to Link item opens the R-G input box'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open the R-M menu'
       - "Select 'Go to Link'"
     expected_result: 'R-G input box opens, ready to accept a RangeLink for navigation.'
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-009
     feature: 'R-M Status Bar Menu'
     scenario: 'R-M menu Show Version Info displays version, commit, branch, and build date'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open the R-M menu'
       - "Select 'Show Version Info'"
     expected_result: 'A notification or info message shows the extension version, short commit SHA, branch name, and build date.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 2 — R-D Bind to Destination
   # ---------------------------------------------------------------------------
-
-  - id: bind-to-destination-001
-    feature: 'R-D Bind to Destination'
-    scenario: 'Cmd+R Cmd+D opens destination picker showing terminals, files, and AI assistants'
-    preconditions:
-      - 'Extension installed'
-      - 'At least one terminal and one file are open'
-    steps:
-      - 'Press Cmd+R Cmd+D'
-    expected_result: 'A destination picker QuickPick opens listing terminals, open text files, and AI assistants.'
-    automated: false
-
-  - id: bind-to-destination-002
-    feature: 'R-D Bind to Destination'
-    scenario: 'Ctrl+R Ctrl+D opens the destination picker'
-    preconditions:
-      - 'Extension installed'
-      - 'At least one terminal and one file are open'
-    steps:
-      - 'Press Ctrl+R Ctrl+D'
-    expected_result: 'A destination picker QuickPick opens listing terminals, open text files, and AI assistants.'
-    automated: false
-
-  - id: bind-to-destination-003
-    feature: 'R-D Bind to Destination'
-    scenario: 'RangeLink: Bind to Destination in Command Palette opens destination picker'
-    preconditions:
-      - 'Extension installed'
-    steps:
-      - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
-      - "Type 'Bind to Destination' and select 'RangeLink: Bind to Destination'"
-    expected_result: 'Same destination picker opens as the R-D keybinding.'
-    automated: false
 
   - id: bind-to-destination-004
     feature: 'R-D Bind to Destination'
@@ -168,7 +129,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a terminal from the list'
     expected_result: "The terminal is bound. A success toast appears (e.g., 'Bound to Terminal')."
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-005
     feature: 'R-D Bind to Destination'
@@ -180,9 +141,11 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a text file from the list'
     expected_result: 'The selected file becomes the bound destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-006
+    labels:
+      - requires-extensions
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting an AI assistant destination binds it and shows success toast'
     preconditions:
@@ -191,7 +154,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select the AI assistant entry from the list'
     expected_result: 'AI assistant is now the bound destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-007
     feature: 'R-D Bind to Destination'
@@ -202,7 +165,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a different terminal or file'
     expected_result: "A confirmation dialog appears showing the current binding name and the proposed new binding name, with 'Yes, replace' and 'No, keep current' options."
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-008
     feature: 'R-D Bind to Destination'
@@ -213,7 +176,7 @@ test_cases:
     steps:
       - "Click 'Yes, replace' (or equivalent) in the confirmation dialog"
     expected_result: 'Binding switches to the newly selected destination. Success toast confirms the new binding.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-009
     feature: 'R-D Bind to Destination'
@@ -224,7 +187,7 @@ test_cases:
     steps:
       - "Click 'No, keep current' (or equivalent) in the confirmation dialog"
     expected_result: 'Original binding is preserved. No binding change occurs. Neutral info notification (if any).'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-010
     feature: 'R-D Bind to Destination'
@@ -235,7 +198,68 @@ test_cases:
       - 'Open R-D picker'
       - 'Press Escape without selecting anything'
     expected_result: 'Picker closes. Binding state is unchanged.'
-    automated: false
+    automated: assisted
+
+  - id: bind-to-destination-011
+    labels:
+      - requires-extensions
+    feature: 'R-D Bind to Destination'
+    scenario: 'Re-binding same AI assistant shows already-bound message instead of confirmation dialog'
+    preconditions:
+      - 'Bound to an AI assistant (e.g., Claude Code)'
+    steps:
+      - 'Run the same bind command again (e.g., Bind to Claude Code)'
+    expected_result: 'No confirmation dialog appears. An "already bound" info notification is shown. Binding is unchanged.'
+    automated: assisted
+
+  - id: bind-to-destination-012
+    labels:
+      - requires-extensions
+    feature: 'R-D Bind to Destination'
+    scenario: 'Switching between different AI assistants shows confirmation dialog'
+    preconditions:
+      - 'Bound to an AI assistant (e.g., Claude Code)'
+      - 'At least two AI assistant extensions installed and active'
+    steps:
+      - 'Run a different AI assistant bind command (e.g., Bind to Cursor AI)'
+    expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
+    automated: assisted
+
+  - id: bind-to-destination-013
+    feature: 'R-D Bind to Destination'
+    scenario: 'R-D picker shows both "More terminals..." and "More files..." overflow items when many terminals and files are open'
+    preconditions:
+      - 'More terminals than maxInline (default 5) are open'
+      - 'Multiple files are open across tab groups'
+      - 'No destination is bound'
+    steps:
+      - 'Open R-D destination picker (Cmd+R Cmd+D or Ctrl+R Ctrl+D)'
+      - 'Observe the picker items'
+    expected_result: 'Picker shows inline terminal items up to maxInline limit, "More terminals..." overflow item, inline file items (current-in-group), "More files..." overflow item, and standard command items (Go to Link, Show Version Info).'
+    automated: assisted
+
+  - id: bind-to-destination-014
+    feature: 'R-D Bind to Destination'
+    scenario: 'Jump to Bound Destination (R-J) with no destination bound opens the destination picker'
+    preconditions:
+      - 'No destination bound'
+    steps:
+      - 'Open R-M menu or Command Palette'
+      - "Select 'Jump to Bound Destination' (or press Cmd+R Cmd+J)"
+    expected_result: 'Destination picker opens so the user can bind a destination first.'
+    automated: assisted
+
+  - id: bind-to-destination-015
+    feature: 'R-D Bind to Destination'
+    scenario: 'Binding a text editor in a single tab group (no split) succeeds'
+    preconditions:
+      - 'Only one tab group open (no editor split)'
+      - 'Multiple files open in that one group'
+    steps:
+      - 'Press Cmd+R Cmd+D'
+      - 'Select any open file from the list'
+    expected_result: 'The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 3 — Terminal Picker
@@ -251,7 +275,7 @@ test_cases:
       - "Click a terminal tab (e.g., 'Gamma') to make it the active terminal"
       - 'Open the terminal picker via R-D or R-M'
     expected_result: "'Gamma' shows an 'active' badge in the picker. Other terminals have no badge."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-002
     feature: 'Terminal Picker'
@@ -262,7 +286,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a 'bound' badge. 'Gamma' shows an 'active' badge."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-003
     feature: 'Terminal Picker'
@@ -273,7 +297,7 @@ test_cases:
       - "Click the 'Beta' terminal tab to make it active"
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a combined 'bound · active' badge (both indicators present on the same item)."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-004
     feature: 'Terminal Picker'
@@ -284,7 +308,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' is the first item in the terminal list, regardless of the order terminals were opened."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-005
     feature: 'Terminal Picker'
@@ -295,9 +319,11 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' (bound) is first. 'Gamma' (active, not bound) is second. Remaining terminals follow in any order."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-006
+    labels:
+      - cursor
     feature: 'Terminal Picker'
     scenario: 'Hidden IDE terminals are absent from the picker'
     preconditions:
@@ -306,7 +332,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
@@ -317,7 +343,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "All terminals appear inline. No 'More terminals...' item is visible."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-008
     feature: 'Terminal Picker'
@@ -328,7 +354,7 @@ test_cases:
     steps:
       - 'Open R-D picker or terminal sub-section of R-M'
     expected_result: "Only 3 terminals shown inline. A 'More terminals...' item appears at the bottom of the terminal section."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-009
     feature: 'Terminal Picker'
@@ -338,7 +364,7 @@ test_cases:
     steps:
       - "Select 'More terminals...' from the picker"
     expected_result: "A secondary QuickPick opens listing all terminals, including those that were hidden behind 'More terminals...'."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-010
     feature: 'Terminal Picker'
@@ -348,7 +374,7 @@ test_cases:
     steps:
       - 'Press Escape in the secondary terminal picker'
     expected_result: 'The secondary picker closes. The parent destination picker (R-D or R-M) is still visible.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-011
     feature: 'Terminal Picker'
@@ -359,7 +385,7 @@ test_cases:
       - 'Set rangelink.terminalPicker.maxInline = 2 in VS Code settings'
       - 'Open R-D picker'
     expected_result: "Only 2 terminals shown inline. 'More terminals...' appears. Previously all 4 were inline with higher maxInline."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-012
     feature: 'Terminal Picker'
@@ -371,7 +397,7 @@ test_cases:
       - 'Open R-M menu'
       - 'Observe the terminal entries in the menu'
     expected_result: 'Terminal picker items appear inline within the R-M menu. Selecting one binds that terminal.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-013
     feature: 'Terminal Picker'
@@ -382,7 +408,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D'
       - 'Observe that terminal entries are part of the combined destination picker'
     expected_result: 'Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
@@ -397,7 +423,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "src/utils/helper.ts appears at the top of the file list with a 'bound' badge."
-    automated: false
+    automated: assisted
 
   - id: file-picker-002
     feature: 'File Picker'
@@ -410,7 +436,7 @@ test_cases:
       - 'Click src/index.ts to make it active in tab group 1'
       - 'Open R-D picker'
     expected_result: 'src/index.ts appears before other files in tab group 1 within the picker.'
-    automated: false
+    automated: assisted
 
   - id: file-picker-003
     feature: 'File Picker'
@@ -421,7 +447,7 @@ test_cases:
       - 'Open both files in the editor'
       - 'Open R-D picker (file section)'
     expected_result: 'Both index.ts files appear with enough path context to distinguish them (e.g., utils/index.ts and types/index.ts).'
-    automated: false
+    automated: assisted
 
   - id: file-picker-004
     feature: 'File Picker'
@@ -431,7 +457,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "The open file entries appear inline in the picker. No 'More files...' item."
-    automated: false
+    automated: assisted
 
   - id: file-picker-005
     feature: 'File Picker'
@@ -441,7 +467,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "Only the inline limit of files is shown. A 'More files...' item appears at the bottom of the file section."
-    automated: false
+    automated: assisted
 
   - id: file-picker-006
     feature: 'File Picker'
@@ -452,7 +478,7 @@ test_cases:
       - "Select 'More files...' from R-D picker"
       - 'Observe the secondary picker sections'
     expected_result: "A secondary QuickPick opens with an 'Active Files' section header listing all open files."
-    automated: false
+    automated: assisted
 
   - id: file-picker-007
     feature: 'File Picker'
@@ -463,7 +489,7 @@ test_cases:
     steps:
       - 'Observe the secondary picker sections'
     expected_result: "Files are grouped under 'Tab Group 1', 'Tab Group 2', etc. Each group lists the files in that tab group."
-    automated: false
+    automated: assisted
 
   - id: file-picker-008
     feature: 'File Picker'
@@ -473,7 +499,7 @@ test_cases:
     steps:
       - 'Press Escape in the secondary file picker'
     expected_result: 'The secondary picker closes. The parent R-D (or R-M) picker is still visible, not closed.'
-    automated: false
+    automated: assisted
 
   - id: file-picker-009
     feature: 'File Picker'
@@ -484,44 +510,81 @@ test_cases:
     steps:
       - 'Open R-M menu'
     expected_result: 'File entries appear inline within the R-M menu. Selecting one binds the file as the destination.'
-    automated: false
+    automated: assisted
+
+  - id: file-picker-010
+    feature: 'File Picker'
+    scenario: 'Secondary picker shows path disambiguation for same-name files'
+    preconditions:
+      - 'More than the inline limit of files are open'
+      - 'Two files share the same base name in different directories'
+    steps:
+      - 'Open R-D destination picker'
+      - 'Click "More files..."'
+    expected_result: 'Secondary file picker shows both same-name files with disambiguating path fragments in their descriptions.'
+    automated: assisted
+
+  - id: file-picker-011
+    feature: 'File Picker'
+    scenario: 'Three files with same name show deeper disambiguation paths'
+    preconditions:
+      - 'Three files with the same base name exist in different directory trees'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'All three files appear with unique disambiguating path fragments that distinguish their locations.'
+    automated: assisted
+
+  - id: file-picker-012
+    feature: 'File Picker'
+    scenario: 'Unique file names have no disambiguator in their description'
+    preconditions:
+      - 'Multiple files with different names are open'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'File descriptions contain only badges and tab group labels — no disambiguation path prefix.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 5 — Clipboard Preservation
   # ---------------------------------------------------------------------------
 
   - id: clipboard-preservation-001
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-L is restored after the operation'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always" (default)'
-      - 'Terminal open and bound as destination'
-      - 'TypeScript file open with 5+ lines'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Test file with 10 lines open in editor'
+      - 'Terminal "cbp-001-dest" pre-bound by the test'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select lines 2-4 in the TypeScript file'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify terminal received the RangeLink'
-      - 'Press Cmd+V in any text field'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
-    automated: true
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Click into the test file (cbp-001-...) and select lines 2-4'
+      - 'Press Cmd+R Cmd+L — link appears in terminal "cbp-001-dest"'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-002
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: clipboard content before R-V is restored after the operation'
+    scenario: 'always mode: clipboard content before R-V from terminal is restored after the operation'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'Terminal with visible output, another destination bound'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Empty text editor file pre-bound as destination (cbp-002-...)'
+      - 'Terminal "cbp-002-src" created and focused by test'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Focus terminal, select a line of output'
-      - 'Press Cmd+R Cmd+V'
-      - 'Verify bound destination received terminal text'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
+      - 'Test types "hello world cbp-002" into terminal via sendText and selects all via selectAll'
+      - 'Test writes sentinel to clipboard (after selection to prevent copyOnSelection interference)'
+      - 'Test invokes R-V command directly — phrase lands in bound file'
+      - 'Test asserts phrase in dest file and clipboard restored to sentinel'
+    expected_result: 'Destination file contains "hello world cbp-002". Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after R-V delivery.'
     automated: true
 
   - id: clipboard-preservation-003
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-F is restored after the operation'
     preconditions:
@@ -537,36 +600,42 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-004
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before AI assistant paste is restored after'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'AI assistant (Claude Code or Copilot Chat) bound, AI panel open'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Dummy AI (Tier 1) destination available'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 3 lines of code'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify RangeLink appeared in AI chat'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink delivered to AI chat; clipboard preserved.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)"'
+      - 'Click into the test file (cbp-004-...) and select exactly lines 1-3'
+      - 'Press Cmd+R Cmd+L — link appears in Dummy AI Tier 1 textarea'
+      - 'Press Cancel — test asserts exact link in Dummy AI and clipboard restored to sentinel'
+    expected_result: 'Dummy AI tier1 contains the exact link (relPath#L1-L3). Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after AI delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-005
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before terminal paste is restored after'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'Terminal bound as destination'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Test file with 10 lines open in editor'
+      - 'Terminal "cbp-005-dest" pre-bound by the test'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 2-3 lines of code'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify terminal received RangeLink'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
-    automated: true
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Click back into the test file, select 2-3 lines'
+      - 'Press Cmd+R Cmd+L — link appears in terminal "cbp-005-dest"'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-006
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'never mode: clipboard contains the last RangeLink output after R-L'
     preconditions:
@@ -581,20 +650,25 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-007
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
-    scenario: 'never mode: clipboard contains last output after R-V'
+    scenario: 'never mode: clipboard contains last output after R-V (sentinel is gone)'
     preconditions:
-      - 'rangelink.clipboard.preserve = "never"'
-      - 'Another destination bound, terminal open'
+      - 'rangelink.clipboard.preserve = "never" (loaded automatically by test)'
+      - 'Empty text editor file pre-bound as destination (cbp-007-...)'
+      - 'Terminal "cbp-007-src" created and focused by test'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Focus terminal, select text'
-      - 'Press Cmd+R Cmd+V'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains the selected terminal text. CLIPBOARD_SENTINEL is gone.'
-    automated: false
+      - 'Test types "test phrase cbp-007" into terminal via sendText and selects all via selectAll'
+      - 'Test writes sentinel to clipboard (after selection to prevent copyOnSelection interference)'
+      - 'Test invokes R-V command directly — phrase lands in bound file'
+      - 'Test asserts phrase in dest file and clipboard changed (sentinel is gone)'
+    expected_result: 'Destination file contains "test phrase cbp-007". Clipboard contains the selected terminal text, NOT the sentinel. assertClipboardChanged passes — preserve=never overwrites clipboard with the transported content.'
+    automated: true
 
   - id: clipboard-preservation-008
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'R-C (Copy RangeLink) always writes to clipboard regardless of preserve setting'
     preconditions:
@@ -606,28 +680,32 @@ test_cases:
       - 'Press Cmd+R Cmd+C (Copy RangeLink)'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains the RangeLink, NOT CLIPBOARD_SENTINEL. R-C is clipboard-only; preserve does not apply.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-009
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: no preserve invoked when no destination is bound (ClipboardOnly path)'
+    scenario: 'always mode: dismissed picker leaves clipboard unchanged (no operation performed)'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'No destination bound'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'No destination bound (ensured by test teardown)'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 3 lines of code'
-      - 'Press Cmd+R Cmd+L (picker appears)'
-      - 'Press Escape to dismiss'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. No RangeLink was written because the operation was cancelled.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Click into any file and select a few lines'
+      - 'Press Cmd+R Cmd+L — destination picker opens (no destination bound)'
+      - 'Press Escape to dismiss without selecting anything'
+      - 'Press Cancel — test reads clipboard and asserts it still equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value. assertClipboardRestored passes — no preserve cycle was triggered because the operation was cancelled before any transport.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
   # ---------------------------------------------------------------------------
 
   - id: send-file-path-001
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Cmd+R Cmd+F sends workspace-relative path to bound terminal destination'
     preconditions:
@@ -639,9 +717,11 @@ test_cases:
       - 'Press Cmd+R Cmd+F (Mac) / Ctrl+R Ctrl+F (Win/Linux)'
       - 'Observe terminal output'
     expected_result: 'Terminal receives src/utils/helper.ts (workspace-relative). Success toast confirms send.'
-    automated: false
+    automated: true
 
   - id: send-file-path-002
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Cmd+R Cmd+Shift+F sends absolute path to bound terminal destination'
     preconditions:
@@ -653,9 +733,12 @@ test_cases:
       - 'Press Cmd+R Cmd+Shift+F'
       - 'Observe terminal'
     expected_result: 'Terminal receives full absolute path (e.g. /Users/you/project/src/utils/helper.ts).'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-003
+    labels:
+      - clipboard
+      - ubuntu
     feature: 'Send File Path'
     scenario: 'Ctrl+R Ctrl+F sends relative path on Win/Linux'
     preconditions:
@@ -670,6 +753,8 @@ test_cases:
     automated: false
 
   - id: send-file-path-004
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Terminal destination: path with spaces is auto-quoted in single quotes'
     preconditions:
@@ -680,9 +765,11 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal output'
     expected_result: "Terminal receives 'src/my folder/helper.ts' — single-quoted."
-    automated: false
+    automated: assisted
 
   - id: send-file-path-005
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Terminal destination: path with parentheses is auto-quoted in single quotes'
     preconditions:
@@ -693,11 +780,13 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal'
     expected_result: "Terminal receives 'src/utils (v2)/helper.ts' — single-quoted."
-    automated: false
+    automated: assisted
 
   - id: send-file-path-006
+    labels:
+      - clipboard
     feature: 'Send File Path'
-    scenario: 'Text editor destination: path sent unquoted'
+    scenario: 'Text editor destination: path with spaces is auto-quoted'
     preconditions:
       - 'Text editor (not terminal) bound as destination'
       - 'Active file has spaces in path'
@@ -705,10 +794,12 @@ test_cases:
       - 'Focus the file with spaces'
       - 'Press Cmd+R Cmd+F'
       - 'Observe bound text editor'
-    expected_result: 'Text editor receives unquoted path. Shell-quoting only applies to terminal destinations.'
-    automated: false
+    expected_result: "Text editor receives single-quoted path (e.g. 'my folder/file.ts'). Shell-quoting applies to all destinations."
+    automated: true
 
   - id: send-file-path-007
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Clipboard always contains the unquoted path regardless of destination type'
     preconditions:
@@ -719,9 +810,11 @@ test_cases:
       - 'Observe terminal (receives quoted path)'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains unquoted path. Terminal received quoted version.'
-    automated: false
+    automated: true
 
   - id: send-file-path-008
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Self-paste: sending path of the currently active file to that same file shows info + clipboard copy'
     preconditions:
@@ -732,9 +825,11 @@ test_cases:
       - 'Verify file not modified'
       - 'Press Cmd+V anywhere'
     expected_result: 'Info notification appears. Clipboard contains path. File not modified.'
-    automated: false
+    automated: true
 
   - id: send-file-path-009
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Unbound: R-F opens destination picker to bind before sending'
     preconditions:
@@ -743,31 +838,50 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe destination picker appearing'
     expected_result: 'Destination picker opens. Selecting a destination binds it and sends the file path.'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-010
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path in Command Palette'
     preconditions:
-      - 'Extension installed, terminal bound, workspace open'
+      - 'Terminal bound, workspace open'
     steps:
       - 'Open Command Palette (Cmd+Shift+P)'
       - 'Type Send Current File Path, press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives workspace-relative path. Same as Cmd+R Cmd+F.'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-011
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path (Absolute) in Command Palette'
     preconditions:
-      - 'Extension installed, terminal bound, workspace open'
+      - 'Terminal bound, workspace open'
     steps:
       - 'Open Command Palette (Cmd+Shift+P)'
       - 'Type Send Current File Path (Absolute), press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives absolute path. Same as Cmd+R Cmd+Shift+F.'
-    automated: false
+    automated: assisted
+
+  - id: send-file-path-012
+    labels:
+      - clipboard
+    feature: 'Send File Path'
+    scenario: 'Bound text editor hidden behind another tab — paste still lands in bound editor'
+    preconditions:
+      - 'Text editor bound as destination in single column'
+      - 'Source file opened in same column (hides bound editor)'
+    steps:
+      - 'With source file active (bound editor hidden behind it), press Cmd+R Cmd+F'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm file path appears in the bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the file path. Source editor had focus; paste still landed in bound editor.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 7 — Context Menu Integrations
@@ -777,7 +891,6 @@ test_cases:
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Send File Path sends absolute path to bound destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file exists in the Explorer panel'
       - 'Terminal is bound as destination'
     steps:
@@ -785,31 +898,29 @@ test_cases:
       - "Select 'RangeLink: Send File Path'"
       - 'Observe the terminal'
     expected_result: 'Terminal receives the absolute file path (e.g., /Users/username/project/src/utils/helper.ts). No link format, no line number.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-002
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Send Relative File Path sends relative path'
     preconditions:
-      - 'Extension installed'
       - 'Terminal bound'
     steps:
       - 'Right-click a file in Explorer'
       - "Select 'RangeLink: Send Relative File Path'"
     expected_result: 'Terminal receives the workspace-relative path (e.g., src/utils/helper.ts). No leading slash.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-003
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Bind Here opens the file and binds it as text editor destination'
     preconditions:
-      - 'Extension installed'
       - 'No binding active'
     steps:
       - 'Right-click a file in Explorer (e.g., src/utils/helper.ts)'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'src/utils/helper.ts opens in the editor and becomes the bound text editor destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-004
     feature: 'Context Menus — Explorer'
@@ -820,7 +931,7 @@ test_cases:
       - 'Right-click any file in Explorer'
       - "Locate and select 'RangeLink: Unbind'"
     expected_result: 'The destination is unbound. Confirmation notification appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-005
     feature: 'Context Menus — Explorer'
@@ -831,7 +942,7 @@ test_cases:
       - 'Right-click any file in Explorer'
       - 'Observe the context menu'
     expected_result: "'RangeLink: Unbind' is not visible in the menu (or is disabled)."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-001
     feature: 'Context Menus — Editor Tab'
@@ -843,7 +954,7 @@ test_cases:
       - 'Right-click the file tab in the tab bar'
       - "Select 'RangeLink: Send File Path'"
     expected_result: "Terminal receives the absolute file path of the tab's file."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-002
     feature: 'Context Menus — Editor Tab'
@@ -855,19 +966,18 @@ test_cases:
       - 'Right-click the file tab'
       - "Select 'RangeLink: Send Relative File Path'"
     expected_result: 'Terminal receives the workspace-relative path.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-003
     feature: 'Context Menus — Editor Tab'
     scenario: 'Editor tab: RangeLink: Bind Here binds that editor'
     preconditions:
-      - 'Extension installed'
       - 'File is open in a tab'
     steps:
       - 'Right-click the file tab'
       - "Select 'RangeLink: Bind Here'"
     expected_result: "The tab's file is now the bound text editor destination. Success toast appears."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-004
     feature: 'Context Menus — Editor Tab'
@@ -878,9 +988,11 @@ test_cases:
       - 'Right-click any editor tab'
       - "Select 'RangeLink: Unbind'"
     expected_result: 'Destination is unbound. Confirmation notification.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-001
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send RangeLink'
     preconditions:
@@ -891,9 +1003,11 @@ test_cases:
       - 'Right-click in the editor'
       - "Select 'RangeLink: Send RangeLink'"
     expected_result: 'Terminal receives the RangeLink (same as R-L keybinding). Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-002
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send RangeLink (Absolute)'
     preconditions:
@@ -902,9 +1016,11 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send RangeLink (Absolute)'"
     expected_result: 'Terminal receives the RangeLink with an absolute file path (e.g., /full/path/to/file.ts#L3-L5).'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-003
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Portable Link'
     preconditions:
@@ -913,9 +1029,11 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send Portable Link'"
     expected_result: 'Terminal receives the portable link format (GitHub-style URL with blob path and line anchor).'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-004
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Portable Link (Absolute)'
     preconditions:
@@ -924,9 +1042,11 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send Portable Link (Absolute)'"
     expected_result: 'Terminal receives the portable link with an absolute file path variant.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-005
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Selected Text'
     preconditions:
@@ -935,21 +1055,24 @@ test_cases:
     steps:
       - "Select 2-3 lines, right-click, select 'RangeLink: Send Selected Text'"
     expected_result: 'Terminal receives the raw selected text (not a link format). Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-006
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Visual separator is visible in editor content context menu'
     preconditions:
-      - 'Extension installed'
       - 'Text editor open'
     steps:
       - 'Right-click inside the editor (with or without selection)'
       - 'Observe the context menu structure'
     expected_result: 'A visual separator line is visible between the RangeLink commands and the rest of the VS Code context menu items.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-007
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: "Editor content: RangeLink: Send This File's Path (absolute)"
     preconditions:
@@ -959,9 +1082,11 @@ test_cases:
       - 'Right-click inside the editor (no selection needed)'
       - "Select 'RangeLink: Send This File's Path'"
     expected_result: 'Terminal receives the absolute path of the current file.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-008
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: "Editor content: RangeLink: Send This File's Relative Path"
     preconditions:
@@ -971,78 +1096,117 @@ test_cases:
       - 'Right-click inside the editor'
       - "Select 'RangeLink: Send This File's Relative Path'"
     expected_result: 'Terminal receives the workspace-relative path of the current file.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-009
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content: RangeLink: Bind Here'
     preconditions:
-      - 'Extension installed'
       - 'File open in editor'
     steps:
       - 'Right-click inside the editor'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'The current file is bound as the text editor destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-010
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
-    scenario: 'Editor content: RangeLink: Unbind visible when bound'
+    scenario: 'Editor content: RangeLink: Unbind visible when bound and unbinds on click'
     preconditions:
       - 'A destination is bound'
     steps:
       - 'Right-click inside any editor'
-      - "Observe for 'RangeLink: Unbind'"
-    expected_result: "'RangeLink: Unbind' is visible in the editor context menu."
-    automated: false
+      - "Verify 'RangeLink: Unbind' is visible"
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the editor context menu. Selecting it unbinds the destination and shows the unbind confirmation."
+    automated: assisted
 
   - id: context-menus-editor-content-011
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Selection-dependent items hidden when no text is selected'
     preconditions:
       - 'Editor open'
+      - 'A destination is bound'
       - 'No text selected (cursor only)'
     steps:
       - 'Click in the editor to place cursor (no selection)'
       - 'Right-click inside the editor'
       - 'Observe which RangeLink items are present'
     expected_result: "'Send RangeLink', 'Send RangeLink (Absolute)', 'Send Portable Link', 'Send Portable Link (Absolute)', and 'Send Selected Text' are NOT visible. File-path and Bind/Unbind items remain visible."
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-001
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal tab: RangeLink: Bind Here binds that terminal'
     preconditions:
-      - 'Extension installed'
       - 'Terminal open'
     steps:
       - 'Right-click the terminal tab in the terminal panel tab bar'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'That terminal is bound as the destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-002
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content: RangeLink: Bind Here binds the terminal'
     preconditions:
-      - 'Extension installed'
       - 'Terminal open'
     steps:
       - 'Right-click inside the terminal output area'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'Same result as context-menus-terminal-001 — the terminal is bound. Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-003
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
-    scenario: 'Terminal: RangeLink: Unbind is visible when a destination is bound'
+    scenario: 'Terminal content-area: RangeLink: Unbind is visible when bound and unbinds on click'
     preconditions:
       - 'A destination is currently bound'
     steps:
-      - 'Right-click in a terminal (tab or content area)'
-      - 'Observe the context menu'
-    expected_result: "'RangeLink: Unbind' is visible in the terminal context menu."
-    automated: false
+      - 'Right-click INSIDE the terminal content area (the tab menu does not render Unbind)'
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the content-area menu and selecting it unbinds the destination. Confirmation notification."
+    automated: assisted
+
+  - id: context-menus-terminal-004
+    labels:
+      - clipboard
+    feature: 'Context Menus — Terminal'
+    scenario: 'Terminal tab right-click binds THAT specific terminal (multi-terminal disambiguation)'
+    preconditions:
+      - 'Two or more terminals are open with distinct names'
+    steps:
+      - 'Identify a specific TARGET terminal'
+      - "Right-click the TARGET terminal's TAB in the terminal panel's tab bar"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
+    automated: assisted
+
+  - id: context-menus-terminal-005
+    labels:
+      - clipboard
+    feature: 'Context Menus — Terminal'
+    scenario: 'Terminal content-area right-click binds THAT specific terminal (multi-terminal disambiguation)'
+    preconditions:
+      - 'Two or more terminals are open with distinct names'
+    steps:
+      - 'Focus a specific TARGET terminal'
+      - "Right-click INSIDE the TARGET terminal's content area"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 8 — Dirty Buffer Warning
@@ -1059,7 +1223,7 @@ test_cases:
       - 'Select 2-3 lines'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'A warning dialog appears before the RangeLink is generated. Dialog references unsaved changes.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-002
     feature: 'Dirty Buffer Warning'
@@ -1073,7 +1237,7 @@ test_cases:
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
       - 'Observe the dialog options'
     expected_result: 'Three choices visible: Save & Generate, Generate Anyway, and dismiss/cancel.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-003
     feature: 'Dirty Buffer Warning'
@@ -1086,7 +1250,7 @@ test_cases:
       - 'Click Save & Generate'
       - 'Observe file state and terminal'
     expected_result: 'File saved (modified indicator gone). RangeLink generated and sent to terminal. Success toast shown.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-004
     feature: 'Dirty Buffer Warning'
@@ -1111,7 +1275,7 @@ test_cases:
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
       - 'Press Escape or click X to dismiss'
     expected_result: 'No RangeLink generated. Terminal unchanged. File still dirty.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-006
     feature: 'Dirty Buffer Warning'
@@ -1123,7 +1287,7 @@ test_cases:
       - 'Make unsaved change to a file'
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately.'
-    automated: false
+    automated: true
 
   - id: dirty-buffer-warning-007
     feature: 'Dirty Buffer Warning'
@@ -1136,13 +1300,221 @@ test_cases:
       - 'Save file (Cmd+S) to ensure clean state'
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately. Success toast shown.'
-    automated: false
+    automated: true
+
+  - id: dirty-buffer-warning-008
+    feature: 'Dirty Buffer Warning — R-F'
+    scenario: 'warnOnDirtyBuffer=false — R-F bypasses dialog'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = false'
+      - 'File has unsaved changes'
+      - 'A terminal exists for the destination picker'
+    steps:
+      - 'Set warnOnDirtyBuffer to false'
+      - 'Make unsaved change to a file'
+      - 'Press Cmd+R Cmd+F — confirm dirty buffer dialog does NOT appear'
+      - 'When destination picker appears, select the terminal'
+    expected_result: 'No dialog appears. File path copied to clipboard. "Disabled by setting" log emitted. No dialog log.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-009
+    feature: 'Dirty Buffer Warning — R-F'
+    scenario: 'R-F on clean file skips warning logic entirely'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File is saved (no unsaved changes)'
+      - 'A terminal exists for the destination picker'
+    steps:
+      - 'Save file to ensure clean state'
+      - 'Press Cmd+R Cmd+F — confirm dirty buffer dialog does NOT appear'
+      - 'When destination picker appears, select the terminal'
+    expected_result: 'No dialog appears. File path copied to clipboard. No handleDirtyBufferWarning logs emitted (Clean early-return).'
+    automated: assisted
+
+  - id: dirty-buffer-warning-010
+    feature: 'Dirty Buffer Warning — R-C Dialog'
+    scenario: 'R-C Save & Generate saves file and generates link'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text'
+      - 'Press Cmd+R Cmd+C (Copy RangeLink) — dialog appears'
+      - 'Click Save & Generate'
+    expected_result: 'File saved (modified indicator gone). RangeLink on clipboard with #L reference.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-011
+    feature: 'Dirty Buffer Warning — R-C Dialog'
+    scenario: 'R-C Generate Anyway sends link without saving'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text'
+      - 'Press Cmd+R Cmd+C (Copy RangeLink) — dialog appears'
+      - 'Click Generate Anyway'
+    expected_result: 'File still dirty. RangeLink on clipboard with #L reference.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-012
+    feature: 'Dirty Buffer Warning — R-C Dialog'
+    scenario: 'R-C dismiss aborts link generation'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text'
+      - 'Press Cmd+R Cmd+C (Copy RangeLink) — dialog appears'
+      - 'Press Escape or click X to dismiss'
+    expected_result: 'Clipboard unchanged. File still dirty. No link generated.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-013
+    feature: 'Dirty Buffer Warning — R-F Dialog'
+    scenario: 'R-F Save & Send saves file and sends path'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes'
+    steps:
+      - 'Make unsaved change'
+      - 'Press Cmd+R Cmd+F — dialog appears'
+      - 'Click Save & Send'
+      - 'Destination picker appears — select any terminal'
+    expected_result: 'File saved (modified indicator gone). File path on clipboard.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-014
+    feature: 'Dirty Buffer Warning — R-F Dialog'
+    scenario: 'R-F Send Anyway sends path without saving'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes'
+    steps:
+      - 'Make unsaved change'
+      - 'Press Cmd+R Cmd+F — dialog appears'
+      - 'Click Send Anyway'
+      - 'Destination picker appears — select any terminal'
+    expected_result: 'File still dirty. File path on clipboard.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-015
+    feature: 'Dirty Buffer Warning — R-F Dialog'
+    scenario: 'R-F dismiss aborts file path send'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File has unsaved changes'
+    steps:
+      - 'Make unsaved change'
+      - 'Press Cmd+R Cmd+F — dialog appears'
+      - 'Press Escape or click X to dismiss'
+    expected_result: 'Clipboard unchanged. File still dirty. No path sent.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-016
+    feature: 'Dirty Buffer Warning — Clipboard Preservation'
+    scenario: 'R-L clipboard preserved after dirty buffer dialog with bound terminal destination'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'rangelink.clipboard.preserve = always (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L — dialog appears'
+      - 'Click Generate Anyway'
+    expected_result: 'Link sent to terminal. Clipboard restored to sentinel (not overwritten by the link).'
+    automated: assisted
+
+  - id: dirty-buffer-warning-017
+    feature: 'Dirty Buffer Warning — Clipboard Preservation'
+    scenario: 'R-F clipboard preserved after dirty buffer dialog with bound terminal destination'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'rangelink.clipboard.preserve = always (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes'
+    steps:
+      - 'Make unsaved change, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+F — dialog appears'
+      - 'Click Send Anyway'
+    expected_result: 'File path sent to terminal. Clipboard restored to sentinel (not overwritten by the path).'
+    automated: assisted
+
+  - id: dirty-buffer-warning-018
+    feature: 'Dirty Buffer Warning — Setting disabled'
+    scenario: 'R-L with warnOnDirtyBuffer=false sends link to bound destination without warning dialog'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = false'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — confirm NO dialog appears'
+    expected_result: 'No dialog. Link sent to terminal (Pasted log). Clipboard restored to sentinel. File still dirty (setting disabled should not trigger a save). handleDirtyBufferWarning logs "disabled by setting".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-019
+    feature: 'Dirty Buffer Warning — Clean file'
+    scenario: 'R-C on clean file generates link without warning'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File is clean (no unsaved changes), text selected'
+    steps:
+      - 'Open a clean file, select text'
+      - 'Press Cmd+R Cmd+C (Copy RangeLink)'
+    expected_result: 'No dialog. RangeLink on clipboard with #L reference. File remains clean. No handleDirtyBufferWarning logs emitted (Clean early-return).'
+    automated: true
+
+  - id: dirty-buffer-warning-020
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L Save & Generate saves file and sends link to bound destination'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Click Save & Generate'
+    expected_result: 'File saved (modified indicator gone). Link sent to terminal (Pasted log). Clipboard restored to sentinel. handleDirtyBufferWarning logs "showing warning".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-021
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L Generate Anyway sends link to bound destination without saving'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Click Generate Anyway'
+    expected_result: 'File still dirty. Link sent to terminal (Pasted log). Clipboard restored to sentinel. handleDirtyBufferWarning logs "showing warning".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-022
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L dismiss aborts link send'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Press Escape or click X to dismiss'
+    expected_result: 'Clipboard still has sentinel (no send occurred). File still dirty. No Pasted log. handleDirtyBufferWarning logs "showing warning".'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 9 — R-V Send Terminal Selection
   # ---------------------------------------------------------------------------
 
   - id: send-terminal-selection-001
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Cmd+R Cmd+V with terminal focused and text selected sends to bound destination'
     preconditions:
@@ -1154,9 +1526,12 @@ test_cases:
       - 'Press Cmd+R Cmd+V'
       - 'Observe bound destination'
     expected_result: 'Bound destination receives selected terminal text. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-002
+    labels:
+      - clipboard
+      - ubuntu
     feature: 'R-V Send Terminal Selection'
     scenario: 'Ctrl+R Ctrl+V on Win/Linux'
     preconditions:
@@ -1171,6 +1546,8 @@ test_cases:
     automated: false
 
   - id: send-terminal-selection-003
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-V with no text selected in terminal shows error message'
     preconditions:
@@ -1179,9 +1556,11 @@ test_cases:
       - 'Click in terminal (no selection)'
       - 'Press Cmd+R Cmd+V'
     expected_result: 'Error notification: No text selected in the terminal. Select text and try again. Nothing sent to destination.'
-    automated: false
+    automated: true
 
   - id: send-terminal-selection-004
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-V with no bound destination (picker or clipboard fallback behavior)'
     preconditions:
@@ -1192,21 +1571,25 @@ test_cases:
       - 'Select text in terminal'
       - 'Press Cmd+R Cmd+V'
     expected_result: 'Destination picker opens. On selection: text sent to new destination. On Escape: nothing sent.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-005
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
-    scenario: 'Terminal context menu Send Selection to Destination when text selected and bound'
+    scenario: 'Terminal content-area context menu Send Selection to Destination when text selected and bound'
     preconditions:
       - 'Terminal focused, text selected in terminal, destination bound'
     steps:
       - 'Select text in terminal'
-      - 'Right-click in terminal'
+      - 'Right-click INSIDE the terminal content area (not the tab)'
       - 'Click RangeLink: Send Selection to Destination'
     expected_result: 'Selected text sent to bound destination. Same behavior as R-V keybinding.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-006
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-L keybinding pressed while terminal has focus shows guidance message suggesting R-V'
     preconditions:
@@ -1215,9 +1598,11 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'Error or info notification guides user: R-L requires editor selection, use R-V for terminal text. Terminal not modified.'
-    automated: false
+    automated: true
 
   - id: send-terminal-selection-007
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-C keybinding pressed while terminal has focus shows guidance message suggesting R-V'
     preconditions:
@@ -1226,7 +1611,92 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+C'
     expected_result: 'Notification guides user to use R-V instead. No clipboard write for invalid terminal context.'
-    automated: false
+    automated: true
+
+  - id: send-terminal-selection-008
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Cross-terminal: content-area "Send Selection" routes selection from source terminal to bound terminal and shifts focus'
+    preconditions:
+      - 'Two terminals exist (SOURCE and BOUND)'
+      - 'BOUND terminal is bound as destination'
+      - 'Text is selected in SOURCE terminal'
+    steps:
+      - 'Right-click INSIDE the SOURCE terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'Selected text is pasted into the BOUND terminal, and focus shifts to BOUND. Status bar confirms "sent to Terminal (BOUND)".'
+    automated: assisted
+
+  - id: send-terminal-selection-009
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Terminal TAB context menu does NOT include "Send Selection to Destination"'
+    preconditions:
+      - 'Terminal bound, text selected in terminal'
+    steps:
+      - 'Right-click the terminal TAB (not the content area)'
+      - 'Observe the context menu'
+    expected_result: '"RangeLink: Send Selection to Destination" is NOT present in the tab menu (the command is only registered for the content-area menu).'
+    automated: assisted
+
+  - id: send-terminal-selection-010
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Self-paste: bound terminal sends its own selection to itself (no self-paste guard)'
+    preconditions:
+      - 'A terminal is bound as destination'
+      - 'Text is selected in THAT SAME terminal'
+    steps:
+      - 'Right-click INSIDE the bound terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'Selected text is pasted back into the same terminal (documents current behavior; a terminal-specific self-paste guard is a potential future improvement).'
+    automated: assisted
+
+  - id: send-terminal-selection-011
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Unbound: "Send Selection to Destination" is visible; clicking opens destination picker and delivers to picked destination'
+    preconditions:
+      - 'No destination is bound'
+      - 'Two terminals exist — SOURCE (with selected text) and DEST (empty)'
+    steps:
+      - 'Right-click INSIDE the SOURCE terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+      - 'Pick the DEST terminal from the destination picker that opens'
+    expected_result: 'The item is visible (parity with editor family — no isBound gate). The destination picker opens, and after picking DEST, the selection is delivered to DEST and DEST becomes the bound destination.'
+    automated: assisted
+
+  - id: send-terminal-selection-012
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: '"Send Selection to Destination" is hidden when no terminal text is selected'
+    preconditions:
+      - 'A destination is bound'
+      - 'No text is selected in the terminal'
+    steps:
+      - 'Right-click INSIDE the terminal content area without selecting anything'
+      - 'Observe the context menu'
+    expected_result: '"RangeLink: Send Selection to Destination" is NOT present (`when` clause requires `terminalTextSelected`).'
+    automated: assisted
+
+  - id: send-terminal-selection-013
+    labels:
+      - clipboard
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Terminal content-area "Send Selection" delivers selected text to a bound AI-assistant destination'
+    preconditions:
+      - 'Dummy AI (Tier 1) is bound as destination (via R-D)'
+      - 'Text is selected in a terminal'
+    steps:
+      - 'Right-click INSIDE the terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'The selected text is delivered to the Dummy AI extension via Tier 1 direct insert; the dummy textarea contains the selection.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 10 — R-G Go to Link
@@ -1236,108 +1706,87 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'Cmd+R Cmd+G opens the Go to Link input box'
     preconditions:
-      - 'Extension installed'
       - 'Any workspace open'
     steps:
       - 'Press Cmd+R Cmd+G'
     expected_result: 'An input box appears with placeholder text indicating it expects a RangeLink (e.g., path/to/file.ts#L10).'
-    automated: false
+    automated: assisted
 
-  - id: go-to-link-002
-    feature: 'R-G Go to Link'
-    scenario: 'Ctrl+R Ctrl+G on Win/Linux'
-    preconditions:
-      - 'Extension installed'
-      - 'Any workspace open'
-      - 'Running on Windows or Linux'
-    steps:
-      - 'Press Ctrl+R Ctrl+G'
-    expected_result: 'Same input box opens as Cmd+R Cmd+G.'
-    automated: false
+  # go-to-link-002 removed — Ctrl+R Ctrl+G on Win/Linux tests VS Code's keybinding
+  # resolution, not RangeLink behavior. Both bindings are declared in package.json;
+  # VS Code dispatches the platform-appropriate one. See issues/508 for rationale.
 
   - id: go-to-link-003
     feature: 'R-G Go to Link'
     scenario: 'Valid RangeLink in input box navigates to the file and selects the range'
     preconditions:
-      - 'Extension installed'
       - 'A file with 10+ lines exists in the workspace (e.g., src/utils/helper.ts)'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type or paste: src/utils/helper.ts#L3-L7'
       - 'Press Enter'
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 3-7. The selection is visible and highlighted.'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-004
     feature: 'R-G Go to Link'
     scenario: 'Supports range format: path/to/file.ts#L3C14-L15C9'
     preconditions:
-      - 'Extension installed'
       - 'src/utils/helper.ts exists'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type: src/utils/helper.ts#L3C5-L3C20'
       - 'Press Enter'
     expected_result: 'The file opens and the selection spans from column 5 to column 20 on line 3 (character-level precision).'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-005
     feature: 'R-G Go to Link'
     scenario: 'Invalid link format shows error message'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type: not-a-valid-link-format'
       - 'Press Enter'
     expected_result: "An error notification appears (e.g., 'Invalid RangeLink format'). No navigation occurs."
-    automated: false
+    automated: assisted
 
   - id: go-to-link-006
     feature: 'R-G Go to Link'
-    scenario: 'Empty input dismisses with info notification'
-    preconditions:
-      - 'Extension installed'
+    scenario: 'Empty input dismisses with error notification'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Clear the input (leave it empty)'
       - 'Press Enter'
-    expected_result: "The input box closes. An info notification appears (e.g., 'No link entered'). No navigation, no error."
-    automated: false
+    expected_result: "The input box closes. An error notification appears (e.g., 'Please enter a link to navigate'). No navigation occurs."
+    automated: assisted
 
   - id: go-to-link-007
     feature: 'R-G Go to Link'
     scenario: 'File not found shows warning message'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type: src/nonexistent/file.ts#L1'
       - 'Press Enter'
     expected_result: "A warning notification appears (e.g., 'File not found: src/nonexistent/file.ts'). No navigation occurs."
-    automated: false
+    automated: assisted
 
   - id: go-to-link-008
     feature: 'R-G Go to Link'
     scenario: 'RangeLink: Go to Link available in Command Palette'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Go to Link' and select 'RangeLink: Go to Link'"
     expected_result: 'Same input box opens as the R-G keybinding.'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-009
     feature: 'R-G Go to Link'
     scenario: 'Go to Link item in R-M menu opens the same input box'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open R-M menu'
       - "Select 'Go to Link'"
     expected_result: 'The R-G input box opens. Behavior is identical to the keybinding.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 11 — R-U Unbind
@@ -1352,9 +1801,11 @@ test_cases:
       - 'Verify binding is active (status bar or prior R-L confirms)'
       - 'Press Cmd+R Cmd+U'
     expected_result: "Destination is unbound. A toast confirms (e.g., 'Unbound from Terminal'). Subsequent R-L opens picker instead of sending directly."
-    automated: false
+    automated: true
 
   - id: unbind-002
+    labels:
+      - ubuntu
     feature: 'R-U Unbind'
     scenario: 'Ctrl+R Ctrl+U on Win/Linux'
     preconditions:
@@ -1368,13 +1819,13 @@ test_cases:
 
   - id: unbind-003
     feature: 'R-U Unbind'
-    scenario: 'R-U with no bound destination shows no-op or appropriate info message'
+    scenario: 'R-U with no bound destination is disabled (keybinding gated by rangelink.isBound)'
     preconditions:
       - 'No destination is currently bound'
     steps:
       - 'Press Cmd+R Cmd+U (Mac) / Ctrl+R Ctrl+U (Win/Linux)'
-    expected_result: "An info notification appears (e.g., 'No destination is currently bound'). No error. Command is a safe no-op."
-    automated: false
+    expected_result: "Keybinding does not fire (gated by rangelink.isBound when clause). If invoked directly via executeCommand, a status bar message appears ('RangeLink: No destination bound'). No error."
+    automated: true
 
   - id: unbind-004
     feature: 'R-U Unbind'
@@ -1385,237 +1836,81 @@ test_cases:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Unbind Destination' and select 'RangeLink: Unbind Destination'"
     expected_result: 'Same behavior as R-U keybinding — destination is unbound with confirmation notification.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
-  # Section 12 — Changed Behaviors
+  # Section — Editor Binding Validation
   # ---------------------------------------------------------------------------
 
-  - id: changed-two-verb-vocabulary-001
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Send RangeLink appears in Command Palette (replaces Copy Range Link)'
+  - id: editor-binding-validation-001
+    feature: 'Editor Binding Validation'
+    scenario: 'Search editor content area hides link-generation and bind commands'
     preconditions:
-      - 'Extension installed'
-      - 'Text selected in a file'
+      - 'No destination is bound'
     steps:
-      - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
-      - "Type 'Send RangeLink'"
-      - "Verify 'RangeLink: Send RangeLink' appears and is selectable"
-    expected_result: "'RangeLink: Send RangeLink' appears in the Command Palette. No old 'Copy Range Link' entries remain."
-    automated: false
+      - 'Press Cmd+Shift+P → run "Open New Search Editor"'
+      - 'Right-click in the EDITOR CONTENT AREA (not the tab at the top)'
+      - 'Inspect the context menu for RangeLink link and bind items'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" do NOT appear. "Send Selected Text" and "Unbind" are acceptable if present. The when-clauses restrict link-generation commands to resourceScheme == file || resourceScheme == untitled; the bind command carries the same restriction.'
+    automated: assisted
 
-  - id: changed-two-verb-vocabulary-002
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Send RangeLink (Absolute) in Command Palette'
+  - id: editor-binding-validation-002
+    feature: 'Editor Binding Validation'
+    scenario: 'Output panel hides file path and bind commands in its context menu'
     preconditions:
-      - 'Extension installed'
-      - 'Text selected'
+      - 'No destination is bound'
     steps:
-      - 'Open Command Palette'
-      - "Type 'Send RangeLink Absolute'"
-      - "Verify 'RangeLink: Send RangeLink (Absolute)' appears"
-    expected_result: "'RangeLink: Send RangeLink (Absolute)' appears and executes correctly."
-    automated: false
+      - 'Press Cmd+Shift+U (or View → Output) to open the Output panel'
+      - 'Click inside the Output panel to focus it'
+      - 'Right-click anywhere in the Output panel'
+      - 'Inspect the context menu for RangeLink file path and bind items'
+    expected_result: 'No "Send This File''s Path" or "RangeLink: Bind Here" appears. "Unbind" is acceptable. The when-clauses restrict editorContent.pasteFilePath and editorContent.bind to resourceScheme == file || resourceScheme == untitled.'
+    automated: assisted
 
-  - id: changed-two-verb-vocabulary-003
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Send Portable Link in Command Palette'
+  - id: editor-binding-validation-003
+    feature: 'Editor Binding Validation'
+    scenario: 'Settings UI hides file path and bind commands in both content and tab menus'
     preconditions:
-      - 'Extension installed'
-      - 'Text selected'
+      - 'No destination is bound'
     steps:
-      - 'Open Command Palette'
-      - "Type 'Send Portable Link'"
-      - "Verify 'RangeLink: Send Portable Link' appears"
-    expected_result: "'RangeLink: Send Portable Link' appears and executes correctly."
-    automated: false
+      - 'Press Cmd+, to open the Settings UI'
+      - 'Right-click anywhere in the Settings editor content area'
+      - 'Right-click the Settings TAB at the top of the editor area'
+      - 'Press Cmd+R Cmd+D and scan the destination picker; press Escape to dismiss'
+    expected_result: 'No "RangeLink: Bind Here" in the content menu. No "Send File Path" or "Send Relative File Path" in the tab menu. Settings UI does not appear as a bindable destination in the R-D picker.'
+    automated: assisted
 
-  - id: changed-two-verb-vocabulary-004
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Send Selected Text in Command Palette'
+  - id: editor-binding-validation-004
+    feature: 'Editor Binding Validation'
+    scenario: 'Binary .png file is excluded from the R-D destination picker even when open'
     preconditions:
-      - 'Extension installed'
-      - 'Text selected'
+      - 'A binary .png file is open in column 2 and a plain .txt file is open in column 1'
     steps:
-      - 'Open Command Palette'
-      - "Type 'Send Selected Text'"
-      - "Verify 'RangeLink: Send Selected Text' appears"
-    expected_result: "'RangeLink: Send Selected Text' appears and sends the raw text."
-    automated: false
+      - 'Press Cmd+R Cmd+D to open the destination picker'
+      - 'Confirm the .txt file IS listed (positive control)'
+      - 'Confirm the .png file is NOT listed'
+      - 'Press Escape to dismiss'
+    expected_result: 'The .png file does not appear in the picker despite being open. The .txt file does appear. The isBinaryFile filter in the R-D picker is the upstream defense; runtime rejection in PasteDestinationManager.bindTextEditor is a defense-in-depth layer covered by unit tests.'
+    automated: assisted
 
-  - id: changed-two-verb-vocabulary-005
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Copy RangeLink in Command Palette is clipboard-only (never opens picker)'
+  - id: editor-binding-validation-005
+    feature: 'Editor Binding Validation'
+    scenario: 'Search editor TAB hides file path commands in the tab context menu'
     preconditions:
-      - 'No destination bound'
+      - 'No destination is bound'
     steps:
-      - 'Select text in any file'
-      - 'Press Cmd+R Cmd+C (or use Copy RangeLink in Command Palette)'
-      - 'Observe — no picker should appear'
-      - 'Press Cmd+V'
-    expected_result: 'Clipboard contains the RangeLink. No destination picker appeared. R-C is unconditionally clipboard-only.'
-    automated: false
-
-  - id: changed-two-verb-vocabulary-006
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Copy RangeLink (Absolute) in Command Palette'
-    preconditions:
-      - 'Extension installed'
-    steps:
-      - 'Open Command Palette'
-      - "Type 'Copy RangeLink Absolute'"
-      - "Verify 'RangeLink: Copy RangeLink (Absolute)' appears"
-    expected_result: "'RangeLink: Copy RangeLink (Absolute)' appears and copies the absolute-path variant to clipboard only."
-    automated: false
-
-  - id: changed-two-verb-vocabulary-007
-    feature: 'Changed — Two-Verb Vocabulary'
-    scenario: 'RangeLink: Send Current File Path in Command Palette'
-    preconditions:
-      - 'Extension installed'
-      - 'File open in editor'
-    steps:
-      - 'Open Command Palette'
-      - "Type 'Send Current File Path'"
-      - "Verify 'RangeLink: Send Current File Path' appears"
-    expected_result: "'RangeLink: Send Current File Path' appears and sends the current file's path to the bound destination."
-    automated: false
-
-  - id: changed-picker-when-unbound-001
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'R-L with no bound destination opens destination picker (no silent clipboard fallback)'
-    preconditions:
-      - 'No destination bound'
-    steps:
-      - 'Select text in a file'
-      - 'Press Cmd+R Cmd+L'
-      - 'Observe — destination picker should appear'
-    expected_result: 'Destination picker opens. Selecting a destination binds it and sends the RangeLink. Escape dismisses silently with no clipboard write.'
-    automated: false
-
-  - id: changed-picker-when-unbound-002
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Send Portable Link with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-      - 'Text selected in an editor'
-    steps:
-      - 'Open Command Palette'
-      - "Select 'RangeLink: Send Portable Link'"
-      - 'Observe — destination picker should appear'
-    expected_result: 'Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.'
-    automated: false
-
-  - id: changed-picker-when-unbound-003
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Jump to Bound Destination with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-    steps:
-      - 'Open R-M menu or Command Palette'
-      - "Select 'Jump to Bound Destination' (or equivalent bind-and-jump item)"
-    expected_result: 'Destination picker opens so the user can bind a destination first.'
-    automated: false
-
-  - id: changed-picker-when-unbound-004
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Send Selected Text with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-      - 'Text selected in editor'
-    steps:
-      - 'Select text'
-      - "Open Command Palette, select 'RangeLink: Send Selected Text'"
-    expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-001
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Binding a text editor in a single tab group (no split) succeeds'
-    preconditions:
-      - 'Only one tab group open (no editor split)'
-      - 'Multiple files open in that one group'
-    steps:
-      - 'Press Cmd+R Cmd+D'
-      - 'Select any open file from the list'
-    expected_result: 'The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-002
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Self-paste: pasting R-L to the same file copies to clipboard and shows info message'
-    preconditions:
-      - 'src/utils/helper.ts open'
-      - 'That same file bound as the text editor destination'
-    steps:
-      - 'With bound file focused, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L'
-      - 'Observe notifications and file content'
-    expected_result: 'Info notification appears about cannot paste to same file. File not modified. Clipboard contains RangeLink.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-003
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Self-paste info message for R-L suggests using R-C as alternative'
-    preconditions:
-      - 'Same file bound as destination (same as changed-text-editor-no-split-required-002)'
-    steps:
-      - 'With bound file focused, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L'
-      - 'Read the notification text'
-    expected_result: 'Notification message specifically mentions R-C (Copy RangeLink) as an alternative for clipboard-only links.'
-    automated: false
-
-  - id: changed-editor-binding-validation-001
-    feature: 'Changed — Editor Binding Validation'
-    scenario: 'Binding a git diff view shows clear rejection: Cannot bind to read-only editor (git)'
-    preconditions:
-      - 'A git diff view is open in VS Code'
-    steps:
-      - 'Focus the git diff editor'
-      - "Press Cmd+R Cmd+D and select the diff view, or right-click → 'RangeLink: Bind Here'"
-    expected_result: "A clear rejection message appears (e.g., 'Cannot bind to read-only editor'). The git diff view is not bound."
-    automated: false
-
-  - id: changed-editor-binding-validation-002
-    feature: 'Changed — Editor Binding Validation'
-    scenario: 'Binding an output panel shows clear rejection message'
-    preconditions:
-      - 'An Output panel is open (e.g., Extension Host output)'
-    steps:
-      - 'Focus the output panel'
-      - "Press Cmd+R Cmd+D and select the output panel, or use 'Bind Here' context menu"
-    expected_result: 'Clear rejection message. Output panel is not bound.'
-    automated: false
-
-  - id: changed-editor-binding-validation-003
-    feature: 'Changed — Editor Binding Validation'
-    scenario: 'Binding the Settings UI shows clear rejection message'
-    preconditions:
-      - 'VS Code Settings (Cmd+,) is open'
-    steps:
-      - 'Focus the Settings editor'
-      - "Try to bind via Cmd+R Cmd+D or context menu 'Bind Here'"
-    expected_result: 'Clear rejection message. Settings UI is not bound.'
-    automated: false
-
-  - id: changed-editor-binding-validation-004
-    feature: 'Changed — Editor Binding Validation'
-    scenario: 'Binding a binary file shows: Cannot bind to [file] - binary file'
-    preconditions:
-      - 'A binary file (e.g., a .png image) is open in VS Code'
-    steps:
-      - 'Press Cmd+R Cmd+D'
-      - 'Select the binary file from the picker'
-    expected_result: "Rejection message: 'Cannot bind to [filename] - binary file' (or equivalent). File is not bound."
-    automated: false
+      - 'Press Cmd+Shift+P → run "Open New Search Editor"'
+      - 'Right-click the search editor TAB at the top of the editor area (not the content)'
+      - 'Inspect the context menu for RangeLink file path items'
+    expected_result: 'No "Send File Path" or "Send Relative File Path" appears. "Unbind" is acceptable. The when-clause on editorTab.pasteFilePath and editorTab.pasteRelativeFilePath restricts them to resourceScheme == file || resourceScheme == untitled.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 13 — Bug Fix Regressions
   # ---------------------------------------------------------------------------
 
-  - id: bugfix-full-line-navigation-001
-    feature: 'Bug Fix — Full-Line Navigation'
+  - id: full-line-navigation-001
+    feature: 'Link Navigation — Full-Line Selection'
     scenario: '#L10 navigates and selects the entire line (not just the first character)'
     preconditions:
       - 'src/utils/helper.ts exists and is readable'
@@ -1627,8 +1922,8 @@ test_cases:
     expected_result: 'Line 10 is selected in its entirety (from column 0 to end of line). The cursor is not placed at just the first character.'
     automated: true
 
-  - id: bugfix-full-line-navigation-002
-    feature: 'Bug Fix — Full-Line Navigation'
+  - id: full-line-navigation-002
+    feature: 'Link Navigation — Full-Line Selection'
     scenario: '#L10-L15 selects from the start of line 10 to the end of line 15'
     preconditions:
       - 'src/utils/helper.ts with 15+ lines'
@@ -1639,8 +1934,28 @@ test_cases:
     expected_result: 'Lines 10 through 15 are selected. The selection spans all six lines fully.'
     automated: true
 
-  - id: bugfix-full-line-link-generation-001
-    feature: 'Bug Fix — Full-Line Link Generation'
+  - id: char-navigation-001
+    feature: 'Link Navigation — Character-Level Precision'
+    scenario: '#L10C5 navigates to cursor position at line 10, column 5'
+    preconditions:
+      - 'File with 10+ lines, each 20+ characters'
+    steps:
+      - 'Navigate to a link targeting file.ts#L10C5'
+    expected_result: 'Cursor is placed at line 10, column 5 (0-indexed: line 9, char 4). Selection extends 1 character for visibility.'
+    automated: true
+
+  - id: char-navigation-002
+    feature: 'Link Navigation — Character-Level Precision'
+    scenario: '#L10C5-L15C10 navigates to character-level range'
+    preconditions:
+      - 'File with 15+ lines, each 20+ characters'
+    steps:
+      - 'Navigate to a link targeting file.ts#L10C5-L15C10'
+    expected_result: 'Selection spans from line 10 col 5 to line 15 col 10 (0-indexed: anchor at 9:4, active at 14:9).'
+    automated: true
+
+  - id: full-line-link-generation-001
+    feature: 'Link Generation — Full-Line'
     scenario: 'Selecting a line including its trailing newline generates #L20 (not #L20-L21)'
     preconditions:
       - 'File with 20+ lines'
@@ -1652,8 +1967,8 @@ test_cases:
     expected_result: 'The generated link is src/utils/helper.ts#L20 (single-line reference). NOT #L20-L21. The trailing newline is excluded.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-001
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-001
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Backtick-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1665,8 +1980,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 5-10. Backtick wrapping did not prevent link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-002
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-002
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Single-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1676,8 +1991,8 @@ test_cases:
     expected_result: 'Navigates to line 5 of the file. Single quotes did not break link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-003
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-003
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Double-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1687,8 +2002,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Double quotes did not break link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-004
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-004
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Angle-bracket-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1698,8 +2013,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Angle brackets did not break link detection.'
     automated: true
 
-  - id: bugfix-markdown-link-navigation-001
-    feature: 'Bug Fix — Markdown Link Navigation'
+  - id: markdown-link-navigation-001
+    feature: 'Link Navigation — Markdown Syntax'
     scenario: 'Markdown link [label](path/to/file.ts#L10) in a document is clickable and navigates correctly'
     preconditions:
       - 'A Markdown (.md) file is open in the editor'
@@ -1710,8 +2025,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and navigates to line 10. The [label](path#L10) syntax is recognized as a RangeLink document link.'
     automated: true
 
-  - id: bugfix-url-exclusion-001
-    feature: 'Bug Fix — URL Exclusion'
+  - id: url-exclusion-001
+    feature: 'Link Navigation — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in terminal is NOT captured as a RangeLink'
     preconditions:
       - 'Terminal open'
@@ -1721,8 +2036,8 @@ test_cases:
     expected_result: 'RangeLink does NOT intercept the URL. No navigation to a local file occurs. The https:// prefix is correctly excluded.'
     automated: true
 
-  - id: bugfix-url-exclusion-002
-    feature: 'Bug Fix — URL Exclusion'
+  - id: url-exclusion-002
+    feature: 'Link Navigation — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in a document is NOT captured as a RangeLink'
     preconditions:
       - 'A Markdown or text file open in the editor'
@@ -1730,10 +2045,10 @@ test_cases:
       - 'Add the text: https://example.com/path/file.ts#L10'
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
-    automated: true
+    automated: assisted
 
-  - id: bugfix-stale-viewcolumn-001
-    feature: 'Bug Fix — Stale viewColumn'
+  - id: stale-viewcolumn-001
+    feature: 'Text Editor Destination — Stale viewColumn'
     scenario: 'Moving bound editor between tab groups — subsequent paste targets the correct new group'
     preconditions:
       - 'src/utils/helper.ts is bound as destination and is in tab group 1'
@@ -1743,22 +2058,40 @@ test_cases:
       - 'Select text in another file'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'The RangeLink is inserted into src/utils/helper.ts in tab group 2. Paste did not fail due to stale tab group reference.'
-    automated: false
+    automated: true
 
-  - id: bugfix-hidden-tab-paste-001
-    feature: 'Bug Fix — Hidden Tab Paste'
-    scenario: 'Bound editor hidden behind other tabs — paste succeeds and brings the tab to foreground'
+  - id: hidden-tab-paste-001
+    labels:
+      - clipboard
+    feature: 'Text Editor Destination — Hidden Tab Paste'
+    scenario: 'Bound editor hidden behind other tabs — R-L paste succeeds and brings the tab to foreground'
     preconditions:
-      - 'src/utils/helper.ts is bound as destination but is not the frontmost tab in its group'
+      - 'Bound text editor is not the frontmost tab in its group'
+      - 'Source file open in same column with text selected'
     steps:
-      - 'Open several files in the same tab group as src/utils/helper.ts so it is not visible'
-      - 'Select text in any other file'
-      - 'Press Cmd+R Cmd+L'
-    expected_result: 'The paste succeeds. src/utils/helper.ts comes to the foreground (tab is activated). RangeLink inserted. No error about hidden or inactive tab.'
-    automated: false
+      - 'With bound editor hidden behind source file in same column, press Cmd+R Cmd+L'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm RangeLink appears in bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the RangeLink. No error about hidden or inactive tab.'
+    automated: assisted
 
-  - id: bugfix-document-link-tooltip-001
-    feature: 'Bug Fix — Document Link Tooltip'
+  - id: hidden-tab-paste-002
+    labels:
+      - clipboard
+    feature: 'Text Editor Destination — Hidden Tab Paste'
+    scenario: 'Bound editor hidden behind other tabs — R-V paste succeeds and brings the tab to foreground'
+    preconditions:
+      - 'Bound text editor is not the frontmost tab in its group'
+      - 'Source file open in same column with text selected'
+    steps:
+      - 'With bound editor hidden behind source file in same column, press Cmd+R Cmd+V'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm selected text appears in bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the selected text. No error about hidden or inactive tab.'
+    automated: assisted
+
+  - id: document-link-tooltip-001
+    feature: 'Clickable Links — Document Link Tooltip'
     scenario: 'Hovering over a clickable document link shows clean tooltip (not raw JSON or command URI)'
     preconditions:
       - 'A Markdown file with a RangeLink document link: [See code](src/utils/helper.ts#L5)'
@@ -1766,10 +2099,10 @@ test_cases:
       - 'Hover over the link in the editor'
       - 'Observe the tooltip that appears'
     expected_result: 'The tooltip shows clean human-readable text (e.g., file path and line number). It does NOT show raw JSON, a command: URI, or internal command parameters.'
-    automated: false
+    automated: assisted
 
-  - id: bugfix-full-line-selection-validation-001
-    feature: 'Bug Fix — Full-Line Selection Validation'
+  - id: full-line-selection-validation-001
+    feature: 'Link Generation — Full-Line Selection Validation'
     scenario: 'Using Ctrl+L (select full line) then R-L generates link without SELECTION_ZERO_WIDTH error'
     preconditions:
       - 'Terminal or file destination bound'
@@ -1778,17 +2111,18 @@ test_cases:
       - 'Press Cmd+L (Mac) / Ctrl+L (Win/Linux) to select the full line'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'A valid RangeLink is generated and sent. No SELECTION_ZERO_WIDTH error notification appears.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 14 — Core Send Commands (R-L, R-C)
   # ---------------------------------------------------------------------------
 
   - id: core-send-commands-r-l-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L (Cmd+R Cmd+L) sends RangeLink to bound terminal destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Workspace open with a TypeScript file containing 10+ lines'
       - 'Terminal open and bound as destination'
     steps:
@@ -1797,13 +2131,14 @@ test_cases:
       - 'Observe terminal output'
       - 'Observe VS Code status bar or notification'
     expected_result: 'Terminal receives workspace-relative RangeLink (e.g. src/utils/helper.ts#L2-L5). Success toast appears.'
-    automated: false
+    automated: true
 
   - id: core-send-commands-r-l-002
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound text editor destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Two files open (file A and file B)'
       - 'File B bound as text editor destination, cursor positioned in file B'
     steps:
@@ -1811,13 +2146,14 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe file B'
     expected_result: 'RangeLink text inserted at cursor in file B. Success toast confirms send.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-l-003
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound AI assistant destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Claude Code or GitHub Copilot Chat extension installed, active, and bound'
       - 'AI chat panel open'
     steps:
@@ -1825,13 +2161,14 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe AI chat input area'
     expected_result: 'RangeLink appears in AI chat input. Success toast confirms send.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-c-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-C'
     scenario: 'R-C (Cmd+R Cmd+C) copies RangeLink to clipboard and does NOT send to destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Terminal open and bound (to verify it does NOT receive anything)'
     steps:
       - 'Select 3 lines in any file'
@@ -1839,26 +2176,30 @@ test_cases:
       - 'Observe terminal — nothing should arrive'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains the RangeLink. Terminal received nothing. No destination picker shown.'
-    automated: false
+    automated: true
 
   - id: core-send-commands-r-l-004
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'RangeLink: Send RangeLink in Command Palette behaves identically to R-L keybinding'
     preconditions:
-      - 'Extension installed, terminal bound'
+      - 'Terminal bound'
     steps:
       - 'Select text in a file'
       - 'Open Command Palette (Cmd+Shift+P)'
       - 'Type Send RangeLink and press Enter on RangeLink: Send RangeLink'
       - 'Observe terminal'
     expected_result: 'Terminal receives the RangeLink. Identical to R-L keybinding.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-c-002
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-C'
     scenario: 'RangeLink: Copy RangeLink in Command Palette behaves identically to R-C keybinding'
     preconditions:
-      - 'Extension installed, terminal bound'
+      - 'Terminal bound'
     steps:
       - 'Select text in a file'
       - 'Open Command Palette (Cmd+Shift+P)'
@@ -1866,7 +2207,72 @@ test_cases:
       - 'Observe terminal — nothing should arrive'
       - 'Press Cmd+V in any text field'
     expected_result: 'Terminal received nothing. Clipboard contains the RangeLink.'
-    automated: false
+    automated: assisted
+
+  - id: core-send-commands-r-l-005
+    labels:
+      - clipboard
+    feature: 'Core Send Commands — R-L'
+    scenario: 'R-L with no bound destination opens destination picker (not silent clipboard fallback)'
+    preconditions:
+      - 'No destination bound'
+    steps:
+      - 'Confirm no destination is bound'
+      - 'Select text in a file'
+      - 'Press Cmd+R Cmd+L'
+      - 'Observe — destination picker should appear'
+    expected_result: 'Destination picker opens. Selecting a destination binds it and sends the RangeLink. Escape dismisses silently with no clipboard write.'
+    automated: assisted
+
+  - id: core-send-commands-r-p-001
+    labels:
+      - clipboard
+    feature: 'Core Send Commands — R-P'
+    scenario: 'R-P (Send Portable Link) with no bound destination opens destination picker'
+    preconditions:
+      - 'No destination bound'
+      - 'Text selected in an editor'
+    steps:
+      - 'Confirm no destination is bound'
+      - 'Open Command Palette'
+      - "Select 'RangeLink: Send Portable Link'"
+      - 'Observe — destination picker should appear'
+    expected_result: 'Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.'
+    automated: assisted
+
+  - id: core-send-commands-r-v-001
+    labels:
+      - clipboard
+    feature: 'Core Send Commands — R-V'
+    scenario: 'R-V (Send Selected Text, editor) with no bound destination opens destination picker'
+    preconditions:
+      - 'No destination bound'
+      - 'Text selected in editor'
+    steps:
+      - 'Confirm no destination is bound'
+      - 'Select text'
+      - "Open Command Palette, select 'RangeLink: Send Selected Text'"
+    expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'
+    automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Destination
+  # ---------------------------------------------------------------------------
+
+  - id: text-editor-destination-001
+    labels:
+      - clipboard
+    feature: 'Text Editor Destination'
+    scenario: 'Self-paste: R-L to the same file that is bound as destination copies link to clipboard and shows info message'
+    preconditions:
+      - 'A file is open in the editor'
+      - 'That same file is bound as the text editor destination'
+    steps:
+      - 'With the bound file focused, select 2-3 lines'
+      - 'Press Cmd+R Cmd+L'
+      - 'Observe notifications and file content'
+    expected_result: 'Info notification appears: "RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links." File is not modified. Clipboard contains the RangeLink.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section — Clickable File Paths (issues/253)
@@ -1875,8 +2281,6 @@ test_cases:
   - id: clickable-file-paths-001
     feature: 'Clickable File Paths'
     scenario: 'Absolute path (/path/to/file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern(DEFAULT_DELIMITERS).exec on text containing /path/to/file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields /path/to/file.ts'
@@ -1885,8 +2289,6 @@ test_cases:
   - id: clickable-file-paths-002
     feature: 'Clickable File Paths'
     scenario: 'Relative path (./file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ./file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ./file.ts'
@@ -1895,8 +2297,6 @@ test_cases:
   - id: clickable-file-paths-003
     feature: 'Clickable File Paths'
     scenario: 'Parent-relative path (../dir/file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ../dir/file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ../dir/file.ts'
@@ -1905,8 +2305,6 @@ test_cases:
   - id: clickable-file-paths-004
     feature: 'Clickable File Paths'
     scenario: 'Tilde home path (~/projects/app.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ~/projects/app.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ~/projects/app.ts'
@@ -1915,8 +2313,6 @@ test_cases:
   - id: clickable-file-paths-005
     feature: 'Clickable File Paths'
     scenario: 'Double-quoted path with spaces is detected and quotes are stripped'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing "/path/with spaces/file.ts"'
     expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/with spaces/file.ts'
@@ -1925,8 +2321,6 @@ test_cases:
   - id: clickable-file-paths-006
     feature: 'Clickable File Paths'
     scenario: 'Single-quoted path is detected and quotes are stripped'
-    preconditions:
-      - 'Extension installed'
     steps:
       - "Call buildFilePathPattern on text containing '/path/to/file.ts'"
     expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/to/file.ts'
@@ -1935,8 +2329,6 @@ test_cases:
   - id: clickable-file-paths-007
     feature: 'Clickable File Paths'
     scenario: 'HTTP URL is NOT detected as a file path (false-positive guard)'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing https://github.com/foo/bar.ts'
     expected_result: 'Pattern returns zero matches — URL is excluded'
@@ -1945,8 +2337,6 @@ test_cases:
   - id: clickable-file-paths-008
     feature: 'Clickable File Paths'
     scenario: 'RangeLink path (src/foo.ts#L5) is NOT detected as a plain file path (coexistence guard)'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing src/foo.ts#L5'
     expected_result: 'Pattern returns zero matches — the #L suffix blocks the file path match so RangeLinkDocumentProvider handles it without overlap'
@@ -1955,8 +2345,6 @@ test_cases:
   - id: clickable-file-paths-009
     feature: 'Clickable File Paths'
     scenario: "ORM-style string ('User') without a path separator is NOT detected"
-    preconditions:
-      - 'Extension installed'
     steps:
       - "Call buildFilePathPattern on text containing 'User'"
     expected_result: 'Pattern returns zero matches — single-quoted string without a path separator is excluded'
@@ -1966,7 +2354,6 @@ test_cases:
     feature: 'Clickable File Paths'
     scenario: 'rangelink.handleFilePathClick opens a real workspace file in the active editor'
     preconditions:
-      - 'Extension installed and activated'
       - 'A workspace is open'
     steps:
       - 'Create a temp .ts file in the workspace root'
@@ -1980,10 +2367,715 @@ test_cases:
     feature: 'Clickable File Paths'
     scenario: 'rangelink.handleFilePathClick shows a warning for a non-existent file path'
     preconditions:
-      - 'Extension installed and activated'
       - 'A workspace is open'
     steps:
       - 'Execute rangelink.handleFilePathClick with an absolute path that does not exist on the current OS'
       - 'Observe VS Code notification area'
     expected_result: 'A warning notification appears (e.g., "Cannot open file: <path>"). No error is thrown; active editor is unchanged.'
-    automated: false
+    automated: true
+
+  - id: clickable-file-paths-012
+    feature: 'Clickable File Paths'
+    scenario: 'Custom delimiter config respected — file path with custom delimiter suffix defers to RangeLink instead of matching as plain file path'
+    preconditions:
+      - 'Setting rangelink.delimiter.line set to a custom value (e.g., @l)'
+      - 'Terminal or editor contains a path like ./src/file.ts@l10'
+    steps:
+      - 'Hover over ./src/file.ts@l10 in the terminal or editor'
+    expected_result: 'The path is detected as a RangeLink (not as a plain file path). Clicking navigates to line 10 via RangeLink, not to the file root via file path provider.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Smart Padding
+  # ---------------------------------------------------------------------------
+
+  - id: smart-padding-001
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
+      - 'Press R-V or use Send Selected Text to send it to the bound editor destination'
+    expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
+    automated: true
+
+  - id: smart-padding-002
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'Simple text with pasteContent=both adds leading and trailing space'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "both"'
+    steps:
+      - 'Select text (e.g., "hello world") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello world " — a leading space and trailing space are added by smart padding.'
+    automated: true
+
+  - id: smart-padding-003
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'Multiline selection sent to editor destination'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select multiple lines in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'All selected lines arrive at the destination intact with no padding (pasteContent=none).'
+    automated: true
+
+  - id: smart-padding-004
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=none sends exact text without padding'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select text in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives the exact selected text with no added spaces.'
+    automated: true
+
+  - id: smart-padding-005
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=before adds leading space only'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "before"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello" — only a leading space is added.'
+    automated: true
+
+  - id: smart-padding-006
+    labels:
+      - clipboard
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=after adds trailing space only'
+    preconditions:
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "after"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives "hello " — only a trailing space is added.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Destination: Multi-Group Guard (#315)
+  # ---------------------------------------------------------------------------
+
+  - id: duplicate-tab-group-001
+    feature: 'Text Editor Destination — Multi-Group Guard (Proactive Warning)'
+    scenario: 'Proactive warning toast appears when bound file is opened in a second editor group'
+    preconditions:
+      - 'src/utils/helper.ts is bound as a text editor destination (visible in tab group 1)'
+    steps:
+      - 'Drag the src/utils/helper.ts tab to a second tab group (or right-click the tab → Split Right/Down)'
+      - 'Observe the notification area immediately after the split'
+    expected_result: 'A warning toast appears: "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
+    automated: true
+
+  - id: duplicate-tab-group-002
+    feature: 'Text Editor Destination — Multi-Group Guard (No Re-warn)'
+    scenario: 'Warning is not repeated when the duplicate state is already active'
+    preconditions:
+      - 'src/utils/helper.ts is bound as a text editor destination'
+      - 'The file is already open in two tab groups (duplicate state is active — warning was shown once)'
+    steps:
+      - 'Open src/utils/helper.ts in a third tab group (or trigger another tab change that keeps 2+ instances visible)'
+      - 'Observe the notification area'
+    expected_result: 'No second warning toast appears. The warning is shown only once per entry into the duplicate state, not on every subsequent tab change while duplicates exist.'
+    automated: true
+
+  - id: duplicate-tab-group-003
+    feature: 'Text Editor Destination — Multi-Group Guard (Reactive Paste Error)'
+    scenario: 'Paste is blocked with a clear error message when bound file is open in multiple tab groups'
+    preconditions:
+      - 'src/utils/helper.ts is bound as a text editor destination'
+      - 'The file is visible in two tab groups simultaneously'
+    steps:
+      - 'Select any text in a different file'
+      - 'Press Cmd+R Cmd+L (or any bound-destination send command: R-V, R-L, Send File Path)'
+    expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
+    automated: true
+
+  - id: duplicate-tab-group-004
+    feature: 'Text Editor Destination — Multi-Group Guard (State Clears on Resolve)'
+    scenario: 'Duplicate warning state resets when the conflict is resolved — a new duplicate triggers a fresh warning'
+    preconditions:
+      - 'src/utils/helper.ts is bound as a text editor destination'
+      - 'The file is currently open in two tab groups (proactive warning was already shown once)'
+    steps:
+      - 'Close the duplicate tab (leave only one instance of src/utils/helper.ts open)'
+      - 'Observe the notification area — no toast should appear'
+      - 'Open src/utils/helper.ts again in a second tab group (re-enter the duplicate state)'
+      - 'Observe the notification area again'
+    expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Destination: Language-Mode Binding Resilience (#472)
+  # ---------------------------------------------------------------------------
+
+  - id: langswitch-binding-001
+    feature: 'Text Editor Destination — Language-Mode Resilience'
+    scenario: 'Binding survives manual language-mode change on untitled file'
+    preconditions:
+      - 'An untitled file is open in ViewColumn.Two and bound as a text editor destination'
+    steps:
+      - 'Change the untitled file language mode to Markdown (via status bar or setTextDocumentLanguage)'
+      - 'Switch to the source file in ViewColumn.One, select text'
+      - 'Press R-V to send selected text to the bound destination'
+    expected_result: 'The selected text arrives in the untitled file. The binding was preserved across the language-mode change — no re-bind required.'
+    automated: true
+
+  - id: langswitch-binding-002
+    feature: 'Text Editor Destination — Language-Mode Resilience'
+    scenario: 'Binding survives language change after content insertion'
+    preconditions:
+      - 'An untitled file (plaintext) is open in ViewColumn.Two and bound as a text editor destination'
+    steps:
+      - 'Insert markdown-style content (e.g., triple backticks with code) into the untitled file'
+      - 'Trigger language detection (manual or via setTextDocumentLanguage to markdown)'
+      - 'Switch to the source file in ViewColumn.One, select text'
+      - 'Press R-V to send selected text to the bound destination'
+    expected_result: 'The selected text arrives in the untitled file alongside the markdown content. The binding was preserved despite the language change triggered by content insertion.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Navigation Clamping Feedback (#47)
+  # ---------------------------------------------------------------------------
+
+  - id: navigation-clamping-001
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to line beyond end of file — cursor lands at last line'
+    preconditions:
+      - 'A file with a known number of lines exists in the workspace (e.g., src/utils/helper.ts with 45 lines)'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L200'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the last line of the file (line 45), not line 200. A warning toast is shown indicating that the position was clamped.'
+    automated: true
+
+  - id: navigation-clamping-002
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to column beyond line length — cursor lands at end of line'
+    preconditions:
+      - 'A file exists in the workspace with lines shorter than 200 characters'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L1C200'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the end of line 1 (clamped to line length), not column 200. A warning toast is shown indicating that the column was clamped.'
+    automated: true
+
+  - id: navigation-clamping-003
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to valid position — cursor lands exactly, info toast shown'
+    preconditions:
+      - 'A file with 10+ lines exists in the workspace'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L5C10'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at exactly line 5, column 10. An info toast is shown (not a warning).'
+    automated: true
+
+  - id: navigation-clamping-004
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate with both line and column beyond bounds — both axes clamped'
+    preconditions:
+      - 'A file with a known number of lines and short lines exists in the workspace'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L200C500'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the last line, last column (both axes clamped). A warning toast is shown indicating both line and column were clamped.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Untitled File Navigation (Issue #101)
+  # ---------------------------------------------------------------------------
+
+  - id: untitled-navigation-001
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to single line in open untitled file'
+    preconditions:
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L5'
+      - 'Click the RangeLink (or use Cmd+R Cmd+G / Ctrl+R Ctrl+G and type Untitled-1#L5)'
+    expected_result: 'The untitled file becomes active and line 5 is fully selected (anchor at start, active at end of line).'
+    automated: true
+
+  - id: untitled-navigation-002
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to line range in open untitled file'
+    preconditions:
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L3-L7'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active with lines 3 through 7 selected (anchor at start of line 3, active at end of line 7).'
+    automated: true
+
+  - id: untitled-navigation-003
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to untitled file that is not currently open shows file-not-found warning'
+    preconditions:
+      - 'No untitled files are open'
+    steps:
+      - 'Use Cmd+R Cmd+G (or Ctrl+R Ctrl+G) and type Untitled-99#L1'
+      - 'Press Enter'
+    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: Untitled-99". No file opens.'
+    automated: true
+
+  - id: untitled-navigation-004
+    feature: 'Untitled File Navigation'
+    scenario: 'Character-precision navigation in open untitled file'
+    preconditions:
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'Create a RangeLink referencing the untitled file with character precision: Untitled-1#L5C10-L5C20'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active with characters 10-20 on line 5 selected (not full line). An info toast confirms navigation.'
+    automated: true
+
+  - id: untitled-navigation-005
+    feature: 'Untitled File Navigation'
+    scenario: 'Line clamping when navigating beyond end of untitled file'
+    preconditions:
+      - 'An untitled file is open with 15 lines of content'
+    steps:
+      - 'Create a RangeLink referencing line 50 of the untitled file: Untitled-1#L50'
+      - 'Click the RangeLink'
+    expected_result: 'The cursor is clamped to the last line of the untitled file. A warning toast indicates line exceeded file length.'
+    automated: true
+
+  - id: untitled-navigation-006
+    feature: 'Untitled File Navigation'
+    scenario: 'Case-insensitive untitled-name matching'
+    preconditions:
+      - 'An untitled file named "Untitled-1" (or locale equivalent) is open with at least 10 lines'
+    steps:
+      - 'Create a RangeLink using a differently-cased name: untitled-1#L5 (all lowercase)'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active and line 5 is fully selected. An info toast confirms navigation despite the case mismatch.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Navigation Toast Settings (Issue #54)
+  # ---------------------------------------------------------------------------
+
+  - id: navigation-toast-settings-001
+    feature: 'Navigation Toast Settings'
+    scenario: 'showNavigatedToast=false suppresses info toast after successful navigation'
+    preconditions:
+      - 'A file with at least 10 lines exists in the workspace'
+    steps:
+      - 'Set rangelink.navigation.showNavigatedToast to false in workspace settings'
+      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L5)'
+    expected_result: 'Navigation succeeds (cursor moves to line 5) but no info toast is shown. The navigation is silent.'
+    automated: true
+
+  - id: navigation-toast-settings-002
+    feature: 'Navigation Toast Settings'
+    scenario: 'showClampingWarning=false suppresses clamping warning toast'
+    preconditions:
+      - 'A file with 10 lines exists in the workspace'
+    steps:
+      - 'Set rangelink.navigation.showClampingWarning to false in workspace settings'
+      - 'Click a RangeLink pointing beyond end of file (e.g., file.ts#L50)'
+    expected_result: 'Navigation succeeds (cursor clamped to last line) but no clamping warning toast is shown.'
+    automated: true
+
+  - id: navigation-toast-settings-003
+    feature: 'Navigation Toast Settings'
+    scenario: 'Default settings show info toast after successful navigation'
+    preconditions:
+      - 'A file with at least 10 lines exists in the workspace'
+      - 'Navigation toast settings are at their defaults (both true)'
+    steps:
+      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L3)'
+    expected_result: 'Navigation succeeds and an info toast is shown: "RangeLink: Navigated to file.ts @ 3".'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Filename-Only Navigation Fallback (Issue #342)
+  # ---------------------------------------------------------------------------
+
+  - id: filename-fallback-navigation-001
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with unique match navigates to correct file and line'
+    preconditions:
+      - 'A file with a unique name exists somewhere in the workspace (e.g., uniqueTestFile.ts)'
+    steps:
+      - 'Click a RangeLink using only the filename without a directory path (e.g., uniqueTestFile.ts#L5)'
+    expected_result: 'Navigation succeeds — the file opens and line 5 is fully selected, same as if the full relative path had been provided.'
+    automated: true
+
+  - id: filename-fallback-navigation-002
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with multiple matches shows ambiguity warning'
+    preconditions:
+      - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
+    steps:
+      - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
+    expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
+    automated: true
+
+  - id: filename-fallback-navigation-003
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with no matches shows file-not-found warning'
+    preconditions:
+      - 'No file named nonexistent-file.ts exists in the workspace'
+    steps:
+      - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
+    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: nonexistent-file.ts". No navigation occurs.'
+    automated: true
+
+  - id: filename-fallback-navigation-004
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Path with directory separators uses standard resolution, not fallback'
+    preconditions:
+      - 'A file exists at a known relative path in the workspace'
+    steps:
+      - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
+    expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Custom AI Assistants
+  # ---------------------------------------------------------------------------
+
+  - id: custom-ai-assistant-001
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Three-tier config with dummy AI extension is parsed and logged at activation'
+    preconditions:
+      - 'settings.json contains 3 custom AI assistant entries (one per tier) using dummy extension commands'
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
+    steps:
+      - 'Extension activates with custom AI assistants configured'
+      - 'Check output logs'
+    expected_result: 'Log shows "Loaded 3 custom AI assistant(s)" with all three extensionIds'
+    automated: true
+
+  - id: custom-ai-assistant-002
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Registration'
+    scenario: 'All three tier entries registered as destination kinds'
+    preconditions:
+      - 'settings.json contains 3 custom AI assistant entries (one per tier)'
+    steps:
+      - 'Extension activates'
+      - 'Check registration logs'
+    expected_result: 'Log shows 3 custom-ai: destination registrations — one for each tier entry'
+    automated: true
+
+  - id: custom-ai-assistant-003
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Custom AI assistant appears in the R-D destination picker with configured display name'
+    preconditions:
+      - 'A real AI extension installed with known focus commands'
+      - 'settings.json configures it as a custom AI assistant'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe the picker items'
+    expected_result: 'The custom AI assistant appears in the picker with its configured extensionName, after the built-in destinations'
+    automated: assisted
+
+  - id: custom-ai-assistant-004
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Command Detection'
+    scenario: 'Dummy extension insertText command is detectable by the availability system'
+    preconditions:
+      - 'Dummy AI extension loaded with dummyAi.insertText command'
+    steps:
+      - 'Query registered commands'
+    expected_result: 'dummyAi.insertText is present in the registered commands list'
+    automated: true
+
+  - id: custom-ai-assistant-005
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Availability'
+    scenario: 'Tier 1 entry availability checked when insertCommand is registered'
+    preconditions:
+      - 'Custom AI assistant configured with insertCommands pointing to dummy extension command'
+      - 'Dummy AI extension loaded and active'
+    steps:
+      - 'Extension checks availability'
+      - 'Check output logs'
+    expected_result: 'Availability check log exists for the Tier 1 entry'
+    automated: true
+
+  - id: custom-ai-assistant-006
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Command Registration'
+    scenario: 'All dummy extension commands are registered and detectable'
+    preconditions:
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
+    steps:
+      - 'Query registered VS Code commands'
+    expected_result: 'All 5 dummyAi commands (insertText, focusForPaste, focusPanel, getText, clearAll) are registered'
+    automated: true
+
+  - id: custom-ai-assistant-007
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Multiple custom AI assistants listed in user-defined order'
+    preconditions:
+      - 'Two or more custom AI assistants configured with different extensionNames'
+      - 'All have available focus commands or extensions'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe order of custom AI assistants in the picker'
+    expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
+    automated: assisted
+
+  - id: custom-ai-assistant-008
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Parser normalizes plain string insertCommands to { command } objects'
+    preconditions:
+      - 'settings.json contains custom AI assistant with insertCommands as plain strings'
+    steps:
+      - 'Extension activates'
+      - 'Check output logs for parsed config'
+    expected_result: 'Activation log shows insertCommands were parsed and the assistant was loaded'
+    automated: true
+
+  - id: custom-ai-assistant-009
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Template entry with ${content} interpolation in insertCommands is parsed and registered'
+    preconditions:
+      - 'settings.json contains custom AI assistant with insertCommands using { command, args } object with ${content} placeholder'
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+    steps:
+      - 'Extension activates'
+      - 'Check registration logs'
+    expected_result: 'Destination builder registered for the template entry'
+    automated: true
+
+  - id: custom-ai-assistant-010
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Tier 1 Paste Flow'
+    scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L (Send RangeLink)'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
+    automated: assisted
+
+  - id: custom-ai-assistant-011
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Tier 1 Clipboard'
+    scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
+    preconditions:
+      - 'Bound to Dummy AI (Tier 1)'
+      - 'Clipboard sentinel written before R-L'
+    steps:
+      - 'Write clipboard sentinel'
+      - 'Execute R-L'
+      - 'Read clipboard after settle'
+    expected_result: 'Clipboard contains the sentinel (outer preserve restores it; DirectInsertFactory never touches clipboard)'
+    automated: assisted
+
+  - id: custom-ai-assistant-012
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Tier 3 Toast'
+    scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 3) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for toast and ManualPasteInsertFactory'
+    expected_result: 'Info toast "Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use." logged; ManualPasteInsertFactory success logged'
+    automated: assisted
+
+  - id: custom-ai-assistant-013
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Tier 2→3 Fallback'
+    scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'Settings entry with non-existent focusAndPasteCommands + valid focusCommands'
+    steps:
+      - 'Bind to Dummy AI (Fallback) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for tier skip and resolution'
+    expected_result: 'Tier 2 skip log (nonexistent.paste not registered), Tier 3 resolution log (dummyAi.focusPanel), manual-paste toast shown'
+    automated: assisted
+
+  - id: custom-ai-assistant-014
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — ${content} Template'
+    scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
+    preconditions:
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+      - 'Settings entry uses { command, args } object with ${content} placeholder'
+    steps:
+      - 'Bind to Dummy AI (Template) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
+    automated: assisted
+
+  - id: custom-ai-assistant-015
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'custom config with built-in extensionId registers under the built-in kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for registration of github-copilot-chat kind'
+    expected_result: 'Exactly one registration for github-copilot-chat kind (override replaces built-in); no separate custom-ai: registration'
+    automated: true
+
+  - id: custom-ai-assistant-016
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'built-in override does not register a separate custom-ai: kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for absence of custom-ai:github.copilot-chat registration'
+    expected_result: 'No custom-ai:github.copilot-chat registration found — override takes over the built-in kind instead'
+    automated: true
+
+  - id: custom-ai-assistant-017
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Cold Start'
+    scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
+    preconditions:
+      - 'Dummy AI extension loaded but sidebar panel NOT pre-opened'
+      - 'Settings entry with insertCommands pointing to dummyAi.insertText'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
+    automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section — Release Notifier
+  # ---------------------------------------------------------------------------
+
+  - id: release-notifier-001
+    feature: 'Release Notifier'
+    scenario: 'First install stores current version silently with no notification'
+    preconditions:
+      - 'Fresh VS Code profile with no prior RangeLink globalState'
+    steps:
+      - 'Open VS Code with the fresh profile'
+      - 'Confirm no "RangeLink updated" notification appears on activation'
+      - 'Open Output → RangeLink and confirm "First install — stored version" log entry'
+    expected_result: 'No notification popup; log confirms version stored silently'
+    automated: true
+
+  - id: release-notifier-002
+    feature: 'Release Notifier'
+    scenario: 'Same version stored — no notification on subsequent launches'
+    preconditions:
+      - 'Extension already installed and launched once (version stored in globalState)'
+    steps:
+      - 'Close and reopen VS Code'
+      - 'Confirm no "RangeLink updated" notification appears'
+      - 'Open Output → RangeLink and confirm "Same version — skipping" log entry'
+    expected_result: 'No notification popup; log confirms same-version skip'
+    automated: true
+
+  - id: release-notifier-003
+    feature: 'Release Notifier'
+    scenario: 'Upgrade detected — dismissing (X) is temporary and does not store the version'
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated to vX.Y.Z. See what changed!" appears, close it with X'
+      - 'Confirm "Release notification dismissed — will reappear on next activation" log appears'
+      - 'Confirm no "Opened release notes in browser" log'
+    expected_result: 'Notification dismissed without storing version; popup will reappear on next activation'
+    automated: assisted
+
+  - id: release-notifier-004
+    feature: 'Release Notifier'
+    scenario: "Clicking What's New stores version and opens GitHub releases page in browser"
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated" notification appears, click "What''s New"'
+      - 'Confirm browser opens to the GitHub releases page for that version'
+      - 'Confirm "Opened release notes in browser" log appears'
+    expected_result: 'Browser navigates to https://github.com/couimet/rangeLink/releases/tag/vscode-extension-vX.Y.Z; version stored — notification will not reappear'
+    automated: assisted
+
+  - id: release-notifier-005
+    feature: 'Release Notifier'
+    scenario: 'Clicking Skip for this version stores version without opening browser'
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated" notification appears, click "Skip for this version"'
+      - 'Confirm no browser window opens'
+      - 'Confirm "Release notification skipped for this version" log appears'
+    expected_result: 'Version stored silently; notification will not reappear; no browser opened'
+    automated: assisted
+
+  - id: ubuntu-ctrl-keybindings-001
+    labels:
+      - ubuntu
+    feature: 'Platform Keybindings'
+    scenario: 'Ctrl+R chord keybindings work on Ubuntu/Linux (R-M menu, R-D picker, R-L send, R-G goto, R-U unbind)'
+    preconditions:
+      - 'Running on Ubuntu/Linux with Ctrl key available'
+    steps:
+      - 'Press Ctrl+R Ctrl+M — verify RangeLink menu opens, then Escape'
+      - 'Press Ctrl+R Ctrl+D — verify destination picker opens, then Escape'
+      - 'Select lines, press Ctrl+R Ctrl+L — verify RangeLink is sent'
+      - 'Press Ctrl+R Ctrl+G — verify Go to Link input box opens, then Escape'
+      - 'Bind a destination, press Ctrl+R Ctrl+U — verify destination unbound'
+    expected_result: 'All Ctrl+R chords behave identically to Cmd+R on macOS — menu, picker, send, goto, and unbind work correctly'
+    automated: assisted

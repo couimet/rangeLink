@@ -8,8 +8,7 @@ set -euo pipefail
 #
 # Usage: ./scripts/generate-release-testing-instructions.sh
 #
-# Filename: qa/release-testing-instructions-v<version>[-NNN].md
-# Reruns append a suffix: -001, -002, etc.
+# Filename: qa/release-testing-instructions-v<version>.md
 #
 # Requires: jq, nextTargetVersion set in package.json
 # Optional: gh CLI (authenticated), python3 with PyYAML
@@ -56,22 +55,14 @@ if [[ -n "$WARNINGS" ]]; then
   echo -e "$WARNINGS"
 fi
 
-# --- Output file with collision suffix ---
+# --- Output file ---
 
 BASE_NAME="release-testing-instructions-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.md"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  MAX_SUFFIX=0
-  for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].md; do
-    [[ -e "$existing" ]] || continue
-    suffix="${existing%.md}"
-    suffix="${suffix##*-}"
-    num=$((10#$suffix))
-    [[ $num -gt $MAX_SUFFIX ]] && MAX_SUFFIX=$num
-  done
-  NEXT_SUFFIX=$((MAX_SUFFIX + 1))
-  OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").md"
+  echo "$OUTPUT_FILE already exists — nothing to generate"
+  exit 0
 fi
 
 # --- Generate markdown ---
@@ -129,7 +120,7 @@ Create or carry forward the QA test plan YAML for v${NEXT_VERSION}.
 pnpm generate:qa-test-plan:vscode-extension
 \`\`\`
 
-This creates \`qa/qa-test-cases-v${NEXT_VERSION}[-NNN].yaml\` by carrying forward all TCs from the previous plan with statuses reset to pending.
+This creates \`qa/qa-test-cases-v${NEXT_VERSION}.yaml\` by carrying forward all TCs from the previous plan with statuses reset to pending.
 
 ### AI-powered gap detection
 
@@ -142,7 +133,7 @@ Run the \`/qa-suggest\` skill in Claude Code to identify features in the CHANGEL
 3. Commit the YAML:
 
 \`\`\`bash
-git add packages/rangelink-vscode-extension/qa/qa-test-cases-v${NEXT_VERSION}*.yaml
+git add packages/rangelink-vscode-extension/qa/qa-test-cases-v${NEXT_VERSION}.yaml
 git commit -m "Add QA test plan for v${NEXT_VERSION}"
 \`\`\`
 
@@ -225,7 +216,7 @@ Generate a local QA checklist:
 pnpm generate:qa-issue:vscode-extension -- --local
 \`\`\`
 
-The generated checklist is at \`qa/qa-issues-local-v${NEXT_VERSION}-<timestamp>.md\`.
+The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timestamp>.md\`.
 
 **Suggested order:**
 1. **Ready-now TCs** — no terminal setup needed, test immediately

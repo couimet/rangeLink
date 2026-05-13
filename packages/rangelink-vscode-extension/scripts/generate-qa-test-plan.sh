@@ -9,8 +9,8 @@ set -euo pipefail
 # Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
-# Filename: qa-test-cases-v<version>[-NNN].yaml
-# Reruns append a suffix: -001, -002, etc.
+# Filename: qa-test-cases-v<version>.yaml
+# If the file already exists, exits successfully (no-op).
 #
 # Requires: jq
 
@@ -37,16 +37,8 @@ BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  MAX_SUFFIX=0
-  for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].yaml; do
-    [[ -e "$existing" ]] || continue
-    suffix="${existing%.yaml}"
-    suffix="${suffix##*-}"
-    num=$((10#$suffix))
-    [[ $num -gt $MAX_SUFFIX ]] && MAX_SUFFIX=$num
-  done
-  NEXT_SUFFIX=$((MAX_SUFFIX + 1))
-  OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").yaml"
+  echo "$OUTPUT_FILE already exists — nothing to generate"
+  exit 0
 fi
 
 # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files

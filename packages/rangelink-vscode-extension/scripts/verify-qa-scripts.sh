@@ -71,7 +71,7 @@ echo "  Using committed YAML: $(basename "$LATEST_YAML")"
 echo ""
 
 run_check "validate-qa-coverage" ./scripts/validate-qa-coverage.sh "$LATEST_YAML"
-check_artifact "validate-qa-coverage" "qa-coverage-report-v*.txt"
+check_artifact "validate-qa-coverage" "output/qa-coverage-report-v*.txt"
 
 run_check "generate-release-testing-instructions" ./scripts/generate-release-testing-instructions.sh
 check_artifact "generate-release-testing-instructions" "release-testing-instructions-v*.md"
@@ -83,7 +83,7 @@ check_artifact "generate-qa-test-plan" "qa-test-cases-v*.yaml"
 run_check "generate-qa-issue (dry-run)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --dry-run'
 
 run_check "generate-qa-issue (local)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --local'
-check_artifact "generate-qa-issue (local)" "qa-issues-local-v*.md"
+check_artifact "generate-qa-issue (local)" "output/qa-checklist-*.md"
 
 echo ""
 if [[ $FAILED -eq 0 ]]; then

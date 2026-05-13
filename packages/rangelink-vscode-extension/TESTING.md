@@ -6,22 +6,22 @@
 
 ## Quick Reference
 
-| Test type                | Command                                                       | When to run                        | Runs in CI           |
-| ------------------------ | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
-| Unit tests               | `pnpm test`                                                   | Every change                       | ✅                   |
-| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
-| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
-| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
-| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions   | —                    |
-| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
-| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
-| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
-| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
-| QA smoke setup           | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass              | —                    |
-| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
-| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
-| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
+| Test type                | Command                                                       | When to run                                                                               | Runs in CI           |
+| ------------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------- |
+| Unit tests               | `pnpm test`                                                   | Every change                                                                              | ✅                   |
+| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development                                                                 | —                    |
+| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand                                                                     | ✅ (with thresholds) |
+| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work                                                             | —                    |
+| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments                                                                | ✅                   |
+| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions                                                          | —                    |
+| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite                                                           | —                    |
+| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle                                                                    | —                    |
+| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle                                                        | —                    |
+| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass                                                           | —                    |
+| QA smoke setup           | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass (build first with `pnpm package:vscode-extension:withInstall:both`) | —                    |
+| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests                                                            | ✅                   |
+| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle                                                                    | —                    |
+| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes                                                                   | —                    |
 
 All commands run from the project root unless noted.
 
@@ -41,14 +41,13 @@ flowchart TD
     C --> D[Review + append new TCs]
     D --> E[Commit YAML]
     E --> F[generate:qa-issue]
-    F --> G[GitHub parent + sub-issues created]
-    G --> H[qa:setup]
-    H --> H1[Build .vsix]
+    F --> G[Single GitHub issue with grep commands per section]
+    G --> H[package:vscode-extension:withInstall:both]
+    H --> H1[qa:setup --settings <profile>]
     H1 --> H2[Install in qa-test profile]
     H2 --> H3[Apply settings profile]
-    H3 --> H4[Generate checklist]
-    H4 --> H5[Launch editor with fixture workspace]
-    H5 --> I[Manual QA pass]
+    H3 --> H4[Launch editor with fixture workspace]
+    H4 --> I[Manual QA pass]
     I --> I1[Ready-now TCs — no setup needed]
     I1 --> I2[Open terminals + bind]
     I2 --> I3[Terminal-dependent TCs]
@@ -201,12 +200,12 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 ### File location and naming
 
 ```text
-qa/qa-test-cases-v<version>[-NNN].yaml
+qa/qa-test-cases-v<version>.yaml
 ```
 
-Example: `qa/qa-test-cases-v1.1.0.yaml` (base), `qa/qa-test-cases-v1.1.0-001.yaml` (first iteration)
+Example: `qa/qa-test-cases-v1.1.0.yaml`
 
-The version is the target release (`nextTargetVersion` from `package.json`). It is embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. The `-NNN` suffix handles multiple iterations within a version.
+The version is the target release (`nextTargetVersion` from `package.json`). It is embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 
@@ -268,4 +267,4 @@ Release testing is **guided through a script** that generates version-specific i
 pnpm generate:release-testing-instructions:vscode-extension
 ```
 
-The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>[-NNN].md` with copy-paste-ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
+The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>.md` with copy-paste-ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
