@@ -1,7 +1,11 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { CLIPBOARD_POST_PASTE_DELAY_MS, FOCUS_TO_PASTE_DELAY_MS, VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
+import {
+  CLIPBOARD_POST_PASTE_DELAY_MS,
+  FOCUS_TO_PASTE_DELAY_MS,
+  VSCODE_CMD_TERMINAL_PASTE,
+} from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
@@ -99,7 +103,10 @@ export class VscodeAdapter
     const logCtx = { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: postDelay };
     try {
       await this.delay(FOCUS_TO_PASTE_DELAY_MS);
-      this.logger.debug({ ...logCtx, prePasteDelay: FOCUS_TO_PASTE_DELAY_MS }, 'Pre-paste delay complete, executing paste');
+      this.logger.debug(
+        { ...logCtx, prePasteDelay: FOCUS_TO_PASTE_DELAY_MS },
+        'Pre-paste delay complete, executing paste',
+      );
       await this.ideInstance.commands.executeCommand('editor.action.clipboardPasteAction');
       this.logger.info(logCtx, 'Clipboard paste succeeded');
       await this.delay(postDelay);

@@ -1,7 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
-
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
@@ -787,10 +786,7 @@ describe('VscodeAdapter', () => {
 
       await adapter.pasteTextFromClipboard();
 
-      expect(callOrder).toStrictEqual([
-        `delay-${200}`,
-        `delay-${200}`,
-      ]);
+      expect(callOrder).toStrictEqual([`delay-${200}`, `delay-${200}`]);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -819,11 +815,7 @@ describe('VscodeAdapter', () => {
 
       await adapter.pasteTextFromClipboard();
 
-      expect(callOrder).toStrictEqual([
-        `delay-${200}`,
-        'paste',
-        `delay-${200}`,
-      ]);
+      expect(callOrder).toStrictEqual([`delay-${200}`, 'paste', `delay-${200}`]);
     });
 
     it('should use 200 as default post-paste delay', async () => {
