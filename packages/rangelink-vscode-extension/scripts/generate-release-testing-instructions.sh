@@ -133,7 +133,7 @@ Run the \`/qa-suggest\` skill in Claude Code to identify features in the CHANGEL
 3. Commit the YAML:
 
 \`\`\`bash
-git add packages/rangelink-vscode-extension/qa/qa-test-cases-v${NEXT_VERSION}*.yaml
+git add packages/rangelink-vscode-extension/qa/qa-test-cases-v${NEXT_VERSION}.yaml
 git commit -m "Add QA test plan for v${NEXT_VERSION}"
 \`\`\`
 
