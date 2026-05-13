@@ -3097,15 +3097,15 @@ test_cases:
 
   - id: github-copilot-chat-001
     feature: 'Built-in AI Assistants'
-    scenario: 'GitHub Copilot Chat appears in destination picker when extension is active'
+    scenario: 'GitHub Copilot Chat appears in destination picker when available'
     preconditions:
-      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'VS Code has built-in workbench.action.chat.open command (present in all modern VS Code)'
       - 'No destination currently bound'
     steps:
       - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
       - 'Confirm "GitHub Copilot Chat" item appears in the AI Assistants group'
     expected_result: '"GitHub Copilot Chat" is listed in the AI Assistants group of the destination picker'
-    automated: false
+    automated: true
 
   - id: github-copilot-chat-002
     labels:
