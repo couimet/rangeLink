@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { CLIPBOARD_POST_PASTE_DELAY_MS, VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
+import { CLIPBOARD_POST_PASTE_DELAY_MS, FOCUS_TO_PASTE_DELAY_MS, VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
@@ -83,28 +83,35 @@ export class VscodeAdapter
   /**
    * Paste text from clipboard into the currently focused editor element.
    *
-   * Executes the built-in VS Code clipboard paste command. The clipboard
-   * must already contain the desired text — this method does NOT write to
-   * clipboard. After a successful paste, waits for postPasteDelayMs so that
-   * webview-based AI assistant panels can complete their async clipboard read
-   * across the Electron IPC boundary before the outer ClipboardPreserver
-   * restores the user's prior clipboard.
+   * Waits FOCUS_TO_PASTE_DELAY_MS before executing the paste command so that
+   * the clipboard write (performed earlier by ClipboardRouter) has time to
+   * propagate across the Electron IPC boundary to the webview's renderer process.
+   * Without this delay, webview-based AI assistants read stale clipboard data
+   * and the paste lands empty. After a successful paste, waits for
+   * postPasteDelayMs so that the webview can complete its async clipboard read
+   * before the outer ClipboardPreserver restores the user's prior clipboard.
    *
    * @param postPasteDelayMs - Optional delay after paste (defaults to CLIPBOARD_POST_PASTE_DELAY_MS)
    * @returns true if paste command succeeded, false otherwise
    */
   async pasteTextFromClipboard(postPasteDelayMs?: number): Promise<boolean> {
-    const delay = postPasteDelayMs ?? CLIPBOARD_POST_PASTE_DELAY_MS;
-    const logCtx = { fn: 'VscodeAdapter.pasteTextFromClipboard', delay };
+    const postDelay = postPasteDelayMs ?? CLIPBOARD_POST_PASTE_DELAY_MS;
+    const logCtx = { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: postDelay };
     try {
+      await this.delay(FOCUS_TO_PASTE_DELAY_MS);
+      this.logger.debug({ ...logCtx, prePasteDelay: FOCUS_TO_PASTE_DELAY_MS }, 'Pre-paste delay complete, executing paste');
       await this.ideInstance.commands.executeCommand('editor.action.clipboardPasteAction');
       this.logger.info(logCtx, 'Clipboard paste succeeded');
-      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+      await this.delay(postDelay);
       return true;
     } catch (error) {
       this.logger.debug({ ...logCtx, error }, 'Paste command failed');
       return false;
     }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
   }
 
   /**

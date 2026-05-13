@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
+
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
@@ -773,6 +774,98 @@ describe('VscodeAdapter', () => {
         message: 'Terminal reference is not defined',
         functionName: 'VscodeAdapter.pasteIntoTerminal',
       });
+    });
+  });
+
+  describe('pasteTextFromClipboard', () => {
+    it('should enforce 200 pre-paste delay before executing the paste command', async () => {
+      const callOrder: string[] = [];
+      jest.spyOn(adapter as any, 'delay').mockImplementation((...args: unknown[]) => {
+        callOrder.push(`delay-${args[0]}`);
+        return Promise.resolve();
+      });
+
+      await adapter.pasteTextFromClipboard();
+
+      expect(callOrder).toStrictEqual([
+        `delay-${200}`,
+        `delay-${200}`,
+      ]);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.pasteTextFromClipboard',
+          delay: 200,
+          prePasteDelay: 200,
+        },
+        'Pre-paste delay complete, executing paste',
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: 200 },
+        'Clipboard paste succeeded',
+      );
+    });
+
+    it('should not execute paste command before the pre-paste delay resolves', async () => {
+      const callOrder: string[] = [];
+      jest.spyOn(adapter as any, 'delay').mockImplementation((...args: unknown[]) => {
+        callOrder.push(`delay-${args[0]}`);
+        return Promise.resolve();
+      });
+      mockVSCode.commands.executeCommand.mockImplementation(() => {
+        callOrder.push('paste');
+        return Promise.resolve(undefined);
+      });
+
+      await adapter.pasteTextFromClipboard();
+
+      expect(callOrder).toStrictEqual([
+        `delay-${200}`,
+        'paste',
+        `delay-${200}`,
+      ]);
+    });
+
+    it('should use 200 as default post-paste delay', async () => {
+      const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
+
+      await adapter.pasteTextFromClipboard();
+
+      expect(delaySpy).toHaveBeenCalledTimes(2);
+      expect(delaySpy).toHaveBeenNthCalledWith(1, 200);
+      expect(delaySpy).toHaveBeenNthCalledWith(2, 200);
+    });
+
+    it('should use custom postPasteDelayMs when provided', async () => {
+      const CUSTOM_POST_DELAY = 500;
+      const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
+
+      await adapter.pasteTextFromClipboard(CUSTOM_POST_DELAY);
+
+      expect(delaySpy).toHaveBeenNthCalledWith(2, CUSTOM_POST_DELAY);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: CUSTOM_POST_DELAY },
+        'Clipboard paste succeeded',
+      );
+    });
+
+    it('should skip post-paste delay when paste command fails', async () => {
+      const pasteError = new Error('Paste failed');
+      mockVSCode.commands.executeCommand.mockRejectedValueOnce(pasteError);
+      const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
+
+      await adapter.pasteTextFromClipboard();
+
+      expect(delaySpy).toHaveBeenCalledTimes(1);
+      expect(delaySpy).toHaveBeenCalledWith(200);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.pasteTextFromClipboard',
+          delay: 200,
+          error: pasteError,
+        },
+        'Paste command failed',
+      );
     });
   });
 
