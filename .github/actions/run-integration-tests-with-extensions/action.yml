@@ -7,7 +7,8 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 libasound2t64
+        ALSA_PKG=$(apt-cache show libasound2t64 >/dev/null 2>&1 && echo libasound2t64 || echo libasound2)
+        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 "$ALSA_PKG"
 
     - name: Cache VS Code test binary
       uses: actions/cache@v4

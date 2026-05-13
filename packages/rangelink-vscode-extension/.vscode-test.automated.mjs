@@ -1,26 +1,10 @@
-import * as os from 'node:os';
-import * as path from 'node:path';
-
 import { defineConfig } from '@vscode/test-cli';
 
-const MOCHA_TIMEOUT_MS = 20_000;
-const ASSISTED_TEST_GREP = '\\[assisted\\]';
-const USER_DATA_DIR = path.join(os.tmpdir(), 'rl-vscode-test');
+import { CI_TIMEOUT_MS, BASE_CONFIG } from './.vscode-test.base.mjs';
 
 export default defineConfig([
   {
-    files: 'out/__integration-tests__/suite/**/*.test.js',
-    extensionDevelopmentPath: ['./', './test-fixtures/dummy-ai-extension/'],
-    workspaceFolder: './',
-    version: 'stable',
-    launchArgs: ['--user-data-dir', USER_DATA_DIR],
-    env: {
-      RANGELINK_CAPTURE_LOGS: 'true',
-    },
-    mocha: {
-      timeout: MOCHA_TIMEOUT_MS,
-      grep: ASSISTED_TEST_GREP,
-      invert: true,
-    },
+    ...BASE_CONFIG,
+    mocha: { timeout: CI_TIMEOUT_MS, ...BASE_CONFIG.mocha },
   },
 ]);
