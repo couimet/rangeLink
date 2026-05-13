@@ -13,7 +13,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const suffix = process.argv.includes('--suffix') ? process.argv[process.argv.indexOf('--suffix') + 1] : '';
+const suffix = process.argv.includes('--suffix')
+  ? process.argv[process.argv.indexOf('--suffix') + 1]
+  : '';
 const DATA_DIR = `rl-vscode-test${suffix}`;
 const SETTINGS_DIR = path.join(os.tmpdir(), DATA_DIR, 'User');
 const SETTINGS_FILE = path.join(SETTINGS_DIR, 'settings.json');
