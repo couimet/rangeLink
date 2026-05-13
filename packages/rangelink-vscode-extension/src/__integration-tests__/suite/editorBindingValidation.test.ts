@@ -1,5 +1,7 @@
+import assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+
 import * as vscode from 'vscode';
 
 import { CMD_BIND_TO_DESTINATION, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
@@ -16,8 +18,6 @@ import {
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
-
-import assert from 'node:assert';
 
 standardSuite('Editor Binding Validation', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
