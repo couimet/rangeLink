@@ -2,7 +2,11 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_CLAUDE_CODE, CMD_BIND_TO_DESTINATION, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_DESTINATION,
+  CMD_UNBIND_DESTINATION,
+} from '../../constants/commandIds';
 import {
   activateExtension,
   cleanupFiles,
