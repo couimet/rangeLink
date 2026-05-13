@@ -20,7 +20,7 @@ describe('AIAssistantInsertFactory', () => {
     const result = await insertFn('test content');
 
     expect(result).toBe(true);
-    expect(pasteSpy).toHaveBeenCalled();
+    expect(pasteSpy).toHaveBeenCalledWith();
     expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 
