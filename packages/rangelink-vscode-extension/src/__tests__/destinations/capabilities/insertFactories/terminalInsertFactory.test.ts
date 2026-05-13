@@ -66,5 +66,6 @@ describe('TerminalInsertFactory', () => {
 
     expect(pasteIntoTerminalSpy).toHaveBeenNthCalledWith(1, terminal1);
     expect(pasteIntoTerminalSpy).toHaveBeenNthCalledWith(2, terminal2);
+    expect(mockLogger.error).not.toHaveBeenCalled();
   });
 });

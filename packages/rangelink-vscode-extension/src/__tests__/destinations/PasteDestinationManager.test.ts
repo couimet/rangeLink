@@ -2112,7 +2112,7 @@ describe('PasteDestinationManager', () => {
       (manager as any).boundDestination = mockDest;
 
       expect(manager.isClipboardRestorationApplicable(false)).toBe(false);
-      expect(mockDest.getUserInstruction).toHaveBeenCalledWith(AutoPasteResult.Failure);
+      expect(mockDest.getUserInstruction).toHaveBeenCalledWith('Failure');
     });
 
     it('returns true when paste failed and destination provides no failure instruction', () => {

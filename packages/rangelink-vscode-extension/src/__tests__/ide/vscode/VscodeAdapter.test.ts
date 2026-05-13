@@ -738,7 +738,7 @@ describe('VscodeAdapter', () => {
 
   describe('pasteIntoTerminal', () => {
     it('should show terminal and execute paste command', async () => {
-      const mockTerminal = createMockTerminal();
+      const mockTerminal = createMockTerminal({ name: 'my-terminal' });
       const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
 
       await adapter.pasteIntoTerminal(mockTerminal);
@@ -747,14 +747,6 @@ describe('VscodeAdapter', () => {
       expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
       expect(executeCommandSpy).toHaveBeenCalledTimes(1);
       expect(mockTerminal.sendText).not.toHaveBeenCalled();
-    });
-
-    it('should log terminal name before executing command', async () => {
-      const mockTerminal = createMockTerminal({ name: 'my-terminal' });
-      jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteIntoTerminal(mockTerminal);
-
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: 'my-terminal' },
         'Executing terminal paste command',

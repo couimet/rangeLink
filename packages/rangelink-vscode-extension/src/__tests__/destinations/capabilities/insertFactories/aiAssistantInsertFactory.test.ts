@@ -21,6 +21,7 @@ describe('AIAssistantInsertFactory', () => {
 
     expect(result).toBe(true);
     expect(pasteSpy).toHaveBeenCalled();
+    expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 
   it('returns false when pasteTextFromClipboard returns false', async () => {

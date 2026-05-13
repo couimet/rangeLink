@@ -705,7 +705,7 @@ test_cases:
     feature: 'Clipboard Preservation'
     scenario: 'AI assistant auto-paste fails (focus command throws): RangeLink stays in clipboard for manual paste'
     preconditions:
-      - 'Custom AI assistant "Dummy AI (Focus-Fail)" configured in workspace settings with focusPasteCommands: [dummyAi.focusFail] (registered command that throws intentionally)'
+      - 'Custom AI assistant "Dummy AI (Focus-Fail)" configured in workspace settings with focusCommands: [dummyAi.focusFail] (registered command that throws intentionally)'
       - 'Dummy AI extension installed and active'
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'A file is open in the editor'

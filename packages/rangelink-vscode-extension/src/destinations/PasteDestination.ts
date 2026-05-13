@@ -78,7 +78,7 @@ export interface PasteDestination {
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Focus destination after paste (terminal.show(), chat.open(), etc.)
+   * - Focus destination before paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *
@@ -97,7 +97,7 @@ export interface PasteDestination {
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Focus destination after paste (terminal.show(), chat.open(), etc.)
+   * - Focus destination before paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *

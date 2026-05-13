@@ -69,6 +69,15 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(showTerminalSpy).toHaveBeenCalledWith(mockTerminal, 'steal-focus');
       expect(pasteTextSpy).toHaveBeenCalledTimes(1);
       expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+          terminalName: 'Test Terminal',
+        },
+        'Pasted link to Terminal',
+      );
     });
 
     it('should verify focus happens before text insertion', async () => {
@@ -106,9 +115,19 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test-link'));
+      const formattedLink = createMockFormattedLink('test-link');
+
+      await destination.pasteLink(formattedLink);
 
       expect(callOrder).toStrictEqual(['focus', 'insert']);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Pasted link to Terminal',
+      );
     });
   });
 
@@ -152,6 +171,14 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(executeCommandSpy).toHaveBeenCalledTimes(1);
       expect(executeCommandSpy).toHaveBeenCalledWith('ai.assistant.focus');
       expect(pasteClipboardSpy).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Pasted link to Claude Code Chat',
+      );
     });
 
     it('should try focus commands in order until success', async () => {
@@ -184,12 +211,22 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const formattedLink = createMockFormattedLink('test');
+
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(true);
       expect(executeCommandSpy).toHaveBeenCalledTimes(2);
       expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'command.first');
       expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'command.second');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Pasted link to Claude Code Chat',
+      );
     });
 
     it('should return false when all focus commands fail', async () => {
@@ -221,9 +258,20 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const formattedLink = createMockFormattedLink('test');
+
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+          reason: 'COMMAND_FOCUS_FAILED',
+        },
+        'Focus failed, cannot paste link',
+      );
     });
   });
 
@@ -268,6 +316,15 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(result).toBe(true);
       expect(insertSpy).toHaveBeenCalledTimes(1);
       expect(insertSpy).toHaveBeenCalledWith(mockEditor, 'src/file.ts#L10');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+          editorPath: '/path/to/file.ts',
+        },
+        'Pasted link to Text Editor',
+      );
     });
 
     it('should handle showTextDocument failure gracefully', async () => {
@@ -302,9 +359,20 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const formattedLink = createMockFormattedLink('test');
+
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+          reason: 'SHOW_DOCUMENT_FAILED',
+        },
+        'Focus failed, cannot paste link',
+      );
     });
 
     it('should handle insertTextAtCursor returning false', async () => {
@@ -340,9 +408,19 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const formattedLink = createMockFormattedLink('test');
+
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Failed to paste link to Text Editor',
+      );
     });
   });
 
@@ -372,9 +450,19 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const formattedLink = createMockFormattedLink('test');
+
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Cannot paste link: Terminal not available',
+      );
     });
 
     it('should call pasteIntoTerminal for terminal destinations', async () => {
@@ -407,9 +495,19 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test-link'));
+      const formattedLink = createMockFormattedLink('test-link');
+
+      await destination.pasteLink(formattedLink);
 
       expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ComposablePasteDestination.pasteLink',
+          formattedLink,
+          linkLength: formattedLink.link.length,
+        },
+        'Pasted link to Terminal',
+      );
     });
   });
 });

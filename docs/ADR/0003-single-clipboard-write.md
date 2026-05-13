@@ -34,7 +34,7 @@ The refactoring gives `ClipboardRouter` sole ownership of the clipboard write. `
 
 ### 3. Two-delay model
 
-```
+```text
 ┌────────────┐     ┌──────────────┐     ┌─────────────────┐
 │ Focus cmd  │────▶│ FOCUS_DELAY  │────▶│ Clipboard Paste │
 │ executed   │     │ (pre-paste)  │     │ Command         │
