@@ -13,7 +13,7 @@ import {
   PasteContentType,
   PathFormat,
 } from '../types';
-import { formatMessage, generateLinkFromSelections } from '../utils';
+import { applySmartPadding, formatMessage, generateLinkFromSelections } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
 import { getReferencePath } from './FilePathPaster';
@@ -173,6 +173,8 @@ export class LinkGenerator {
       DEFAULT_SMART_PADDING_PASTE_LINK,
     );
 
+    const paddedLink = applySmartPadding(formattedLink.link, paddingMode);
+
     this.logger.debug(
       { ...logCtx, link: formattedLink.link, rawLink: formattedLink.rawLink },
       'Sending link to destination',
@@ -184,13 +186,13 @@ export class LinkGenerator {
         destinationBehavior,
       },
       content: {
-        clipboard: formattedLink.link,
-        send: formattedLink,
+        clipboard: paddedLink,
+        send: { ...formattedLink, link: paddedLink },
         sourceUri,
       },
       strategies: {
         sendFn: (link, basicStatusMessage) =>
-          this.destinationManager.sendLinkToDestination(link, basicStatusMessage, paddingMode),
+          this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
         isEligibleFn: (destination, link) => destination.isEligibleForPasteLink(link),
       },
       contentName: linkTypeName,

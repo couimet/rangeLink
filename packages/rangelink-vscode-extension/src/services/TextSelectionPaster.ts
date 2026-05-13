@@ -7,7 +7,7 @@ import {
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { MessageCode, PasteContentType } from '../types';
-import { formatMessage } from '../utils';
+import { applySmartPadding, formatMessage } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
 import type { SelectionValidator } from './SelectionValidator';
@@ -53,19 +53,21 @@ export class TextSelectionPaster {
     const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return;
 
+    const paddedContent = applySmartPadding(content, paddingMode);
+
     await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
         destinationBehavior,
       },
       content: {
-        clipboard: content,
-        send: content,
+        clipboard: paddedContent,
+        send: paddedContent,
         sourceUri: editor.document.uri,
       },
       strategies: {
         sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
       contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),

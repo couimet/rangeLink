@@ -25,6 +25,7 @@ We follow the format from [adr.github.io](https://adr.github.io/):
 | --------------------------------------------------------- | --------------------------------------- | -------- |
 | [0001](./0001-result-vs-exception-convention.md)          | Result vs Exception Convention          | Accepted |
 | [0002](./0002-three-tier-custom-ai-assistant-commands.md) | Three-Tier Custom AI Assistant Commands | Accepted |
+| [0003](./0003-single-clipboard-write.md)                  | Single Clipboard Write per Operation    | Accepted |
 
 ## Future ADRs
 

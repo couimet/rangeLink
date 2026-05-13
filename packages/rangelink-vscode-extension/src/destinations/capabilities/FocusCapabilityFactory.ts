@@ -1,9 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
-import type { ClipboardPreserver } from '../../clipboard/ClipboardPreserver';
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
-import { CHAT_PASTE_COMMANDS } from '../../constants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier } from '../types';
 
@@ -29,7 +27,6 @@ import { TerminalFocusCapability } from './TerminalFocusCapability';
 export class FocusCapabilityFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
-    private readonly clipboardPreserver: ClipboardPreserver,
     private readonly logger: Logger,
   ) {}
 
@@ -47,21 +44,16 @@ export class FocusCapabilityFactory {
     return new TerminalFocusCapability(
       this.ideAdapter,
       terminal,
-      new TerminalInsertFactory(this.ideAdapter, this.clipboardPreserver, this.logger),
+      new TerminalInsertFactory(this.ideAdapter, this.logger),
       this.logger,
     );
   }
 
-  createAIAssistantCapability(focusCommands: string[], pasteCommands: string[]): FocusCapability {
+  createAIAssistantCapability(focusCommands: string[]): FocusCapability {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
       focusCommands,
-      new AIAssistantInsertFactory(
-        this.ideAdapter,
-        pasteCommands,
-        this.clipboardPreserver,
-        this.logger,
-      ),
+      new AIAssistantInsertFactory(this.ideAdapter, this.logger),
       this.logger,
     );
   }
@@ -87,12 +79,7 @@ export class FocusCapabilityFactory {
     if (config.focusAndPasteCommands && config.focusAndPasteCommands.length > 0) {
       tiers.push({
         commands: config.focusAndPasteCommands,
-        insertFactory: new AIAssistantInsertFactory(
-          this.ideAdapter,
-          [...CHAT_PASTE_COMMANDS],
-          this.clipboardPreserver,
-          this.logger,
-        ),
+        insertFactory: this.createStandardAIAssistantInsertFactory(),
         label: 'focusAndPasteCommands',
         probeMode: 'execute',
       });
@@ -101,7 +88,7 @@ export class FocusCapabilityFactory {
     if (config.focusCommands && config.focusCommands.length > 0) {
       tiers.push({
         commands: config.focusCommands,
-        insertFactory: new ManualPasteInsertFactory(this.ideAdapter, this.logger),
+        insertFactory: new ManualPasteInsertFactory(this.logger),
         label: 'focusCommands',
         probeMode: 'execute',
       });
@@ -116,15 +103,14 @@ export class FocusCapabilityFactory {
   buildBuiltinFallbackTier(focusCommands: readonly string[]): FocusTier {
     return {
       commands: focusCommands,
-      insertFactory: new AIAssistantInsertFactory(
-        this.ideAdapter,
-        [...CHAT_PASTE_COMMANDS],
-        this.clipboardPreserver,
-        this.logger,
-      ),
+      insertFactory: this.createStandardAIAssistantInsertFactory(),
       label: 'builtinFallback',
       probeMode: 'execute',
     };
+  }
+
+  private createStandardAIAssistantInsertFactory(): AIAssistantInsertFactory {
+    return new AIAssistantInsertFactory(this.ideAdapter, this.logger);
   }
 
   /**

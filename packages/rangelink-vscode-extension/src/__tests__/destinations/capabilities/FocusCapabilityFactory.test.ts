@@ -6,12 +6,7 @@ import { EditorFocusCapability } from '../../../destinations/capabilities/Editor
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
-import {
-  createMockClipboardPreserver,
-  createMockTerminal,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockTerminal, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 describe('FocusCapabilityFactory', () => {
   let factory: FocusCapabilityFactory;
@@ -19,8 +14,7 @@ describe('FocusCapabilityFactory', () => {
   beforeEach(() => {
     const mockLogger = createMockLogger();
     const mockAdapter = createMockVscodeAdapter();
-    const mockClipboardPreserver = createMockClipboardPreserver();
-    factory = new FocusCapabilityFactory(mockAdapter, mockClipboardPreserver, mockLogger);
+    factory = new FocusCapabilityFactory(mockAdapter, mockLogger);
   });
 
   it('creates EditorFocusCapability', () => {
@@ -38,10 +32,7 @@ describe('FocusCapabilityFactory', () => {
   });
 
   it('creates AIAssistantFocusCapability', () => {
-    const capability = factory.createAIAssistantCapability(
-      ['workbench.action.chat.open'],
-      ['editor.action.clipboardPasteAction'],
-    );
+    const capability = factory.createAIAssistantCapability(['workbench.action.chat.open']);
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });

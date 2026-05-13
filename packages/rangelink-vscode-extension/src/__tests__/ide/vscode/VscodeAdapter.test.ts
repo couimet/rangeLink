@@ -2,7 +2,6 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
-import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
@@ -737,102 +736,39 @@ describe('VscodeAdapter', () => {
     });
   });
 
-  describe('pasteTextToTerminalViaClipboard', () => {
-    it('should write to clipboard, show terminal, and execute paste command with default behavior', async () => {
+  describe('pasteIntoTerminal', () => {
+    it('should show terminal and execute paste command', async () => {
       const mockTerminal = createMockTerminal();
-      const text = 'test text for paste';
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
       const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
 
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, text);
+      await adapter.pasteIntoTerminal(mockTerminal);
 
-      expect(writeToClipboardSpy).toHaveBeenCalledWith(text);
-      expect(writeToClipboardSpy).toHaveBeenCalledTimes(1);
       expect(mockTerminal.show).toHaveBeenCalledTimes(1);
       expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
       expect(executeCommandSpy).toHaveBeenCalledTimes(1);
       expect(mockTerminal.sendText).not.toHaveBeenCalled();
     });
 
-    it('should use NOTHING behaviour when explicitly specified', async () => {
-      const mockTerminal = createMockTerminal();
-      const text = 'test text';
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
+    it('should log terminal name before executing command', async () => {
+      const mockTerminal = createMockTerminal({ name: 'my-terminal' });
+      jest.spyOn(adapter, 'executeCommand');
 
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, text, {
-        behaviour: BehaviourAfterPaste.NOTHING,
-      });
+      await adapter.pasteIntoTerminal(mockTerminal);
 
-      expect(writeToClipboardSpy).toHaveBeenCalledWith(text);
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
-      expect(mockTerminal.sendText).not.toHaveBeenCalled();
-    });
-
-    it('should send Enter after paste when EXECUTE behaviour specified', async () => {
-      const mockTerminal = createMockTerminal();
-      const text = 'command to execute';
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, text, {
-        behaviour: BehaviourAfterPaste.EXECUTE,
-      });
-
-      expect(writeToClipboardSpy).toHaveBeenCalledWith(text);
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
-      expect(mockTerminal.sendText).toHaveBeenCalledWith('', true);
-      expect(mockTerminal.sendText).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle empty text', async () => {
-      const mockTerminal = createMockTerminal();
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, '');
-
-      expect(writeToClipboardSpy).toHaveBeenCalledWith('');
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
-    });
-
-    it('should handle long text (130+ characters)', async () => {
-      const mockTerminal = createMockTerminal();
-      const longText = 'a'.repeat(150);
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, longText);
-
-      expect(writeToClipboardSpy).toHaveBeenCalledWith(longText);
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
-    });
-
-    it('should handle multi-line text', async () => {
-      const mockTerminal = createMockTerminal();
-      const multiLineText = 'line1\nline2\nline3';
-      const writeToClipboardSpy = jest.spyOn(adapter, 'writeTextToClipboard');
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteTextToTerminalViaClipboard(mockTerminal, multiLineText);
-
-      expect(writeToClipboardSpy).toHaveBeenCalledWith(multiLineText);
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: 'my-terminal' },
+        'Executing terminal paste command',
+      );
     });
 
     it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', async () => {
       const undefinedTerminal = undefined as any;
 
       await expect(async () =>
-        adapter.pasteTextToTerminalViaClipboard(undefinedTerminal, 'text'),
+        adapter.pasteIntoTerminal(undefinedTerminal),
       ).toThrowRangeLinkExtensionErrorAsync('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.pasteTextToTerminalViaClipboard',
+        functionName: 'VscodeAdapter.pasteIntoTerminal',
       });
     });
 
@@ -840,10 +776,10 @@ describe('VscodeAdapter', () => {
       const nullTerminal = null as any;
 
       await expect(async () =>
-        adapter.pasteTextToTerminalViaClipboard(nullTerminal, 'text'),
+        adapter.pasteIntoTerminal(nullTerminal),
       ).toThrowRangeLinkExtensionErrorAsync('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.pasteTextToTerminalViaClipboard',
+        functionName: 'VscodeAdapter.pasteIntoTerminal',
       });
     });
   });

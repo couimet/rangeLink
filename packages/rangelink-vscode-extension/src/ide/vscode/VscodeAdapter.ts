@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
+import { CLIPBOARD_POST_PASTE_DELAY_MS, VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
@@ -78,6 +78,33 @@ export class VscodeAdapter
       'Writing to clipboard',
     );
     return this.ideInstance.env.clipboard.writeText(text);
+  }
+
+  /**
+   * Paste text from clipboard into the currently focused editor element.
+   *
+   * Executes the built-in VS Code clipboard paste command. The clipboard
+   * must already contain the desired text — this method does NOT write to
+   * clipboard. After a successful paste, waits for postPasteDelayMs so that
+   * webview-based AI assistant panels can complete their async clipboard read
+   * across the Electron IPC boundary before the outer ClipboardPreserver
+   * restores the user's prior clipboard.
+   *
+   * @param postPasteDelayMs - Optional delay after paste (defaults to CLIPBOARD_POST_PASTE_DELAY_MS)
+   * @returns true if paste command succeeded, false otherwise
+   */
+  async pasteTextFromClipboard(postPasteDelayMs?: number): Promise<boolean> {
+    const delay = postPasteDelayMs ?? CLIPBOARD_POST_PASTE_DELAY_MS;
+    const logCtx = { fn: 'VscodeAdapter.pasteTextFromClipboard', delay };
+    try {
+      await this.ideInstance.commands.executeCommand('editor.action.clipboardPasteAction');
+      this.logger.info(logCtx, 'Clipboard paste succeeded');
+      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+      return true;
+    } catch (error) {
+      this.logger.debug({ ...logCtx, error }, 'Paste command failed');
+      return false;
+    }
   }
 
   /**
@@ -268,49 +295,34 @@ export class VscodeAdapter
   }
 
   /**
-   * Paste text into terminal using clipboard + paste command.
+   * Paste clipboard content into a terminal.
    *
-   * Writes text to clipboard, then executes VSCode's paste command to insert into
-   * the terminal. This approach works around terminal line wrapping limitations with
-   * link detection: when using terminal.sendText(), long lines wrap visually and
-   * VSCode's link provider only scans the wrapped portion. Clipboard paste allows
-   * the link provider to scan the full logical line, enabling detection of long
-   * links (130+ chars).
+   * Shows the terminal to ensure it has focus, then executes the terminal paste
+   * command. The clipboard must already contain the desired text — this method
+   * does NOT write to clipboard. The single clipboard write happens earlier in
+   * ClipboardRouter.executeCopyAndSend().
    *
-   * @param terminal - Terminal to paste text into
-   * @param text - Text content to paste (will be written to clipboard)
-   * @param options - Optional paste behavior configuration
+   * @param terminal - Terminal to paste into
    * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
    */
-  async pasteTextToTerminalViaClipboard(
+  async pasteIntoTerminal(
     terminal: vscode.Terminal,
-    text: string,
     options?: SendTextToTerminalOptions,
   ): Promise<void> {
-    this.enforceTerminalExists(terminal, 'VscodeAdapter.pasteTextToTerminalViaClipboard');
+    this.enforceTerminalExists(terminal, 'VscodeAdapter.pasteIntoTerminal');
     const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
     this.logger.debug(
-      {
-        fn: 'VscodeAdapter.pasteTextToTerminalViaClipboard',
-        textLength: text.length,
-        terminalName: terminal.name,
-        behaviour,
-      },
-      'Pasting to terminal via clipboard',
+      { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: terminal.name },
+      'Pasting into terminal',
     );
-
-    // Write text to clipboard
-    await this.writeTextToClipboard(text);
-
-    // Show terminal to ensure it's active for paste command
     terminal.show();
-
-    // Execute paste command (simulates Cmd+V / Ctrl+V)
+    this.logger.debug(
+      { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: terminal.name },
+      'Executing terminal paste command',
+    );
     await this.executeCommand(VSCODE_CMD_TERMINAL_PASTE);
 
-    // Handle execution behavior if requested
     if (behaviour === BehaviourAfterPaste.EXECUTE) {
-      // Send Enter key separately after paste completes
       terminal.sendText('', true);
     }
   }

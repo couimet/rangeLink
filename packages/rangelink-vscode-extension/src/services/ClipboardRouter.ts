@@ -40,7 +40,7 @@ export class ClipboardRouter {
     if (shouldPreserve) {
       await this.clipboardPreserver.preserve(
         () => this.executeCopyAndSend(options),
-        () => this.destinationManager.isClipboardRestorationApplicable(),
+        () => this.destinationManager.isClipboardRestorationApplicable(true),
       );
     } else {
       await this.executeCopyAndSend(options);

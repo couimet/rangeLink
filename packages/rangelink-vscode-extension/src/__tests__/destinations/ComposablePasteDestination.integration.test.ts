@@ -1,15 +1,5 @@
-/**
- * Integration tests for ComposablePasteDestination.
- *
- * These tests use REAL FocusCapability implementations (not mocks) to verify
- * end-to-end orchestration works correctly. The VscodeAdapter is mocked
- * to control IDE behavior without requiring a real VSCode instance.
- *
- * Purpose: Ensure mocks used in unit tests accurately represent real behavior.
- */
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { ClipboardPreserver } from '../../clipboard/ClipboardPreserver';
 import {
   AIAssistantFocusCapability,
   AIAssistantInsertFactory,
@@ -21,7 +11,6 @@ import {
   TerminalInsertFactory,
 } from '../../destinations';
 import {
-  createMockClipboardPreserver,
   createMockDocument,
   createMockEditor,
   createMockFormattedLink,
@@ -32,11 +21,9 @@ import {
 
 describe('ComposablePasteDestination Integration Tests', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
-  let mockClipboardPreserver: jest.Mocked<ClipboardPreserver>;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockClipboardPreserver = createMockClipboardPreserver();
   });
 
   describe('Terminal-like destination (real TerminalFocusCapability)', () => {
@@ -47,11 +34,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         processId: Promise.resolve(12345),
       });
 
-      const insertFactory = new TerminalInsertFactory(
-        mockAdapter,
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -62,7 +45,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal');
       const pasteTextSpy = jest
-        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .spyOn(mockAdapter, 'pasteIntoTerminal')
         .mockResolvedValue(undefined);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -79,24 +62,20 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink, 'both');
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(true);
       expect(showTerminalSpy).toHaveBeenCalledTimes(1);
       expect(showTerminalSpy).toHaveBeenCalledWith(mockTerminal, 'steal-focus');
       expect(pasteTextSpy).toHaveBeenCalledTimes(1);
-      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' src/file.ts#L10 ');
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
     });
 
     it('should verify focus happens before text insertion', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(
-        mockAdapter,
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -111,7 +90,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         callOrder.push('focus');
       });
 
-      jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockImplementation(async () => {
+      jest.spyOn(mockAdapter, 'pasteIntoTerminal').mockImplementation(async () => {
         callOrder.push('insert');
       });
 
@@ -127,7 +106,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test-link'), 'both');
+      await destination.pasteLink(createMockFormattedLink('test-link'));
 
       expect(callOrder).toStrictEqual(['focus', 'insert']);
     });
@@ -137,12 +116,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
     it('should complete end-to-end paste flow with clipboard and commands', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      const insertFactory = new AIAssistantInsertFactory(
-        mockAdapter,
-        ['editor.action.clipboardPasteAction'],
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['ai.assistant.focus'],
@@ -154,9 +128,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockResolvedValue(undefined);
-      const clipboardSpy = jest
-        .spyOn(mockAdapter, 'writeTextToClipboard')
-        .mockResolvedValue(undefined);
+      const pasteClipboardSpy = jest
+        .spyOn(mockAdapter, 'pasteTextFromClipboard')
+        .mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'claude-code',
@@ -172,24 +146,18 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink, 'both');
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(true);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
-      expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'ai.assistant.focus');
-      expect(clipboardSpy).toHaveBeenCalledWith(' src/file.ts#L10 ');
-      expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'editor.action.clipboardPasteAction');
+      expect(executeCommandSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledWith('ai.assistant.focus');
+      expect(pasteClipboardSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should try focus commands in order until success', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      const insertFactory = new AIAssistantInsertFactory(
-        mockAdapter,
-        ['editor.action.clipboardPasteAction'],
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['command.first', 'command.second', 'command.third'],
@@ -201,9 +169,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(new Error('First failed'))
-        .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(undefined);
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      jest.spyOn(mockAdapter, 'pasteTextFromClipboard').mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'claude-code',
@@ -217,24 +184,18 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
 
       expect(result).toBe(true);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(3);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
       expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'command.first');
       expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'command.second');
-      expect(executeCommandSpy).toHaveBeenNthCalledWith(3, 'editor.action.clipboardPasteAction');
     });
 
     it('should return false when all focus commands fail', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      const insertFactory = new AIAssistantInsertFactory(
-        mockAdapter,
-        ['editor.action.clipboardPasteAction'],
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['command.first', 'command.second'],
@@ -260,7 +221,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
 
       expect(result).toBe(false);
     });
@@ -302,11 +263,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink, 'both');
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(true);
       expect(insertSpy).toHaveBeenCalledTimes(1);
-      expect(insertSpy).toHaveBeenCalledWith(mockEditor, ' src/file.ts#L10 ');
+      expect(insertSpy).toHaveBeenCalledWith(mockEditor, 'src/file.ts#L10');
     });
 
     it('should handle showTextDocument failure gracefully', async () => {
@@ -341,7 +302,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
 
       expect(result).toBe(false);
     });
@@ -379,7 +340,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
 
       expect(result).toBe(false);
     });
@@ -390,11 +351,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(
-        mockAdapter,
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -415,20 +372,16 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
 
       expect(result).toBe(false);
     });
 
-    it('should apply smart padding with "both" mode', async () => {
+    it('should call pasteIntoTerminal for terminal destinations', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(
-        mockAdapter,
-        mockClipboardPreserver,
-        mockLogger,
-      );
+      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -439,7 +392,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       jest.spyOn(mockAdapter, 'showTerminal');
       const pasteTextSpy = jest
-        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .spyOn(mockAdapter, 'pasteIntoTerminal')
         .mockResolvedValue(undefined);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -454,48 +407,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test-link'), 'both');
+      await destination.pasteLink(createMockFormattedLink('test-link'));
 
-      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' test-link ');
-    });
-
-    it('should apply smart padding with "none" mode', async () => {
-      const mockAdapter = createMockVscodeAdapter();
-      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
-
-      const insertFactory = new TerminalInsertFactory(
-        mockAdapter,
-        mockClipboardPreserver,
-        mockLogger,
-      );
-      const focusCapability = new TerminalFocusCapability(
-        mockAdapter,
-        mockTerminal,
-        insertFactory,
-        mockLogger,
-      );
-      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
-
-      jest.spyOn(mockAdapter, 'showTerminal');
-      const pasteTextSpy = jest
-        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
-        .mockResolvedValue(undefined);
-
-      const destination = ComposablePasteDestination.createForTesting({
-        id: 'terminal',
-        displayName: 'Terminal',
-        resource: { kind: 'terminal', terminal: mockTerminal },
-        focusCapability,
-        eligibilityChecker,
-        isAvailable: () => Promise.resolve(true),
-        jumpSuccessMessage: 'Focused terminal',
-        loggingDetails: {},
-        logger: mockLogger,
-      });
-
-      await destination.pasteLink(createMockFormattedLink('test-link'), 'none');
-
-      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, 'test-link');
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
     });
   });
 });

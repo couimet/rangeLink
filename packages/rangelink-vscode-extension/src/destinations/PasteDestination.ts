@@ -2,7 +2,6 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { AutoPasteResult, DestinationKind } from '../types';
-import type { PaddingMode } from '../utils/applySmartPadding';
 
 /**
  * Interface for RangeLink paste destinations
@@ -72,39 +71,40 @@ export interface PasteDestination {
   isEligibleForPasteContent(content: string): Promise<boolean>;
 
   /**
-   * Paste a RangeLink to this destination with appropriate padding and focus
+   * Paste a RangeLink to this destination with focus and insert.
+   *
+   * Padding is applied upstream by call sites before the clipboard write.
+   * The text arriving here is already padded and already on the clipboard.
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Apply padding based on provided paddingMode
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  pasteLink(formattedLink: FormattedLink, paddingMode: PaddingMode): Promise<boolean>;
+  pasteLink(formattedLink: FormattedLink): Promise<boolean>;
 
   /**
-   * Paste text content to this destination with appropriate padding and focus
+   * Paste text content to this destination with focus and insert.
    *
-   * Used for pasting selected text directly to bound destinations (issue #89).
+   * Padding is applied upstream by call sites before the clipboard write.
+   * The text arriving here is already padded and already on the clipboard.
+   *
    * Unlike pasteLink(), this accepts raw text content without link formatting.
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Apply padding based on provided paddingMode
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *
    * @param content - The text content to paste
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  pasteContent(content: string, paddingMode: PaddingMode): Promise<boolean>;
+  pasteContent(content: string): Promise<boolean>;
 
   /**
    * Get user instruction for manual paste action (clipboard-based destinations only)

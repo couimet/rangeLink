@@ -231,7 +231,7 @@ standardSuite('Send File Path', { assisted: true }, (log) => {
     log('✓ Text editor destination receives auto-quoted path (spaces → single quotes)');
   });
 
-  test('send-file-path-007: clipboard write uses unquoted path even when terminal receives quoted version', async () => {
+  test('send-file-path-007: clipboard and terminal both receive the quoted path (single clipboard write)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -265,20 +265,23 @@ standardSuite('Send File Path', { assisted: true }, (log) => {
     );
     assert.ok(
       quotedLog,
-      'Expected "Quoted path for unsafe characters" log — proves terminal received a quoted path while the original path was unquoted',
+      'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted for terminal safety',
     );
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
     assert.ok(
       clipboard.includes(relativePath),
       `Expected clipboard to include the file path, got: ${JSON.stringify(clipboard)}`,
     );
-    log('✓ Log shows path was quoted for terminal; terminal and clipboard both contain the path');
+    log('✓ Both terminal and clipboard receive the quoted path (single clipboard write)');
   });
 
-  test('send-file-path-008: self-paste shows info notification and copies path to clipboard without modifying file', async () => {
+  test('send-file-path-008: self-paste shows info notification and copies smart-padded path to clipboard without modifying file', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
 
     const fileUri = createWorkspaceFile('sfp-008-self', 'original content\n');
     tmpFileUris.push(fileUri);
@@ -301,14 +304,15 @@ standardSuite('Send File Path', { assisted: true }, (log) => {
       message: 'Selected text copied to clipboard. Cannot paste to same file.',
     });
     const clipboard = await vscode.env.clipboard.readText();
+    const expectedPadded = ` ${relativePath} `;
     assert.strictEqual(
       clipboard,
-      relativePath,
-      `Expected clipboard to contain path "${relativePath}" after self-paste`,
+      expectedPadded,
+      `Expected clipboard to contain smart-padded path "${JSON.stringify(expectedPadded)}" after self-paste, got: ${JSON.stringify(clipboard)}`,
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
-    log('✓ Self-paste: info notification shown, path on clipboard, file unchanged');
+    log('✓ Self-paste: info notification shown, smart-padded path on clipboard, file unchanged');
   });
 
   test('[assisted] send-file-path-009: unbound — R-F opens destination picker before sending', async () => {

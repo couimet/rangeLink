@@ -92,7 +92,7 @@ export const createWiringServices = (
   logger.debug({ fn: 'createWiringServices' }, 'Bookmarks store initialized');
 
   const clipboardPreserver = new DefaultClipboardPreserver(ideAdapter, configReader, logger);
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, clipboardPreserver, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
   const registry = new DestinationRegistry(
     focusCapabilityFactory,

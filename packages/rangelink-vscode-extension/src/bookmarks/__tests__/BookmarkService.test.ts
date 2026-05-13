@@ -98,7 +98,6 @@ describe('BookmarkService', () => {
       expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
         'src/features/my-feature.ts#L10-L20',
         'Bookmark pasted: My Feature',
-        'both',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BookmarkService.sendBookmark', bookmarkId: 'bookmark-1', bookmark: TEST_BOOKMARK },
