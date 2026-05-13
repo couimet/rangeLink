@@ -11,7 +11,6 @@ import {
   createWorkspaceFile,
   getLogCapture,
   openEditor,
-  printAssistedBanner,
   settle,
   waitForHuman,
 } from '../helpers';
@@ -22,7 +21,6 @@ suite('Built-in AI Assistants', () => {
 
   suiteSetup(async () => {
     await activateExtension();
-    printAssistedBanner();
   });
 
   teardown(async () => {
