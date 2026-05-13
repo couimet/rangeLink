@@ -18,7 +18,7 @@ import {
 const LINE_COUNT = 10;
 const LINE_CONTENT = 'abcdefghijklmnopqrst';
 
-standardSuite('Navigation Clamping', {}, (_log) => {
+standardSuite('Navigation Clamping', (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 

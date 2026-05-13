@@ -7,6 +7,8 @@ import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_ONLY_RELATIVE,
   CMD_COPY_LINK_RELATIVE,
+  CMD_COPY_PORTABLE_LINK_RELATIVE,
+  CMD_PASTE_TO_DESTINATION,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
@@ -24,6 +26,7 @@ import {
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   openEditor,
   settle,
   standardSuite,
@@ -35,7 +38,7 @@ import {
 const NO_TERMINAL_SELECTION_MSG =
   'RangeLink: No text selected in the terminal. Select text and try again.';
 
-standardSuite('Core Send Commands', { assisted: true }, (log) => {
+standardSuite('Core Send Commands', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
 
@@ -339,7 +342,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     log('✓ R-V with no bound destination opens picker (log-based)');
   });
 
-  test('[assisted] core-send-commands-r-l-005: R-L with no bound destination opens picker', async () => {
+  test('core-send-commands-r-l-005: R-L with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-l-005', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -350,14 +353,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     const logCaptureRl005 = getLogCapture();
     logCaptureRl005.mark('before-r-l-005');
 
-    await waitForHuman(
-      'core-send-commands-r-l-005',
-      'No destination bound. "test" is already selected.',
-      [
-        'Press Cmd+R Cmd+L — the RangeLink destination picker opens',
-        'Press Escape to dismiss the picker, then click Cancel',
-      ],
-    );
+    await openAndDismiss(CMD_COPY_LINK_RELATIVE);
 
     const itemsRl005 = extractQuickPickItemsLogged(logCaptureRl005.getLinesSince('before-r-l-005'));
     assert.ok(
@@ -368,7 +364,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     log('✓ R-L with no destination opens picker (log-based)');
   });
 
-  test('[assisted] core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
+  test('core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-p-001', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -379,14 +375,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     const logCaptureRp001 = getLogCapture();
     logCaptureRp001.mark('before-r-p-001');
 
-    await waitForHuman(
-      'core-send-commands-r-p-001',
-      'No destination bound. "test" is already selected.',
-      [
-        'Press Cmd+Shift+P → "RangeLink: Send Portable Link" — the RangeLink destination picker opens',
-        'Press Escape to dismiss the picker, then click Cancel',
-      ],
-    );
+    await openAndDismiss(CMD_COPY_PORTABLE_LINK_RELATIVE);
 
     const itemsRp001 = extractQuickPickItemsLogged(logCaptureRp001.getLinesSince('before-r-p-001'));
     assert.ok(
@@ -397,7 +386,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     log('✓ Send Portable Link with no destination opens picker (log-based)');
   });
 
-  test('[assisted] core-send-commands-r-v-001: Send Selected Text with no bound destination opens picker', async () => {
+  test('core-send-commands-r-v-001: Send Selected Text with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-v-001', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -408,14 +397,7 @@ standardSuite('Core Send Commands', { assisted: true }, (log) => {
     const logCaptureRv001 = getLogCapture();
     logCaptureRv001.mark('before-r-v-001');
 
-    await waitForHuman(
-      'core-send-commands-r-v-001',
-      'No destination bound. "test" is already selected.',
-      [
-        'Press Cmd+Shift+P → "RangeLink: Send Selected Text" — the RangeLink destination picker opens',
-        'Press Escape to dismiss the picker, then click Cancel',
-      ],
-    );
+    await openAndDismiss(CMD_PASTE_TO_DESTINATION);
 
     const itemsRv001 = extractQuickPickItemsLogged(logCaptureRv001.getLinesSince('before-r-v-001'));
     assert.ok(

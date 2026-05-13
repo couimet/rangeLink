@@ -13,7 +13,7 @@ import {
   waitForActiveEditor,
 } from '../helpers';
 
-standardSuite('Smart Padding — Editor-to-Editor R-V', {}, (log) => {
+standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
   let sourceFileUri: vscode.Uri;
   let destFileUri: vscode.Uri;
 

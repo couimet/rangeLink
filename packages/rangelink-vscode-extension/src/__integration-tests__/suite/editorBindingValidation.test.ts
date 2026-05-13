@@ -1,10 +1,8 @@
-import assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
 import * as vscode from 'vscode';
 
-import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
   cleanupFiles,
   closeAllEditors,
@@ -13,13 +11,15 @@ import {
   findTestItemsByPrefix,
   getLogCapture,
   getWorkspaceRoot,
+  openAndDismiss,
   settle,
   standardSuite,
-  waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Editor Binding Validation', { assisted: true }, (log) => {
+import assert from 'node:assert';
+
+standardSuite('Editor Binding Validation', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
@@ -92,7 +92,7 @@ standardSuite('Editor Binding Validation', { assisted: true }, (log) => {
     log('✓ Settings UI hides file path/bind commands (human verdict)');
   });
 
-  test('[assisted] editor-binding-validation-004: binary .png file is excluded from R-D destination picker', async () => {
+  test('editor-binding-validation-004: binary .png file is excluded from R-D destination picker', async () => {
     // Minimal PNG magic bytes — enough for VSCode to detect as binary
     const PNG_MAGIC = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const pngPath = path.join(getWorkspaceRoot(), `__rl-test-ebv-004-${Date.now()}.png`);
@@ -116,17 +116,7 @@ standardSuite('Editor Binding Validation', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ebv-004');
 
-    await waitForHuman(
-      'editor-binding-validation-004',
-      'A .txt file is open in col 1, a .png in col 2. Press Cmd+R Cmd+D and Escape — .png must not appear in picker.',
-      [
-        '1. The .txt control file is open in column 1, the .png is open in column 2',
-        '2. Press Cmd+R Cmd+D to open the destination picker',
-        '3. Confirm the .txt file IS listed (positive control)',
-        '4. Confirm no .png file appears in the list',
-        '5. Press Escape to dismiss',
-      ],
-    );
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-ebv-004');
     const items = extractQuickPickItemsLogged(lines);

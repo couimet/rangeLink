@@ -22,6 +22,7 @@ import {
   createTerminal,
   createWorkspaceFile,
   loadSettingsProfile,
+  openAndDismiss,
   openEditor,
   settle,
   standardSuite,
@@ -30,7 +31,7 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
-standardSuite('Clipboard Preservation', {}, (_log) => {
+standardSuite('Clipboard Preservation', (_log) => {
   let testFileUri: vscode.Uri;
   let editor: vscode.TextEditor;
   let capturing: CapturingTerminal;
@@ -117,7 +118,7 @@ standardSuite('Clipboard Preservation', {}, (_log) => {
   });
 });
 
-standardSuite('Clipboard Preservation — Assisted', { assisted: true }, (log) => {
+standardSuite('Clipboard Preservation — Assisted', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
 
@@ -299,28 +300,22 @@ standardSuite('Clipboard Preservation — Assisted', { assisted: true }, (log) =
     log('✓ Clipboard changed from sentinel and phrase landed in destination file after R-V');
   });
 
-  test('[assisted] clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
+  test('clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
 
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-009', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
-    await openEditor(fileUri);
+    const editor009 = await openEditor(fileUri);
+    editor009.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(2, 0),
+    );
     await settle();
     await writeClipboardSentinel();
 
-    await waitForHuman(
-      'clipboard-preservation-009',
-      `clipboard.preserve="always", no destination bound. Select lines, press Cmd+R Cmd+L (picker opens), press Escape. Sentinel: "${CLIPBOARD_SENTINEL}".`,
-      [
-        '1. Click into the test file (cbp-009-...)',
-        '2. Select a few lines',
-        '3. Press Cmd+R Cmd+L — the destination picker opens (no destination is bound)',
-        '4. Press Escape to dismiss without selecting anything',
-        '5. Press Cancel to continue (test asserts clipboard still has the sentinel)',
-      ],
-    );
+    await openAndDismiss(CMD_COPY_LINK_RELATIVE);
 
     await assertClipboardRestored('clipboard-preservation-009: always + picker dismissed');
     log('✓ Clipboard unchanged after picker dismissed (no operation performed)');

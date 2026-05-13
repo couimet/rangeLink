@@ -29,7 +29,7 @@ import {
 
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Terminal', { assisted: true }, (log) => {
+standardSuite('Context Menus — Terminal', (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 

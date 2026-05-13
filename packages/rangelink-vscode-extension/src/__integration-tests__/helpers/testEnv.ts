@@ -29,3 +29,15 @@ export const getExtensionVersion = (): string => {
 
 export const settle = (ms: number = SETTLE_MS): Promise<void> =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Open a QuickPick or InputBox via command, dismiss it with closeQuickOpen, and return after
+ * the promise settles. The caller inspects log-captured items after this resolves.
+ */
+export const openAndDismiss = async (command: string): Promise<void> => {
+  const promise = vscode.commands.executeCommand(command);
+  await settle();
+  await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+  await promise;
+  await settle();
+};

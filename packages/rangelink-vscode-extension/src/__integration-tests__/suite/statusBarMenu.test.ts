@@ -2,13 +2,18 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_TERMINAL_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_TERMINAL_HERE,
+  CMD_OPEN_STATUS_BAR_MENU,
+  CMD_UNBIND_DESTINATION,
+} from '../../constants/commandIds';
 import {
   assertQuickPickItemsLogged,
   cleanupFiles,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   settle,
   standardSuite,
   TERMINAL_READY_MS,
@@ -18,18 +23,18 @@ import {
 
 const SEPARATOR_KIND = -1;
 
-standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
+standardSuite('R-M Status Bar Menu', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   suiteTeardown(async () => {
     cleanupFiles(tmpFileUris);
   });
 
-  test('[assisted] status-bar-menu-002: clicking the status bar item opens the R-M menu', async () => {
+  test('status-bar-menu-002: clicking the status bar item opens the R-M menu', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-002');
 
-    await waitForHuman('status-bar-menu-002', 'Click the RangeLink status bar item, then Escape');
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-menu-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -59,7 +64,7 @@ standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
     log('✓ Unbound menu: no Jump item, correct structure');
   });
 
-  test('[assisted] status-bar-menu-003: Cmd+R Cmd+M keybinding opens the R-M menu', async () => {
+  test('status-bar-menu-003: Cmd+R Cmd+M keybinding opens the R-M menu', async () => {
     const testFileUri = createWorkspaceFile('menu-003', 'line 1\nline 2\n');
     tmpFileUris.push(testFileUri);
     const doc = await vscode.workspace.openTextDocument(testFileUri);
@@ -69,7 +74,7 @@ standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-003');
 
-    await waitForHuman('status-bar-menu-003', 'Press Cmd+R Cmd+M, then Escape');
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-menu-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -99,7 +104,7 @@ standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
     log('✓ Keybinding menu: no Jump item, correct structure');
   });
 
-  test('[assisted] status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
+  test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
     const terminal = vscode.window.createTerminal({ name: 'rl-menu-test' });
     terminal.show(true);
     await settle(TERMINAL_READY_MS);
@@ -111,7 +116,7 @@ standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
       const logCapture = getLogCapture();
       logCapture.mark('before-menu-005');
 
-      await waitForHuman('status-bar-menu-005', 'Open R-M menu (Cmd+R Cmd+M), then Escape');
+      await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
       const lines = logCapture.getLinesSince('before-menu-005');
       assertQuickPickItemsLogged(lines, [
@@ -148,23 +153,14 @@ standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
     log('✓ Status bar item shows correct text and tooltip');
   });
 
-  test('[assisted] status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
+  test('status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-006');
 
-    await waitForHuman(
-      'status-bar-menu-006',
-      'No destination bound. Open the R-M menu (Cmd+R Cmd+M), observe the first item and the absence of "Jump to Bound Destination", then press Escape.',
-      [
-        '1. Press Cmd+R Cmd+M to open the R-M menu',
-        '2. Confirm the first item says "No bound destination. Choose below to bind:"',
-        '3. Confirm there is NO "Jump to Bound Destination" item',
-        '4. Press Escape to dismiss, then click Cancel',
-      ],
-    );
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-006');
     const items = extractQuickPickItemsLogged(lines);

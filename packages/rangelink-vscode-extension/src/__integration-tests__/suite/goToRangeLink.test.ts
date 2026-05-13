@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+import { CMD_GO_TO_RANGELINK } from '../../constants/commandIds';
 import {
   assertInputBoxLogged,
   assertToastLogged,
@@ -11,6 +12,7 @@ import {
   createAndOpenFile,
   extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   settle,
   standardSuite,
   waitForHuman,
@@ -36,7 +38,7 @@ const assertUserCancelledInputLogged = (lines: string[]): void => {
   assert.ok(found, 'Expected GoToRangeLinkCommand.execute "User cancelled input" debug log');
 };
 
-standardSuite('R-G Go to Link', { assisted: true }, (log) => {
+standardSuite('R-G Go to Link', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
@@ -46,11 +48,11 @@ standardSuite('R-G Go to Link', { assisted: true }, (log) => {
     await settle();
   });
 
-  test('[assisted] go-to-link-001: Cmd+R Cmd+G opens the Go to Link input box', async () => {
+  test('go-to-link-001: Cmd+R Cmd+G opens the Go to Link input box', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-001');
 
-    await waitForHuman('go-to-link-001', 'Press Cmd+R Cmd+G, then Escape the input box');
+    await openAndDismiss(CMD_GO_TO_RANGELINK);
 
     const lines = logCapture.getLinesSince('before-gtl-001');
 

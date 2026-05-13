@@ -15,7 +15,7 @@ import {
   standardSuite,
 } from '../helpers';
 
-standardSuite('Navigation Precision', {}, (_log) => {
+standardSuite('Navigation Precision', (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 
