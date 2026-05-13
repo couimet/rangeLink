@@ -105,7 +105,7 @@ if [[ -n "$LABEL_FILTER" ]]; then
   fi
 fi
 
-if [[ -z "$GREP_PATTERN" ]] && ([[ "$MODE" == "automated" ]] || [[ "$NO_ASSISTED" == true ]]); then
+if [[ -z "$GREP_PATTERN" && ( "$MODE" == "automated" || "$NO_ASSISTED" == true ) ]]; then
   export MOCHA_GREP='\[assisted\]'
   export MOCHA_INVERT=true
 fi
