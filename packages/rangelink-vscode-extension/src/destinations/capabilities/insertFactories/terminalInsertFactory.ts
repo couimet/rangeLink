@@ -1,8 +1,9 @@
+import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
-import type { InsertFactory } from './InsertFactory';
-import type { Logger } from 'barebone-logger';
 import type { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
+
+import type { InsertFactory } from './InsertFactory';
 
 /**
  * InsertFactory for terminal destinations.
