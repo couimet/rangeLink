@@ -144,6 +144,10 @@ echo ""
 
 pnpm test:release:prepare
 
+if [[ "$WITH_EXTENSIONS" == "true" ]]; then
+  node "$SCRIPT_DIR/setup-integration-test-settings.js" --suffix -with-ext
+fi
+
 TEST_EXIT=0
 # shellcheck disable=SC2086
 if [[ -n "$GREP_PATTERN" ]]; then
