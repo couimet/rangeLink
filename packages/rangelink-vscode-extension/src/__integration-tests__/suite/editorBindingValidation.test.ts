@@ -6,29 +6,21 @@ import * as vscode from 'vscode';
 
 import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
-  activateExtension,
   cleanupFiles,
   closeAllEditors,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
   getWorkspaceRoot,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
-suite('Editor Binding Validation', () => {
-  const log = createLogger('editorBindingValidation');
+standardSuite('Editor Binding Validation', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);

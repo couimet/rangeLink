@@ -3,27 +3,23 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
+  TERMINAL_READY_MS,
   assertStatusBarMsgLogged,
   cleanupFiles,
-  closeAllEditors,
   createWorkspaceFile,
   getLogCapture,
   settle,
-  TERMINAL_READY_MS,
+  standardSuite,
 } from '../helpers';
 
-suite('Unbind Destination', () => {
+standardSuite('Unbind Destination', {}, (_log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     testFileUri = createWorkspaceFile('unbind', 'line 1 content\nline 2 content\n');
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 

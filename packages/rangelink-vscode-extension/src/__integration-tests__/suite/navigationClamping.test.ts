@@ -2,30 +2,27 @@ import assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertToastLogged,
   cleanupFiles,
   clearEditorSelection,
-  closeAllEditors,
   getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
+  standardSuite,
 } from '../helpers';
 
 const LINE_COUNT = 10;
 const LINE_CONTENT = 'abcdefghijklmnopqrst';
 
-suite('Navigation Clamping', () => {
+standardSuite('Navigation Clamping', {}, (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     const lines = Array.from({ length: LINE_COUNT }, () => LINE_CONTENT);
     testFilename = `__rl-test-clamp-${Date.now()}.ts`;
     const testFilePath = path.join(getWorkspaceRoot(), testFilename);
@@ -34,7 +31,6 @@ suite('Navigation Clamping', () => {
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 

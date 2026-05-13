@@ -5,29 +5,22 @@ import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
-  createLogger,
   createWorkspaceFile,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
 
 const LOGGER = new NoOpLogger();
 
-suite('Link Generation', () => {
+standardSuite('Link Generation', {}, (_log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
-  suiteSetup(async () => {
-    await activateExtension();
-  });
-
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
   });
 
@@ -164,14 +157,8 @@ suite('Link Generation', () => {
   });
 });
 
-suite('Link Generation — Clickable Links (Assisted)', () => {
-  const log = createLogger('linkGenerationAssisted');
+standardSuite('Link Generation — Clickable Links (Assisted)', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await closeAllEditors();

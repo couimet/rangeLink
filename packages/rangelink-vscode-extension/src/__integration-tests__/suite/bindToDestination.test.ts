@@ -4,13 +4,11 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertNoStatusBarMsgLogged,
   assertStatusBarMsgLogged,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
-  createLogger,
   createTerminal,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
@@ -18,21 +16,15 @@ import {
   findTestItemsByPrefix,
   getLogCapture,
   parseQuickPickItemsFromLogLine,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
-suite('R-D Bind to Destination', () => {
-  const log = createLogger('bindToDestination');
+standardSuite('R-D Bind to Destination', { assisted: true }, (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand('rangelink.unbindDestination');

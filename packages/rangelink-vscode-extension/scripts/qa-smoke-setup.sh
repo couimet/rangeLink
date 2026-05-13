@@ -3,20 +3,19 @@ set -euo pipefail
 
 # Usage: ./scripts/qa-smoke-setup.sh [OPTIONS]
 #
-# Automated workspace bootstrap for manual QA testing.
-# Builds the extension, installs into an isolated qa-test profile,
-# applies a settings profile, generates a QA checklist, and launches the editor.
+# Launches an isolated QA session with a fixture workspace and settings profile.
+# Build + install is handled separately — run this first:
+#   pnpm package:vscode-extension:withInstall:both
 #
 # Options:
 #   --editor <vscode|cursor|both>    Editor to target (default: both)
-#   --settings <profile-name>        Settings profile to apply (default: default)
-#   --skip-build                     Skip build+install, assume extension is current
+#   --settings <profile-name>        Settings profile to apply (default: none, uses package.json defaults)
 #   --terminal-count <N>             Remind to open N terminal tabs (default: 0)
 #   --list-profiles                  List available settings profiles and exit
-#   --clean                          Remove qa-test profile extension and regenerate checklist
+#   --clean                          Remove qa-test profile extension
 #   --help                           Show usage
 #
-# Requires: jq, python3 with PyYAML
+# Requires: jq
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -37,8 +36,7 @@ WORKSPACE_DIR="$FIXTURES_DIR/workspace"
 SETTINGS_DIR="$FIXTURES_DIR/settings"
 
 EDITOR_TARGET="both"
-SETTINGS_PROFILE="default"
-SKIP_BUILD=false
+SETTINGS_PROFILE=""
 TERMINAL_COUNT=0
 DO_CLEAN=false
 
@@ -46,19 +44,20 @@ show_help() {
   cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Automated workspace bootstrap for manual QA testing.
+Launches an isolated QA session with a fixture workspace and settings profile.
+
+Prerequisite: build and install the extension first:
+  pnpm package:vscode-extension:withInstall:both
 
 Options:
   --editor <vscode|cursor|both>    Editor to target (default: both)
-  --settings <profile-name>        Settings profile to apply (default: default)
-  --skip-build                     Skip build+install, assume extension is current
+  --settings <profile-name>        Settings profile to apply (default: none, uses package.json defaults)
   --terminal-count <N>             Remind to open N terminal tabs (default: 0)
   --list-profiles                  List available settings profiles and exit
-  --clean                          Remove qa-test profile extension and regenerate checklist
+  --clean                          Remove qa-test profile extension
   --help                           Show usage
 
 Settings profiles (qa/fixtures/settings/):
-  default             clipboard=always, warnOnDirtyBuffer=true
   clipboard-never     clipboard=never
   no-dirty-warning    warnOnDirtyBuffer=false
   custom-delimiters   delimiterLine=@l, delimiterPosition=@c
@@ -75,7 +74,6 @@ list_profiles() {
     name="$(basename "$profile_file" .json)"
     local desc=""
     case "$name" in
-      default)             desc="clipboard=always, warnOnDirtyBuffer=true" ;;
       clipboard-never)     desc="clipboard=never" ;;
       no-dirty-warning)    desc="warnOnDirtyBuffer=false" ;;
       custom-delimiters)   desc="delimiterLine=@l, delimiterPosition=@c" ;;
@@ -102,7 +100,6 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       shift 2 ;;
-    --skip-build)    SKIP_BUILD=true; shift ;;
     --terminal-count)
       TERMINAL_COUNT="${2:-0}"
       shift 2 ;;
@@ -116,12 +113,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-PROFILE_SETTINGS="$SETTINGS_DIR/${SETTINGS_PROFILE}.json"
-if [[ ! -f "$PROFILE_SETTINGS" ]]; then
-  echo -e "${RED}Error: settings profile not found: $PROFILE_SETTINGS${NC}" >&2
-  echo -e "${BLUE}Available profiles:${NC}" >&2
-  list_profiles >&2
-  exit 1
+if [[ -n "$SETTINGS_PROFILE" ]]; then
+  PROFILE_SETTINGS="$SETTINGS_DIR/${SETTINGS_PROFILE}.json"
+  if [[ ! -f "$PROFILE_SETTINGS" ]]; then
+    echo -e "${RED}Error: settings profile not found: $PROFILE_SETTINGS${NC}" >&2
+    echo -e "${BLUE}Available profiles:${NC}" >&2
+    list_profiles >&2
+    exit 1
+  fi
 fi
 
 if [[ ! -d "$WORKSPACE_DIR" ]]; then
@@ -228,39 +227,18 @@ if [[ "$DO_CLEAN" == true ]]; then
   echo ""
 fi
 
-# --- Phase 1: Build + Install ---
-
-if [[ "$SKIP_BUILD" == true ]]; then
-  echo -e "${DIM}Phase 1: Build skipped (--skip-build)${NC}"
-else
-  NEEDS_BUILD=false
-  if [[ ! -f "$VSIX_FILE" ]]; then
-    NEEDS_BUILD=true
-  else
-    SRC_MTIME=$(find "$PACKAGE_DIR/src" -type f -newer "$VSIX_FILE" 2>/dev/null | head -1)
-    if [[ -n "$SRC_MTIME" ]]; then
-      NEEDS_BUILD=true
-    fi
-  fi
-
-  if [[ "$NEEDS_BUILD" == true ]]; then
-    echo -e "${BLUE}Phase 1: Building extension...${NC}"
-    (cd "$REPO_ROOT" && pnpm package:vscode-extension)
-    echo -e "${GREEN}Build complete.${NC}"
-  else
-    echo -e "${DIM}Phase 1: Extension .vsix is current, skipping build${NC}"
-  fi
-fi
+# --- Phase 1: Verify .vsix exists ---
 
 if [[ ! -f "$VSIX_FILE" ]]; then
   echo -e "${RED}Error: .vsix not found at $VSIX_FILE${NC}" >&2
-  echo -e "${BLUE}Run without --skip-build to build first, or run: pnpm package:vscode-extension${NC}" >&2
+  echo -e "${BLUE}Build and install the extension first:${NC}"
+  echo -e "  ${BOLD}pnpm package:vscode-extension:withInstall:both${NC}"
   exit 1
 fi
 
 VSIX_ABSOLUTE="$(cd "$(dirname "$VSIX_FILE")" && pwd)/$(basename "$VSIX_FILE")"
 
-# --- Phase 2: Profile + Extension Install ---
+# --- Phase 2: Install into qa-test profile ---
 
 echo -e "${BLUE}Phase 2: Installing into qa-test profile...${NC}"
 for i in "${!EDITORS[@]}"; do
@@ -286,8 +264,13 @@ echo -e "${GREEN}Profile install complete.${NC}"
 echo -e "${BLUE}Phase 3: Setting up fixture workspace...${NC}"
 
 mkdir -p "$WORKSPACE_DIR/.vscode"
-cp "$PROFILE_SETTINGS" "$WORKSPACE_DIR/.vscode/settings.json"
-echo -e "  Settings profile: ${GREEN}${SETTINGS_PROFILE}${NC}"
+if [[ -n "$SETTINGS_PROFILE" ]]; then
+  cp "$PROFILE_SETTINGS" "$WORKSPACE_DIR/.vscode/settings.json"
+  echo -e "  Settings profile: ${GREEN}${SETTINGS_PROFILE}${NC}"
+else
+  rm -f "$WORKSPACE_DIR/.vscode/settings.json"
+  echo -e "  Settings: ${DIM}defaults from package.json${NC}"
+fi
 
 # --- Phase 4: Editor Launch ---
 
@@ -324,7 +307,8 @@ EDITORS_STR=$(IFS=', '; echo "${EDITOR_NAMES[*]}")
 EDITORS_PAD=$((48 - ${#EDITORS_STR}))
 [[ $EDITORS_PAD -lt 0 ]] && EDITORS_PAD=0
 echo -e "${BOLD}║${NC}  Editor:    ${CYAN}${EDITORS_STR}${NC}$(printf '%*s' $EDITORS_PAD '')${BOLD}║${NC}"
-echo -e "${BOLD}║${NC}  Settings:  ${CYAN}${SETTINGS_PROFILE}${NC}$(printf '%*s' $((48 - ${#SETTINGS_PROFILE})) '')${BOLD}║${NC}"
+DISPLAY_PROFILE="${SETTINGS_PROFILE:-defaults}"
+echo -e "${BOLD}║${NC}  Settings:  ${CYAN}${DISPLAY_PROFILE}${NC}$(printf '%*s' $((48 - ${#DISPLAY_PROFILE})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Extension: ${CYAN}${VERSION_INFO}${NC}$(printf '%*s' $((48 - ${#VERSION_INFO})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Workspace: ${CYAN}qa/fixtures/workspace/${NC}$(printf '%*s' 27 '')${BOLD}║${NC}"
 echo -e "${BOLD}╠══════════════════════════════════════════════════════════════╣${NC}"

@@ -1,18 +1,17 @@
 import assert from 'node:assert';
 
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
-import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
 import {
-  activateExtension,
   assertNoToastLogged,
   assertToastLogged,
   clearEditorSelection,
-  closeAllEditors,
   getLogCapture,
   settle,
+  standardSuite,
 } from '../helpers';
 
 /**
@@ -71,13 +70,11 @@ const navigateToUntitledLink = (
   });
 };
 
-suite('Untitled File Navigation', () => {
+standardSuite('Untitled File Navigation', {}, (_log) => {
   let untitledDoc: vscode.TextDocument;
   let untitledDisplayName: string;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     assert.ok(
       getLogCapture().isCapturing,
       'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
@@ -94,10 +91,6 @@ suite('Untitled File Navigation', () => {
     assert.strictEqual(untitledDoc.uri.scheme, 'untitled', 'Expected untitled document');
 
     untitledDisplayName = getUntitledDisplayName(untitledDoc.uri);
-  });
-
-  suiteTeardown(async () => {
-    await closeAllEditors();
   });
 
   // untitled-navigation-001: Navigate to single line in untitled file

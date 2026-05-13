@@ -11,7 +11,6 @@ import {
 } from '../../constants/commandIds';
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
-  activateExtension,
   assertClipboardChanged,
   assertClipboardRestored,
   assertTerminalBufferContains,
@@ -20,27 +19,23 @@ import {
   closeAllEditors,
   CLIPBOARD_SENTINEL,
   createAndBindCapturingTerminal,
-  createLogger,
   createTerminal,
   createWorkspaceFile,
   loadSettingsProfile,
   openEditor,
-  printAssistedBanner,
-  resetRangelinkSettings,
   settle,
+  standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
 
-suite('Clipboard Preservation', () => {
+standardSuite('Clipboard Preservation', {}, (_log) => {
   let testFileUri: vscode.Uri;
   let editor: vscode.TextEditor;
   let capturing: CapturingTerminal;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     testFileUri = createWorkspaceFile('clipboard', lines.join('\n') + '\n');
 
@@ -52,7 +47,6 @@ suite('Clipboard Preservation', () => {
 
   suiteTeardown(async () => {
     capturing.terminal.dispose();
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 
@@ -123,18 +117,11 @@ suite('Clipboard Preservation', () => {
   });
 });
 
-suite('Clipboard Preservation — Assisted', () => {
-  const log = createLogger('clipboardPreservationAssisted');
+standardSuite('Clipboard Preservation — Assisted', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
 
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
-
   teardown(async () => {
-    await resetRangelinkSettings(log);
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.commands.executeCommand('dummyAi.clearAll');
     for (const t of tmpTerminals.splice(0)) t.dispose();
@@ -145,8 +132,6 @@ suite('Clipboard Preservation — Assisted', () => {
   });
 
   test('[assisted] clipboard-preservation-001: always mode — R-L to terminal restores clipboard', async () => {
-    await loadSettingsProfile('default', log);
-
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     const fileUri = createWorkspaceFile('cbp-001', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
@@ -177,8 +162,6 @@ suite('Clipboard Preservation — Assisted', () => {
 
   test('clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
     const PHRASE = 'hello world cbp-002';
-
-    await loadSettingsProfile('default', log);
 
     const fileUri = createWorkspaceFile('cbp-002', '');
     tmpFileUris.push(fileUri);
@@ -213,8 +196,6 @@ suite('Clipboard Preservation — Assisted', () => {
   });
 
   test('[assisted] clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
-    await loadSettingsProfile('default', log);
-
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     const fileUri = createWorkspaceFile('cbp-004', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
@@ -253,8 +234,6 @@ suite('Clipboard Preservation — Assisted', () => {
   });
 
   test('[assisted] clipboard-preservation-005: always mode — terminal paste (fresh bind) restores clipboard', async () => {
-    await loadSettingsProfile('default', log);
-
     const lines = Array.from({ length: 10 }, (_, i) => `entry ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-005', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
@@ -321,7 +300,6 @@ suite('Clipboard Preservation — Assisted', () => {
   });
 
   test('[assisted] clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
-    await loadSettingsProfile('default', log);
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
 
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);

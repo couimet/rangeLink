@@ -1,29 +1,26 @@
 import assert from 'node:assert';
 import * as path from 'node:path';
 
-import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertNoToastLogged,
   assertSuppressionLogged,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createWorkspaceFile,
   getLogCapture,
   navigateViaHandleLinkClick,
   settle,
+  standardSuite,
 } from '../helpers';
 
-suite('Navigation Toast Settings', () => {
+standardSuite('Navigation Toast Settings', {}, (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     assert.ok(
       getLogCapture().isCapturing,
       'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
@@ -35,7 +32,6 @@ suite('Navigation Toast Settings', () => {
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 

@@ -8,7 +8,6 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertFilePathLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
@@ -19,30 +18,19 @@ import {
   createAndBindCapturingTerminal,
   createCapturingTerminal,
   createFileAt,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
 
-suite('Send File Path', () => {
-  const log = createLogger('sendFilePath');
+standardSuite('Send File Path', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
-
-  suiteTeardown(async () => {
-    await closeAllEditors();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);

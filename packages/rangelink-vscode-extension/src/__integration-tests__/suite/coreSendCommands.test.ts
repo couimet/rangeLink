@@ -6,12 +6,14 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_ONLY_RELATIVE,
+  CMD_COPY_LINK_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertClipboardChanged,
+  assertNoStatusBarMsgLogged,
+  assertNoToastLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   assertToastLogged,
@@ -19,13 +21,12 @@ import {
   cleanupFiles,
   closeAllEditors,
   createAndBindCapturingTerminal,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
   writeClipboardSentinel,
@@ -34,15 +35,9 @@ import {
 const NO_TERMINAL_SELECTION_MSG =
   'RangeLink: No text selected in the terminal. Select text and try again.';
 
-suite('Core Send Commands', () => {
-  const log = createLogger('coreSendCommands');
+standardSuite('Core Send Commands', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
@@ -429,5 +424,130 @@ suite('Core Send Commands', () => {
     );
     assert.ok(itemsRv001.length > 0, 'Expected destination picker to contain at least one item');
     log('✓ Send Selected Text with no destination opens picker (log-based)');
+  });
+
+  test('send-terminal-selection-006: R-L with terminal focus shows no-active-editor error', async () => {
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'csc-sts-006-dest',
+      tmpTerminals,
+    );
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-sts-006');
+
+    capturing.terminal.show();
+    await settle();
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-sts-006');
+    assertToastLogged(lines, {
+      type: 'error',
+      message: 'RangeLink: No active editor',
+    });
+    assert.ok(
+      !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
+      'Expected no clipboard write when R-L invoked from terminal focus',
+    );
+    assertNoStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-sts-006-dest")',
+    });
+    log('✓ R-L from terminal focus shows no-active-editor error');
+  });
+
+  test('send-terminal-selection-007: R-C with terminal focus shows no-active-editor error', async () => {
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'csc-sts-007-dest',
+      tmpTerminals,
+    );
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-sts-007');
+
+    capturing.terminal.show();
+    await settle();
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-sts-007');
+    assertToastLogged(lines, {
+      type: 'error',
+      message: 'RangeLink: No active editor',
+    });
+    assert.ok(
+      !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
+      'Expected no clipboard write when R-C invoked from terminal focus',
+    );
+    log('✓ R-C from terminal focus shows no-active-editor error');
+  });
+
+  test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'csc-r-l-001-dest',
+      tmpTerminals,
+    );
+
+    const fileUri = createWorkspaceFile('csc-r-l-001', 'line 1\nline 2\nline 3\nline 4\nline 5\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(4, 0));
+    await settle();
+    capturing.clearCaptured();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-r-l-001');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-r-l-001');
+    assertStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-r-l-001-dest")',
+    });
+    const captured = capturing.getCapturedText();
+    assertTerminalBufferContains(captured, 'csc-r-l-001');
+    assert.ok(
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded (space-bracketed) link in terminal buffer, got: ${JSON.stringify(captured)}`,
+    );
+    log('✓ R-L sent padded RangeLink to bound terminal');
+  });
+
+  test('full-line-selection-validation-001: R-L after expandLineSelection generates link without error', async () => {
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'csc-fullline-001-dest',
+      tmpTerminals,
+    );
+
+    const fileUri = createWorkspaceFile('csc-fullline-001', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand('expandLineSelection');
+    await settle();
+    capturing.clearCaptured();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fullline-001');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-fullline-001');
+    assertStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-fullline-001-dest")',
+    });
+    assertNoToastLogged(lines, {
+      type: 'error',
+      message: 'RangeLink: No active editor',
+    });
+    const captured = capturing.getCapturedText();
+    assertTerminalBufferContains(captured, 'csc-fullline-001');
+    assert.ok(
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
+    );
+    log('✓ Full-line selection → R-L: link generated, no error');
   });
 });

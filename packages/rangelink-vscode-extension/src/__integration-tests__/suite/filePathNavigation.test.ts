@@ -3,34 +3,30 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-const NON_EXISTENT_PATH_SETTLE_MS = 1000;
-
 import {
-  activateExtension,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createWorkspaceFile,
   getLogCapture,
   getWorkspaceRoot,
   openEditor,
   settle,
+  standardSuite,
 } from '../helpers';
 
-suite('File Path Navigation', () => {
+const NON_EXISTENT_PATH_SETTLE_MS = 1000;
+
+standardSuite('File Path Navigation', {}, (_log) => {
   let testFileUri: vscode.Uri;
   let anchorFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     testFileUri = createWorkspaceFile('filepath', '// rangelink file path nav test\n');
     anchorFileUri = createWorkspaceFile('filepath-anchor', '// anchor\n');
     await openEditor(anchorFileUri);
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri, anchorFileUri]);
   });
 

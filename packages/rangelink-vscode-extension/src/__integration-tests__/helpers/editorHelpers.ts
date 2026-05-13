@@ -4,19 +4,19 @@ import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS, settle } from './testEnv';
 
 export const waitForActiveEditor = async (
   expectedUri: string,
-  log?: (msg: string) => void,
+  log: (msg: string) => void,
 ): Promise<boolean> => {
   const start = Date.now();
   while (Date.now() - start < POLL_TIMEOUT_MS) {
     const activeUri = vscode.window.activeTextEditor?.document.uri.toString();
     if (activeUri === expectedUri) {
-      log?.(`waitForActiveEditor: matched after ${Date.now() - start}ms`);
+      log(`waitForActiveEditor: matched after ${Date.now() - start}ms`);
       return true;
     }
     await settle(POLL_INTERVAL_MS);
   }
   const actualUri = vscode.window.activeTextEditor?.document.uri.toString() ?? '(none)';
-  log?.(`waitForActiveEditor: TIMEOUT — expected=${expectedUri}, actual=${actualUri}`);
+  log(`waitForActiveEditor: TIMEOUT — expected=${expectedUri}, actual=${actualUri}`);
   return false;
 };
 

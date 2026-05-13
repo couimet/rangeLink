@@ -3,14 +3,7 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
-import {
-  activateExtension,
-  createLogger,
-  getExtensionVersion,
-  getLogCapture,
-  printAssistedBanner,
-  waitForHuman,
-} from '../helpers';
+import { getExtensionVersion, getLogCapture, standardSuite, waitForHuman } from '../helpers';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 
@@ -20,14 +13,7 @@ const getReleaseNotifier = () => {
   return ext.exports.releaseNotifier;
 };
 
-suite('Release Notifier', () => {
-  const log = createLogger('releaseNotifier');
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
-
+standardSuite('Release Notifier', { assisted: true }, (log) => {
   test('release-notifier-001: first install stores version silently without notification', async () => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion(undefined);

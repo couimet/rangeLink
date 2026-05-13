@@ -8,37 +8,33 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertClipboardRestored,
+  assertNoToastLogged,
+  assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
   cleanupFiles,
   closeAllEditors,
   createAndBindCapturingTerminal,
   createCapturingTerminal,
-  createLogger,
   createWorkspaceFile,
   getLogCapture,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
-suite('Dirty Buffer Warning', () => {
+standardSuite('Dirty Buffer Warning', { assisted: true }, (_log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     testFileUri = createWorkspaceFile('dirty', 'const x = 1;\n');
-    printAssistedBanner();
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 
@@ -352,20 +348,55 @@ suite('Dirty Buffer Warning', () => {
       cleanupFiles([cleanUri]);
     }
   });
+
+  test('dirty-buffer-warning-007: clean file generates link immediately without dialog', async () => {
+    const capturing = await createAndBindCapturingTerminal('dirty-buffer-test');
+
+    const cleanUri = createWorkspaceFile('clean-rl-007', 'line 1\nline 2\nline 3\nline 4\n');
+
+    try {
+      const editor = await openEditor(cleanUri);
+      editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(3, 0));
+      await editor.document.save();
+      await settle();
+      capturing.clearCaptured();
+
+      const logCapture = getLogCapture();
+      logCapture.mark('before-007');
+
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await settle();
+
+      const lines = logCapture.getLinesSince('before-007');
+      assertStatusBarMsgLogged(lines, {
+        message: '✓ RangeLink copied to clipboard & sent to Terminal ("dirty-buffer-test")',
+      });
+      assertNoToastLogged(lines, {
+        type: 'warning',
+        message: 'File has unsaved changes. Link may point to wrong position after save.',
+      });
+      const captured = capturing.getCapturedText();
+      assertTerminalBufferContains(captured, 'clean-rl-007');
+      assert.ok(
+        captured.startsWith(' ') && captured.endsWith(' '),
+        `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
+      );
+    } finally {
+      capturing.terminal.dispose();
+      await closeAllEditors();
+      cleanupFiles([cleanUri]);
+    }
+  });
 });
 
-suite('Dirty Buffer Warning — Dialog Interaction', () => {
-  const log = createLogger('dirtyBufferDialog');
+standardSuite('Dirty Buffer Warning — Dialog Interaction', { assisted: true }, (log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
     testFileUri = createWorkspaceFile('dirty-dialog', 'original content\n');
-    printAssistedBanner();
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 

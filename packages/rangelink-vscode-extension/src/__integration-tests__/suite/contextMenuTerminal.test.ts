@@ -10,7 +10,6 @@ import {
 } from '../../constants/commandIds';
 import {
   TERMINAL_READY_MS,
-  activateExtension,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
@@ -19,27 +18,20 @@ import {
   createAndBindCapturingTerminal,
   createAndOpenFile,
   createCapturingTerminal,
-  createLogger,
   createTerminal,
   extractQuickPickItemsLogged,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-suite('Context Menus — Terminal', () => {
-  const log = createLogger('contextMenuTerminal');
+standardSuite('Context Menus — Terminal', { assisted: true }, (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);

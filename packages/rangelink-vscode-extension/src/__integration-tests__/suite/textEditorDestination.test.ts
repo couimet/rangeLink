@@ -8,27 +8,19 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertNoToastLogged,
   assertToastLogged,
   cleanupFiles,
   closeAllEditors,
-  createLogger,
   createWorkspaceFile,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
 } from '../helpers';
 
-suite('Text Editor Destination', () => {
-  const log = createLogger('textEditorDestination');
+standardSuite('Text Editor Destination', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);

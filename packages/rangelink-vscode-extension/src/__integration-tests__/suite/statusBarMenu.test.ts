@@ -4,16 +4,13 @@ import * as vscode from 'vscode';
 
 import { CMD_BIND_TO_TERMINAL_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertQuickPickItemsLogged,
   cleanupFiles,
-  closeAllEditors,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
   waitForHumanVerdict,
@@ -21,17 +18,10 @@ import {
 
 const SEPARATOR_KIND = -1;
 
-suite('R-M Status Bar Menu', () => {
-  const log = createLogger('statusBarMenu');
+standardSuite('R-M Status Bar Menu', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
-
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
   });
 
