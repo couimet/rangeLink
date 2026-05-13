@@ -15,7 +15,7 @@ let yamlPath = '';
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
     case '--label':
-      if (i + 1 >= args.length) {
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
         process.stderr.write('Error: --label requires a value\n');
         process.exit(1);
       }
@@ -28,7 +28,7 @@ for (let i = 0; i < args.length; i++) {
       noAssisted = true;
       break;
     case '--yaml':
-      if (i + 1 >= args.length) {
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
         process.stderr.write('Error: --yaml requires a value\n');
         process.exit(1);
       }
@@ -56,9 +56,15 @@ const scriptDir = path.dirname(__filename);
 const qaDir = path.join(scriptDir, '..', 'qa');
 
 if (!yamlPath) {
-  const files = fs
-    .readdirSync(qaDir)
-    .filter((f) => f.startsWith('qa-test-cases-v') && f.endsWith('.yaml'));
+  let files;
+  try {
+    files = fs
+      .readdirSync(qaDir)
+      .filter((f) => f.startsWith('qa-test-cases-v') && f.endsWith('.yaml'));
+  } catch (err) {
+    process.stderr.write(`Error: Cannot read QA directory ${qaDir}: ${err.message}\n`);
+    process.exit(1);
+  }
 
   if (files.length === 0) {
     process.stderr.write('Error: No QA YAML files found in qa/ directory\n');

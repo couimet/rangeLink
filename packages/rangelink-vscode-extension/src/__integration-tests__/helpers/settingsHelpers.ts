@@ -14,8 +14,16 @@ export const loadSettingsProfile = async (
   const profilePath = path.join(getWorkspaceRoot(), SETTINGS_PROFILES_DIR, `${profileName}.json`);
   log(`loadSettingsProfile: loading ${profileName} from ${profilePath}`);
 
-  const profileContent = fs.readFileSync(profilePath, 'utf8');
-  const settings = JSON.parse(profileContent) as Record<string, unknown>;
+  if (!fs.existsSync(profilePath)) {
+    throw new Error(`loadSettingsProfile: profile file not found at ${profilePath}`);
+  }
+
+  let settings: Record<string, unknown>;
+  try {
+    settings = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
+  } catch (err) {
+    throw new Error(`loadSettingsProfile: Failed to parse profile ${profileName}: ${err}`);
+  }
   const config = vscode.workspace.getConfiguration();
 
   for (const [key, value] of Object.entries(settings)) {
