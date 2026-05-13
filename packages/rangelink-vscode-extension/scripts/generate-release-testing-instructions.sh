@@ -8,8 +8,7 @@ set -euo pipefail
 #
 # Usage: ./scripts/generate-release-testing-instructions.sh
 #
-# Filename: qa/release-testing-instructions-v<version>[-NNN].md
-# Reruns append a suffix: -001, -002, etc.
+# Filename: qa/release-testing-instructions-v<version>.md
 #
 # Requires: jq, nextTargetVersion set in package.json
 # Optional: gh CLI (authenticated), python3 with PyYAML
@@ -129,7 +128,7 @@ Create or carry forward the QA test plan YAML for v${NEXT_VERSION}.
 pnpm generate:qa-test-plan:vscode-extension
 \`\`\`
 
-This creates \`qa/qa-test-cases-v${NEXT_VERSION}[-NNN].yaml\` by carrying forward all TCs from the previous plan with statuses reset to pending.
+This creates \`qa/qa-test-cases-v${NEXT_VERSION}.yaml\` by carrying forward all TCs from the previous plan with statuses reset to pending.
 
 ### AI-powered gap detection
 
@@ -225,7 +224,7 @@ Generate a local QA checklist:
 pnpm generate:qa-issue:vscode-extension -- --local
 \`\`\`
 
-The generated checklist is at \`qa/qa-issues-local-v${NEXT_VERSION}-<timestamp>.md\`.
+The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timestamp>.md\`.
 
 **Suggested order:**
 1. **Ready-now TCs** — no terminal setup needed, test immediately

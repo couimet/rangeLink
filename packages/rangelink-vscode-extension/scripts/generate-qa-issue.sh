@@ -14,7 +14,7 @@ set -euo pipefail
 # If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
 # prompts for confirmation before proceeding.
 #
-# Filename convention: qa-test-cases-<version>[-NNN].yaml
+# Filename convention: qa-test-cases-<version>.yaml
 # Version is derived from the filename — no extra flags needed.
 #
 # Requires:
