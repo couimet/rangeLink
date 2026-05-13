@@ -12,7 +12,7 @@ import {
   standardSuite,
 } from '../helpers';
 
-standardSuite('Unbind Destination', {}, (_log) => {
+standardSuite('Unbind Destination', (_log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {

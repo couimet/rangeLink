@@ -4,6 +4,7 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   cleanupFiles,
   closeAllEditors,
@@ -12,6 +13,7 @@ import {
   findTestItemsByPrefix,
   getLogCapture,
   getWorkspaceRoot,
+  openAndDismiss,
   parseQuickPickItemsFromLogLine,
   settle,
   standardSuite,
@@ -21,7 +23,7 @@ import {
 const SEPARATOR_KIND = -1;
 const FILE_OVERFLOW_THRESHOLD = 5;
 
-standardSuite('File Picker', { assisted: true }, (log) => {
+standardSuite('File Picker', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
@@ -35,7 +37,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
   const findTestFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     findTestItemsByPrefix(items, '__rl-test-fp-');
 
-  test('[assisted] file-picker-001: bound file appears first with bound badge', async () => {
+  test('file-picker-001: bound file appears first with bound badge', async () => {
     const uriA = await createAndOpenFile(
       'fp-001-a',
       'line 1\nline 2\n',
@@ -56,7 +58,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-001');
 
-    await waitForHuman('file-picker-001', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-001');
     const items = extractQuickPickItemsLogged(lines);
@@ -92,7 +94,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Bound file first with full semantic state + description');
   });
 
-  test('[assisted] file-picker-002: active file appears before others in its group', async () => {
+  test('file-picker-002: active file appears before others in its group', async () => {
     const uriA = await createAndOpenFile(
       'fp-002-a',
       'file a\n',
@@ -111,7 +113,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-002');
 
-    await waitForHuman('file-picker-002', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -147,7 +149,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Files ordered by ViewColumn (Tab Group 1 before Tab Group 2)');
   });
 
-  test('[assisted] file-picker-003: same base name shows path disambiguation', async () => {
+  test('file-picker-003: same base name shows path disambiguation', async () => {
     const wsRoot = getWorkspaceRoot();
     const subDirA = path.join(wsRoot, 'src', 'dirA');
     const subDirB = path.join(wsRoot, 'src', 'dirB');
@@ -176,7 +178,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-003');
 
-    await waitForHuman('file-picker-003', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -224,14 +226,14 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Path disambiguation validated with disambiguator in descriptions');
   });
 
-  test('[assisted] file-picker-004: open files appear as inline items in destination picker', async () => {
+  test('file-picker-004: open files appear as inline items in destination picker', async () => {
     const uri = await createAndOpenFile('fp-004', 'content\n', undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-004');
 
-    await waitForHuman('file-picker-004', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-004');
     const items = extractQuickPickItemsLogged(lines);
@@ -260,7 +262,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ File appears inline in R-D picker — full assertion');
   });
 
-  test('[assisted] file-picker-005: overflow shows "More files..." when exceeding inline limit', async () => {
+  test('file-picker-005: overflow shows "More files..." when exceeding inline limit', async () => {
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
       await createAndOpenFile(`fp-005-${i}`, `file ${i}\n`, undefined, tmpFileUris);
     }
@@ -268,7 +270,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-005');
 
-    await waitForHuman('file-picker-005', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-005');
     const items = extractQuickPickItemsLogged(lines);
@@ -537,7 +539,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Secondary picker shows path disambiguation');
   });
 
-  test('[assisted] file-picker-011: three files with same name show deeper disambiguation paths', async () => {
+  test('file-picker-011: three files with same name show deeper disambiguation paths', async () => {
     const wsRoot = getWorkspaceRoot();
     const dirA = path.join(wsRoot, 'src', 'a', 'nested');
     const dirB = path.join(wsRoot, 'src', 'b', 'nested');
@@ -577,7 +579,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-011');
 
-    await waitForHuman('file-picker-011', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-011');
     const items = extractQuickPickItemsLogged(lines);
@@ -632,7 +634,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Three same-name files: same label/displayName, unique disambiguated descriptions');
   });
 
-  test('[assisted] file-picker-012: unique file names have no disambiguator in description', async () => {
+  test('file-picker-012: unique file names have no disambiguator in description', async () => {
     const uriA = await createAndOpenFile(
       'fp-012-alpha',
       'file a\n',
@@ -651,7 +653,7 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-012');
 
-    await waitForHuman('file-picker-012', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-fp-012');
     const items = extractQuickPickItemsLogged(lines);
@@ -687,14 +689,14 @@ standardSuite('File Picker', { assisted: true }, (log) => {
     log('✓ Unique file names: no disambiguator, ordered by ViewColumn');
   });
 
-  test('[assisted] file-picker-009: file picker appears inline in R-M menu when unbound', async () => {
+  test('file-picker-009: file picker appears inline in R-M menu when unbound', async () => {
     const uri = await createAndOpenFile('fp-009', 'content\n', undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-009');
 
-    await waitForHuman('file-picker-009', 'Open R-M menu (Cmd+R Cmd+M), then Escape');
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-fp-009');
     const items = extractQuickPickItemsLogged(lines);

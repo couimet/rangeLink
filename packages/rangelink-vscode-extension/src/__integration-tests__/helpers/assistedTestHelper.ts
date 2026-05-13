@@ -4,22 +4,8 @@ import * as vscode from 'vscode';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
 
-const ASSISTED_BANNER_WIDTH = 60;
-const BANNER_LINE = '═'.repeat(ASSISTED_BANNER_WIDTH);
-const SECTION_LINE = '─'.repeat(ASSISTED_BANNER_WIDTH);
-
-/**
- * Prints a visible banner at suite start explaining the assisted mode workflow.
- * Call this in suiteSetup() for any suite containing [assisted] tests.
- */
-export const printAssistedBanner = (): void => {
-  nodeConsole.log(`\n${BANNER_LINE}`);
-  nodeConsole.log('ASSISTED TEST MODE');
-  nodeConsole.log('Tests tagged [assisted] will pause for human interaction.');
-  nodeConsole.log('Instructions appear as a persistent VS Code notification.');
-  nodeConsole.log('Click Cancel on the notification when you have completed the action.');
-  nodeConsole.log(BANNER_LINE);
-};
+const SECTION_LINE_WIDTH = 60;
+const SECTION_LINE = '─'.repeat(SECTION_LINE_WIDTH);
 
 /**
  * Pauses the test until the human completes a UI action.

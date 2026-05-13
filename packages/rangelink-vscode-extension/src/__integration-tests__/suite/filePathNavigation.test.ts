@@ -16,7 +16,7 @@ import {
 
 const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 
-standardSuite('File Path Navigation', {}, (_log) => {
+standardSuite('File Path Navigation', (_log) => {
   let testFileUri: vscode.Uri;
   let anchorFileUri: vscode.Uri;
 

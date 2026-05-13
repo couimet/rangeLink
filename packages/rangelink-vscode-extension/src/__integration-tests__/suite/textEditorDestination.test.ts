@@ -19,7 +19,7 @@ import {
   waitForHuman,
 } from '../helpers';
 
-standardSuite('Text Editor Destination', { assisted: true }, (log) => {
+standardSuite('Text Editor Destination', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {

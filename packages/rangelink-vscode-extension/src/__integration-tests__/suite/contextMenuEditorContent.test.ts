@@ -26,7 +26,7 @@ import {
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Editor Content', { assisted: true }, (log) => {
+standardSuite('Context Menus — Editor Content', (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
   let originalMultiLinePasteWarning: unknown;

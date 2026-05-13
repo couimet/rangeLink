@@ -13,7 +13,7 @@ const getReleaseNotifier = () => {
   return ext.exports.releaseNotifier;
 };
 
-standardSuite('Release Notifier', { assisted: true }, (log) => {
+standardSuite('Release Notifier', (log) => {
   test('release-notifier-001: first install stores version silently without notification', async () => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion(undefined);

@@ -2,17 +2,23 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_CLAUDE_CODE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_DESTINATION,
+  CMD_UNBIND_DESTINATION,
+} from '../../constants/commandIds';
 import {
   activateExtension,
   cleanupFiles,
   closeAllEditors,
   createLogger,
   createWorkspaceFile,
+  extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
 } from '../helpers';
 
@@ -22,7 +28,6 @@ suite('Built-in AI Assistants', () => {
 
   suiteSetup(async () => {
     await activateExtension();
-    printAssistedBanner();
   });
 
   teardown(async () => {
@@ -136,5 +141,24 @@ suite('Built-in AI Assistants', () => {
     assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
 
     log('✓ Warm paste: content arrived without cold-start refocus');
+  });
+});
+
+standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
+  test('github-copilot-chat-001: GitHub Copilot Chat appears in destination picker when available', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-copilot-001');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-copilot-001');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry — was the picker opened?');
+
+    const copilotItem = items!.find((item) => item.displayName === 'GitHub Copilot Chat');
+    assert.ok(copilotItem, 'Expected "GitHub Copilot Chat" in the destination picker items');
+    assert.strictEqual(copilotItem!.itemKind, 'bindable');
+
+    log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
   });
 });

@@ -40,7 +40,7 @@ test_cases:
     steps:
       - 'Click the $(link) RangeLink item in the status bar'
     expected_result: "A QuickPick menu opens titled 'RangeLink Menu'. Menu items are visible."
-    automated: assisted
+    automated: true
 
   - id: status-bar-menu-003
     feature: 'R-M Status Bar Menu'
@@ -50,7 +50,7 @@ test_cases:
     steps:
       - 'Press Cmd+R Cmd+M'
     expected_result: 'Same QuickPick menu opens as clicking the status bar item.'
-    automated: assisted
+    automated: true
 
   - id: status-bar-menu-004
     labels:
@@ -73,7 +73,7 @@ test_cases:
       - 'Open the R-M menu (keybinding or status bar click)'
       - 'Observe the menu items'
     expected_result: "Menu contains 'Jump to Bound Destination' with the destination name shown. 'Unbind Destination' is also visible."
-    automated: assisted
+    automated: true
 
   - id: status-bar-menu-006
     feature: 'R-M Status Bar Menu'
@@ -84,7 +84,7 @@ test_cases:
       - 'Open the R-M menu'
       - 'Observe the first item'
     expected_result: "Menu shows a bind item that opens the destination picker. 'Jump to Bound Destination' is absent."
-    automated: assisted
+    automated: true
 
   - id: status-bar-menu-007
     feature: 'R-M Status Bar Menu'
@@ -198,7 +198,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Press Escape without selecting anything'
     expected_result: 'Picker closes. Binding state is unchanged.'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-011
     labels:
@@ -236,7 +236,7 @@ test_cases:
       - 'Open R-D destination picker (Cmd+R Cmd+D or Ctrl+R Ctrl+D)'
       - 'Observe the picker items'
     expected_result: 'Picker shows inline terminal items up to maxInline limit, "More terminals..." overflow item, inline file items (current-in-group), "More files..." overflow item, and standard command items (Go to Link, Show Version Info).'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-014
     feature: 'R-D Bind to Destination'
@@ -275,7 +275,7 @@ test_cases:
       - "Click a terminal tab (e.g., 'Gamma') to make it the active terminal"
       - 'Open the terminal picker via R-D or R-M'
     expected_result: "'Gamma' shows an 'active' badge in the picker. Other terminals have no badge."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-002
     feature: 'Terminal Picker'
@@ -286,7 +286,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a 'bound' badge. 'Gamma' shows an 'active' badge."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-003
     feature: 'Terminal Picker'
@@ -297,7 +297,7 @@ test_cases:
       - "Click the 'Beta' terminal tab to make it active"
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a combined 'bound · active' badge (both indicators present on the same item)."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-004
     feature: 'Terminal Picker'
@@ -308,7 +308,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' is the first item in the terminal list, regardless of the order terminals were opened."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-005
     feature: 'Terminal Picker'
@@ -319,7 +319,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' (bound) is first. 'Gamma' (active, not bound) is second. Remaining terminals follow in any order."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-006
     labels:
@@ -332,7 +332,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
@@ -343,7 +343,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "All terminals appear inline. No 'More terminals...' item is visible."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-008
     feature: 'Terminal Picker'
@@ -354,7 +354,7 @@ test_cases:
     steps:
       - 'Open R-D picker or terminal sub-section of R-M'
     expected_result: "Only 3 terminals shown inline. A 'More terminals...' item appears at the bottom of the terminal section."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-009
     feature: 'Terminal Picker'
@@ -385,7 +385,7 @@ test_cases:
       - 'Set rangelink.terminalPicker.maxInline = 2 in VS Code settings'
       - 'Open R-D picker'
     expected_result: "Only 2 terminals shown inline. 'More terminals...' appears. Previously all 4 were inline with higher maxInline."
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-012
     feature: 'Terminal Picker'
@@ -397,7 +397,7 @@ test_cases:
       - 'Open R-M menu'
       - 'Observe the terminal entries in the menu'
     expected_result: 'Terminal picker items appear inline within the R-M menu. Selecting one binds that terminal.'
-    automated: assisted
+    automated: true
 
   - id: terminal-picker-013
     feature: 'Terminal Picker'
@@ -408,7 +408,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D'
       - 'Observe that terminal entries are part of the combined destination picker'
     expected_result: 'Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
@@ -423,7 +423,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "src/utils/helper.ts appears at the top of the file list with a 'bound' badge."
-    automated: assisted
+    automated: true
 
   - id: file-picker-002
     feature: 'File Picker'
@@ -436,7 +436,7 @@ test_cases:
       - 'Click src/index.ts to make it active in tab group 1'
       - 'Open R-D picker'
     expected_result: 'src/index.ts appears before other files in tab group 1 within the picker.'
-    automated: assisted
+    automated: true
 
   - id: file-picker-003
     feature: 'File Picker'
@@ -447,7 +447,7 @@ test_cases:
       - 'Open both files in the editor'
       - 'Open R-D picker (file section)'
     expected_result: 'Both index.ts files appear with enough path context to distinguish them (e.g., utils/index.ts and types/index.ts).'
-    automated: assisted
+    automated: true
 
   - id: file-picker-004
     feature: 'File Picker'
@@ -457,7 +457,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "The open file entries appear inline in the picker. No 'More files...' item."
-    automated: assisted
+    automated: true
 
   - id: file-picker-005
     feature: 'File Picker'
@@ -467,7 +467,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "Only the inline limit of files is shown. A 'More files...' item appears at the bottom of the file section."
-    automated: assisted
+    automated: true
 
   - id: file-picker-006
     feature: 'File Picker'
@@ -510,7 +510,7 @@ test_cases:
     steps:
       - 'Open R-M menu'
     expected_result: 'File entries appear inline within the R-M menu. Selecting one binds the file as the destination.'
-    automated: assisted
+    automated: true
 
   - id: file-picker-010
     feature: 'File Picker'
@@ -532,7 +532,7 @@ test_cases:
     steps:
       - 'Open R-D destination picker'
     expected_result: 'All three files appear with unique disambiguating path fragments that distinguish their locations.'
-    automated: assisted
+    automated: true
 
   - id: file-picker-012
     feature: 'File Picker'
@@ -542,7 +542,7 @@ test_cases:
     steps:
       - 'Open R-D destination picker'
     expected_result: 'File descriptions contain only badges and tab group labels — no disambiguation path prefix.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 5 — Clipboard Preservation
@@ -697,7 +697,7 @@ test_cases:
       - 'Press Escape to dismiss without selecting anything'
       - 'Press Cancel — test reads clipboard and asserts it still equals the sentinel'
     expected_result: 'Clipboard contains the sentinel value. assertClipboardRestored passes — no preserve cycle was triggered because the operation was cancelled before any transport.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-010
     labels:
@@ -1730,7 +1730,7 @@ test_cases:
     steps:
       - 'Press Cmd+R Cmd+G'
     expected_result: 'An input box appears with placeholder text indicating it expects a RangeLink (e.g., path/to/file.ts#L10).'
-    automated: assisted
+    automated: true
 
   # go-to-link-002 removed — Ctrl+R Ctrl+G on Win/Linux tests VS Code's keybinding
   # resolution, not RangeLink behavior. Both bindings are declared in package.json;
@@ -1911,7 +1911,7 @@ test_cases:
       - 'Confirm the .png file is NOT listed'
       - 'Press Escape to dismiss'
     expected_result: 'The .png file does not appear in the picker despite being open. The .txt file does appear. The isBinaryFile filter in the R-D picker is the upstream defense; runtime rejection in PasteDestinationManager.bindTextEditor is a defense-in-depth layer covered by unit tests.'
-    automated: assisted
+    automated: true
 
   - id: editor-binding-validation-005
     feature: 'Editor Binding Validation'
@@ -2242,7 +2242,7 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe — destination picker should appear'
     expected_result: 'Destination picker opens. Selecting a destination binds it and sends the RangeLink. Escape dismisses silently with no clipboard write.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-p-001
     labels:
@@ -2258,7 +2258,7 @@ test_cases:
       - "Select 'RangeLink: Send Portable Link'"
       - 'Observe — destination picker should appear'
     expected_result: 'Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-v-001
     labels:
@@ -2273,7 +2273,7 @@ test_cases:
       - 'Select text'
       - "Open Command Palette, select 'RangeLink: Send Selected Text'"
     expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Text Editor Destination
@@ -2820,7 +2820,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D to open destination picker'
       - 'Observe the picker items'
     expected_result: 'The custom AI assistant appears in the picker with its configured extensionName, after the built-in destinations'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-004
     labels:
@@ -2872,7 +2872,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D to open destination picker'
       - 'Observe order of custom AI assistants in the picker'
     expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-008
     labels:
@@ -3097,15 +3097,15 @@ test_cases:
 
   - id: github-copilot-chat-001
     feature: 'Built-in AI Assistants'
-    scenario: 'GitHub Copilot Chat appears in destination picker when extension is active'
+    scenario: 'GitHub Copilot Chat appears in destination picker when available'
     preconditions:
-      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'VS Code has built-in workbench.action.chat.open command (present in all modern VS Code)'
       - 'No destination currently bound'
     steps:
       - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
       - 'Confirm "GitHub Copilot Chat" item appears in the AI Assistants group'
     expected_result: '"GitHub Copilot Chat" is listed in the AI Assistants group of the destination picker'
-    automated: false
+    automated: true
 
   - id: github-copilot-chat-002
     labels:

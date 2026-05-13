@@ -28,7 +28,7 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
-standardSuite('Send File Path', { assisted: true }, (log) => {
+standardSuite('Send File Path', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
   const tmpTerminals: vscode.Terminal[] = [];
 

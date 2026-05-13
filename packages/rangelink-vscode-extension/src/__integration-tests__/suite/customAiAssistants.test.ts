@@ -2,6 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
   assertClipboardChanged,
   assertClipboardRestored,
@@ -11,6 +12,7 @@ import {
   createAndOpenFile,
   extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   settle,
   standardSuite,
   waitForHuman,
@@ -20,7 +22,7 @@ import {
 const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 6;
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 5;
 
-standardSuite('Custom AI Assistants', {}, (_log) => {
+standardSuite('Custom AI Assistants', (_log) => {
   test('custom-ai-assistant-001: three-tier config is parsed and logged at activation', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
@@ -204,20 +206,12 @@ standardSuite('Custom AI Assistants', {}, (_log) => {
   });
 });
 
-standardSuite('Custom AI Assistants — Destination Picker (Assisted)', { assisted: true }, (log) => {
-  test('[assisted] custom-ai-assistant-003: custom AI assistant appears in R-D destination picker with configured display name', async () => {
+standardSuite('Custom AI Assistants — Destination Picker', (log) => {
+  test('custom-ai-assistant-003: custom AI assistant appears in R-D destination picker with configured display name', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-003');
 
-    await waitForHuman(
-      'custom-ai-assistant-003',
-      'Open R-D picker (Cmd+R Cmd+D), observe that Dummy AI entries appear, then press Escape',
-      [
-        '1. Press Cmd+R Cmd+D to open the destination picker',
-        '2. Observe the list — confirm "Dummy AI (Tier 1)" appears',
-        '3. Press Escape to close without selecting',
-      ],
-    );
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -230,19 +224,11 @@ standardSuite('Custom AI Assistants — Destination Picker (Assisted)', { assist
     log('✓ custom-ai-assistant-003 — log confirms "Dummy AI (Tier 1)" appears in R-D picker');
   });
 
-  test('[assisted] custom-ai-assistant-007: multiple custom AI assistants listed in user-defined order', async () => {
+  test('custom-ai-assistant-007: multiple custom AI assistants listed in user-defined order', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-007');
 
-    await waitForHuman(
-      'custom-ai-assistant-007',
-      'Open R-D picker (Cmd+R Cmd+D), observe Dummy AI order (Tier 1 → Tier 2 → Tier 3 → Template → Fallback), then press Escape',
-      [
-        '1. Press Cmd+R Cmd+D to open the destination picker',
-        '2. Observe custom AI assistants appear in order: Tier 1, Tier 2, Tier 3, Template, Fallback',
-        '3. Press Escape to close without selecting',
-      ],
-    );
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-007');
     const items = extractQuickPickItemsLogged(lines);
@@ -277,7 +263,7 @@ standardSuite('Custom AI Assistants — Destination Picker (Assisted)', { assist
   });
 });
 
-standardSuite('Custom AI Assistants — Cold Start', { assisted: true }, (log) => {
+standardSuite('Custom AI Assistants — Cold Start', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
@@ -333,7 +319,7 @@ standardSuite('Custom AI Assistants — Cold Start', { assisted: true }, (log) =
   });
 });
 
-standardSuite('Custom AI Assistants — Paste Flow', { assisted: true }, (log) => {
+standardSuite('Custom AI Assistants — Paste Flow', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   suiteSetup(async () => {

@@ -2,6 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   cleanupFiles,
   closeAllEditors,
@@ -11,6 +12,7 @@ import {
   findTerminalItems,
   getLogCapture,
   loadSettingsProfile,
+  openAndDismiss,
   parseQuickPickItemsFromLogLine,
   settle,
   standardSuite,
@@ -22,7 +24,7 @@ const TERMINAL_OVERFLOW_COUNT = 6;
 const MAX_INLINE_DEFAULT = 5;
 const FILE_OVERFLOW_THRESHOLD = 5;
 
-standardSuite('Terminal Picker', { assisted: true }, (log) => {
+standardSuite('Terminal Picker', (log) => {
   const terminals: vscode.Terminal[] = [];
 
   teardown(async () => {
@@ -35,7 +37,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     await settle();
   });
 
-  test('[assisted] terminal-picker-001: active terminal is marked with active badge', async () => {
+  test('terminal-picker-001: active terminal is marked with active badge', async () => {
     const t1 = await createTerminal('rl-tp-001-a', terminals);
     await createTerminal('rl-tp-001-b', terminals);
     t1.show(true);
@@ -44,7 +46,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-001');
 
-    await waitForHuman('terminal-picker-001', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-001');
     const items = extractQuickPickItemsLogged(lines);
@@ -83,7 +85,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Active terminal: all 6 fields. Non-active: no badge, no isActive');
   });
 
-  test('[assisted] terminal-picker-002: bound terminal is marked with bound badge', async () => {
+  test('terminal-picker-002: bound terminal is marked with bound badge', async () => {
     await createTerminal('rl-tp-002', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
@@ -94,7 +96,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-002');
 
-    await waitForHuman('terminal-picker-002', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -133,7 +135,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Bound first (all 6 fields), active other second');
   });
 
-  test('[assisted] terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
+  test('terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
     const t = await createTerminal('rl-tp-003', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     t.show(true);
@@ -142,7 +144,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-003');
 
-    await waitForHuman('terminal-picker-003', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -173,7 +175,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Dual badge: all 6 fields validated');
   });
 
-  test('[assisted] terminal-picker-004: bound terminal always appears first in the list', async () => {
+  test('terminal-picker-004: bound terminal always appears first in the list', async () => {
     await createTerminal('rl-tp-004-b', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
@@ -182,7 +184,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-004');
 
-    await waitForHuman('terminal-picker-004', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-004');
     const items = extractQuickPickItemsLogged(lines);
@@ -221,7 +223,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Bound terminal first — all 6 fields');
   });
 
-  test('[assisted] terminal-picker-005: active non-bound terminal appears second', async () => {
+  test('terminal-picker-005: active non-bound terminal appears second', async () => {
     await createTerminal('rl-tp-005-a', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
@@ -232,7 +234,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-005');
 
-    await waitForHuman('terminal-picker-005', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-005');
     const items = extractQuickPickItemsLogged(lines);
@@ -271,13 +273,13 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Bound first, active second — all 6 fields');
   });
 
-  test('[assisted] terminal-picker-006: hidden IDE terminals are absent from the picker', async () => {
+  test('terminal-picker-006: hidden IDE terminals are absent from the picker', async () => {
     await createTerminal('rl-tp-006', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-006');
 
-    await waitForHuman('terminal-picker-006', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-006');
     const items = extractQuickPickItemsLogged(lines);
@@ -308,14 +310,14 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Only the test terminal appears — full field validation');
   });
 
-  test('[assisted] terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
+  test('terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
     await createTerminal('rl-tp-007-a', terminals);
     await createTerminal('rl-tp-007-b', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-007');
 
-    await waitForHuman('terminal-picker-007', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-007');
     const items = extractQuickPickItemsLogged(lines);
@@ -360,7 +362,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Both terminals inline, full field validation');
   });
 
-  test('[assisted] terminal-picker-008: overflow shows "More terminals..." when exceeding maxInline', async () => {
+  test('terminal-picker-008: overflow shows "More terminals..." when exceeding maxInline', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-tp-008-${i}`, terminals);
     }
@@ -368,7 +370,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-008');
 
-    await waitForHuman('terminal-picker-008', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-008');
     const items = extractQuickPickItemsLogged(lines);
@@ -525,7 +527,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Parent picker reopened with identical items');
   });
 
-  test('[assisted] terminal-picker-011: maxInline setting changes overflow threshold', async () => {
+  test('terminal-picker-011: maxInline setting changes overflow threshold', async () => {
     await loadSettingsProfile('terminal-picker-low', log);
     const LOW_MAX_INLINE = 2;
     const TC_TERMINAL_COUNT = 3;
@@ -537,7 +539,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-011');
 
-    await waitForHuman('terminal-picker-011', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-011');
     const items = extractQuickPickItemsLogged(lines);
@@ -586,13 +588,13 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ maxInline=2: overflow + active inline terminal fully validated');
   });
 
-  test('[assisted] terminal-picker-012: terminal picker appears inline in R-M menu when unbound', async () => {
+  test('terminal-picker-012: terminal picker appears inline in R-M menu when unbound', async () => {
     await createTerminal('rl-tp-012', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-012');
 
-    await waitForHuman('terminal-picker-012', 'Open R-M menu (Cmd+R Cmd+M), then Escape');
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-tp-012');
     const items = extractQuickPickItemsLogged(lines);
@@ -628,13 +630,13 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Terminal inline in R-M menu with full description');
   });
 
-  test('[assisted] terminal-picker-013: terminal picker appears inline in R-D destination picker', async () => {
+  test('terminal-picker-013: terminal picker appears inline in R-D destination picker', async () => {
     await createTerminal('rl-tp-013', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-013');
 
-    await waitForHuman('terminal-picker-013', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-tp-013');
     const items = extractQuickPickItemsLogged(lines);
@@ -665,7 +667,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
     log('✓ Terminal inline in R-D picker — full fields');
   });
 
-  test('[assisted] bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
+  test('bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-btd-013-${i}`, terminals);
     }
@@ -686,7 +688,7 @@ standardSuite('Terminal Picker', { assisted: true }, (log) => {
       const logCapture = getLogCapture();
       logCapture.mark('before-btd-013');
 
-      await waitForHuman('bind-to-destination-013', 'Press Cmd+R Cmd+D, then Escape');
+      await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
       const lines = logCapture.getLinesSince('before-btd-013');
       const items = extractQuickPickItemsLogged(lines);

@@ -16,7 +16,7 @@ import {
   standardSuite,
 } from '../helpers';
 
-standardSuite('Navigation Toast Settings', {}, (_log) => {
+standardSuite('Navigation Toast Settings', (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 

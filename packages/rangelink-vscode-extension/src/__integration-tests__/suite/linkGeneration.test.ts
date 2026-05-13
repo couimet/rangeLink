@@ -17,7 +17,7 @@ import {
 
 const LOGGER = new NoOpLogger();
 
-standardSuite('Link Generation', {}, (_log) => {
+standardSuite('Link Generation', (_log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   suiteTeardown(async () => {
@@ -157,7 +157,7 @@ standardSuite('Link Generation', {}, (_log) => {
   });
 });
 
-standardSuite('Link Generation — Clickable Links (Assisted)', { assisted: true }, (log) => {
+standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {

@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
   assertNoStatusBarMsgLogged,
   assertStatusBarMsgLogged,
@@ -15,6 +16,7 @@ import {
   findTerminalItems,
   findTestItemsByPrefix,
   getLogCapture,
+  openAndDismiss,
   parseQuickPickItemsFromLogLine,
   settle,
   standardSuite,
@@ -22,7 +24,7 @@ import {
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('R-D Bind to Destination', { assisted: true }, (log) => {
+standardSuite('R-D Bind to Destination', (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 
@@ -289,7 +291,7 @@ standardSuite('R-D Bind to Destination', { assisted: true }, (log) => {
     log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
   });
 
-  test('[assisted] bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
+  test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
     await createTerminal('rl-btd-010', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
@@ -297,7 +299,7 @@ standardSuite('R-D Bind to Destination', { assisted: true }, (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-010');
 
-    await waitForHuman('bind-to-destination-010', 'Press Cmd+R Cmd+D, then Escape');
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-btd-010');
 

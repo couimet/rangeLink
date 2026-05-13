@@ -10,7 +10,7 @@ import {
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Platform Keybindings', { assisted: true }, (_log) => {
+standardSuite('Platform Keybindings', (_log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   suiteTeardown(async () => {

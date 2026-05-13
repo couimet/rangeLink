@@ -23,7 +23,7 @@ import {
 const FILE_CONTENT = 'editor-tab context-menu test file\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Editor Tab', { assisted: true }, (log) => {
+standardSuite('Context Menus — Editor Tab', (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 

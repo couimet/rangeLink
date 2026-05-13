@@ -70,7 +70,7 @@ const navigateToUntitledLink = (
   });
 };
 
-standardSuite('Untitled File Navigation', {}, (_log) => {
+standardSuite('Untitled File Navigation', (_log) => {
   let untitledDoc: vscode.TextDocument;
   let untitledDisplayName: string;
 

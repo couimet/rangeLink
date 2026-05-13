@@ -26,7 +26,7 @@ import {
 const FILE_CONTENT = 'explorer context-menu test file\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Explorer', { assisted: true }, (log) => {
+standardSuite('Context Menus — Explorer', (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 

@@ -27,7 +27,7 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
-standardSuite('Dirty Buffer Warning', { assisted: true }, (_log) => {
+standardSuite('Dirty Buffer Warning', (_log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
@@ -389,7 +389,7 @@ standardSuite('Dirty Buffer Warning', { assisted: true }, (_log) => {
   });
 });
 
-standardSuite('Dirty Buffer Warning — Dialog Interaction', { assisted: true }, (log) => {
+standardSuite('Dirty Buffer Warning — Dialog Interaction', (log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {

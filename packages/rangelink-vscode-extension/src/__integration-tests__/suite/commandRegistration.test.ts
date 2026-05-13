@@ -60,7 +60,7 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.handleFilePathClick',
 ] as const;
 
-standardSuite('Command Registration', {}, (_log) => {
+standardSuite('Command Registration', (_log) => {
   let registeredCommands: string[];
 
   suiteSetup(async () => {

@@ -75,13 +75,29 @@ Integration tests run inside a real VS Code process via `@vscode/test-cli`. They
 pnpm test:release
 ```
 
-### QuickPick limitation
+### QuickPick and InputBox dismissal
 
-VS Code's extension host test runner provides no API to interact with QuickPick UI — tests cannot programmatically select items, dismiss pickers, or read picker contents. A QuickPick that opens during a test **will stall the test indefinitely** because it blocks the command from completing, and there is no way to dismiss it from test code.
+VS Code's extension host test runner provides no API to programmatically select QuickPick items or interact with dialogs. However, `workbench.action.closeQuickOpen` can programmatically dismiss QuickPicks and InputBoxes — meaning tests that open a picker, read its logged content, and dismiss it **can now be fully automated**.
 
-**Workaround — command bypass:** Many TCs that involve a QuickPick as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely, then asserting the outcome via log-based UI assertions.
+**`openAndDismiss` helper:** The pattern for automated picker-open-and-dismiss is encapsulated in `openAndDismiss(command)`:
 
-**What cannot be fully automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) require a human to open/dismiss the picker. Mark these `automated: assisted` in the QA YAML — the test automates setup and validates content via log-based QuickPick assertions while the human performs the mechanical UI action. See [Assisted mode](#assisted-mode-assisted-tests) below. Only TCs that genuinely cannot be tested even with human-in-the-loop assistance should remain `automated: false`.
+```typescript
+// Fires the command (which opens a QuickPick), waits for render + log emission,
+// dismisses with closeQuickOpen, then settles.
+await openAndDismiss(CMD_BIND_TO_DESTINATION);
+const items = extractQuickPickItemsLogged(logCapture.getLinesSince('before-test'));
+// assert on items as usual
+```
+
+**Workaround — command bypass:** TCs that use a picker as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely.
+
+**What still requires assisted mode:** TCs that need to:
+
+- Select a specific item from a picker (closeQuickOpen only dismisses, it cannot choose)
+- Navigate a multi-picker flow (select item in picker A → picker B opens → verify B's content)
+- Verify dialog interactions (confirmation buttons with Yes/No)
+
+Mark these `automated: assisted` in the QA YAML. See [Assisted mode](#assisted-mode-assisted-tests) below. Only TCs that genuinely cannot be tested even with human-in-the-loop assistance should remain `automated: false`.
 
 See https://github.com/couimet/rangeLink/issues/483 for the full triage of automatable vs manual TCs.
 
