@@ -443,7 +443,7 @@ standardSuite('Custom AI Assistants — Paste Flow', { assisted: true }, (log) =
     const manualPasteLog = lines.find(
       (line) =>
         line.includes('ManualPasteInsertFactory.insert') &&
-        line.includes('Link copied to clipboard for manual paste'),
+        line.includes('Link ready for manual paste'),
     );
     assert.ok(manualPasteLog, 'Expected ManualPasteInsertFactory success log');
 

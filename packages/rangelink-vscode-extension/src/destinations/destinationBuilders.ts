@@ -8,7 +8,6 @@
 import type * as vscode from 'vscode';
 
 import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
-import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import {
   AutoPasteResult,
@@ -42,7 +41,7 @@ import type { PasteDestination } from './PasteDestination';
 
 interface BuiltinAiAssistantDef {
   readonly kind: AIAssistantDestinationKind;
-  readonly focusAndPasteCommands: readonly string[];
+  readonly focusCommands: readonly string[];
   readonly displayName: string;
   readonly jumpMessageCode: MessageCode;
   readonly userInstructionMessageCode: MessageCode;
@@ -52,7 +51,7 @@ interface BuiltinAiAssistantDef {
 const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
   'cursor.cursor': {
     kind: 'cursor-ai',
-    focusAndPasteCommands: CURSOR_AI_FOCUS_COMMANDS,
+    focusCommands: CURSOR_AI_FOCUS_COMMANDS,
     displayName: 'Cursor AI Assistant',
     jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI,
     userInstructionMessageCode: MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS,
@@ -60,7 +59,7 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
   },
   'anthropic.claude-code': {
     kind: 'claude-code',
-    focusAndPasteCommands: CLAUDE_CODE_FOCUS_COMMANDS,
+    focusCommands: CLAUDE_CODE_FOCUS_COMMANDS,
     displayName: 'Claude Code Chat',
     jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE,
     userInstructionMessageCode: MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS,
@@ -68,7 +67,7 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
   },
   'github.copilot-chat': {
     kind: 'github-copilot-chat',
-    focusAndPasteCommands: GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+    focusCommands: GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
     displayName: 'GitHub Copilot Chat',
     jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT,
     userInstructionMessageCode: MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS,
@@ -181,10 +180,9 @@ const buildBuiltinAiAssistantDestination = (
   ComposablePasteDestination.createAiAssistant({
     id: def.kind,
     displayName: def.displayName,
-    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
-      [...def.focusAndPasteCommands],
-      [...CHAT_PASTE_COMMANDS],
-    ),
+    focusCapability: context.factories.focusCapability.createAIAssistantCapability([
+      ...def.focusCommands,
+    ]),
     isAvailable: async () => def.isAvailable(context),
     jumpSuccessMessage: formatMessage(def.jumpMessageCode),
     loggingDetails: {},
@@ -296,7 +294,7 @@ const createOverriddenBuiltinBuilder =
   (_options, context) => {
     const userTiers = context.factories.focusCapability.buildCustomAIAssistantTiers(config);
     const fallbackTier = context.factories.focusCapability.buildBuiltinFallbackTier(
-      builtin.focusAndPasteCommands,
+      builtin.focusCommands,
     );
 
     const allTiers = [...userTiers, fallbackTier];

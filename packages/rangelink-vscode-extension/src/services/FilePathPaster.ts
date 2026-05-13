@@ -16,7 +16,7 @@ import {
   PathFormat,
   RelativePathFormat,
 } from '../types';
-import { formatMessage } from '../utils';
+import { applySmartPadding, formatMessage } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
 import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
@@ -116,6 +116,8 @@ export class FilePathPaster {
 
     const destinationFilePath = quotePath(filePath);
 
+    const paddedPath = applySmartPadding(destinationFilePath, paddingMode);
+
     if (destinationFilePath !== filePath) {
       this.logger.debug(
         { ...logCtx, before: filePath, after: destinationFilePath },
@@ -129,13 +131,13 @@ export class FilePathPaster {
         destinationBehavior,
       },
       content: {
-        clipboard: filePath,
-        send: destinationFilePath,
+        clipboard: paddedPath,
+        send: paddedPath,
         sourceUri: uri,
       },
       strategies: {
         sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
       contentName: formatMessage(MessageCode.CONTENT_NAME_FILE_PATH),

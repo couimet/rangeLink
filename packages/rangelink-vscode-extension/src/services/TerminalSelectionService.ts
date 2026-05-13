@@ -10,7 +10,7 @@ import {
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, PasteContentType, type TerminalPasteResult } from '../types';
-import { formatMessage } from '../utils';
+import { applySmartPadding, formatMessage } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
 
@@ -92,18 +92,20 @@ export class TerminalSelectionService {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
+    const paddedText = applySmartPadding(terminalText, paddingMode);
+
     await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
         destinationBehavior,
       },
       content: {
-        clipboard: terminalText,
-        send: terminalText,
+        clipboard: paddedText,
+        send: paddedText,
       },
       strategies: {
         sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
       contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),

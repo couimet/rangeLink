@@ -3,9 +3,7 @@ import type { Logger } from 'barebone-logger';
 import type { ConfigReader } from '../config/ConfigReader';
 import {
   DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-  DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
   SETTING_FEATURES_BOOKMARKS_ENABLED,
-  SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
@@ -108,14 +106,9 @@ export class BookmarkService {
     await this.bookmarksStore.recordAccess(bookmarkId);
     await this.ideAdapter.writeTextToClipboard(bookmark.link);
 
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_BOOKMARK,
-      DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
-    );
     await this.destinationManager.sendTextToDestination(
       bookmark.link,
       `Bookmark pasted: ${bookmark.label}`,
-      paddingMode,
     );
     this.logger.debug({ ...logCtx, bookmark }, `Sent bookmark to destination: ${bookmark.label}`);
   }

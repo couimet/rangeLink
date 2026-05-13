@@ -3,7 +3,7 @@
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
 #        main branch tip, targeting v1.1.0.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-003.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
@@ -698,6 +698,26 @@ test_cases:
       - 'Press Cancel — test reads clipboard and asserts it still equals the sentinel'
     expected_result: 'Clipboard contains the sentinel value. assertClipboardRestored passes — no preserve cycle was triggered because the operation was cancelled before any transport.'
     automated: assisted
+
+  - id: clipboard-preservation-010
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation'
+    scenario: 'AI assistant auto-paste fails (focus command throws): RangeLink stays in clipboard for manual paste'
+    preconditions:
+      - 'Custom AI assistant "Dummy AI (Focus-Fail)" configured in workspace settings with focusCommands: [dummyAi.focusFail] (registered command that throws intentionally)'
+      - 'Dummy AI extension installed and active'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'A file is open in the editor'
+    steps:
+      - 'Test writes CLIPBOARD_SENTINEL to clipboard'
+      - 'Human: Cmd+R Cmd+D → select "Dummy AI (Focus-Fail)" from picker'
+      - 'Human: select lines 1-3 in test file and press Cmd+R Cmd+L'
+      - 'The focus command (dummyAi.focusFail) throws — extension logs "Focus failed, cannot paste link"'
+      - 'Test calls assertClipboardChanged — clipboard must contain the RangeLink, NOT the sentinel'
+    expected_result: 'Clipboard contains the generated RangeLink (not CLIPBOARD_SENTINEL). isClipboardRestorationApplicable returns false because getUserInstruction(Failure) is defined. The "Paste manually" warning toast was shown.'
+    command_to_run: 'pnpm test:release:grep "clipboard-preservation-010"'
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
@@ -2996,6 +3016,210 @@ test_cases:
       - 'Check dummy extension textarea via dummyAi.getText'
     expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
     automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section — Built-in AI Assistants
+  # ---------------------------------------------------------------------------
+
+  - id: claude-code-001
+    feature: 'Built-in AI Assistants'
+    scenario: 'Claude Code Chat appears in destination picker when extension is active'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'No destination currently bound'
+    steps:
+      - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
+      - 'Confirm "Claude Code Chat" item appears first in the AI Assistants group'
+    expected_result: '"Claude Code Chat" is listed as the first item in the AI Assistants group of the destination picker'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-001"'
+    automated: false
+
+  - id: claude-code-002
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Binding to Claude Code Chat and sending a link delivers content to chat'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'A file is open in the editor with a selection'
+    steps:
+      - 'Run Command Palette → "RangeLink: Bind to Claude Code" (or select from R-D picker)'
+      - 'Confirm "✓ RangeLink bound to Claude Code Chat" status bar message appears'
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm Claude Code chat panel opens and receives the RangeLink payload'
+    expected_result: 'Claude Code chat opens and receives the RangeLink payload for the selected range'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-002"'
+    automated: false
+
+  - id: claude-code-003
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Second invocation of Claude Code Chat uses warm path (no cold-start refocus loop)'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'RangeLink is bound to Claude Code Chat'
+    steps:
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux) — first send (cold start)'
+      - 'Select a different range of code and press Cmd+R Cmd+L again — second send (warm path)'
+      - 'Confirm second send is faster (no ~2.5s refocus delay)'
+    expected_result: 'Second invocation uses warm path: no cold-start refocus signals, only a short 200ms delay before paste'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-003"'
+    automated: false
+
+  - id: cursor-ai-001
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cursor AI Assistant appears in destination picker when running in Cursor IDE'
+    preconditions:
+      - 'Editor is Cursor IDE (cursor-ai detection is IDE-based, not extension-based)'
+      - 'No destination currently bound'
+    steps:
+      - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
+      - 'Confirm "Cursor AI Assistant" item appears in the AI Assistants group'
+    expected_result: '"Cursor AI Assistant" is listed in the AI Assistants group of the destination picker'
+    automated: false
+
+  - id: cursor-ai-002
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Binding to Cursor AI and sending a link delivers content to chat'
+    preconditions:
+      - 'Editor is Cursor IDE'
+      - 'A file is open in the editor with a selection'
+    steps:
+      - 'Run Command Palette → "RangeLink: Bind to Cursor AI" (or select from R-D picker)'
+      - 'Confirm "✓ RangeLink bound to Cursor AI Assistant" status bar message appears'
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm Cursor AI chat panel opens and receives the link + selected text'
+    expected_result: 'Cursor AI chat opens and contains the RangeLink and selected code snippet'
+    automated: false
+
+  - id: github-copilot-chat-001
+    feature: 'Built-in AI Assistants'
+    scenario: 'GitHub Copilot Chat appears in destination picker when extension is active'
+    preconditions:
+      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'No destination currently bound'
+    steps:
+      - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
+      - 'Confirm "GitHub Copilot Chat" item appears in the AI Assistants group'
+    expected_result: '"GitHub Copilot Chat" is listed in the AI Assistants group of the destination picker'
+    automated: false
+
+  - id: github-copilot-chat-002
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Binding to GitHub Copilot Chat and sending a link delivers content to chat'
+    preconditions:
+      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'A file is open in the editor with a selection'
+    steps:
+      - 'Run Command Palette → "RangeLink: Bind to GitHub Copilot Chat" (or select from R-D picker)'
+      - 'Confirm "✓ RangeLink bound to GitHub Copilot Chat" status bar message appears'
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm GitHub Copilot Chat panel opens and receives the link + selected text'
+    expected_result: 'GitHub Copilot Chat opens and contains the RangeLink and selected code snippet'
+    automated: false
+
+  - id: claude-code-004
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold panel paste verification — content arrives in Claude Code chat input after a single R-L since bind'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'RangeLink is bound to Claude Code Chat'
+      - 'No send has been performed since binding (cold start)'
+    steps:
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Claude Code chat panel receives the link and selected code'
+      - 'Confirm logs show the single paste command (editor.action.clipboardPasteAction) succeeded'
+    expected_result: 'Content arrives in Claude Code chat input. Logs show paste command succeeded with a post-paste delay. Single clipboard write architecture: no double-write.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-004"'
+    automated: assisted
+
+  - id: claude-code-005
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Warm panel paste verification — content arrives in Claude Code chat input on second R-L without cold-start refocus signals'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'RangeLink is bound to Claude Code Chat'
+      - 'At least one send has been performed since binding (warm path)'
+    steps:
+      - 'Select a different range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Claude Code chat panel receives the link and selected code'
+      - 'Confirm logs show NO cold-start refocus signals in the warm send'
+    expected_result: 'Content arrives in Claude Code chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-005"'
+    automated: assisted
+
+  - id: cursor-ai-003
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold panel paste verification — content arrives in Cursor AI chat input after a single R-L since bind'
+    preconditions:
+      - 'Editor is Cursor IDE'
+      - 'RangeLink is bound to Cursor AI'
+      - 'No send has been performed since binding (cold start)'
+    steps:
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Cursor AI chat panel receives the link and selected code'
+      - 'Confirm logs show the single paste command (editor.action.clipboardPasteAction) succeeded'
+    expected_result: 'Content arrives in Cursor AI chat input. Logs show paste command succeeded. Cursor AI is unaffected by the webview async clipboard read issue (native input).'
+    automated: false
+
+  - id: cursor-ai-004
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Warm panel paste verification — content arrives in Cursor AI chat input on second R-L without cold-start refocus signals'
+    preconditions:
+      - 'Editor is Cursor IDE'
+      - 'RangeLink is bound to Cursor AI'
+      - 'At least one send has been performed since binding (warm path)'
+    steps:
+      - 'Select a different range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Cursor AI chat panel receives the link and selected code'
+      - 'Confirm logs show NO cold-start refocus signals in the warm send'
+    expected_result: 'Content arrives in Cursor AI chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
+    automated: false
+
+  - id: github-copilot-chat-003
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold panel paste verification — content arrives in GitHub Copilot Chat input after a single R-L since bind'
+    preconditions:
+      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'RangeLink is bound to GitHub Copilot Chat'
+      - 'No send has been performed since binding (cold start)'
+    steps:
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the GitHub Copilot Chat panel receives the link and selected code'
+      - 'Confirm logs show the single paste command (editor.action.clipboardPasteAction) succeeded'
+    expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show paste command succeeded with a post-paste delay. Single clipboard write architecture: no double-write.'
+    automated: false
+
+  - id: github-copilot-chat-004
+    labels:
+      - clipboard
+    feature: 'Built-in AI Assistants'
+    scenario: 'Warm panel paste verification — content arrives in GitHub Copilot Chat input on second R-L without cold-start refocus signals'
+    preconditions:
+      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
+      - 'RangeLink is bound to GitHub Copilot Chat'
+      - 'At least one send has been performed since binding (warm path)'
+    steps:
+      - 'Select a different range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the GitHub Copilot Chat panel receives the link and selected code'
+      - 'Confirm logs show NO cold-start refocus signals in the warm send'
+    expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section — Release Notifier

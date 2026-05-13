@@ -25,7 +25,6 @@ import {
   isEditorDestination,
   isTerminalDestination,
   isWritableScheme,
-  type PaddingMode,
 } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
@@ -188,19 +187,28 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Whether clipboard content should be restored after a paste operation.
    *
-   * Delegates to the bound destination's shouldPreserveClipboard() method.
-   * Returns true (restore) when no destination is bound or when the
-   * destination signals that clipboard restoration is appropriate.
+   * Returns true (restore) when no destination is bound, when paste succeeded
+   * (the link is already in the AI chat — the user's original clipboard should
+   * come back), or when the destination has no manual-paste instruction.
    *
-   * Returns false when the bound destination resolved to a manual-paste
-   * tier (focusCommands) — the link must stay on the clipboard for the
-   * user to paste manually.
+   * Returns false when paste failed AND the destination provided a failure
+   * instruction (i.e. the user was told "Paste (Cmd/Ctrl+V) …") — the
+   * RangeLink must stay on the clipboard for the user to paste manually.
+   * Also returns false when the destination's shouldPreserveClipboard() signals
+   * false (Tier 3 custom AI assistants that resolve to focusCommands).
    */
-  isClipboardRestorationApplicable(): boolean {
+  isClipboardRestorationApplicable(pasteSucceeded: boolean): boolean {
     if (!this.boundDestination) {
       return true;
     }
-    return this.boundDestination.shouldPreserveClipboard();
+    if (!this.boundDestination.shouldPreserveClipboard()) {
+      return false;
+    }
+    if (pasteSucceeded) {
+      return true;
+    }
+    const failureInstruction = this.boundDestination.getUserInstruction?.(AutoPasteResult.Failure);
+    return failureInstruction === undefined;
   }
 
   /**
@@ -269,24 +277,22 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @param formattedLink - The formatted RangeLink with metadata
    * @param basicStatusMessage - Base message for status bar (e.g., "RangeLink copied to clipboard")
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
+
    * @returns true if sent successfully, false otherwise
    */
   async sendLinkToDestination(
     formattedLink: FormattedLink,
     basicStatusMessage: string,
-    paddingMode: PaddingMode,
   ): Promise<boolean> {
     return this.sendWithFeedback({
       basicStatusMessage,
       logContext: {
         fn: 'PasteDestinationManager.sendLinkToDestination',
         formattedLink,
-        paddingMode,
       },
       debugMessage: (displayName) => `Sending link to ${displayName}`,
       errorMessage: (displayName) => `Paste link failed to ${displayName}`,
-      execute: (destination) => destination.pasteLink(formattedLink, paddingMode),
+      execute: (destination) => destination.pasteLink(formattedLink),
     });
   }
 
@@ -298,24 +304,19 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @param content - The text content to send
    * @param basicStatusMessage - Base message for status bar (e.g., "Text copied to clipboard")
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
+
    * @returns true if sent successfully, false otherwise
    */
-  async sendTextToDestination(
-    content: string,
-    basicStatusMessage: string,
-    paddingMode: PaddingMode,
-  ): Promise<boolean> {
+  async sendTextToDestination(content: string, basicStatusMessage: string): Promise<boolean> {
     return this.sendWithFeedback({
       basicStatusMessage,
       logContext: {
         fn: 'PasteDestinationManager.sendTextToDestination',
         contentLength: content.length,
-        paddingMode,
       },
       debugMessage: (displayName) => `Sending content to ${displayName} (${content.length} chars)`,
       errorMessage: (displayName) => `Paste content failed to ${displayName}`,
-      execute: (destination) => destination.pasteContent(content, paddingMode),
+      execute: (destination) => destination.pasteContent(content),
     });
   }
 

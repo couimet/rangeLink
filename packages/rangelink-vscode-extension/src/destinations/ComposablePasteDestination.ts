@@ -9,7 +9,6 @@ import {
   type DestinationKind,
   PasteContentType,
 } from '../types';
-import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
@@ -270,37 +269,35 @@ export class ComposablePasteDestination implements PasteDestination {
    * Paste a RangeLink to this destination with appropriate padding and focus.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
+
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteLink(formattedLink: FormattedLink, paddingMode: PaddingMode): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteLink`,
       formattedLink,
       linkLength: formattedLink.link.length,
-      paddingMode,
       ...this.loggingDetails,
     };
 
-    return this.performPaste(formattedLink.link, context, PasteContentType.Link, paddingMode);
+    return this.performPaste(formattedLink.link, context, PasteContentType.Link);
   }
 
   /**
    * Paste text content to this destination with appropriate padding and focus.
    *
    * @param content - The text content to paste
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
+
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteContent(content: string, paddingMode: PaddingMode): Promise<boolean> {
+  async pasteContent(content: string): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteContent`,
       contentLength: content.length,
-      paddingMode,
       ...this.loggingDetails,
     };
 
-    return this.performPaste(content, context, PasteContentType.Text, paddingMode);
+    return this.performPaste(content, context, PasteContentType.Text);
   }
 
   /**
@@ -308,23 +305,24 @@ export class ComposablePasteDestination implements PasteDestination {
    *
    * Coordinates capabilities in order:
    * 1. Check availability
-   * 2. Apply smart padding based on provided mode
-   * 3. Focus destination
-   * 4. Insert text
+   * 2. Focus destination
+   * 3. Insert text
+   *
+   * Smart padding is applied by the caller before constructing
+   * CopyAndSendOptions.content.clipboard — the text arriving here is
+   * already padded and already on the clipboard.
    *
    * Eligibility is checked by RangeLinkService before calling this method.
    *
-   * @param text - The text to paste
+   * @param text - The text to paste (already padded by caller)
    * @param context - Logging context with operation details
    * @param contentType - Type of content being pasted (for log messages)
-   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
   private async performPaste(
     text: string,
     context: LoggingContext,
     contentType: PasteContentType,
-    paddingMode: PaddingMode,
   ): Promise<boolean> {
     const contentLabel = contentType === PasteContentType.Link ? 'link' : 'content';
 
@@ -334,8 +332,6 @@ export class ComposablePasteDestination implements PasteDestination {
       this.logger.info(context, `Cannot paste ${contentLabel}: ${this.displayName} not available`);
       return false;
     }
-
-    const paddedText = applySmartPadding(text, paddingMode);
 
     const focusResult = await this.focusCapability.focus(context);
 
@@ -347,7 +343,7 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    const success = await focusResult.value.inserter(paddedText);
+    const success = await focusResult.value.inserter(text);
 
     if (success) {
       this.logger.info(context, `Pasted ${contentLabel} to ${this.displayName}`);

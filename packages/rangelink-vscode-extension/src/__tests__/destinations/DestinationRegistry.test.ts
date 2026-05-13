@@ -228,20 +228,16 @@ describe('DestinationRegistry', () => {
 
       let capturedCapability: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedCapability = context.factories.focusCapability.createAIAssistantCapability(
-          ['focus'],
-          ['paste'],
-        );
+        capturedCapability = context.factories.focusCapability.createAIAssistantCapability([
+          'focus',
+        ]);
         return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
       registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(capturedCapability).toBe(mockCapability);
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
-        ['focus'],
-        ['paste'],
-      );
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(['focus']);
     });
 
     it('should allow mocking EligibilityCheckerFactory methods in builder', () => {
@@ -319,10 +315,9 @@ describe('DestinationRegistry', () => {
       const registry = createRegistry(factories);
 
       const builder: DestinationBuilder = (_options, context) => {
-        const capability = context.factories.focusCapability.createAIAssistantCapability(
-          ['focus.cmd'],
-          ['paste'],
-        );
+        const capability = context.factories.focusCapability.createAIAssistantCapability([
+          'focus.cmd',
+        ]);
         const checker = context.factories.eligibilityChecker.createContentEligibilityChecker();
 
         expect(capability).toBe(mockCapability);
@@ -335,10 +330,9 @@ describe('DestinationRegistry', () => {
       const destination = registry.create({ kind: 'cursor-ai' });
 
       expect(destination).toBeDefined();
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
-        ['focus.cmd'],
-        ['paste'],
-      );
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith([
+        'focus.cmd',
+      ]);
       expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
     });
   });

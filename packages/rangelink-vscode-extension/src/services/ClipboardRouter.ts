@@ -38,9 +38,12 @@ export class ClipboardRouter {
       options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly &&
       this.destinationManager.isBound();
     if (shouldPreserve) {
+      let pasteSucceeded = false;
       await this.clipboardPreserver.preserve(
-        () => this.executeCopyAndSend(options),
-        () => this.destinationManager.isClipboardRestorationApplicable(),
+        async () => {
+          pasteSucceeded = await this.executeCopyAndSend(options);
+        },
+        () => this.destinationManager.isClipboardRestorationApplicable(pasteSucceeded),
       );
     } else {
       await this.executeCopyAndSend(options);
@@ -72,7 +75,7 @@ export class ClipboardRouter {
     return DestinationBehavior.BoundDestination;
   }
 
-  private async executeCopyAndSend<T>(options: CopyAndSendOptions<T>): Promise<void> {
+  private async executeCopyAndSend<T>(options: CopyAndSendOptions<T>): Promise<boolean> {
     const { control, content, strategies, contentName, fnName } = options;
 
     await this.ideAdapter.writeTextToClipboard(content.clipboard);
@@ -92,7 +95,7 @@ export class ClipboardRouter {
           : 'No destination bound - copied to clipboard only';
       this.logger.info({ fn: fnName }, reason);
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
+      return false;
     }
 
     const destination = this.destinationManager.getBoundDestination()!;
@@ -105,7 +108,7 @@ export class ClipboardRouter {
         'Content not eligible for paste - skipping auto-paste',
       );
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
+      return false;
     }
 
     if (content.sourceUri && isSameFileDestination(content.sourceUri, destination)) {
@@ -117,7 +120,7 @@ export class ClipboardRouter {
       const selfPasteMessage = formatMessage(selfPasteMessageCodes[control.contentType]);
       this.ideAdapter.showInformationMessage(selfPasteMessage);
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
+      return false;
     }
 
     this.logger.debug(
@@ -125,7 +128,7 @@ export class ClipboardRouter {
       `Attempting to send content to bound destination: ${displayName}`,
     );
 
-    await strategies.sendFn(content.send, basicStatusMessage);
+    return strategies.sendFn(content.send, basicStatusMessage);
   }
 
   private async showPickerAndBind(): Promise<QuickPickBindResult> {
