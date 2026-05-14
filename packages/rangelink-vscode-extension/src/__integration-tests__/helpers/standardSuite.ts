@@ -8,6 +8,7 @@ import { closeAllEditors } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { createLogger } from './logHelpers';
 import { resetRangelinkSettings } from './settingsHelpers';
+import { disposeAllTerminals } from './terminalHelpers';
 import { activateExtension, settle } from './testEnv';
 
 export const standardSuite = (name: string, fn: (log: (msg: string) => void) => void): void => {
@@ -26,6 +27,7 @@ export const standardSuite = (name: string, fn: (log: (msg: string) => void) => 
       await resetRangelinkSettings(log);
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await closeAllEditors();
+      disposeAllTerminals();
       await settle();
     });
 
