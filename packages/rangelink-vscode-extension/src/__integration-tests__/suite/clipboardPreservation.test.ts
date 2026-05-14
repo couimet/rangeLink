@@ -7,7 +7,6 @@ import {
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
@@ -16,7 +15,6 @@ import {
   assertTerminalBufferContains,
   type CapturingTerminal,
   cleanupFiles,
-  closeAllEditors,
   CLIPBOARD_SENTINEL,
   createAndBindCapturingTerminal,
   createTerminal,
@@ -123,10 +121,8 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.commands.executeCommand('dummyAi.clearAll');
     for (const t of tmpTerminals.splice(0)) t.dispose();
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -301,8 +297,6 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   });
 
   test('clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-009', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);

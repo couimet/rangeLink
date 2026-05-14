@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_TERMINAL_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
@@ -13,7 +13,6 @@ import {
   assertStatusBarMsgLogged,
   assertTerminalBufferEquals,
   cleanupFiles,
-  closeAllEditors,
   createAndOpenFile,
   createCapturingTerminal,
   getLogCapture,
@@ -31,12 +30,10 @@ standardSuite('Context Menus — Explorer', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     for (const t of terminals) {
       t.dispose();
     }
     terminals.length = 0;
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -185,9 +182,6 @@ standardSuite('Context Menus — Explorer', (log) => {
   test('[assisted] context-menus-explorer-005: Explorer "Unbind" is hidden when no destination is bound', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-005', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
-
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-005');

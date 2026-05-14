@@ -1,3 +1,7 @@
+import * as vscode from 'vscode';
+
+import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+
 import { closeAllEditors } from './fileHelpers';
 import { createLogger } from './logHelpers';
 import { resetRangelinkSettings } from './settingsHelpers';
@@ -13,10 +17,13 @@ export const standardSuite = (name: string, fn: (log: (msg: string) => void) => 
 
     setup(async () => {
       await resetRangelinkSettings(log);
+      await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await settle();
     });
 
     suiteTeardown(async () => {
+      await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+      await settle();
       await closeAllEditors();
     });
 

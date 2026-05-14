@@ -29,12 +29,10 @@ standardSuite('R-D Bind to Destination', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
     for (const t of terminals) {
       t.dispose();
     }
     terminals.length = 0;
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

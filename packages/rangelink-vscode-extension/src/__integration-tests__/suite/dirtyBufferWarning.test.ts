@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import {
   CMD_COPY_LINK_ONLY_RELATIVE,
   CMD_COPY_LINK_RELATIVE,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   assertClipboardRestored,
@@ -39,7 +38,6 @@ standardSuite('Dirty Buffer Warning', (_log) => {
   });
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
@@ -401,11 +399,9 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (log) => {
   });
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
-    await closeAllEditors();
     await settle();
   });
 

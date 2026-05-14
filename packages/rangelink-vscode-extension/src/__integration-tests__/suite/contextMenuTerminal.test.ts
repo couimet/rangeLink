@@ -6,7 +6,6 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_CONTEXT_EDITOR_CONTENT_BIND,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   TERMINAL_READY_MS,
@@ -14,7 +13,6 @@ import {
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   cleanupFiles,
-  closeAllEditors,
   createAndBindCapturingTerminal,
   createAndOpenFile,
   createCapturingTerminal,
@@ -34,12 +32,10 @@ standardSuite('Context Menus — Terminal', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     for (const t of terminals) {
       t.dispose();
     }
     terminals.length = 0;
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -425,9 +421,6 @@ standardSuite('Context Menus — Terminal', (log) => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-011: "Send Selection" (unbound) opens destination picker and delivers to picked terminal', async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await settle();
-
     const sourceName = 'rl-sts-011-SOURCE';
     const destName = 'rl-sts-011-DEST';
 

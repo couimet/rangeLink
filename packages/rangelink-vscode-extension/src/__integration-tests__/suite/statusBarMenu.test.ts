@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_OPEN_STATUS_BAR_MENU,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   assertQuickPickItemsLogged,
@@ -133,7 +132,6 @@ standardSuite('R-M Status Bar Menu', (log) => {
 
       log('✓ Bound-state menu items validated via log capture');
     } finally {
-      await vscode.commands.executeCommand('rangelink.unbindDestination');
       terminal.dispose();
     }
   });
@@ -154,9 +152,6 @@ standardSuite('R-M Status Bar Menu', (log) => {
   });
 
   test('status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await settle();
-
     const logCapture = getLogCapture();
     logCapture.mark('before-006');
 

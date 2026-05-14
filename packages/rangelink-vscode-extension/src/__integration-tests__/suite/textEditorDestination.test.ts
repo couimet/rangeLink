@@ -5,13 +5,11 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_RELATIVE,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   assertNoToastLogged,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createWorkspaceFile,
   getLogCapture,
   settle,
@@ -23,8 +21,6 @@ standardSuite('Text Editor Destination', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     await settle();
   });

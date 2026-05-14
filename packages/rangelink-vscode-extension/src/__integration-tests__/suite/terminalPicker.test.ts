@@ -28,12 +28,10 @@ standardSuite('Terminal Picker', (log) => {
   const terminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
     for (const t of terminals) {
       t.dispose();
     }
     terminals.length = 0;
-    await closeAllEditors();
     await settle();
   });
 

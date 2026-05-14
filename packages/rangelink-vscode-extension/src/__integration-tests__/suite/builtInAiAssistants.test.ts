@@ -8,15 +8,11 @@ import {
   CMD_BIND_TO_DESTINATION,
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import { CLAUDE_CODE_EXTENSION_ID } from '../../utils/aiAssistants/isClaudeCodeAvailable';
 import {
-  activateExtension,
   assertStatusBarMsgLogged,
   cleanupFiles,
-  closeAllEditors,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -31,17 +27,10 @@ const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
 const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink bound to Claude Code Chat';
 
-suite('Built-in AI Assistants', () => {
-  const log = createLogger('builtInAiAssistants');
+standardSuite('Built-in AI Assistants', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
-  suiteSetup(async () => {
-    await activateExtension();
-  });
-
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

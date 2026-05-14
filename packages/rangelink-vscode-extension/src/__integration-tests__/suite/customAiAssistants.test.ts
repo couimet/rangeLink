@@ -8,7 +8,6 @@ import {
   assertClipboardRestored,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createAndOpenFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -267,9 +266,7 @@ standardSuite('Custom AI Assistants — Cold Start', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -329,9 +326,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (log) => {
   });
 
   teardown(async () => {
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

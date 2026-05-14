@@ -6,7 +6,6 @@ import * as vscode from 'vscode';
 
 import {
   cleanupFiles,
-  closeAllEditors,
   getWorkspaceRoot,
   settle,
   standardSuite,
@@ -22,9 +21,6 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
   });
 
   setup(async () => {
-    log('setup: unbinding any stale destination');
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-
     const ts = Date.now();
     const sourcePath = path.join(getWorkspaceRoot(), `__rl-test-sp-source-${ts}.txt`);
     const destPath = path.join(getWorkspaceRoot(), `__rl-test-sp-dest-${ts}.txt`);
@@ -38,9 +34,6 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
   });
 
   teardown(async () => {
-    log('teardown: unbinding + closing editors');
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await closeAllEditors();
     cleanupFiles([sourceFileUri, destFileUri]);
     log('teardown: complete');
   });
