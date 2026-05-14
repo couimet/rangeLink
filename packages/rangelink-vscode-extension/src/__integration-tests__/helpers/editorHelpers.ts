@@ -35,13 +35,11 @@ export const clearEditorSelection = async (): Promise<void> => {
   }
 };
 
-export const openUntitledDoc = async (
-  options?: {
-    content?: string;
-    language?: string;
-    viewColumn?: vscode.ViewColumn;
-  },
-): Promise<vscode.TextDocument> => {
+export const openUntitledDoc = async (options?: {
+  content?: string;
+  language?: string;
+  viewColumn?: vscode.ViewColumn;
+}): Promise<vscode.TextDocument> => {
   const {
     content = '',
     language = 'plaintext',
