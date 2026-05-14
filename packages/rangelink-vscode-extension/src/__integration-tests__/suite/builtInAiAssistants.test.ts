@@ -7,6 +7,7 @@ import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_DESTINATION,
   CMD_COPY_LINK_RELATIVE,
+  CMD_JUMP_TO_DESTINATION,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import { CLAUDE_CODE_EXTENSION_ID } from '../../utils/aiAssistants/isClaudeCodeAvailable';
@@ -346,6 +347,9 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       logCapture.mark('before-cc-007');
 
       await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+      await settle();
+
+      await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
       await settle();
 
       const lines = logCapture.getLinesSince('before-cc-007');
