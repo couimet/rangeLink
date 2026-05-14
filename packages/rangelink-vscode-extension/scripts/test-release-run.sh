@@ -139,7 +139,7 @@ RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
   echo ""
 } > "$REPORT_FILE"
 
-echo "Report: $RELATIVE_REPORT"
+echo "Report output: $RELATIVE_REPORT"
 echo ""
 
 pnpm test:release:prepare
@@ -172,7 +172,7 @@ FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
 
 {
   echo ""
-  echo "Report: $RELATIVE_REPORT"
+  echo "Report complete: $RELATIVE_REPORT"
 
   if [[ $FINAL_EXIT -ne 0 ]]; then
     FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)

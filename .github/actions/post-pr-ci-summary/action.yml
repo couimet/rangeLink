@@ -1,0 +1,82 @@
+name: 'Post PR CI Summary'
+description: 'Post a PR comment with CI run summary — duration, test counts, QA TC IDs exercised'
+
+inputs:
+  title:
+    description: 'Heading text for the summary comment'
+    required: true
+  unit-passed:
+    description: 'Number of unit tests passed (empty if N/A)'
+    required: false
+    default: ''
+  unit-total:
+    description: 'Total number of unit tests (empty if N/A)'
+    required: false
+    default: ''
+  int-passing:
+    description: 'Number of integration tests passing (empty if N/A)'
+    required: false
+    default: ''
+  label-filter:
+    description: "TC ID label filter — 'requires-extensions' for with-extensions job, empty for all automated without that label"
+    required: false
+    default: ''
+  job-start:
+    description: 'Epoch seconds when the CI job started (from date +%s)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Post PR CI summary
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        # Duration
+        NOW=$(date +%s)
+        ELAPSED=$(( NOW - ${{ inputs.job-start }} ))
+        DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
+
+        # Latest QA YAML
+        QA_YAML=$(find packages/rangelink-vscode-extension/qa -name 'qa-test-cases-*.yaml' | sort | tail -1)
+
+        # Extract TC IDs exercised
+        LABEL_FILTER="${{ inputs.label-filter }}"
+        TC_IDS=$(python3 -c "
+        import sys, yaml
+        label_filter = sys.argv[2] if len(sys.argv) > 2 else ''
+        with open(sys.argv[1]) as f:
+            data = yaml.safe_load(f)
+        ids = []
+        for tc in data['test_cases']:
+            if tc.get('automated') is True:
+                labels = tc.get('labels') or []
+                if label_filter:
+                    if label_filter in labels:
+                        ids.append(tc['id'])
+                else:
+                    if 'requires-extensions' not in labels:
+                        ids.append(tc['id'])
+        print(', '.join(ids))
+        " "$QA_YAML" "$LABEL_FILTER")
+
+        # Build table
+        TABLE="### ${{ inputs.title }}"
+        TABLE="${TABLE}"$'\n'"| | |"
+        TABLE="${TABLE}"$'\n'"|---|---|"
+        TABLE="${TABLE}"$'\n'"| Duration | ${DURATION_STR} |"
+
+        if [ -n "${{ inputs.unit-total }}" ]; then
+          TABLE="${TABLE}"$'\n'"| Unit tests passed | ${{ inputs.unit-passed }} / ${{ inputs.unit-total }} |"
+        fi
+        if [ -n "${{ inputs.int-passing }}" ]; then
+          TABLE="${TABLE}"$'\n'"| Integration tests passing | ${{ inputs.int-passing }} |"
+        fi
+
+        TABLE="${TABLE}"$'\n'"| QA TC IDs exercised | ${TC_IDS} |"
+        TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
+
+        gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+          -f body="$TABLE"

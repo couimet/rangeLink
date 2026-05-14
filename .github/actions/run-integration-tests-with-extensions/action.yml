@@ -1,5 +1,11 @@
 name: 'Run Integration Tests (with extensions)'
 description: 'Run pnpm test:release:with-extensions --no-assisted under Xvfb — installs marketplace extensions and runs automated tests that depend on them'
+
+outputs:
+  int-passing:
+    description: 'Number of integration tests passing'
+    value: ${{ steps.stats.outputs.int-passing }}
+
 runs:
   using: 'composite'
   steps:
@@ -18,5 +24,29 @@ runs:
         restore-keys: vscode-test-${{ runner.os }}-
 
     - name: Run integration tests under Xvfb
+      id: run
       shell: bash
-      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:release:with-extensions --no-assisted
+      run: |
+        set -o pipefail
+        xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" \
+          pnpm test:release:with-extensions --no-assisted 2>&1 | tee /tmp/test-report-with-extensions.txt
+
+    - name: Extract integration test stats
+      id: stats
+      if: always()
+      shell: bash
+      run: |
+        if [ -f /tmp/test-report-with-extensions.txt ]; then
+          INT_PASSING=$(grep -oP '\d+(?= passing)' /tmp/test-report-with-extensions.txt | tail -1 || echo "0")
+        else
+          INT_PASSING="0"
+        fi
+        echo "int-passing=${INT_PASSING}" >> "$GITHUB_OUTPUT"
+
+    - name: Upload test report artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report-with-extensions
+        path: /tmp/test-report-with-extensions.txt
+        retention-days: 30
