@@ -326,35 +326,29 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
-    try {
-      // Set invalid config: delay (100) <= interval (400)
-      await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
-      await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
-      await settle();
+    // Set invalid config: delay (100) <= interval (400)
+    await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
+    await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
+    await settle();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-cc-007');
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cc-007');
 
-      await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-      await settle();
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
 
-      await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
-      await settle();
+    await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
+    await settle();
 
-      const lines = logCapture.getLinesSince('before-cc-007');
-      const warningLog = lines.find((line) =>
-        line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs'),
-      );
-      assert.ok(
-        warningLog,
-        'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
-      );
+    const lines = logCapture.getLinesSince('before-cc-007');
+    const warningLog = lines.find((line) =>
+      line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs'),
+    );
+    assert.ok(
+      warningLog,
+      'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
+    );
 
-      log('✓ claude-code-007 — invalid config triggers fallback to defaults');
-    } finally {
-      // Restore config to defaults
-      await config.update('coldStartDelayMs', undefined, vscode.ConfigurationTarget.Workspace);
-      await config.update('coldRefocusIntervalMs', undefined, vscode.ConfigurationTarget.Workspace);
-    }
+    log('✓ claude-code-007 — invalid config triggers fallback to defaults');
   });
 });

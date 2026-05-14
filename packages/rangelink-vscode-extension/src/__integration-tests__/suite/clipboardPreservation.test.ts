@@ -55,12 +55,6 @@ standardSuite('Clipboard Preservation', (_log) => {
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
   });
 
-  teardown(async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
-  });
-
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')

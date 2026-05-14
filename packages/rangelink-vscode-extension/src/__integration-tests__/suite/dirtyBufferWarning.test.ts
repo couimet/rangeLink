@@ -34,12 +34,6 @@ standardSuite('Dirty Buffer Warning', (_log) => {
     cleanupFiles([testFileUri]);
   });
 
-  teardown(async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
-  });
-
   test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
     const editor = await openEditor(testFileUri);
 
@@ -393,13 +387,6 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (log) => {
 
   suiteTeardown(async () => {
     cleanupFiles([testFileUri]);
-  });
-
-  teardown(async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
-    await settle();
   });
 
   test('[assisted] dirty-buffer-warning-001: warnOnDirtyBuffer=true — R-L on dirty file shows warning dialog', async () => {

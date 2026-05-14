@@ -33,9 +33,6 @@ standardSuite('Send File Path', (log) => {
   teardown(async () => {
     for (const t of tmpTerminals.splice(0)) t.dispose();
     cleanupFiles(tmpFileUris.splice(0));
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
     await settle();
   });
 
