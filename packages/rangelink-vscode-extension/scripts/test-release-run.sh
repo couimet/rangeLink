@@ -105,6 +105,11 @@ if [[ -n "$LABEL_FILTER" ]]; then
   fi
 fi
 
+if [[ -z "$GREP_PATTERN" && ( "$MODE" == "automated" || "$NO_ASSISTED" == true ) ]]; then
+  export MOCHA_GREP='\[assisted\]'
+  export MOCHA_INVERT=true
+fi
+
 OUTPUT_DIR="$PACKAGE_ROOT/qa/output"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
@@ -139,9 +144,16 @@ echo ""
 
 pnpm test:release:prepare
 
+if [[ "$WITH_EXTENSIONS" == "true" ]]; then
+  node "$SCRIPT_DIR/setup-integration-test-settings.js" --suffix -with-ext
+fi
+
 TEST_EXIT=0
 # shellcheck disable=SC2086
-MOCHA_GREP="$GREP_PATTERN" npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
+if [[ -n "$GREP_PATTERN" ]]; then
+  export MOCHA_GREP="$GREP_PATTERN"
+fi
+npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
 
 if [[ -n "$GREP_PATTERN" && $TEST_EXIT -eq 0 ]]; then
   if ! grep -qE '[1-9][0-9]* passing' "$REPORT_FILE"; then
