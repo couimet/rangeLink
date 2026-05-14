@@ -742,7 +742,11 @@ describe('destinationBuilders', () => {
         .createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledTimes(1);
       const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
-      expect(capabilities).toStrictEqual(['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open']);
+      expect(capabilities).toStrictEqual([
+        'claude-vscode.focus',
+        'claude-vscode.sidebar.open',
+        'claude-vscode.editor.open',
+      ]);
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();
