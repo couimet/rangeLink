@@ -2,10 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  CMD_COPY_LINK_ONLY_RELATIVE,
-  CMD_COPY_LINK_RELATIVE,
-} from '../../constants/commandIds';
+import { CMD_COPY_LINK_ONLY_RELATIVE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
   assertClipboardRestored,
   assertNoToastLogged,

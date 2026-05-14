@@ -2,10 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  CMD_BIND_TO_TEXT_EDITOR_HERE,
-  CMD_COPY_LINK_RELATIVE,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
   assertNoToastLogged,
   assertToastLogged,

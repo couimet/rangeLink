@@ -2,10 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  CMD_BIND_TO_TERMINAL_HERE,
-  CMD_OPEN_STATUS_BAR_MENU,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_TERMINAL_HERE, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   assertQuickPickItemsLogged,
   cleanupFiles,
