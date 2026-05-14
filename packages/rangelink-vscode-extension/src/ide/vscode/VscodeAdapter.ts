@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import {
+  AI_ASSISTANT_PASTE_COMMANDS,
   CLIPBOARD_POST_PASTE_DELAY_MS,
   FOCUS_TO_PASTE_DELAY_MS,
   VSCODE_CMD_TERMINAL_PASTE,
@@ -85,36 +86,53 @@ export class VscodeAdapter
   }
 
   /**
-   * Paste text from clipboard into the currently focused editor element.
+   * Dispatch a clipboard paste into an AI assistant chat surface (Claude Code,
+   * Cursor AI, GitHub Copilot Chat, custom AI Tier 1/2 webview targets).
    *
-   * Waits FOCUS_TO_PASTE_DELAY_MS before executing the paste command so that
-   * the clipboard write (performed earlier by ClipboardRouter) has time to
-   * propagate across the Electron IPC boundary to the webview's renderer process.
-   * Without this delay, webview-based AI assistants read stale clipboard data
-   * and the paste lands empty. After a successful paste, waits for
-   * postPasteDelayMs so that the webview can complete its async clipboard read
-   * before the outer ClipboardPreserver restores the user's prior clipboard.
+   * Waits FOCUS_TO_PASTE_DELAY_MS before dispatching so the clipboard write
+   * performed earlier by ClipboardRouter has time to propagate across the
+   * Electron IPC boundary to the webview's renderer process. Without this
+   * delay, webview-based AI assistants read stale clipboard data and the
+   * paste lands empty.
+   *
+   * Iterates over AI_ASSISTANT_PASTE_COMMANDS in order, trying each until one
+   * succeeds. The `command` field in the success log identifies which dispatch
+   * worked — tests rely on this attribute to assert correct fallback behavior.
+   *
+   * After the successful paste, waits for postPasteDelayMs so the webview can
+   * complete its async clipboard read before the outer ClipboardPreserver
+   * restores the user's prior clipboard.
+   *
+   * Not a generic clipboard-paste facade: the iteration and delays are tuned
+   * for AI assistant webview surfaces. Use a different code path for terminal
+   * or editor paste.
    *
    * @param postPasteDelayMs - Optional delay after paste (defaults to CLIPBOARD_POST_PASTE_DELAY_MS)
-   * @returns true if paste command succeeded, false otherwise
+   * @returns true if any paste command succeeded, false if all failed
    */
-  async pasteTextFromClipboard(postPasteDelayMs?: number): Promise<boolean> {
+  async pasteClipboardToAiAssistant(postPasteDelayMs?: number): Promise<boolean> {
     const postDelay = postPasteDelayMs ?? CLIPBOARD_POST_PASTE_DELAY_MS;
-    const logCtx = { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: postDelay };
-    try {
-      await this.delay(FOCUS_TO_PASTE_DELAY_MS);
-      this.logger.debug(
-        { ...logCtx, prePasteDelay: FOCUS_TO_PASTE_DELAY_MS },
-        'Pre-paste delay complete, executing paste',
-      );
-      await this.ideInstance.commands.executeCommand('editor.action.clipboardPasteAction');
-      this.logger.info(logCtx, 'Clipboard paste succeeded');
-      await this.delay(postDelay);
-      return true;
-    } catch (error) {
-      this.logger.debug({ ...logCtx, error }, 'Paste command failed');
-      return false;
+    const logCtx = {
+      fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+      delay: postDelay,
+      prePasteDelay: FOCUS_TO_PASTE_DELAY_MS,
+    };
+    await this.delay(FOCUS_TO_PASTE_DELAY_MS);
+    this.logger.debug(logCtx, 'Pre-paste delay complete, trying paste commands');
+
+    for (const command of AI_ASSISTANT_PASTE_COMMANDS) {
+      try {
+        await this.ideInstance.commands.executeCommand(command);
+        this.logger.info({ ...logCtx, command }, 'Clipboard paste succeeded');
+        await this.delay(postDelay);
+        return true;
+      } catch (error) {
+        this.logger.debug({ ...logCtx, command, error }, 'Paste command failed, trying next');
+      }
     }
+
+    this.logger.warn({ ...logCtx, allCommandsFailed: true }, 'All paste commands failed');
+    return false;
   }
 
   private delay(ms: number): Promise<void> {

@@ -23,7 +23,7 @@ export class AIAssistantInsertFactory implements InsertFactory<void> {
     return async (_text: string): Promise<boolean> => {
       const fn = 'AIAssistantInsertFactory.insert';
 
-      const success = await this.ideAdapter.pasteTextFromClipboard();
+      const success = await this.ideAdapter.pasteClipboardToAiAssistant();
       if (success) {
         return true;
       }

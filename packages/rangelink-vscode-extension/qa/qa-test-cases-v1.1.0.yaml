@@ -3032,7 +3032,7 @@ test_cases:
       - 'Confirm "Claude Code Chat" item appears first in the AI Assistants group'
     expected_result: '"Claude Code Chat" is listed as the first item in the AI Assistants group of the destination picker'
     command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-001"'
-    automated: false
+    automated: true
 
   - id: claude-code-002
     labels:
@@ -3049,23 +3049,7 @@ test_cases:
       - 'Confirm Claude Code chat panel opens and receives the RangeLink payload'
     expected_result: 'Claude Code chat opens and receives the RangeLink payload for the selected range'
     command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-002"'
-    automated: false
-
-  - id: claude-code-003
-    labels:
-      - clipboard
-    feature: 'Built-in AI Assistants'
-    scenario: 'Second invocation of Claude Code Chat uses warm path (no cold-start refocus loop)'
-    preconditions:
-      - 'Claude Code extension (anthropic.claude-code) is installed and active'
-      - 'RangeLink is bound to Claude Code Chat'
-    steps:
-      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux) — first send (cold start)'
-      - 'Select a different range of code and press Cmd+R Cmd+L again — second send (warm path)'
-      - 'Confirm second send is faster (no ~2.5s refocus delay)'
-    expected_result: 'Second invocation uses warm path: no cold-start refocus signals, only a short 200ms delay before paste'
-    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-003"'
-    automated: false
+    automated: assisted
 
   - id: cursor-ai-001
     feature: 'Built-in AI Assistants'

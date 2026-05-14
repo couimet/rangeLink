@@ -776,52 +776,117 @@ describe('VscodeAdapter', () => {
     });
   });
 
-  describe('pasteTextFromClipboard', () => {
-    it('should enforce 200 pre-paste delay before executing the paste command', async () => {
+  describe('pasteClipboardToAiAssistant', () => {
+    it('should enforce 200 pre-paste delay and dispatch the first command on success', async () => {
       const callOrder: string[] = [];
       jest.spyOn(adapter as any, 'delay').mockImplementation((...args: unknown[]) => {
         callOrder.push(`delay-${args[0]}`);
         return Promise.resolve();
       });
+      mockVSCode.commands.executeCommand.mockImplementation((command: string) => {
+        callOrder.push(`cmd-${command}`);
+        return Promise.resolve(undefined);
+      });
 
-      await adapter.pasteTextFromClipboard();
+      const result = await adapter.pasteClipboardToAiAssistant();
 
-      expect(callOrder).toStrictEqual([`delay-${200}`, `delay-${200}`]);
-
+      expect(result).toBe(true);
+      expect(callOrder).toStrictEqual([
+        'delay-200',
+        'cmd-editor.action.clipboardPasteAction',
+        'delay-200',
+      ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'VscodeAdapter.pasteTextFromClipboard',
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
           delay: 200,
           prePasteDelay: 200,
         },
-        'Pre-paste delay complete, executing paste',
+        'Pre-paste delay complete, trying paste commands',
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: 200 },
+        {
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+          delay: 200,
+          prePasteDelay: 200,
+          command: 'editor.action.clipboardPasteAction',
+        },
         'Clipboard paste succeeded',
       );
     });
 
-    it('should not execute paste command before the pre-paste delay resolves', async () => {
-      const callOrder: string[] = [];
-      jest.spyOn(adapter as any, 'delay').mockImplementation((...args: unknown[]) => {
-        callOrder.push(`delay-${args[0]}`);
-        return Promise.resolve();
-      });
-      mockVSCode.commands.executeCommand.mockImplementation(() => {
-        callOrder.push('paste');
-        return Promise.resolve(undefined);
-      });
+    it('should fall back to the next command when the first dispatch throws', async () => {
+      const firstError = new Error('editor command not available');
+      mockVSCode.commands.executeCommand
+        .mockRejectedValueOnce(firstError)
+        .mockResolvedValueOnce(undefined);
+      jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
 
-      await adapter.pasteTextFromClipboard();
+      const result = await adapter.pasteClipboardToAiAssistant();
 
-      expect(callOrder).toStrictEqual([`delay-${200}`, 'paste', `delay-${200}`]);
+      expect(result).toBe(true);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(
+        1,
+        'editor.action.clipboardPasteAction',
+      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+          delay: 200,
+          prePasteDelay: 200,
+          command: 'editor.action.clipboardPasteAction',
+          error: firstError,
+        },
+        'Paste command failed, trying next',
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+          delay: 200,
+          prePasteDelay: 200,
+          command: 'execPaste',
+        },
+        'Clipboard paste succeeded',
+      );
+    });
+
+    it('should iterate the full fallback chain and return false when all commands fail', async () => {
+      const errorEditor = new Error('editor command not available');
+      const errorExec = new Error('execPaste not available');
+      const errorPaste = new Error('paste not available');
+      mockVSCode.commands.executeCommand
+        .mockRejectedValueOnce(errorEditor)
+        .mockRejectedValueOnce(errorExec)
+        .mockRejectedValueOnce(errorPaste);
+      const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
+
+      const result = await adapter.pasteClipboardToAiAssistant();
+
+      expect(result).toBe(false);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(
+        1,
+        'editor.action.clipboardPasteAction',
+      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(3, 'paste');
+      expect(delaySpy).toHaveBeenCalledTimes(1);
+      expect(delaySpy).toHaveBeenCalledWith(200);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+          delay: 200,
+          prePasteDelay: 200,
+          allCommandsFailed: true,
+        },
+        'All paste commands failed',
+      );
     });
 
     it('should use 200 as default post-paste delay', async () => {
       const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
 
-      await adapter.pasteTextFromClipboard();
+      await adapter.pasteClipboardToAiAssistant();
 
       expect(delaySpy).toHaveBeenCalledTimes(2);
       expect(delaySpy).toHaveBeenNthCalledWith(1, 200);
@@ -832,31 +897,17 @@ describe('VscodeAdapter', () => {
       const CUSTOM_POST_DELAY = 500;
       const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
 
-      await adapter.pasteTextFromClipboard(CUSTOM_POST_DELAY);
+      await adapter.pasteClipboardToAiAssistant(CUSTOM_POST_DELAY);
 
       expect(delaySpy).toHaveBeenNthCalledWith(2, CUSTOM_POST_DELAY);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.pasteTextFromClipboard', delay: CUSTOM_POST_DELAY },
-        'Clipboard paste succeeded',
-      );
-    });
-
-    it('should skip post-paste delay when paste command fails', async () => {
-      const pasteError = new Error('Paste failed');
-      mockVSCode.commands.executeCommand.mockRejectedValueOnce(pasteError);
-      const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
-
-      await adapter.pasteTextFromClipboard();
-
-      expect(delaySpy).toHaveBeenCalledTimes(1);
-      expect(delaySpy).toHaveBeenCalledWith(200);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'VscodeAdapter.pasteTextFromClipboard',
-          delay: 200,
-          error: pasteError,
+          fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
+          delay: CUSTOM_POST_DELAY,
+          prePasteDelay: 200,
+          command: 'editor.action.clipboardPasteAction',
         },
-        'Paste command failed',
+        'Clipboard paste succeeded',
       );
     });
   });

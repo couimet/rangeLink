@@ -148,7 +148,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         .spyOn(mockAdapter, 'executeCommand')
         .mockResolvedValue(undefined);
       const pasteClipboardSpy = jest
-        .spyOn(mockAdapter, 'pasteTextFromClipboard')
+        .spyOn(mockAdapter, 'pasteClipboardToAiAssistant')
         .mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -197,7 +197,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(new Error('First failed'))
         .mockResolvedValueOnce(undefined);
-      jest.spyOn(mockAdapter, 'pasteTextFromClipboard').mockResolvedValue(true);
+      jest.spyOn(mockAdapter, 'pasteClipboardToAiAssistant').mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'claude-code',
