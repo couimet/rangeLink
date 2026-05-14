@@ -25,14 +25,9 @@ import {
 } from '../helpers';
 
 standardSuite('R-D Bind to Destination', (log) => {
-  const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    for (const t of terminals) {
-      t.dispose();
-    }
-    terminals.length = 0;
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -42,7 +37,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     findTestItemsByPrefix(items, '__rl-test-btd-');
 
   test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
-    await createTerminal('rl-btd-004', terminals);
+    await createTerminal('rl-btd-004');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-004');
@@ -167,10 +162,10 @@ standardSuite('R-D Bind to Destination', (log) => {
   });
 
   test('[assisted] bind-to-destination-007: when already bound, destination picker shows smart-bind confirmation dialog', async () => {
-    await createTerminal('rl-btd-007-a', terminals);
+    await createTerminal('rl-btd-007-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-007-b', terminals);
+    await createTerminal('rl-btd-007-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-007');
@@ -220,10 +215,10 @@ standardSuite('R-D Bind to Destination', (log) => {
   });
 
   test('[assisted] bind-to-destination-008: smart-bind confirmation Yes replaces the binding', async () => {
-    await createTerminal('rl-btd-008-a', terminals);
+    await createTerminal('rl-btd-008-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-008-b', terminals);
+    await createTerminal('rl-btd-008-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
@@ -252,10 +247,10 @@ standardSuite('R-D Bind to Destination', (log) => {
   });
 
   test('[assisted] bind-to-destination-009: smart-bind confirmation No keeps existing binding', async () => {
-    await createTerminal('rl-btd-009-a', terminals);
+    await createTerminal('rl-btd-009-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-009-b', terminals);
+    await createTerminal('rl-btd-009-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
@@ -290,7 +285,7 @@ standardSuite('R-D Bind to Destination', (log) => {
   });
 
   test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
-    await createTerminal('rl-btd-010', terminals);
+    await createTerminal('rl-btd-010');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
 

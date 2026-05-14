@@ -28,14 +28,9 @@ import {
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Terminal', (log) => {
-  const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    for (const t of terminals) {
-      t.dispose();
-    }
-    terminals.length = 0;
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -43,7 +38,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-001';
-    await createTerminal(terminalName, terminals);
+    await createTerminal(terminalName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-001');
@@ -71,7 +66,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] context-menus-terminal-002: Terminal content-area "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-002';
-    await createTerminal(terminalName, terminals);
+    await createTerminal(terminalName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-002');
@@ -99,7 +94,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] context-menus-terminal-003: Terminal content-area "Unbind" is visible when bound and unbinds on click', async () => {
     const terminalName = 'rl-ctxmenu-term-003';
-    await createTerminal(terminalName, terminals);
+    await createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
@@ -131,8 +126,8 @@ standardSuite('Context Menus — Terminal', (log) => {
   test('[assisted] context-menus-terminal-004: Right-clicking a specific terminal TAB binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-004-TARGET';
     const otherName = 'rl-ctxmenu-term-004-OTHER';
-    await createTerminal(otherName, terminals);
-    await createTerminal(targetName, terminals);
+    await createTerminal(otherName);
+    await createTerminal(targetName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-004');
@@ -173,8 +168,8 @@ standardSuite('Context Menus — Terminal', (log) => {
   test('[assisted] context-menus-terminal-005: Right-clicking a specific terminal CONTENT AREA binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-005-TARGET';
     const otherName = 'rl-ctxmenu-term-005-OTHER';
-    await createTerminal(otherName, terminals);
-    await createTerminal(targetName, terminals);
+    await createTerminal(otherName);
+    await createTerminal(targetName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-005');
@@ -232,7 +227,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     await settle();
 
     const terminalName = 'rl-ctxmenu-term-sts-005';
-    const terminal = await createTerminal(terminalName, terminals);
+    const terminal = await createTerminal(terminalName);
 
     const markerText = 'STS_005_MARKER_TEXT';
     terminal.sendText(`echo ${markerText}`, true);
@@ -281,9 +276,9 @@ standardSuite('Context Menus — Terminal', (log) => {
     const boundName = 'rl-sts-008-BOUND';
     const sourceName = 'rl-sts-008-SOURCE';
 
-    const capturingBound = await createAndBindCapturingTerminal(boundName, terminals);
+    const capturingBound = await createAndBindCapturingTerminal(boundName);
 
-    const sourceTerminal = await createTerminal(sourceName, terminals);
+    const sourceTerminal = await createTerminal(sourceName);
     const markerText = 'STS_008_CROSS_TERMINAL_MARKER';
     sourceTerminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);
@@ -333,7 +328,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] send-terminal-selection-009: "Send Selection to Destination" is NOT in the terminal TAB menu', async () => {
     const terminalName = 'rl-sts-009';
-    const terminal = await createTerminal(terminalName, terminals);
+    const terminal = await createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
     terminal.sendText(`echo STS_009_MARKER_TEXT`, true);
@@ -380,7 +375,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] send-terminal-selection-010: Self-paste — bound terminal selection is sent back to itself (current behavior, no guard)', async () => {
     const terminalName = 'rl-sts-010';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
     const markerText = 'STS_010_SELF_PASTE_MARKER';
     capturing.terminal.sendText(markerText, false);
     await settle(TERMINAL_READY_MS);
@@ -424,9 +419,9 @@ standardSuite('Context Menus — Terminal', (log) => {
     const sourceName = 'rl-sts-011-SOURCE';
     const destName = 'rl-sts-011-DEST';
 
-    const capturingDest = await createCapturingTerminal(destName, terminals);
+    const capturingDest = await createCapturingTerminal(destName);
 
-    const sourceTerminal = await createTerminal(sourceName, terminals);
+    const sourceTerminal = await createTerminal(sourceName);
     const markerText = 'STS_011_MARKER_TEXT';
     sourceTerminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);
@@ -486,7 +481,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] send-terminal-selection-012: "Send Selection" is hidden when no terminal text is selected', async () => {
     const terminalName = 'rl-sts-012';
-    const terminal = await createTerminal(terminalName, terminals);
+    const terminal = await createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
     terminal.sendText(`echo STS_012_MARKER_TEXT`, true);
@@ -542,7 +537,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     );
 
     const terminalName = 'rl-sts-013';
-    const terminal = await createTerminal(terminalName, terminals);
+    const terminal = await createTerminal(terminalName);
     const markerText = 'STS_013_AI_DELIVERY_MARKER';
     terminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);

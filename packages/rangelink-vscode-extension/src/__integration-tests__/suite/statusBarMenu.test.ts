@@ -108,29 +108,25 @@ standardSuite('R-M Status Bar Menu', (log) => {
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
 
-    try {
-      const logCapture = getLogCapture();
-      logCapture.mark('before-menu-005');
+    const logCapture = getLogCapture();
+    logCapture.mark('before-menu-005');
 
-      await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
-      const lines = logCapture.getLinesSince('before-menu-005');
-      assertQuickPickItemsLogged(lines, [
-        {
-          label: '$(arrow-right) Jump to Bound Destination',
-          description: '→ Terminal ("rl-menu-test")',
-          itemKind: 'command',
-        },
-        { label: '$(close) Unbind Destination', itemKind: 'command' },
-        { label: '', kind: SEPARATOR_KIND },
-        { label: '$(link-external) Go to Link', itemKind: 'command' },
-        { label: '$(info) Show Version Info', itemKind: 'command' },
-      ]);
+    const lines = logCapture.getLinesSince('before-menu-005');
+    assertQuickPickItemsLogged(lines, [
+      {
+        label: '$(arrow-right) Jump to Bound Destination',
+        description: '→ Terminal ("rl-menu-test")',
+        itemKind: 'command',
+      },
+      { label: '$(close) Unbind Destination', itemKind: 'command' },
+      { label: '', kind: SEPARATOR_KIND },
+      { label: '$(link-external) Go to Link', itemKind: 'command' },
+      { label: '$(info) Show Version Info', itemKind: 'command' },
+    ]);
 
-      log('✓ Bound-state menu items validated via log capture');
-    } finally {
-      terminal.dispose();
-    }
+    log('✓ Bound-state menu items validated via log capture');
   });
 
   test('[assisted] status-bar-menu-001: status bar item visible with correct text and tooltip', async () => {
@@ -176,63 +172,59 @@ standardSuite('R-M Status Bar Menu', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
-    try {
-      const logCapture = getLogCapture();
-      logCapture.mark('before-007');
+    const logCapture = getLogCapture();
+    logCapture.mark('before-007');
 
-      await waitForHuman(
-        'status-bar-menu-007',
-        'Destination is bound to "rl-sbm-007". Open the R-M menu (Cmd+R Cmd+M), verify Jump and Unbind are present, select "$(close) Unbind Destination", then click Cancel.',
-        [
-          '1. Press Cmd+R Cmd+M to open the R-M menu',
-          '2. Confirm "$(arrow-right) Jump to Bound Destination" shows "rl-sbm-007"',
-          '3. Confirm "$(close) Unbind Destination" is visible',
-          '4. Select "$(close) Unbind Destination"',
-          '5. Click Cancel on this notification',
-        ],
-      );
+    await waitForHuman(
+      'status-bar-menu-007',
+      'Destination is bound to "rl-sbm-007". Open the R-M menu (Cmd+R Cmd+M), verify Jump and Unbind are present, select "$(close) Unbind Destination", then click Cancel.',
+      [
+        '1. Press Cmd+R Cmd+M to open the R-M menu',
+        '2. Confirm "$(arrow-right) Jump to Bound Destination" shows "rl-sbm-007"',
+        '3. Confirm "$(close) Unbind Destination" is visible',
+        '4. Select "$(close) Unbind Destination"',
+        '5. Click Cancel on this notification',
+      ],
+    );
 
-      const lines = logCapture.getLinesSince('before-007');
-      const items = extractQuickPickItemsLogged(lines);
-      assert.ok(items, 'Expected showQuickPick log entry with items');
-      assert.ok(
-        items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-        'Expected Jump item present in bound state',
-      );
-      assert.ok(
-        items!.find((i) => i.label === '$(close) Unbind Destination'),
-        'Expected Unbind item present in bound state',
-      );
-      const commandSelectedLog = lines.find(
-        (l) => l.includes('Command item selected') && l.includes('Unbind Destination'),
-      );
-      assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Unbind Destination');
+    const lines = logCapture.getLinesSince('before-007');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry with items');
+    assert.ok(
+      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+      'Expected Jump item present in bound state',
+    );
+    assert.ok(
+      items!.find((i) => i.label === '$(close) Unbind Destination'),
+      'Expected Unbind item present in bound state',
+    );
+    const commandSelectedLog = lines.find(
+      (l) => l.includes('Command item selected') && l.includes('Unbind Destination'),
+    );
+    assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Unbind Destination');
 
-      logCapture.mark('after-unbind-007');
-      await waitForHuman(
-        'status-bar-menu-007',
-        'Re-open the R-M menu (Cmd+R Cmd+M), verify "Jump to Bound Destination" is gone, then press Escape and click Cancel.',
-        [
-          '1. Press Cmd+R Cmd+M to open the R-M menu',
-          '2. Confirm "$(arrow-right) Jump to Bound Destination" is NOT present',
-          '3. Press Escape to dismiss, then click Cancel',
-        ],
-      );
+    logCapture.mark('after-unbind-007');
+    await waitForHuman(
+      'status-bar-menu-007',
+      'Re-open the R-M menu (Cmd+R Cmd+M), verify "Jump to Bound Destination" is gone, then press Escape and click Cancel.',
+      [
+        '1. Press Cmd+R Cmd+M to open the R-M menu',
+        '2. Confirm "$(arrow-right) Jump to Bound Destination" is NOT present',
+        '3. Press Escape to dismiss, then click Cancel',
+      ],
+    );
 
-      const postLines = logCapture.getLinesSince('after-unbind-007');
-      const postItems = extractQuickPickItemsLogged(postLines);
-      assert.ok(postItems, 'Expected post-unbind showQuickPick log entry with items');
-      assert.strictEqual(
-        postItems!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-        undefined,
-        'Expected no Jump item after unbind',
-      );
-      log(
-        '✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent',
-      );
-    } finally {
-      terminal.dispose();
-    }
+    const postLines = logCapture.getLinesSince('after-unbind-007');
+    const postItems = extractQuickPickItemsLogged(postLines);
+    assert.ok(postItems, 'Expected post-unbind showQuickPick log entry with items');
+    assert.strictEqual(
+      postItems!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+      undefined,
+      'Expected no Jump item after unbind',
+    );
+    log(
+      '✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent',
+    );
   });
 
   test('[assisted] status-bar-menu-008: R-M menu Go to Link item opens the R-G input box', async () => {

@@ -62,8 +62,6 @@ standardSuite('Unbind Destination', (_log) => {
       clipboard.includes('#L'),
       `Expected clipboard to contain a line reference but got: ${clipboard}`,
     );
-
-    terminal.dispose();
   });
 
   test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
@@ -82,8 +80,6 @@ standardSuite('Unbind Destination', (_log) => {
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink unbound from Terminal ("rl-unbind-004-test")',
     });
-
-    terminal.dispose();
   });
 
   test('[assisted] unbind-005: "RangeLink: Unbind" hidden in command palette when no destination is bound', async () => {
@@ -144,9 +140,6 @@ standardSuite('Unbind Destination', (_log) => {
       'pass',
       'Human reported "RangeLink: Unbind" was NOT visible in command palette when bound — the `when: rangelink.isBound` clause is not working',
     );
-
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-    terminal.dispose();
   });
 
   test('unbind-003: unbindDestination is a safe no-op when no destination is bound', async () => {

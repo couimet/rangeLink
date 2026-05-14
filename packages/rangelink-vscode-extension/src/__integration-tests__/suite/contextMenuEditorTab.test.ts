@@ -23,14 +23,9 @@ const FILE_CONTENT = 'editor-tab context-menu test file\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Editor Tab', (log) => {
-  const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    for (const t of terminals) {
-      t.dispose();
-    }
-    terminals.length = 0;
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -41,7 +36,7 @@ standardSuite('Context Menus — Editor Tab', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-tab-001';
-    const capturing = await createCapturingTerminal(terminalName, terminals);
+    const capturing = await createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
@@ -80,7 +75,7 @@ standardSuite('Context Menus — Editor Tab', (log) => {
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-tab-002';
-    const capturing = await createCapturingTerminal(terminalName, terminals);
+    const capturing = await createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
@@ -149,7 +144,7 @@ standardSuite('Context Menus — Editor Tab', (log) => {
 
     const terminalName = 'rl-ctxmenu-tab-004';
     const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
+
     terminal.show(true);
     await settle();
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);

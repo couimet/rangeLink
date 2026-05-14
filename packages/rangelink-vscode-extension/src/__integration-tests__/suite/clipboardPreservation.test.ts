@@ -46,7 +46,6 @@ standardSuite('Clipboard Preservation', (_log) => {
   });
 
   suiteTeardown(async () => {
-    capturing.terminal.dispose();
     cleanupFiles([testFileUri]);
   });
 
@@ -116,11 +115,9 @@ standardSuite('Clipboard Preservation', (_log) => {
 
 standardSuite('Clipboard Preservation — Assisted', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    for (const t of tmpTerminals.splice(0)) t.dispose();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -131,10 +128,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     const fileUri = createWorkspaceFile('cbp-001', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'cbp-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('cbp-001-dest');
 
     await openEditor(fileUri);
     await writeClipboardSentinel();
@@ -165,7 +159,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    const srcTerminal = await createTerminal('cbp-002-src', tmpTerminals);
+    const srcTerminal = await createTerminal('cbp-002-src');
     srcTerminal.show(true);
     await settle();
 
@@ -233,10 +227,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     const fileUri = createWorkspaceFile('cbp-005', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'cbp-005-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('cbp-005-dest');
 
     await openEditor(fileUri);
     await writeClipboardSentinel();
@@ -269,7 +260,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    const srcTerminal = await createTerminal('cbp-007-src', tmpTerminals);
+    const srcTerminal = await createTerminal('cbp-007-src');
     srcTerminal.show(true);
     await settle();
 

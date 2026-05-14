@@ -25,7 +25,6 @@ const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Editor Content', (log) => {
-  const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
   let originalMultiLinePasteWarning: unknown;
 
@@ -55,10 +54,6 @@ standardSuite('Context Menus — Editor Content', (log) => {
   });
 
   teardown(async () => {
-    for (const t of terminals) {
-      t.dispose();
-    }
-    terminals.length = 0;
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -70,7 +65,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-001';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
@@ -108,7 +103,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-002';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
@@ -146,7 +141,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-003';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
@@ -183,7 +178,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-004';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
@@ -222,7 +217,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-005';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 6));
@@ -293,7 +288,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-007';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     await openEditor(uri);
     await settle();
@@ -330,7 +325,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-008';
-    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
+    const capturing = await createAndBindCapturingTerminal(terminalName);
 
     await openEditor(uri);
     await settle();
@@ -395,7 +390,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-010';
-    await createAndBindCapturingTerminal(terminalName, terminals);
+    await createAndBindCapturingTerminal(terminalName);
 
     await openEditor(uri);
     await settle();
@@ -436,7 +431,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-011';
-    await createAndBindCapturingTerminal(terminalName, terminals);
+    await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
