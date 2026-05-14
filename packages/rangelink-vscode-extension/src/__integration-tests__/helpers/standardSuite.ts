@@ -18,6 +18,7 @@ export const standardSuite = (name: string, fn: (log: (msg: string) => void) => 
     setup(async () => {
       await resetRangelinkSettings(log);
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+      await closeAllEditors();
       await settle();
     });
 
