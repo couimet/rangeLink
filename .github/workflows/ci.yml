@@ -13,8 +13,14 @@ jobs:
   test:
     name: Test & Validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
+      - name: Record start time
+        run: echo "TEST_JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -31,9 +37,11 @@ jobs:
         uses: ./.github/actions/check-formatting
 
       - name: Run tests with coverage
+        id: run-tests
         uses: ./.github/actions/run-tests
 
       - name: Run integration tests (VS Code extension host)
+        id: run-integration-tests
         uses: ./.github/actions/run-integration-tests
 
       - name: Check TODOs/FIXMEs
@@ -43,11 +51,29 @@ jobs:
           # For pushes to main: just count current TODOs
           base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}
 
+      - name: Post CI summary comment
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/post-pr-ci-summary
+        with:
+          title: 'CI / Test & Validate — run summary'
+          unit-passed: ${{ steps.run-tests.outputs.unit-passed }}
+          unit-total: ${{ steps.run-tests.outputs.unit-total }}
+          int-passing: ${{ steps.run-integration-tests.outputs.int-passing }}
+          label-filter: ''
+          job-start: ${{ env.TEST_JOB_START }}
+
   test-with-extensions:
     name: Integration Tests (with extensions)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
+      - name: Record start time
+        run: echo "EXTENSIONS_JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -58,4 +84,17 @@ jobs:
         uses: ./.github/actions/install-deps
 
       - name: Run integration tests with extensions
+        id: run-integration-tests-with-extensions
         uses: ./.github/actions/run-integration-tests-with-extensions
+
+      - name: Post CI summary comment
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/post-pr-ci-summary
+        with:
+          title: 'CI / Integration Tests (with extensions) — run summary'
+          unit-passed: ''
+          unit-total: ''
+          int-passing: ${{ steps.run-integration-tests-with-extensions.outputs.int-passing }}
+          label-filter: 'requires-extensions'
+          job-start: ${{ env.EXTENSIONS_JOB_START }}

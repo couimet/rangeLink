@@ -11,6 +11,12 @@ outputs:
   coverage-summary:
     description: 'Coverage summary output'
     value: ${{ steps.test.outputs.summary }}
+  unit-passed:
+    description: 'Number of unit tests passed'
+    value: ${{ steps.stats.outputs.unit-passed }}
+  unit-total:
+    description: 'Total number of unit tests'
+    value: ${{ steps.stats.outputs.unit-total }}
 
 runs:
   using: 'composite'
@@ -19,13 +25,29 @@ runs:
       id: test
       shell: bash
       run: |
+        set -o pipefail
         if [ -n "${{ inputs.package-filter }}" ]; then
           echo "Running tests for package: ${{ inputs.package-filter }}"
-          pnpm --filter "${{ inputs.package-filter }}" test
+          pnpm --filter "${{ inputs.package-filter }}" test 2>&1 | tee /tmp/jest-out.txt
         else
           echo "Running tests for all packages"
-          pnpm test
+          pnpm test 2>&1 | tee /tmp/jest-out.txt
         fi
+
+    - name: Extract unit test stats
+      id: stats
+      if: always()
+      shell: bash
+      run: |
+        if [ -f /tmp/jest-out.txt ]; then
+          UNIT_PASSED=$(grep -oP 'Tests:\s+\K\d+(?= passed)' /tmp/jest-out.txt | tail -1 || echo "0")
+          UNIT_TOTAL=$(grep -oP 'Tests:.*\s\K\d+(?= total)' /tmp/jest-out.txt | tail -1 || echo "0")
+        else
+          UNIT_PASSED="0"
+          UNIT_TOTAL="0"
+        fi
+        echo "unit-passed=${UNIT_PASSED}" >> "$GITHUB_OUTPUT"
+        echo "unit-total=${UNIT_TOTAL}" >> "$GITHUB_OUTPUT"
 
     - name: Generate coverage summary
       if: always()

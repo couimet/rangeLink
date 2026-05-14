@@ -200,7 +200,7 @@ REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
 REPO_ROOT="$(git -C "$PACKAGE_ROOT" rev-parse --show-toplevel)"
 RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
 echo ""
-echo "Report: $RELATIVE_REPORT"
+echo "Report complete: $RELATIVE_REPORT"
 
 # Exit with error if mismatches were found
 if grep -q "FAILED" "$REPORT_FILE"; then
