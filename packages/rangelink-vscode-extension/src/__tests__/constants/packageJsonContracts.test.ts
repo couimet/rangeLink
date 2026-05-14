@@ -1114,7 +1114,7 @@ describe('package.json contributions', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(27);
+        expect(commandPalette).toHaveLength(28);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
@@ -1173,134 +1173,141 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('editorTab.pasteFilePath is hidden from command palette', () => {
+      it('unbindDestination is conditionally gated in command palette', () => {
         expect(commandPalette[8]).toStrictEqual({
+          command: 'rangelink.unbindDestination',
+          when: 'rangelink.isBound',
+        });
+      });
+
+      it('editorTab.pasteFilePath is hidden from command palette', () => {
+        expect(commandPalette[9]).toStrictEqual({
           command: 'rangelink.editorTab.pasteFilePath',
           when: 'false',
         });
       });
 
       it('editorTab.pasteRelativeFilePath is hidden from command palette', () => {
-        expect(commandPalette[9]).toStrictEqual({
+        expect(commandPalette[10]).toStrictEqual({
           command: 'rangelink.editorTab.pasteRelativeFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.pasteFilePath is hidden from command palette', () => {
-        expect(commandPalette[10]).toStrictEqual({
+        expect(commandPalette[11]).toStrictEqual({
           command: 'rangelink.editorContent.pasteFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.pasteRelativeFilePath is hidden from command palette', () => {
-        expect(commandPalette[11]).toStrictEqual({
+        expect(commandPalette[12]).toStrictEqual({
           command: 'rangelink.editorContent.pasteRelativeFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.bind is hidden from command palette', () => {
-        expect(commandPalette[12]).toStrictEqual({
+        expect(commandPalette[13]).toStrictEqual({
           command: 'rangelink.editorContent.bind',
           when: 'false',
         });
       });
 
       it('editorContent.unbind is hidden from command palette', () => {
-        expect(commandPalette[13]).toStrictEqual({
+        expect(commandPalette[14]).toStrictEqual({
           command: 'rangelink.editorContent.unbind',
           when: 'false',
         });
       });
 
       it('editorContext.copyLink is hidden from command palette', () => {
-        expect(commandPalette[14]).toStrictEqual({
+        expect(commandPalette[15]).toStrictEqual({
           command: 'rangelink.editorContext.copyLink',
           when: 'false',
         });
       });
 
       it('editorContext.copyLinkAbsolute is hidden from command palette', () => {
-        expect(commandPalette[15]).toStrictEqual({
+        expect(commandPalette[16]).toStrictEqual({
           command: 'rangelink.editorContext.copyLinkAbsolute',
           when: 'false',
         });
       });
 
       it('editorContext.copyPortableLink is hidden from command palette', () => {
-        expect(commandPalette[16]).toStrictEqual({
+        expect(commandPalette[17]).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLink',
           when: 'false',
         });
       });
 
       it('editorContext.copyPortableLinkAbsolute is hidden from command palette', () => {
-        expect(commandPalette[17]).toStrictEqual({
+        expect(commandPalette[18]).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLinkAbsolute',
           when: 'false',
         });
       });
 
       it('editorContext.pasteSelectedText is hidden from command palette', () => {
-        expect(commandPalette[18]).toStrictEqual({
+        expect(commandPalette[19]).toStrictEqual({
           command: 'rangelink.editorContext.pasteSelectedText',
           when: 'false',
         });
       });
 
       it('editorContext.saveBookmark is hidden from command palette', () => {
-        expect(commandPalette[19]).toStrictEqual({
+        expect(commandPalette[20]).toStrictEqual({
           command: 'rangelink.editorContext.saveBookmark',
           when: 'false',
         });
       });
 
       it('bookmark.add is gated by bookmarks feature flag in command palette', () => {
-        expect(commandPalette[20]).toStrictEqual({
+        expect(commandPalette[21]).toStrictEqual({
           command: 'rangelink.bookmark.add',
           when: 'config.rangelink.features.bookmarks.enabled && editorHasSelection',
         });
       });
 
       it('bookmark.list is gated by bookmarks feature flag in command palette', () => {
-        expect(commandPalette[21]).toStrictEqual({
+        expect(commandPalette[22]).toStrictEqual({
           command: 'rangelink.bookmark.list',
           when: 'config.rangelink.features.bookmarks.enabled',
         });
       });
 
       it('terminal.bind is hidden from command palette', () => {
-        expect(commandPalette[22]).toStrictEqual({
+        expect(commandPalette[23]).toStrictEqual({
           command: 'rangelink.terminal.bind',
           when: 'false',
         });
       });
 
       it('terminal.copyLinkGuard is hidden from command palette', () => {
-        expect(commandPalette[23]).toStrictEqual({
+        expect(commandPalette[24]).toStrictEqual({
           command: 'rangelink.terminal.copyLinkGuard',
           when: 'false',
         });
       });
 
       it('terminal.linkBridge is hidden from command palette', () => {
-        expect(commandPalette[24]).toStrictEqual({
+        expect(commandPalette[25]).toStrictEqual({
           command: 'rangelink.terminal.linkBridge',
           when: 'false',
         });
       });
 
       it('terminal.pasteSelectedTextToDestination is hidden from command palette', () => {
-        expect(commandPalette[25]).toStrictEqual({
+        expect(commandPalette[26]).toStrictEqual({
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
           when: 'false',
         });
       });
 
       it('terminal.unbind is hidden from command palette', () => {
-        expect(commandPalette[26]).toStrictEqual({
+        expect(commandPalette[27]).toStrictEqual({
           command: 'rangelink.terminal.unbind',
           when: 'false',
         });

@@ -702,6 +702,10 @@
           "when": "false"
         },
         {
+          "command": "rangelink.unbindDestination",
+          "when": "rangelink.isBound"
+        },
+        {
           "command": "rangelink.editorTab.pasteFilePath",
           "when": "false"
         },

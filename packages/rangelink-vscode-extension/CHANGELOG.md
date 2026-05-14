@@ -179,6 +179,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
   - **After:** "RangeLink: Bind to Terminal"
   - Category "RangeLink" already provides the namespace; titles now focus on the action
+- **Unbind hidden when nothing bound** - "RangeLink: Unbind" now hides from the command palette when no destination is bound (via `when: rangelink.isBound`) instead of showing grayed out (#571)
+  - **Before:** Unbind always appeared in the command palette, grayed out when unbound
+  - **After:** Unbind only appears when a destination is bound, matching the existing menu and keybinding behavior
 
 ### Fixed
 

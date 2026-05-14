@@ -1858,6 +1858,28 @@ test_cases:
     expected_result: 'Same behavior as R-U keybinding — destination is unbound with confirmation notification.'
     automated: true
 
+  - id: unbind-005
+    feature: 'R-U Unbind'
+    scenario: 'RangeLink: Unbind Destination is hidden in the Command Palette when no destination is bound'
+    preconditions:
+      - 'No destination is currently bound'
+    steps:
+      - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
+      - "Type 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is NOT visible in the command palette. The when: rangelink.isBound clause hides it when no destination is bound."
+    automated: assisted
+
+  - id: unbind-006
+    feature: 'R-U Unbind'
+    scenario: 'RangeLink: Unbind Destination is visible in the Command Palette when a destination is bound'
+    preconditions:
+      - 'A destination is currently bound'
+    steps:
+      - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
+      - "Type 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' IS visible in the command palette and can be selected. The when: rangelink.isBound clause shows it when a destination is bound."
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section — Editor Binding Validation
   # ---------------------------------------------------------------------------
