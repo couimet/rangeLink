@@ -326,14 +326,24 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
-    // Set invalid config: delay (100) <= interval (400)
-    await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
-    await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
+    // Set delay <= interval so the validation rejects it (by default, delay >
+    // interval so the config is valid; flipping that relationship makes it invalid).
+    const INVALID_DELAY_MS = 100;
+    const INVALID_INTERVAL_MS = 400;
+    await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+    await config.update(
+      'coldRefocusIntervalMs',
+      INVALID_INTERVAL_MS,
+      vscode.ConfigurationTarget.Workspace,
+    );
     await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cc-007');
 
+    // Validation lives inside getColdRefocus, which is a thunk only invoked
+    // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
+    // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
     await settle();
 
@@ -341,12 +351,14 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     await settle();
 
     const lines = logCapture.getLinesSince('before-cc-007');
-    const warningLog = lines.find((line) =>
-      line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs'),
+    const warningLog = lines.find(
+      (line) =>
+        line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs') &&
+        line.includes('using defaults'),
     );
     assert.ok(
       warningLog,
-      'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
+      'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
     );
 
     log('✓ claude-code-007 — invalid config triggers fallback to defaults');
