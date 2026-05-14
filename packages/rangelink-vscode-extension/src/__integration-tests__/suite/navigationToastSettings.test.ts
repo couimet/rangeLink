@@ -21,11 +21,6 @@ standardSuite('Navigation Toast Settings', (_log) => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    assert.ok(
-      getLogCapture().isCapturing,
-      'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
-    );
-
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content here`);
     testFileUri = createWorkspaceFile('toast settings', lines.join('\n') + '\n');
     testFilename = path.basename(testFileUri.fsPath);

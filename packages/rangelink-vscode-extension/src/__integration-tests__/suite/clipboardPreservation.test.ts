@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_BIND_TO_TERMINAL_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
@@ -50,6 +51,9 @@ standardSuite('Clipboard Preservation', (_log) => {
   });
 
   setup(async () => {
+    capturing.terminal.show(true);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await settle();
     editor = await vscode.window.showTextDocument(editor.document);
     await writeClipboardSentinel();
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));

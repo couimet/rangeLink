@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import {
   cleanupFiles,
   getWorkspaceRoot,
+  openUntitledDoc,
   settle,
   standardSuite,
   waitForActiveEditor,
@@ -77,8 +78,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
     await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
 
     log('setupUntitledEditorPair: creating untitled dest in ViewColumn.Two');
-    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
-    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     log(
       `setupUntitledEditorPair: dest scheme=${destDoc.uri.scheme}, uri=${destDoc.uri.toString()}`,
     );
@@ -310,8 +310,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
 
     fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
 
-    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
-    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     const originalUri = destDoc.uri.toString();
     const originalLanguage = destDoc.languageId;
     log(`langswitch: dest uri=${originalUri}, language=${originalLanguage}`);

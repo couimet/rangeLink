@@ -12,7 +12,7 @@ export {
   CLIPBOARD_SENTINEL,
   writeClipboardSentinel,
 } from './clipboardHelpers';
-export { clearEditorSelection, selectAll, waitForActiveEditor } from './editorHelpers';
+export { clearEditorSelection, openUntitledDoc, selectAll, waitForActiveEditor } from './editorHelpers';
 export {
   cleanupFiles,
   closeAllEditors,

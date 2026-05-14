@@ -10,6 +10,7 @@ import {
   assertToastLogged,
   clearEditorSelection,
   getLogCapture,
+  openUntitledDoc,
   settle,
   standardSuite,
 } from '../helpers';
@@ -70,27 +71,20 @@ const navigateToUntitledLink = (
   });
 };
 
+const UNTITLED_CONTENT = Array.from(
+  { length: 15 },
+  (_, i) => `untitled line ${i + 1} content here`,
+).join('\n');
+
 standardSuite('Untitled File Navigation', (_log) => {
   let untitledDoc: vscode.TextDocument;
   let untitledDisplayName: string;
 
-  suiteSetup(async () => {
-    assert.ok(
-      getLogCapture().isCapturing,
-      'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
-    );
-
-    untitledDoc = await vscode.workspace.openTextDocument({
-      content: Array.from({ length: 15 }, (_, i) => `untitled line ${i + 1} content here`).join(
-        '\n',
-      ),
-      language: 'plaintext',
-    });
-    await vscode.window.showTextDocument(untitledDoc, vscode.ViewColumn.One);
-
+  setup(async () => {
+    untitledDoc = await openUntitledDoc({ content: UNTITLED_CONTENT });
     assert.strictEqual(untitledDoc.uri.scheme, 'untitled', 'Expected untitled document');
-
     untitledDisplayName = getUntitledDisplayName(untitledDoc.uri);
+    await settle();
   });
 
   // untitled-navigation-001: Navigate to single line in untitled file

@@ -35,6 +35,24 @@ export const clearEditorSelection = async (): Promise<void> => {
   }
 };
 
+export const openUntitledDoc = async (
+  options?: {
+    content?: string;
+    language?: string;
+    viewColumn?: vscode.ViewColumn;
+  },
+): Promise<vscode.TextDocument> => {
+  const {
+    content = '',
+    language = 'plaintext',
+    viewColumn = vscode.ViewColumn.One,
+  } = options ?? {};
+  const doc = await vscode.workspace.openTextDocument({ content, language });
+  await vscode.window.showTextDocument(doc, viewColumn);
+  await settle();
+  return doc;
+};
+
 export const selectAll = (editor: vscode.TextEditor): void => {
   const lastLine = editor.document.lineCount - 1;
   const lastChar = editor.document.lineAt(lastLine).text.length;
