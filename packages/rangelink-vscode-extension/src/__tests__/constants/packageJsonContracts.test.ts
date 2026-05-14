@@ -726,8 +726,36 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('destination settings', () => {
+      it('rangelink.destinations.claudeCode.coldStartDelayMs', () => {
+        expect(properties['rangelink.destinations.claudeCode.coldStartDelayMs']).toStrictEqual({
+          type: 'number',
+          default: 1500,
+          minimum: 500,
+          maximum: 15000,
+          description:
+            'Total duration (ms) of the cold-start re-focus window for Claude Code. During this window, focus commands are re-sent at the coldRefocusIntervalMs cadence to ensure the chat panel is ready before paste dispatch.',
+          title: 'Claude Code Cold Start Delay',
+        });
+      });
+
+      it('rangelink.destinations.claudeCode.coldRefocusIntervalMs', () => {
+        expect(properties['rangelink.destinations.claudeCode.coldRefocusIntervalMs']).toStrictEqual(
+          {
+            type: 'number',
+            default: 300,
+            minimum: 100,
+            maximum: 5000,
+            description:
+              'Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.',
+            title: 'Claude Code Cold Re-focus Interval',
+          },
+        );
+      });
+    });
+
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(15);
+      expect(Object.keys(properties)).toHaveLength(17);
     });
   });
 

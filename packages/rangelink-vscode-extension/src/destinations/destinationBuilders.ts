@@ -8,6 +8,14 @@
 import type * as vscode from 'vscode';
 
 import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
+import {
+  DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+} from '../constants/settingDefaults';
+import {
+  SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+  SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+} from '../constants/settingKeys';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import {
   AutoPasteResult,
@@ -29,6 +37,7 @@ import {
   CURSOR_AI_FOCUS_COMMANDS,
   GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from './aiAssistantFocusCommands';
+import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
 import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
@@ -46,6 +55,7 @@ interface BuiltinAiAssistantDef {
   readonly jumpMessageCode: MessageCode;
   readonly userInstructionMessageCode: MessageCode;
   readonly isAvailable: (context: DestinationBuilderContext) => boolean | Promise<boolean>;
+  readonly getColdRefocus?: (context: DestinationBuilderContext) => ColdRefocusConfig;
 }
 
 const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
@@ -64,6 +74,29 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
     jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE,
     userInstructionMessageCode: MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS,
     isAvailable: (ctx) => isClaudeCodeAvailable(ctx.ideAdapter, ctx.logger),
+    getColdRefocus: (context) => {
+      const totalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+        DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+      ) as number;
+      const intervalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+        DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+      ) as number;
+
+      if (totalMs <= intervalMs) {
+        context.logger.warn(
+          { fn: 'claudeCode.getColdRefocus', totalMs, intervalMs },
+          'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
+        );
+        return {
+          totalMs: DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+          intervalMs: DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+        };
+      }
+
+      return { totalMs, intervalMs };
+    },
   },
   'github.copilot-chat': {
     kind: 'github-copilot-chat',
@@ -180,9 +213,10 @@ const buildBuiltinAiAssistantDestination = (
   ComposablePasteDestination.createAiAssistant({
     id: def.kind,
     displayName: def.displayName,
-    focusCapability: context.factories.focusCapability.createAIAssistantCapability([
-      ...def.focusCommands,
-    ]),
+    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
+      [...def.focusCommands],
+      def.getColdRefocus !== undefined ? () => def.getColdRefocus!(context) : undefined,
+    ),
     isAvailable: async () => def.isAvailable(context),
     jumpSuccessMessage: formatMessage(def.jumpMessageCode),
     loggingDetails: {},

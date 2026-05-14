@@ -18,6 +18,17 @@ export const SETTING_NAMESPACE = 'rangelink';
 export const SETTING_CLIPBOARD_PRESERVE = 'clipboard.preserve';
 
 // =============================================================================
+// Destination Settings
+// =============================================================================
+
+export const SETTINGS_DESTINATIONS_PREFIX = 'destinations.';
+
+export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS =
+  'destinations.claudeCode.coldRefocusIntervalMs';
+export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS =
+  'destinations.claudeCode.coldStartDelayMs';
+
+// =============================================================================
 // Feature Flags — TODO: #366 remove when bookmarks graduates from beta
 // =============================================================================
 

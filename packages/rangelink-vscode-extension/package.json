@@ -532,6 +532,22 @@
           "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
           "pattern": "^[^0-9]+$"
         },
+        "rangelink.destinations.claudeCode.coldStartDelayMs": {
+          "type": "number",
+          "default": 1500,
+          "minimum": 500,
+          "maximum": 15000,
+          "description": "Total duration (ms) of the cold-start re-focus window for Claude Code. During this window, focus commands are re-sent at the coldRefocusIntervalMs cadence to ensure the chat panel is ready before paste dispatch.",
+          "title": "Claude Code Cold Start Delay"
+        },
+        "rangelink.destinations.claudeCode.coldRefocusIntervalMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 100,
+          "maximum": 5000,
+          "description": "Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.",
+          "title": "Claude Code Cold Re-focus Interval"
+        },
         "rangelink.features.bookmarks.enabled": {
           "type": "boolean",
           "default": false,

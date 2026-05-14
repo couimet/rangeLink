@@ -98,6 +98,7 @@ export const createWiringServices = (
     focusCapabilityFactory,
     eligibilityCheckerFactory,
     ideAdapter,
+    configReader,
     logger,
   );
   const customAssistants = parseCustomAiAssistants(configReader, logger);
