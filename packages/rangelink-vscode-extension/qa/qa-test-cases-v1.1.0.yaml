@@ -3152,7 +3152,7 @@ test_cases:
       - 'VS Code is running with the standard test:release:with-extensions configuration'
     steps:
       - 'Read the rangelink.destinations.claudeCode.coldStartDelayMs and coldRefocusIntervalMs defaults from VS Code configuration'
-      - 'Confirm coldStartDelayMs (1500) > coldRefocusIntervalMs (300)'
+      - 'Confirm coldStartDelayMs > coldRefocusIntervalMs'
     expected_result: 'Default settings produce a valid ColdRefocusConfig. coldStartDelayMs is greater than coldRefocusIntervalMs.'
     command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-006"'
     automated: true
@@ -3171,9 +3171,9 @@ test_cases:
       - 'Set rangelink.destinations.claudeCode.coldStartDelayMs to 100 and coldRefocusIntervalMs to 400 (invalid: delay <= interval)'
       - 'Bind to Claude Code Chat to trigger getColdRefocus validation'
       - 'Confirm a warning log is emitted about invalid cold-start config'
-      - 'Confirm the fallback defaults (1500 / 300) are used instead of the invalid values'
+      - 'Confirm the fallback defaults from coldStartDelayMs / coldRefocusIntervalMs are used instead of the invalid values'
       - 'Restore original configuration values'
-    expected_result: 'Invalid config is rejected. Warning is logged. Defaults (2500 / 300) are used as fallback.'
+    expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
     command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-007"'
     automated: true
 

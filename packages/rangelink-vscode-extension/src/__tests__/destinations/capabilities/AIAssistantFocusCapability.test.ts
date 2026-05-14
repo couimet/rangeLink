@@ -3,7 +3,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from '../../../destinations/capabilities/ColdRefocusConfig';
-import { FocusErrorReason } from '../../../destinations/capabilities/FocusCapability';
 import type { FocusResult } from '../../../destinations/capabilities/FocusCapability';
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { createMockVscodeAdapter } from '../../helpers';
@@ -84,7 +83,7 @@ describe('AIAssistantFocusCapability', () => {
     const result = await capability.focus(CTX);
 
     expect(result).toBeErrWith((error: FocusResult['error']) => {
-      expect(error.reason).toBe(FocusErrorReason.COMMAND_FOCUS_FAILED);
+      expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { fn: 'test', allCommandsFailed: true },
@@ -203,6 +202,25 @@ describe('AIAssistantFocusCapability', () => {
     expect(result).toBeOkWith((value: FocusResult['value']) => {
       expect(value.inserter).toBeUndefined();
     });
+    expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to warm delay when totalMs <= intervalMs (positive-but-invalid)', async () => {
+    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+    const coldRefocus = (): ColdRefocusConfig => ({ totalMs: 300, intervalMs: 300 });
+    const capability = createCapability(FOCUS_COMMANDS, coldRefocus);
+
+    const focusPromise = capability.focus(CTX);
+    await jest.advanceTimersByTimeAsync(200);
+    const result = await focusPromise;
+
+    expect(result).toBeOkWith((value: FocusResult['value']) => {
+      expect(value.inserter).toBeUndefined();
+    });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      { fn: 'test', totalMs: 300, intervalMs: 300 },
+      'Invalid cold refocus config, falling back to warm delay',
+    );
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
   });
 });

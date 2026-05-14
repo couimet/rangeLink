@@ -738,9 +738,11 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       builder({ kind: 'claude-code' }, context);
 
-      const [, getColdRefocusArg] = (
-        context.factories.focusCapability.createAIAssistantCapability as jest.Mock
-      ).mock.calls[0];
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
+      expect(capabilities).toStrictEqual(['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open']);
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();
@@ -755,9 +757,10 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       builder({ kind: 'cursor-ai' }, context);
 
-      const [, getColdRefocusArg] = (
-        context.factories.focusCapability.createAIAssistantCapability as jest.Mock
-      ).mock.calls[0];
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
       expect(getColdRefocusArg).toBeUndefined();
     });
 
@@ -771,9 +774,10 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'claude-code' }, context);
-      const [, getColdRefocusFn] = (
-        context.factories.focusCapability.createAIAssistantCapability as jest.Mock
-      ).mock.calls[0];
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
       const result = getColdRefocusFn();
       expect(result).toStrictEqual({
@@ -792,9 +796,10 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'claude-code' }, context);
-      const [, getColdRefocusFn] = (
-        context.factories.focusCapability.createAIAssistantCapability as jest.Mock
-      ).mock.calls[0];
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
       const result = getColdRefocusFn();
       expect(result).toStrictEqual({
