@@ -3,7 +3,6 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
@@ -12,7 +11,6 @@ import {
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   cleanupFiles,
-  closeAllEditors,
   createAndBindCapturingTerminal,
   createAndOpenFile,
   getLogCapture,
@@ -57,12 +55,10 @@ standardSuite('Context Menus — Editor Content', (log) => {
   });
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     for (const t of terminals) {
       t.dispose();
     }
     terminals.length = 0;
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

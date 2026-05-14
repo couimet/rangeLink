@@ -491,6 +491,13 @@ Set the navigation settings to `false` for a quieter workflow. Navigation itself
 
 When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
 
+### Claude Code Settings <sup>Unreleased</sup>
+
+| Setting                                                   | Default | Description                                                                          |
+| --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------ |
+| `rangelink.destinations.claudeCode.coldStartDelayMs`      | `1500`  | Total duration (ms) of the cold-start re-focus window for Claude Code                |
+| `rangelink.destinations.claudeCode.coldRefocusIntervalMs` | `300`   | Interval (ms) between successive focus-command re-sends during the cold-start window |
+
 ### Delimiter Settings
 
 | Setting                       | Default | Description                         |

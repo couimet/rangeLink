@@ -3141,6 +3141,42 @@ test_cases:
     command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-005"'
     automated: assisted
 
+  - id: claude-code-006
+    labels:
+      - requires-extensions
+      - cold-start
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold-start default settings produce a valid ColdRefocusConfig where totalMs > intervalMs'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'VS Code is running with the standard test:release:with-extensions configuration'
+    steps:
+      - 'Read the rangelink.destinations.claudeCode.coldStartDelayMs and coldRefocusIntervalMs defaults from VS Code configuration'
+      - 'Confirm coldStartDelayMs > coldRefocusIntervalMs'
+    expected_result: 'Default settings produce a valid ColdRefocusConfig. coldStartDelayMs is greater than coldRefocusIntervalMs.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-006"'
+    automated: true
+
+  - id: claude-code-007
+    labels:
+      - requires-extensions
+      - cold-start
+      - validation
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold-start validation rejects invalid config (totalMs <= intervalMs) and falls back to defaults with a warning'
+    preconditions:
+      - 'Claude Code extension (anthropic.claude-code) is installed and active'
+      - 'VS Code is running with the standard test:release:with-extensions configuration'
+    steps:
+      - 'Set rangelink.destinations.claudeCode.coldStartDelayMs to 100 and coldRefocusIntervalMs to 400 (invalid: delay <= interval)'
+      - 'Bind to Claude Code Chat to trigger getColdRefocus validation'
+      - 'Confirm a warning log is emitted about invalid cold-start config'
+      - 'Confirm the fallback defaults from coldStartDelayMs / coldRefocusIntervalMs are used instead of the invalid values'
+      - 'Restore original configuration values'
+    expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "claude-code-007"'
+    automated: true
+
   - id: cursor-ai-003
     labels:
       - clipboard

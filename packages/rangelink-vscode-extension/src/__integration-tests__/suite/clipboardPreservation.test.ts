@@ -4,10 +4,10 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_BIND_TO_TERMINAL_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
@@ -16,7 +16,6 @@ import {
   assertTerminalBufferContains,
   type CapturingTerminal,
   cleanupFiles,
-  closeAllEditors,
   CLIPBOARD_SENTINEL,
   createAndBindCapturingTerminal,
   createTerminal,
@@ -52,15 +51,12 @@ standardSuite('Clipboard Preservation', (_log) => {
   });
 
   setup(async () => {
+    capturing.terminal.show(true);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await settle();
     editor = await vscode.window.showTextDocument(editor.document);
     await writeClipboardSentinel();
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
-  });
-
-  teardown(async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
   });
 
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
@@ -123,10 +119,8 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.commands.executeCommand('dummyAi.clearAll');
     for (const t of tmpTerminals.splice(0)) t.dispose();
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -301,8 +295,6 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   });
 
   test('clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-009', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);

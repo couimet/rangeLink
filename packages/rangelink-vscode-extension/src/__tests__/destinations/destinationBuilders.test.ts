@@ -9,9 +9,9 @@ import {
   type DestinationBuilder,
   registerAllDestinationBuilders,
 } from '../../destinations';
-import { AutoPasteResult } from '../../types';
-import type { DestinationKind } from '../../types';
+import { AutoPasteResult, type DestinationKind } from '../../types';
 import {
+  createMockConfigReader,
   createMockDocument,
   createMockEditor,
   createMockEligibilityCheckerFactory,
@@ -35,6 +35,7 @@ describe('destinationBuilders', () => {
       eligibilityChecker: createMockEligibilityCheckerFactory(),
     },
     ideAdapter: createMockVscodeAdapter(adapterOverrides),
+    configReader: createMockConfigReader(),
     logger: mockLogger,
   });
 
@@ -728,6 +729,91 @@ describe('destinationBuilders', () => {
 
       expect(builders.has('claude-code')).toBe(true);
       expect(builders.has('custom-ai:anthropic.claude-code')).toBe(false);
+    });
+  });
+
+  describe('getColdRefocus', () => {
+    it('provides a getColdRefocus function for Claude Code', () => {
+      const builder = getBuiltinBuilder('claude-code');
+      const context = createMockContext();
+      builder({ kind: 'claude-code' }, context);
+
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
+      expect(capabilities).toStrictEqual([
+        'claude-vscode.focus',
+        'claude-vscode.sidebar.open',
+        'claude-vscode.editor.open',
+      ]);
+      expect(typeof getColdRefocusArg).toBe('function');
+
+      const result = getColdRefocusArg();
+      expect(result).toStrictEqual({
+        totalMs: 1500,
+        intervalMs: 300,
+      });
+    });
+
+    it('does not provide getColdRefocus for non-Claude-Code assistants', () => {
+      const builder = getBuiltinBuilder('cursor-ai');
+      const context = createMockContext();
+      builder({ kind: 'cursor-ai' }, context);
+
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
+      expect(getColdRefocusArg).toBeUndefined();
+    });
+
+    it('uses config values from settings when valid', () => {
+      const builder = getBuiltinBuilder('claude-code');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.claudeCode.coldStartDelayMs') return 5000;
+        if (_key === 'destinations.claudeCode.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'claude-code' }, context);
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 5000,
+        intervalMs: 500,
+      });
+    });
+
+    it('falls back to defaults when config values are invalid (totalMs <= intervalMs)', () => {
+      const builder = getBuiltinBuilder('claude-code');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.claudeCode.coldStartDelayMs') return 100;
+        if (_key === 'destinations.claudeCode.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'claude-code' }, context);
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 1500,
+        intervalMs: 300,
+      });
+      expect(context.logger.warn).toHaveBeenCalledWith(
+        { fn: 'claudeCode.getColdRefocus', totalMs: 100, intervalMs: 500 },
+        'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
+      );
     });
   });
 });

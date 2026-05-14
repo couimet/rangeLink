@@ -6,7 +6,6 @@ import * as vscode from 'vscode';
 
 import {
   cleanupFiles,
-  closeAllEditors,
   createAndOpenFile,
   createWorkspaceFile,
   openEditor,
@@ -161,7 +160,6 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

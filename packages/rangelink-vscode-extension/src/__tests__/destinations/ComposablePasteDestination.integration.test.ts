@@ -139,6 +139,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['ai.assistant.focus'],
+        undefined,
         insertFactory,
         mockLogger,
       );
@@ -188,6 +189,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['command.first', 'command.second', 'command.third'],
+        undefined,
         insertFactory,
         mockLogger,
       );
@@ -236,6 +238,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
         ['command.first', 'command.second'],
+        undefined,
         insertFactory,
         mockLogger,
       );

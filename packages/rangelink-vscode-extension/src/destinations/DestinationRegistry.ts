@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 
+import type { ConfigReader } from '../config/ConfigReader';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
@@ -44,6 +45,7 @@ export interface DestinationBuilderFactories {
 export interface DestinationBuilderContext {
   readonly factories: DestinationBuilderFactories;
   readonly ideAdapter: VscodeAdapter;
+  readonly configReader: ConfigReader;
   readonly logger: Logger;
 }
 
@@ -84,6 +86,7 @@ export class DestinationRegistry {
     focusCapabilityFactory: FocusCapabilityFactory,
     eligibilityCheckerFactory: EligibilityCheckerFactory,
     ideAdapter: VscodeAdapter,
+    configReader: ConfigReader,
     logger: Logger,
   ) {
     this.context = {
@@ -92,6 +95,7 @@ export class DestinationRegistry {
         eligibilityChecker: eligibilityCheckerFactory,
       },
       ideAdapter,
+      configReader,
       logger,
     };
   }

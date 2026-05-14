@@ -7,15 +7,12 @@ import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_DESTINATION,
   CMD_COPY_LINK_RELATIVE,
-  CMD_UNBIND_DESTINATION,
+  CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
 import { CLAUDE_CODE_EXTENSION_ID } from '../../utils/aiAssistants/isClaudeCodeAvailable';
 import {
-  activateExtension,
   assertStatusBarMsgLogged,
   cleanupFiles,
-  closeAllEditors,
-  createLogger,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -30,17 +27,10 @@ const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
 const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink bound to Claude Code Chat';
 
-suite('Built-in AI Assistants', () => {
-  const log = createLogger('builtInAiAssistants');
+standardSuite('Built-in AI Assistants', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
-  suiteSetup(async () => {
-    await activateExtension();
-  });
-
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
@@ -194,7 +184,10 @@ suite('Built-in AI Assistants', () => {
       'Human reported the cold-send RangeLink did not appear in Claude Code chat',
     );
 
-    // Select lines 3-4 for warm send
+    // Select lines 3-4 for warm send. Re-focus the editor first — the cold
+    // verdict dialog stole focus and the editor must be active for the send
+    // command to see the selection.
+    await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await settle();
 
@@ -308,5 +301,66 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     assert.strictEqual(copilotItem!.itemKind, 'bindable');
 
     log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
+  });
+
+  test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', async function (this: MochaContext) {
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
+    const totalMs = config.get<number>('coldStartDelayMs', 1500);
+    const intervalMs = config.get<number>('coldRefocusIntervalMs', 300);
+
+    assert.strictEqual(totalMs, 1500, 'Expected default coldStartDelayMs to be 1500');
+    assert.strictEqual(intervalMs, 300, 'Expected default coldRefocusIntervalMs to be 300');
+    assert.ok(
+      totalMs > intervalMs,
+      `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
+    );
+
+    log('✓ Default cold-start config produces valid ColdRefocusConfig');
+  });
+
+  test('claude-code-007: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID)) {
+      log('Skipping claude-code-007 — Claude Code extension not installed in this test config');
+      this.skip();
+    }
+
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
+
+    // Set delay <= interval so the validation rejects it (by default, delay >
+    // interval so the config is valid; flipping that relationship makes it invalid).
+    const INVALID_DELAY_MS = 100;
+    const INVALID_INTERVAL_MS = 400;
+    await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+    await config.update(
+      'coldRefocusIntervalMs',
+      INVALID_INTERVAL_MS,
+      vscode.ConfigurationTarget.Workspace,
+    );
+    await settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cc-007');
+
+    // Validation lives inside getColdRefocus, which is a thunk only invoked
+    // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
+    // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-cc-007');
+    const warningLog = lines.find(
+      (line) =>
+        line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs') &&
+        line.includes('using defaults'),
+    );
+    assert.ok(
+      warningLog,
+      'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
+    );
+
+    log('✓ claude-code-007 — invalid config triggers fallback to defaults');
   });
 });

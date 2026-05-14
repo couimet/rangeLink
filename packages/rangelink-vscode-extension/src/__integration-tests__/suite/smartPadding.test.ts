@@ -6,8 +6,8 @@ import * as vscode from 'vscode';
 
 import {
   cleanupFiles,
-  closeAllEditors,
   getWorkspaceRoot,
+  openUntitledDoc,
   settle,
   standardSuite,
   waitForActiveEditor,
@@ -22,9 +22,6 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
   });
 
   setup(async () => {
-    log('setup: unbinding any stale destination');
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-
     const ts = Date.now();
     const sourcePath = path.join(getWorkspaceRoot(), `__rl-test-sp-source-${ts}.txt`);
     const destPath = path.join(getWorkspaceRoot(), `__rl-test-sp-dest-${ts}.txt`);
@@ -38,9 +35,6 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
   });
 
   teardown(async () => {
-    log('teardown: unbinding + closing editors');
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await closeAllEditors();
     cleanupFiles([sourceFileUri, destFileUri]);
     log('teardown: complete');
   });
@@ -84,8 +78,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
     await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
 
     log('setupUntitledEditorPair: creating untitled dest in ViewColumn.Two');
-    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
-    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     log(
       `setupUntitledEditorPair: dest scheme=${destDoc.uri.scheme}, uri=${destDoc.uri.toString()}`,
     );
@@ -317,8 +310,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
 
     fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
 
-    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
-    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     const originalUri = destDoc.uri.toString();
     const originalLanguage = destDoc.languageId;
     log(`langswitch: dest uri=${originalUri}, language=${originalLanguage}`);

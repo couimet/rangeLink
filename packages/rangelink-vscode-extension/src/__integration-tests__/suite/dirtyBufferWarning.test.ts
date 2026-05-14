@@ -2,11 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  CMD_COPY_LINK_ONLY_RELATIVE,
-  CMD_COPY_LINK_RELATIVE,
-  CMD_UNBIND_DESTINATION,
-} from '../../constants/commandIds';
+import { CMD_COPY_LINK_ONLY_RELATIVE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
   assertClipboardRestored,
   assertNoToastLogged,
@@ -36,13 +32,6 @@ standardSuite('Dirty Buffer Warning', (_log) => {
 
   suiteTeardown(async () => {
     cleanupFiles([testFileUri]);
-  });
-
-  teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
   });
 
   test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
@@ -398,15 +387,6 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (log) => {
 
   suiteTeardown(async () => {
     cleanupFiles([testFileUri]);
-  });
-
-  teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
-    await closeAllEditors();
-    await settle();
   });
 
   test('[assisted] dirty-buffer-warning-001: warnOnDirtyBuffer=true — R-L on dirty file shows warning dialog', async () => {

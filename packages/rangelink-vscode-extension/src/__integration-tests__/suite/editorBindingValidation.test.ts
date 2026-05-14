@@ -4,10 +4,9 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
   cleanupFiles,
-  closeAllEditors,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
@@ -23,8 +22,6 @@ standardSuite('Editor Binding Validation', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     await settle();
   });

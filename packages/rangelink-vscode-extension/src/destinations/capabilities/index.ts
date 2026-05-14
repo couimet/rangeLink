@@ -13,6 +13,8 @@ export { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
 export { EditorFocusCapability } from './EditorFocusCapability';
 export { TerminalFocusCapability } from './TerminalFocusCapability';
 export { FocusCapabilityFactory } from './FocusCapabilityFactory';
+export { LazyResolvedFocusCapability } from './LazyResolvedFocusCapability';
+export { ColdRefocusConfig } from './ColdRefocusConfig';
 
 export type { InsertFactory } from './insertFactories';
 export {

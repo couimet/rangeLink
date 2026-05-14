@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   assertFilePathLogged,
@@ -14,7 +13,6 @@ import {
   assertTerminalBufferEquals,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createAndBindCapturingTerminal,
   createCapturingTerminal,
   createFileAt,
@@ -33,13 +31,8 @@ standardSuite('Send File Path', (log) => {
   const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     for (const t of tmpTerminals.splice(0)) t.dispose();
-    await closeAllEditors();
     cleanupFiles(tmpFileUris.splice(0));
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
     await settle();
   });
 

@@ -6,6 +6,7 @@ import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier } from '../types';
 
 import { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
+import type { ColdRefocusConfig } from './ColdRefocusConfig';
 import { EditorFocusCapability } from './EditorFocusCapability';
 import type { FocusCapability } from './FocusCapability';
 import {
@@ -49,10 +50,14 @@ export class FocusCapabilityFactory {
     );
   }
 
-  createAIAssistantCapability(focusCommands: string[]): FocusCapability {
+  createAIAssistantCapability(
+    focusCommands: string[],
+    getColdRefocus: (() => ColdRefocusConfig) | undefined,
+  ): FocusCapability {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
       focusCommands,
+      getColdRefocus,
       new AIAssistantInsertFactory(this.ideAdapter, this.logger),
       this.logger,
     );

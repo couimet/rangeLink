@@ -8,7 +8,6 @@ import {
   assertInputBoxLogged,
   assertToastLogged,
   cleanupFiles,
-  closeAllEditors,
   createAndOpenFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -42,7 +41,6 @@ standardSuite('R-G Go to Link', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();

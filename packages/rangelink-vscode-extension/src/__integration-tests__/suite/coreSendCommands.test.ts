@@ -10,7 +10,6 @@ import {
   CMD_COPY_PORTABLE_LINK_RELATIVE,
   CMD_PASTE_TO_DESTINATION,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
-  CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
   assertClipboardChanged,
@@ -21,7 +20,6 @@ import {
   assertToastLogged,
   type CapturingTerminal,
   cleanupFiles,
-  closeAllEditors,
   createAndBindCapturingTerminal,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
@@ -43,10 +41,8 @@ standardSuite('Core Send Commands', (log) => {
   const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
     await vscode.commands.executeCommand('dummyAi.clearAll');
     for (const t of tmpTerminals.splice(0)) t.dispose();
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -308,9 +304,6 @@ standardSuite('Core Send Commands', (log) => {
 
   test('[assisted] send-terminal-selection-004: R-V with no bound destination opens destination picker', async () => {
     const MARKER = 'rl-sts-004-marker';
-
-    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
-    await settle();
 
     const srcTerminal = vscode.window.createTerminal({ name: 'csc-sts-004-src' });
     srcTerminal.show(true);

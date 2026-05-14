@@ -32,6 +32,13 @@ export const DEFAULT_DELIMITER_POSITION = DEFAULT_DELIMITERS.position;
 export const DEFAULT_DELIMITER_RANGE = DEFAULT_DELIMITERS.range;
 
 // =============================================================================
+// Destination Defaults
+// =============================================================================
+
+export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS = 300;
+export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS = 1500;
+
+// =============================================================================
 // Navigation Defaults
 // =============================================================================
 

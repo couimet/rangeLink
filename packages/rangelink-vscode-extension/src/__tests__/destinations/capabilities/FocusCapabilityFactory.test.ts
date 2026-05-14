@@ -32,7 +32,10 @@ describe('FocusCapabilityFactory', () => {
   });
 
   it('creates AIAssistantFocusCapability', () => {
-    const capability = factory.createAIAssistantCapability(['workbench.action.chat.open']);
+    const capability = factory.createAIAssistantCapability(
+      ['workbench.action.chat.open'],
+      undefined,
+    );
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });

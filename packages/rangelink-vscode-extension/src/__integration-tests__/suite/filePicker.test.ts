@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   cleanupFiles,
-  closeAllEditors,
   createAndOpenFile,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
@@ -27,8 +26,6 @@ standardSuite('File Picker', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   teardown(async () => {
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await closeAllEditors();
     cleanupFiles(tmpFileUris);
     tmpFileUris.length = 0;
     await settle();
