@@ -31,6 +31,7 @@ export {
   assertNoSetContextLogged,
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
+  assertPasteCommandLogged,
   assertQuickPickItemsLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,

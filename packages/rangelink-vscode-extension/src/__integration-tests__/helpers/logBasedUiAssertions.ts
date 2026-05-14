@@ -369,6 +369,35 @@ export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void 
   );
 };
 
+const PASTE_TO_AI_ASSISTANT_FN = 'VscodeAdapter.pasteClipboardToAiAssistant';
+
+interface PasteCommandAssertionOptions {
+  command: string;
+}
+
+/**
+ * Assert that `pasteClipboardToAiAssistant` reported a successful paste via the named command.
+ * Matches on the `command` field of the success log, which identifies which entry of
+ * the `AI_ASSISTANT_PASTE_COMMANDS` fallback chain ultimately delivered the paste.
+ */
+export const assertPasteCommandLogged = (
+  lines: string[],
+  opts: PasteCommandAssertionOptions,
+): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as (LoggingContext & { command?: unknown }) | undefined;
+    return (
+      ctx?.fn === PASTE_TO_AI_ASSISTANT_FN &&
+      ctx.message === 'Clipboard paste succeeded' &&
+      ctx.command === opts.command
+    );
+  });
+  assert.ok(
+    found,
+    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log with command="${opts.command}" but it was not found in ${lines.length} log lines`,
+  );
+};
+
 const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
 
 interface ClipboardWriteAssertionOptions {
