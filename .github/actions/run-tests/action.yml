@@ -41,7 +41,7 @@ runs:
       run: |
         if [ -f /tmp/jest-out.txt ]; then
           UNIT_PASSED=$(grep -oP 'Tests:\s+\K\d+(?= passed)' /tmp/jest-out.txt | tail -1 || echo "0")
-          UNIT_TOTAL=$(grep -oP '\d+(?= total)' /tmp/jest-out.txt | tail -1 || echo "0")
+          UNIT_TOTAL=$(grep -oP 'Tests:.*\K\d+(?= total)' /tmp/jest-out.txt | tail -1 || echo "0")
         else
           UNIT_PASSED="0"
           UNIT_TOTAL="0"

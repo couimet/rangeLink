@@ -40,7 +40,7 @@ runs:
         DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
 
         # Latest QA YAML
-        QA_YAML=$(find packages/rangelink-vscode-extension/qa -name 'qa-test-cases-*.yaml' | sort | tail -1)
+        QA_YAML=$(find packages/rangelink-vscode-extension/qa -name 'qa-test-cases-*.yaml' | sort -V | tail -1)
 
         # Extract TC IDs exercised
         LABEL_FILTER="${{ inputs.label-filter }}"
