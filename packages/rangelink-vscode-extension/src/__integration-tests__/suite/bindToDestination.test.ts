@@ -344,7 +344,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     );
     assert.ok(
       alreadyBoundLogged,
-      `Expected "RangeLink: Already bound to <AI assistant>" info toast for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
+      `Expected "Already bound to <AI assistant>" info toast for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
     );
 
     log('✓ Already-bound info toast logged; no confirmation dialog shown');

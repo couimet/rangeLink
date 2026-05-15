@@ -21,7 +21,7 @@ import {
  * - id: 'terminal'
  * - displayName: 'Terminal'
  * - getLoggingDetails: { terminalName: 'bash' }
- * - getJumpSuccessMessage: '✓ Focused Terminal: "bash"'
+ * - getJumpSuccessMessage: 'Focused Terminal: "bash"'
  *
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock terminal destination with jest.fn() implementations
