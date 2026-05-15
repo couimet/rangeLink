@@ -17,6 +17,14 @@ inputs:
     description: 'Number of integration tests passing (empty if N/A)'
     required: false
     default: ''
+  int-failed:
+    description: 'Number of integration tests failed (empty if N/A)'
+    required: false
+    default: ''
+  report-file:
+    description: 'Path to the test report file for re-run command extraction'
+    required: false
+    default: ''
   label-filter:
     description: "TC ID label filter — 'requires-extensions' for with-extensions job, empty for all automated without that label"
     required: false
@@ -44,23 +52,13 @@ runs:
 
         # Extract TC IDs exercised
         LABEL_FILTER="${{ inputs.label-filter }}"
-        TC_IDS=$(python3 -c "
-        import sys, yaml
-        label_filter = sys.argv[2] if len(sys.argv) > 2 else ''
-        with open(sys.argv[1]) as f:
-            data = yaml.safe_load(f)
-        ids = []
-        for tc in data['test_cases']:
-            if tc.get('automated') is True:
-                labels = tc.get('labels') or []
-                if label_filter:
-                    if label_filter in labels:
-                        ids.append(tc['id'])
-                else:
-                    if 'requires-extensions' not in labels:
-                        ids.append(tc['id'])
-        print(', '.join(ids))
-        " "$QA_YAML" "$LABEL_FILTER")
+        RESOLVE_ARGS=(--automated-only --yaml "$QA_YAML" --format csv)
+        if [ -n "$LABEL_FILTER" ]; then
+          RESOLVE_ARGS+=(--label "$LABEL_FILTER")
+        else
+          RESOLVE_ARGS+=(--exclude-label requires-extensions)
+        fi
+        TC_IDS=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js "${RESOLVE_ARGS[@]}")
 
         # Build table
         TABLE="### ${{ inputs.title }}"
@@ -74,9 +72,21 @@ runs:
         if [ -n "${{ inputs.int-passing }}" ]; then
           TABLE="${TABLE}"$'\n'"| Integration tests passing | ${{ inputs.int-passing }} |"
         fi
+        if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
+          TABLE="${TABLE}"$'\n'"| Integration tests failed | ${{ inputs.int-failed }} |"
+        fi
 
         TABLE="${TABLE}"$'\n'"| QA TC IDs exercised | ${TC_IDS} |"
         TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
 
+        # Extract re-run command from test report
+        BODY="$TABLE"
+        if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
+          RE_RUN=$(sed -n '/^Re-run failed tests:/,$p' "${{ inputs.report-file }}" | tail -n +2 | sed 's/^  //')
+          if [ -n "$RE_RUN" ]; then
+            BODY="${BODY}"$'\n\n'"To re-run failed tests:"$'\n'"\`\`\`"$'\n'"${RE_RUN}"$'\n'"\`\`\`"
+          fi
+        fi
+
         gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-          -f body="$TABLE"
+          -f body="$BODY"
