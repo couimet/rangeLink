@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
-  CMD_BIND_TO_TERMINAL_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
@@ -38,21 +37,15 @@ standardSuite('Clipboard Preservation', (_log) => {
   suiteSetup(async () => {
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     testFileUri = createWorkspaceFile('clipboard', lines.join('\n') + '\n');
-
-    editor = await openEditor(testFileUri);
-
-    capturing = await createAndBindCapturingTerminal('rl-clipboard-test');
     editor = await openEditor(testFileUri);
   });
 
   suiteTeardown(async () => {
-    capturing.terminal.dispose();
     cleanupFiles([testFileUri]);
   });
 
   setup(async () => {
-    capturing.terminal.show(true);
-    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    capturing = await createAndBindCapturingTerminal('rl-clipboard-test');
     await settle();
     editor = await vscode.window.showTextDocument(editor.document);
     await writeClipboardSentinel();
@@ -116,11 +109,9 @@ standardSuite('Clipboard Preservation', (_log) => {
 
 standardSuite('Clipboard Preservation — Assisted', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    for (const t of tmpTerminals.splice(0)) t.dispose();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -131,10 +122,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     const fileUri = createWorkspaceFile('cbp-001', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'cbp-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('cbp-001-dest');
 
     await openEditor(fileUri);
     await writeClipboardSentinel();
@@ -165,7 +153,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    const srcTerminal = await createTerminal('cbp-002-src', tmpTerminals);
+    const srcTerminal = await createTerminal('cbp-002-src');
     srcTerminal.show(true);
     await settle();
 
@@ -233,10 +221,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     const fileUri = createWorkspaceFile('cbp-005', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'cbp-005-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('cbp-005-dest');
 
     await openEditor(fileUri);
     await writeClipboardSentinel();
@@ -269,7 +254,7 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    const srcTerminal = await createTerminal('cbp-007-src', tmpTerminals);
+    const srcTerminal = await createTerminal('cbp-007-src');
     srcTerminal.show(true);
     await settle();
 

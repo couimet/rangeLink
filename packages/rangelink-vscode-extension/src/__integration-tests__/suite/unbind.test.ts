@@ -4,12 +4,15 @@ import * as vscode from 'vscode';
 
 import {
   TERMINAL_READY_MS,
+  assertNoSetContextLogged,
+  assertSetContextLogged,
   assertStatusBarMsgLogged,
   cleanupFiles,
   createWorkspaceFile,
   getLogCapture,
   settle,
   standardSuite,
+  waitForHumanVerdict,
 } from '../helpers';
 
 standardSuite('Unbind Destination', (_log) => {
@@ -59,8 +62,6 @@ standardSuite('Unbind Destination', (_log) => {
       clipboard.includes('#L'),
       `Expected clipboard to contain a line reference but got: ${clipboard}`,
     );
-
-    terminal.dispose();
   });
 
   test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
@@ -79,8 +80,66 @@ standardSuite('Unbind Destination', (_log) => {
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink unbound from Terminal ("rl-unbind-004-test")',
     });
+  });
 
-    terminal.dispose();
+  test('[assisted] unbind-005: "RangeLink: Unbind" hidden in command palette when no destination is bound', async () => {
+    const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-005');
+
+    const lines = logCapture.getLinesSince('before-unbind-005');
+    assertNoSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
+
+    const verdict = await waitForHumanVerdict(
+      'unbind-005',
+      'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind" — is "RangeLink: Unbind" ABSENT?',
+      [
+        '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
+        '2. Type "RangeLink: Unbind"',
+        '3. Click Pass if "RangeLink: Unbind" is NOT visible (the `when: rangelink.isBound` clause should hide it).',
+        '   Click Fail if it IS present (that would be a bug).',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported "RangeLink: Unbind" WAS visible in command palette when unbound — the `when: rangelink.isBound` clause is not working',
+    );
+  });
+
+  test('[assisted] unbind-006: "RangeLink: Unbind" visible in command palette when a destination is bound', async () => {
+    const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
+
+    const terminal = vscode.window.createTerminal({ name: 'rl-unbind-006-test' });
+    terminal.show(true);
+    await settle(TERMINAL_READY_MS);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-006');
+
+    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+
+    const lines = logCapture.getLinesSince('before-unbind-006');
+    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
+
+    const verdict = await waitForHumanVerdict(
+      'unbind-006',
+      'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind" — is "RangeLink: Unbind" PRESENT?',
+      [
+        '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
+        '2. Type "RangeLink: Unbind"',
+        '3. Click Pass if "RangeLink: Unbind" IS visible (the `when: rangelink.isBound` clause should show it when bound).',
+        '   Click Fail if it is NOT present (that would be a bug).',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported "RangeLink: Unbind" was NOT visible in command palette when bound — the `when: rangelink.isBound` clause is not working',
+    );
   });
 
   test('unbind-003: unbindDestination is a safe no-op when no destination is bound', async () => {

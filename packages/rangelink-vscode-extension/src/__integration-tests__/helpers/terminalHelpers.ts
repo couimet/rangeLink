@@ -2,6 +2,12 @@ import * as vscode from 'vscode';
 
 import { settle, TERMINAL_READY_MS } from './testEnv';
 
+export const disposeAllTerminals = (): void => {
+  for (const t of vscode.window.terminals) {
+    t.dispose();
+  }
+};
+
 export const createTerminal = async (
   name: string,
   trackingArray?: vscode.Terminal[],

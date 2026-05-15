@@ -28,17 +28,14 @@ import {
 
 standardSuite('Send File Path', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
-    for (const t of tmpTerminals.splice(0)) t.dispose();
     cleanupFiles(tmpFileUris.splice(0));
     await settle();
   });
 
   test('send-file-path-001: R-F sends workspace-relative path to bound terminal', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createWorkspaceFile('sfp-001', 'content\n');
     tmpFileUris.push(fileUri);
@@ -68,7 +65,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createWorkspaceFile('sfp-002', 'content\n');
     tmpFileUris.push(fileUri);
@@ -104,7 +100,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
     tmpFileUris.push(fileUri);
@@ -141,7 +136,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
     tmpFileUris.push(fileUri);
@@ -230,7 +224,6 @@ standardSuite('Send File Path', (log) => {
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
     tmpFileUris.push(fileUri);
@@ -310,7 +303,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-009: unbound — R-F opens destination picker before sending', async () => {
     const capturing = await createCapturingTerminal('sfp-picker-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createWorkspaceFile('sfp-009', 'content\n');
     tmpFileUris.push(fileUri);
@@ -349,7 +341,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createWorkspaceFile('sfp-010', 'content\n');
     tmpFileUris.push(fileUri);
@@ -386,7 +377,6 @@ standardSuite('Send File Path', (log) => {
 
   test('[assisted] send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
-    tmpTerminals.push(capturing.terminal);
 
     const fileUri = createWorkspaceFile('sfp-011', 'content\n');
     tmpFileUris.push(fileUri);

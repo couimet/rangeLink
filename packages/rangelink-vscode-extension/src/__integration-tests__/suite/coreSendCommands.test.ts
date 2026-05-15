@@ -38,11 +38,9 @@ const NO_TERMINAL_SELECTION_MSG =
 
 standardSuite('Core Send Commands', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    for (const t of tmpTerminals.splice(0)) t.dispose();
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
     await settle();
@@ -139,10 +137,7 @@ standardSuite('Core Send Commands', (log) => {
     const fileUri = createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-r-c-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-c-001-dest');
 
     const editor = await openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -177,10 +172,7 @@ standardSuite('Core Send Commands', (log) => {
     const fileUri = createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-r-l-004-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-l-004-dest');
 
     const editor = await openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -207,10 +199,7 @@ standardSuite('Core Send Commands', (log) => {
     const fileUri = createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-r-c-002-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-c-002-dest');
 
     const editor = await openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -247,15 +236,12 @@ standardSuite('Core Send Commands', (log) => {
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {
     const MARKER = 'rl-sts-001-marker';
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-sts-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-001-dest');
     await settle();
 
     const srcTerminal = vscode.window.createTerminal({ name: 'csc-sts-001-src' });
     srcTerminal.show(true);
-    tmpTerminals.push(srcTerminal);
+
     await settle(TERMINAL_READY_MS);
 
     srcTerminal.sendText(`echo "${MARKER}"`, true);
@@ -281,7 +267,7 @@ standardSuite('Core Send Commands', (log) => {
   test('send-terminal-selection-003: R-V with no text selected in terminal shows error message', async () => {
     const terminal = vscode.window.createTerminal({ name: 'csc-sts-003' });
     terminal.show(true);
-    tmpTerminals.push(terminal);
+
     await settle(TERMINAL_READY_MS);
 
     // On macOS, terminal.copySelection leaves the clipboard unchanged when nothing
@@ -307,7 +293,7 @@ standardSuite('Core Send Commands', (log) => {
 
     const srcTerminal = vscode.window.createTerminal({ name: 'csc-sts-004-src' });
     srcTerminal.show(true);
-    tmpTerminals.push(srcTerminal);
+
     await settle(TERMINAL_READY_MS);
 
     srcTerminal.sendText(`echo "${MARKER}"`, true);
@@ -402,10 +388,7 @@ standardSuite('Core Send Commands', (log) => {
   });
 
   test('send-terminal-selection-006: R-L with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-sts-006-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-006-dest');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-006');
@@ -431,10 +414,7 @@ standardSuite('Core Send Commands', (log) => {
   });
 
   test('send-terminal-selection-007: R-C with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-sts-007-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-007-dest');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-007');
@@ -457,10 +437,7 @@ standardSuite('Core Send Commands', (log) => {
   });
 
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-r-l-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-l-001-dest');
 
     const fileUri = createWorkspaceFile('csc-r-l-001', 'line 1\nline 2\nline 3\nline 4\nline 5\n');
     tmpFileUris.push(fileUri);
@@ -489,10 +466,8 @@ standardSuite('Core Send Commands', (log) => {
   });
 
   test('full-line-selection-validation-001: R-L after expandLineSelection generates link without error', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
-      'csc-fullline-001-dest',
-      tmpTerminals,
-    );
+    const capturing: CapturingTerminal =
+      await createAndBindCapturingTerminal('csc-fullline-001-dest');
 
     const fileUri = createWorkspaceFile('csc-fullline-001', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
