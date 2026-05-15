@@ -58,7 +58,7 @@ describe('SelectionValidator', () => {
       const result = validator.validateSelectionsAndShowError();
 
       expect(result).toBeUndefined();
-      expect(showErrorSpy).toHaveBeenCalledWith('RangeLink: No active editor');
+      expect(showErrorSpy).toHaveBeenCalledWith('No active editor');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'SelectionValidator.validateSelectionsAndShowError',
@@ -93,7 +93,7 @@ describe('SelectionValidator', () => {
 
       expect(result).toBeUndefined();
       expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: No text selected. Click in the file, select text, and try again.',
+        'No text selected. Click in the file, select text, and try again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {

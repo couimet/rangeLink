@@ -324,7 +324,7 @@ describe('ManageBookmarksCommand', () => {
           button: deleteButton,
         });
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to delete bookmark');
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Failed to delete bookmark');
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
             fn: 'ManageBookmarksCommand.confirmAndDelete',

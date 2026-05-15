@@ -358,7 +358,8 @@ standardSuite('Dirty Buffer Warning', (_log) => {
 
       const lines = logCapture.getLinesSince('before-007');
       assertStatusBarMsgLogged(lines, {
-        message: '✓ RangeLink copied to clipboard & sent to Terminal ("dirty-buffer-test")',
+        message:
+          '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("dirty-buffer-test")',
       });
       assertNoToastLogged(lines, {
         type: 'warning',

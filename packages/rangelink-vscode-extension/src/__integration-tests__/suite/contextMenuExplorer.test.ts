@@ -129,7 +129,7 @@ standardSuite('Context Menus — Explorer', (log) => {
     assertFnLogged(lines, { fn: 'BindToTextEditorCommand.executeWithUri' });
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Text Editor ("${fn}")`,
+      message: `✓ RangeLink: Bound to Text Editor ("${fn}")`,
     });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
@@ -166,7 +166,7 @@ standardSuite('Context Menus — Explorer', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-004');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink unbound from Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
     });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });

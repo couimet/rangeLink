@@ -152,9 +152,7 @@ describe('FilePathNavigationHandler', () => {
 
       await handler.navigateToFile('/nonexistent/file.ts');
 
-      expect(showWarningMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Cannot find file: /nonexistent/file.ts',
-      );
+      expect(showWarningMessageSpy).toHaveBeenCalledWith('Cannot find file: /nonexistent/file.ts');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',
@@ -173,9 +171,7 @@ describe('FilePathNavigationHandler', () => {
 
       await handler.navigateToFile('index.ts');
 
-      expect(showWarningMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Multiple files match: index.ts',
-      );
+      expect(showWarningMessageSpy).toHaveBeenCalledWith('Multiple files match: index.ts');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',
@@ -213,7 +209,7 @@ describe('FilePathNavigationHandler', () => {
       await expect(handler.navigateToFile('/path/file.ts')).rejects.toThrow(navigationError);
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Failed to open file /path/file.ts: Failed to open document',
+        'Failed to open file /path/file.ts: Failed to open document',
       );
       expect(mockLogger.error).toHaveBeenCalledWith(
         {

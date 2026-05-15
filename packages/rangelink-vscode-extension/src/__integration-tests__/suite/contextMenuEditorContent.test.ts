@@ -92,7 +92,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
     assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     log('✓ Editor-content "Send RangeLink" delivered workspace-relative link to bound terminal');
@@ -129,7 +129,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
     assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     log('✓ Editor-content "Send RangeLink (Absolute)" delivered absolute link to bound terminal');
@@ -167,7 +167,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
     assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     log('✓ Editor-content "Send Portable Link" delivered portable link to bound terminal');
@@ -204,7 +204,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
     assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     log(
@@ -253,7 +253,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     log(`TC 005 captured (normalized): ${JSON.stringify(normalizedCapture)}`);
     assertTerminalBufferContains(normalizedCapture, 'line 1\nline 2\nline 3');
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     log('✓ Editor-content "Send Selected Text" delivered raw selected text to bound terminal');
@@ -379,7 +379,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertFnLogged(lines, { fn: 'BindToTextEditorCommand.executeWithUri' });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Text Editor ("${fn}")`,
+      message: `✓ RangeLink: Bound to Text Editor ("${fn}")`,
     });
 
     log('✓ Editor-content "Bind Here" committed a text-editor binding for the current file');
@@ -420,7 +420,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink unbound from Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
     });
 
     log('✓ Editor-content "Unbind" was visible (clicked it) and fired the unbind path');

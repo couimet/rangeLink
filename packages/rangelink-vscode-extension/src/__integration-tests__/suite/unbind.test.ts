@@ -43,7 +43,7 @@ standardSuite('Unbind Destination', (_log) => {
 
     const lines = logCapture.getLinesSince('before-unbind-001');
     assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink unbound from Terminal ("rl-unbind-test")',
+      message: '✓ RangeLink: Unbound from Terminal ("rl-unbind-test")',
     });
 
     await vscode.window.showTextDocument(doc);
@@ -78,7 +78,7 @@ standardSuite('Unbind Destination', (_log) => {
 
     const lines = logCapture.getLinesSince('before-unbind-004');
     assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink unbound from Terminal ("rl-unbind-004-test")',
+      message: '✓ RangeLink: Unbound from Terminal ("rl-unbind-004-test")',
     });
   });
 

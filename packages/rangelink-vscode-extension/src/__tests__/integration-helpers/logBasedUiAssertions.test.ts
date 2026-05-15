@@ -26,21 +26,21 @@ describe('logBasedUiAssertions', () => {
 
     it('passes when matching warning toast is found', () => {
       const lines = [
-        '[DEBUG] {"fn":"VscodeAdapter.showWarningMessage","message":"RangeLink: Bound file is open in multiple editor groups."} Showing warning message',
+        '[DEBUG] {"fn":"VscodeAdapter.showWarningMessage","message":"Bound file is open in multiple editor groups."} Showing warning message',
       ];
 
       assertToastLogged(lines, {
         type: 'warning',
-        message: 'RangeLink: Bound file is open in multiple editor groups.',
+        message: 'Bound file is open in multiple editor groups.',
       });
     });
 
     it('passes when matching error toast is found', () => {
       const lines = [
-        '[DEBUG] {"fn":"VscodeAdapter.showErrorMessage","message":"RangeLink: Failed"} Showing error message',
+        '[DEBUG] {"fn":"VscodeAdapter.showErrorMessage","message":"Failed"} Showing error message',
       ];
 
-      assertToastLogged(lines, { type: 'error', message: 'RangeLink: Failed' });
+      assertToastLogged(lines, { type: 'error', message: 'Failed' });
     });
 
     it('throws when toast type matches but message differs', () => {
@@ -153,12 +153,12 @@ describe('logBasedUiAssertions', () => {
   describe('assertSuppressionLogged', () => {
     it('passes when suppression log with matching fn and suppressedMessage is found', () => {
       const lines = [
-        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"RangeLink: Navigated to file.ts @ 5"} Navigated toast suppressed by setting',
+        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"Navigated to file.ts @ 5"} Navigated toast suppressed by setting',
       ];
 
       assertSuppressionLogged(lines, {
         fn: 'RangeLinkNavigationHandler.navigateToLink',
-        suppressedMessage: 'RangeLink: Navigated to file.ts @ 5',
+        suppressedMessage: 'Navigated to file.ts @ 5',
       });
     });
 

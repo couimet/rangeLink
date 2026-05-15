@@ -165,7 +165,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully unbound from ${displayName}`,
     );
 
-    this.vscodeAdapter.setStatusBarMessage(
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(
       formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
     );
   }
@@ -264,7 +264,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!options?.silent) {
       const successMessage = this.boundDestination.getJumpSuccessMessage();
-      this.vscodeAdapter.setStatusBarMessage(successMessage);
+      this.vscodeAdapter.setSuccessfulStatusBarMessage(successMessage);
     }
 
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
@@ -714,7 +714,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestinationName,
         });
 
-    this.vscodeAdapter.setStatusBarMessage(toastMessage);
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(toastMessage);
   }
 
   /**
@@ -763,14 +763,14 @@ export class PasteDestinationManager implements vscode.Disposable {
       const successInstruction = destination.getUserInstruction?.(AutoPasteResult.Success);
 
       if (successInstruction) {
-        this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
+        this.vscodeAdapter.setSuccessfulStatusBarMessage(options.basicStatusMessage);
         void this.vscodeAdapter.showInformationMessage(successInstruction);
       } else {
         const enhancedMessage = formatMessage(MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION, {
           statusMessage: options.basicStatusMessage,
           destinationName: displayName,
         });
-        this.vscodeAdapter.setStatusBarMessage(enhancedMessage);
+        this.vscodeAdapter.setSuccessfulStatusBarMessage(enhancedMessage);
       }
 
       return true;
@@ -779,7 +779,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const failureInstruction = destination.getUserInstruction?.(AutoPasteResult.Failure);
 
     if (failureInstruction) {
-      this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
+      this.vscodeAdapter.setSuccessfulStatusBarMessage(options.basicStatusMessage);
       void this.vscodeAdapter.showWarningMessage(failureInstruction);
     } else {
       const errorMsg = this.buildPasteFailureMessage(destination, options.basicStatusMessage);

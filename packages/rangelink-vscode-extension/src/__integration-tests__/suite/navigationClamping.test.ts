@@ -64,7 +64,7 @@ standardSuite('Navigation Clamping', (_log) => {
     const lines = logCapture.getLinesSince('before-clamping-001');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
+      message: `Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
     });
   });
 
@@ -97,7 +97,7 @@ standardSuite('Navigation Clamping', (_log) => {
     const lines = logCapture.getLinesSince('before-clamping-002');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${testFilename} @ 1:200 (clamped: column exceeded line length)`,
+      message: `Navigated to ${testFilename} @ 1:200 (clamped: column exceeded line length)`,
     });
   });
 
@@ -125,7 +125,7 @@ standardSuite('Navigation Clamping', (_log) => {
     const lines = logCapture.getLinesSince('before-clamping-003');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${testFilename} @ 5:10`,
+      message: `Navigated to ${testFilename} @ 5:10`,
     });
   });
 
@@ -164,7 +164,7 @@ standardSuite('Navigation Clamping', (_log) => {
     const lines = logCapture.getLinesSince('before-clamping-004');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${testFilename} @ 50:200 (clamped: line and column exceeded bounds)`,
+      message: `Navigated to ${testFilename} @ 50:200 (clamped: line and column exceeded bounds)`,
     });
   });
 });

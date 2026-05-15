@@ -84,7 +84,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${fn} @ 3-7`,
+      message: `Navigated to ${fn} @ 3-7`,
     });
 
     const editor = vscode.window.activeTextEditor;
@@ -134,7 +134,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${fn} @ 3:5-3:20`,
+      message: `Navigated to ${fn} @ 3:5-3:20`,
     });
 
     const editor = vscode.window.activeTextEditor;
@@ -177,7 +177,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertToastLogged(lines, {
       type: 'error',
-      message: `RangeLink: Invalid link format: '${invalidInput}'`,
+      message: `Invalid link format: '${invalidInput}'`,
     });
 
     const invalidFormatLogged = lines.some(
@@ -215,7 +215,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertToastLogged(lines, {
       type: 'error',
-      message: 'RangeLink: Please enter a link to navigate',
+      message: 'Please enter a link to navigate',
     });
 
     const emptyInputLogged = lines.some(
@@ -255,7 +255,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${missingPath}`,
+      message: `Cannot find file: ${missingPath}`,
     });
 
     assert.strictEqual(

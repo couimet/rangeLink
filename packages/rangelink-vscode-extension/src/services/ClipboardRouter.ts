@@ -94,7 +94,7 @@ export class ClipboardRouter {
           ? 'Skipping destination (clipboard-only command)'
           : 'No destination bound - copied to clipboard only';
       this.logger.info({ fn: fnName }, reason);
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
+      this.ideAdapter.setSuccessfulStatusBarMessage(basicStatusMessage);
       return false;
     }
 
@@ -107,7 +107,7 @@ export class ClipboardRouter {
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
+      this.ideAdapter.setSuccessfulStatusBarMessage(basicStatusMessage);
       return false;
     }
 
@@ -119,7 +119,7 @@ export class ClipboardRouter {
       };
       const selfPasteMessage = formatMessage(selfPasteMessageCodes[control.contentType]);
       this.ideAdapter.showInformationMessage(selfPasteMessage);
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
+      this.ideAdapter.setSuccessfulStatusBarMessage(basicStatusMessage);
       return false;
     }
 

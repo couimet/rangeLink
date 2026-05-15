@@ -2527,7 +2527,7 @@ test_cases:
     steps:
       - 'Drag the src/utils/helper.ts tab to a second tab group (or right-click the tab → Split Right/Down)'
       - 'Observe the notification area immediately after the split'
-    expected_result: 'A warning toast appears: "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
+    expected_result: 'A warning toast appears: "Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
     automated: true
 
   - id: duplicate-tab-group-002
@@ -2551,7 +2551,7 @@ test_cases:
     steps:
       - 'Select any text in a different file'
       - 'Press Cmd+R Cmd+L (or any bound-destination send command: R-V, R-L, Send File Path)'
-    expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
+    expected_result: 'Paste does not occur. An error toast appears: "Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
     automated: true
 
   - id: duplicate-tab-group-004
@@ -2565,7 +2565,7 @@ test_cases:
       - 'Observe the notification area — no toast should appear'
       - 'Open src/utils/helper.ts again in a second tab group (re-enter the duplicate state)'
       - 'Observe the notification area again'
-    expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
+    expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -2683,7 +2683,7 @@ test_cases:
     steps:
       - 'Use Cmd+R Cmd+G (or Ctrl+R Ctrl+G) and type Untitled-99#L1'
       - 'Press Enter'
-    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: Untitled-99". No file opens.'
+    expected_result: 'A warning toast is shown: "Cannot find file: Untitled-99". No file opens.'
     automated: true
 
   - id: untitled-navigation-004
@@ -2753,7 +2753,7 @@ test_cases:
       - 'Navigation toast settings are at their defaults (both true)'
     steps:
       - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L3)'
-    expected_result: 'Navigation succeeds and an info toast is shown: "RangeLink: Navigated to file.ts @ 3".'
+    expected_result: 'Navigation succeeds and an info toast is shown: "Navigated to file.ts @ 3".'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -2777,7 +2777,7 @@ test_cases:
       - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
     steps:
       - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
-    expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
+    expected_result: 'A warning toast is shown: "Multiple files match: index.ts". No navigation occurs.'
     automated: true
 
   - id: filename-fallback-navigation-003
@@ -2787,7 +2787,7 @@ test_cases:
       - 'No file named nonexistent-file.ts exists in the workspace'
     steps:
       - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
-    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: nonexistent-file.ts". No navigation occurs.'
+    expected_result: 'A warning toast is shown: "Cannot find file: nonexistent-file.ts". No navigation occurs.'
     automated: true
 
   - id: filename-fallback-navigation-004

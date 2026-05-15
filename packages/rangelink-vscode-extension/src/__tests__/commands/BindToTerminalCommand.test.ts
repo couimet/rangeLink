@@ -65,7 +65,7 @@ describe('BindToTerminalCommand', () => {
         expect(result).toStrictEqual({ outcome: 'no-resource' });
         expect(mockAvailabilityService.getTerminalItems).toHaveBeenCalledWith(Infinity, undefined);
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active terminal. Open a terminal and try again.',
+          'No active terminal. Open a terminal and try again.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'BindToTerminalCommand.execute', terminalCount: 0 },

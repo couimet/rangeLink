@@ -59,7 +59,7 @@ describe('BindToTextEditorCommand', () => {
 
       expect(result).toStrictEqual({ outcome: 'no-resource' });
       expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'RangeLink: No active text editor. Open a file and try again.',
+        'No active text editor. Open a file and try again.',
       );
       expect(showFilePickerSpy).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(

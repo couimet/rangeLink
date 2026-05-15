@@ -447,9 +447,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-1');
         expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          'RangeLink: Navigated to Untitled-1 @ 10',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('Navigated to Untitled-1 @ 10');
         expect(mockLogger.info).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkNavigationHandler.navigateToLink',
@@ -541,9 +539,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Sans titre-1');
         expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          'RangeLink: Navigated to Sans titre-1 @ 3',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('Navigated to Sans titre-1 @ 3');
       });
     });
 
@@ -600,9 +596,7 @@ describe('RangeLinkNavigationHandler', () => {
         await handler.navigateToLink(parsed, linkText);
 
         expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          'RangeLink: Navigated to Untitled-1 @ 10',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('Navigated to Untitled-1 @ 10');
 
         expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
         expect(mockEditor.revealRange).toHaveBeenCalledWith(mockRange, 2);
@@ -638,9 +632,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('src/missing.ts');
         expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot find file: src/missing.ts',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot find file: src/missing.ts');
       });
 
       it('should show "file not found" warning for absolute path "/tmp/missing.ts"', async () => {
@@ -669,9 +661,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
 
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot find file: /tmp/missing.ts',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot find file: /tmp/missing.ts');
       });
 
       it('should show "file not found" for non-English untitled name not currently open', async () => {
@@ -701,9 +691,7 @@ describe('RangeLinkNavigationHandler', () => {
         await handler.navigateToLink(parsed, 'Sans titre-1#L1');
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Sans titre-1');
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot find file: Sans titre-1',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot find file: Sans titre-1');
       });
 
       it('should show "file not found" for "Untitled-3" not currently open', async () => {
@@ -733,9 +721,7 @@ describe('RangeLinkNavigationHandler', () => {
         await handler.navigateToLink(parsed, 'Untitled-3#L1');
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-3');
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot find file: Untitled-3',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot find file: Untitled-3');
       });
     });
 
@@ -766,9 +752,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         await handler.navigateToLink(parsed, 'index.ts#L1');
 
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Multiple files match: index.ts',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Multiple files match: index.ts');
         expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
         expect(showTextDocumentSpy).not.toHaveBeenCalled();
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -852,7 +836,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         // Should show error message to user
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Failed to navigate to file.ts: Failed to open document',
+          'Failed to navigate to file.ts: Failed to open document',
         );
       });
 
@@ -890,7 +874,7 @@ describe('RangeLinkNavigationHandler', () => {
 
         // Should handle non-Error exception and show error message
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Failed to navigate to file.ts: string error',
+          'Failed to navigate to file.ts: string error',
         );
       });
     });
@@ -960,7 +944,7 @@ describe('RangeLinkNavigationHandler', () => {
       );
 
       expect(showWarningMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Navigated to file.ts @ 50 (clamped: line exceeded file length)',
+        'Navigated to file.ts @ 50 (clamped: line exceeded file length)',
       );
       expect(showInformationMessageSpy).not.toHaveBeenCalled();
     });
@@ -996,7 +980,7 @@ describe('RangeLinkNavigationHandler', () => {
       );
 
       expect(showWarningMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Navigated to file.ts @ 1:100 (clamped: column exceeded line length)',
+        'Navigated to file.ts @ 1:100 (clamped: column exceeded line length)',
       );
       expect(showInformationMessageSpy).not.toHaveBeenCalled();
     });
@@ -1018,9 +1002,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       expect(mockLogger.warn).not.toHaveBeenCalled();
 
-      expect(showInformationMessageSpy).toHaveBeenCalledWith(
-        'RangeLink: Navigated to file.ts @ 5:3-5:8',
-      );
+      expect(showInformationMessageSpy).toHaveBeenCalledWith('Navigated to file.ts @ 5:3-5:8');
       expect(showWarningMessageSpy).not.toHaveBeenCalled();
     });
   });
@@ -1190,7 +1172,7 @@ describe('RangeLinkNavigationHandler', () => {
         {
           fn: 'RangeLinkNavigationHandler.navigateToLink',
           linkText: "'recipes/baking/chicken pie.ts'#L3C5-L42C10",
-          suppressedMessage: 'RangeLink: Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10',
+          suppressedMessage: 'Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10',
         },
         'Navigated toast suppressed by setting',
       );
@@ -1245,7 +1227,7 @@ describe('RangeLinkNavigationHandler', () => {
           fn: 'RangeLinkNavigationHandler.navigateToLink',
           linkText: "'recipes/baking/chicken pie.ts'#L50",
           suppressedMessage:
-            'RangeLink: Navigated to recipes/baking/chicken pie.ts @ 50 (clamped: line exceeded file length)',
+            'Navigated to recipes/baking/chicken pie.ts @ 50 (clamped: line exceeded file length)',
         },
         'Clamping warning suppressed by setting',
       );
@@ -1289,7 +1271,7 @@ describe('RangeLinkNavigationHandler', () => {
       await handler.navigateToLink(parsed, "'recipes/baking/chicken pie.ts'#L3C5-L42C10");
 
       expect(showInfoSpy).toHaveBeenCalledWith(
-        'RangeLink: Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10',
+        'Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10',
       );
       expect(mockConfigReader.getBoolean).toHaveBeenCalledWith(
         'navigation.showNavigatedToast',

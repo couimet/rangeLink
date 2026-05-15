@@ -10,7 +10,7 @@ const NO_DESTINATIONS_AVAILABLE =
 export const messagesEn: Record<MessageCode, string> = {
   // Keep the keys in alphabetical order.
 
-  [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
+  [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'Already bound to {destinationName}',
   [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
   [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER]: 'Enter a label for this bookmark',
@@ -23,10 +23,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE_YES]: 'Delete',
   [MessageCode.BOOKMARK_MANAGE_DELETED]: '✓ Bookmark deleted: {label}',
   [MessageCode.BOOKMARK_MANAGE_EMPTY]: 'No bookmarks to manage',
-  [MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED]: 'RangeLink: Failed to delete bookmark',
+  [MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED]: 'Failed to delete bookmark',
   [MessageCode.BOOKMARK_MANAGE_PLACEHOLDER]: 'Select a bookmark to manage',
   [MessageCode.BOOKMARK_MANAGE_TITLE]: 'Manage Bookmarks',
-  [MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND]: 'RangeLink: Bound editor closed. Unbound.',
+  [MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND]: 'Bound editor closed. Unbound.',
 
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
@@ -47,60 +47,55 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
 
   [MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED]:
-    'RangeLink: Could not open "{fileName}". Try again or choose another file.',
+    'Could not open "{fileName}". Try again or choose another file.',
   [MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN]:
-    'RangeLink: "{fileName}" opened in a different editor group. Try again or choose another file.',
-  [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
+    '"{fileName}" opened in a different editor group. Try again or choose another file.',
+  [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'Bookmark label cannot be empty',
   [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
-    'RangeLink: Cannot add bookmark - failed to generate link from selection',
-  [MessageCode.ERROR_BOOKMARK_NO_ACTIVE_EDITOR]:
-    'RangeLink: Cannot add bookmark - no active editor',
-  [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
-  [MessageCode.ERROR_BOOKMARK_SEND_FAILED]: 'RangeLink: Failed to send bookmark',
+    'Cannot add bookmark - failed to generate link from selection',
+  [MessageCode.ERROR_BOOKMARK_NO_ACTIVE_EDITOR]: 'Cannot add bookmark - no active editor',
+  [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'Failed to save bookmark',
+  [MessageCode.ERROR_BOOKMARK_SEND_FAILED]: 'Failed to send bookmark',
   [MessageCode.ERROR_BOOKMARK_SEND_NO_DESTINATION]:
-    'RangeLink: Cannot send bookmark — no destination is currently bound',
+    'Cannot send bookmark — no destination is currently bound',
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
-    'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
-  [MessageCode.ERROR_BIND_FAILED]: 'RangeLink: Failed to bind destination',
+    'Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
+  [MessageCode.ERROR_BIND_FAILED]: 'Failed to bind destination',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
-    'RangeLink: Cannot bind Claude Code - extension not installed or not active',
+    'Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
-    'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
+    'Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE]:
-    'RangeLink: Cannot bind {extensionName} - extension not installed or not active',
-  [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'RangeLink: Failed to open file {path}: {error}',
+    'Cannot bind {extensionName} - extension not installed or not active',
+  [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'Failed to open file {path}: {error}',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
-    'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+    'Cannot bind GitHub Copilot Chat - extension not installed or not active',
   [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
-    'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
-  [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'RangeLink: Failed to generate {linkTypeName}',
-  [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
-  [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'RangeLink: No active editor',
-  [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
-    'RangeLink: No active terminal. Open a terminal and try again.',
-  [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
-    'RangeLink: No active text editor. Open a file and try again.',
+    'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
+  [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'Failed to generate {linkTypeName}',
+  [MessageCode.ERROR_NAVIGATION_FAILED]: 'Failed to navigate to {path}: {error}',
+  [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'No active editor',
+  [MessageCode.ERROR_NO_ACTIVE_TERMINAL]: 'No active terminal. Open a terminal and try again.',
+  [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]: 'No active text editor. Open a file and try again.',
   [MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED]:
-    'RangeLink: No text selected in the terminal. Select text and try again.',
+    'No text selected in the terminal. Select text and try again.',
   [MessageCode.ERROR_NO_TEXT_SELECTED]:
-    'RangeLink: No text selected. Click in the file, select text, and try again.',
-  [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
-    'RangeLink: No active file. Open a file and try again.',
+    'No text selected. Click in the file, select text, and try again.',
+  [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]: 'No active file. Open a file and try again.',
   [MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED]:
-    'RangeLink: Could not read terminal selection. Please try again.',
+    'Could not read terminal selection. Please try again.',
   [MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED]:
-    'RangeLink: Could not read terminal selection. Please try again.',
+    'Could not read terminal selection. Please try again.',
   [MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED]:
-    'RangeLink: R-C generates code location links and requires an editor selection. Use R-V to paste terminal text.',
+    'R-C generates code location links and requires an editor selection. Use R-V to paste terminal text.',
   [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:
-    'RangeLink: Cannot navigate - invalid link format: {linkText}',
+    'Cannot navigate - invalid link format: {linkText}',
   [MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS]:
-    'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
-  [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
+    'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+  [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE]:
-    'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
-  [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
-    'RangeLink: Cannot bind to read-only editor ({scheme})',
+    'Bound editor is no longer visible. Re-open the file and bind again.',
+  [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]: 'Cannot bind to read-only editor ({scheme})',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.FILE_PICKER_ACTIVE_BADGE]: 'active',
@@ -114,7 +109,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.FILE_PICKER_TITLE]: 'RangeLink',
 
   [MessageCode.INFO_BACKGROUND_TAB_OPENED]:
-    'RangeLink: "{fileName}" opened at last cursor position. Adjust cursor before pasting.',
+    '"{fileName}" opened at last cursor position. Adjust cursor before pasting.',
   [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'RangeLink: Choose a destination to bind to',
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
@@ -130,15 +125,15 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink can seamlessly integrate with GitHub Copilot Chat for faster context sharing of precise code ranges.\n\nInstall and activate the GitHub Copilot Chat extension to use it as a paste destination.',
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
-  [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
+  [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'RangeLink: No destination bound. Choose destination to jump to',
-  [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
+  [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'Please enter a link to navigate',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
-  [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "RangeLink: Invalid link format: '{input}'",
-  [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
+  [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "Invalid link format: '{input}'",
+  [MessageCode.INFO_NAVIGATION_SUCCESS]: 'Navigated to {path} @ {position}',
   [MessageCode.INFO_NEW_VERSION_NOTIFICATION]: 'RangeLink updated to v{version}. See what changed!',
   [MessageCode.INFO_NEW_VERSION_SKIP_BUTTON]: 'Skip for this version',
   [MessageCode.INFO_NEW_VERSION_WHATS_NEW_BUTTON]: "What's New",
@@ -166,20 +161,20 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED]:
     'Destination binding removed (terminal closed)',
-  [MessageCode.STATUS_BAR_DESTINATION_BOUND]: '✓ RangeLink bound to {destinationName}',
-  [MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND]: 'RangeLink: No destination bound',
+  [MessageCode.STATUS_BAR_DESTINATION_BOUND]: 'Bound to {destinationName}',
+  [MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND]: 'No destination bound',
   [MessageCode.STATUS_BAR_DESTINATION_REBOUND]:
     'Unbound {previousDestination}, now bound to {newDestination}',
-  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: '✓ RangeLink unbound from {destinationName}',
+  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: 'Unbound from {destinationName}',
   [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: '✓ Focused {extensionName}',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: "{resourceName}"',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
-  [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
-  [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: 'Focused Claude Code Chat',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: 'Focused Cursor AI Assistant',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: 'Focused {extensionName}',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: 'Focused Editor: "{resourceName}"',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: 'Focused GitHub Copilot Chat',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: 'Focused Terminal: "{resourceName}"',
+  [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: 'Bookmark saved: {label}',
+  [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '{linkTypeName} copied to clipboard',
   [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]: '{statusMessage} & sent to {destinationName}',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
@@ -212,7 +207,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE]: 'Save & Send',
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE_FAILED]:
     'File could not be saved. File path send aborted.',
-  [MessageCode.WARN_FILE_PATH_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
+  [MessageCode.WARN_FILE_PATH_NOT_FOUND]: 'Cannot find file: {path}',
   [MessageCode.WARN_LINK_DIRTY_BUFFER]:
     'File has unsaved changes. Link may point to wrong position after save.',
   [MessageCode.WARN_LINK_DIRTY_BUFFER_CONTINUE]: 'Generate Anyway',
@@ -220,18 +215,18 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE_FAILED]:
     'File could not be saved. Link generation aborted.',
   [MessageCode.WARN_NAVIGATION_CLAMPED]:
-    'RangeLink: Navigated to {path} @ {position} (clamped: {clampingSummary})',
+    'Navigated to {path} @ {position} (clamped: {clampingSummary})',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_BOTH]: 'line and column exceeded bounds',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER]: 'column exceeded line length',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_LINE]: 'line exceeded file length',
-  [MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS]: 'RangeLink: Multiple files match: {path}',
-  [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
+  [MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS]: 'Multiple files match: {path}',
+  [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'Cannot find file: {path}',
   [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]:
     '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',
   [MessageCode.WARN_PASTE_FAILED_TERMINAL]:
     '{statusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.',
   [MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS]:
-    'RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',
+    'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',
 
   // Keep the keys in alphabetical order.
 };

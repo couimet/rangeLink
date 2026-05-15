@@ -56,7 +56,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-term-001');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Bound to Terminal ("${terminalName}")`,
     });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
@@ -84,7 +84,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-term-002');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Bound to Terminal ("${terminalName}")`,
     });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
@@ -115,7 +115,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-term-003');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink unbound from Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
     });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
@@ -147,7 +147,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-term-004');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Terminal ("${targetName}")`,
+      message: `✓ RangeLink: Bound to Terminal ("${targetName}")`,
     });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
@@ -189,7 +189,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-ctxmenu-term-005');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Terminal ("${targetName}")`,
+      message: `✓ RangeLink: Bound to Terminal ("${targetName}")`,
     });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
@@ -261,7 +261,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     );
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Selected text copied to clipboard & sent to Text Editor ("${editorFn}")`,
+      message: `✓ RangeLink: Selected text copied to clipboard & sent to Text Editor ("${editorFn}")`,
     });
 
     log('✓ Terminal context-menu "Send Selection to Destination" routed selection to bound editor');
@@ -309,7 +309,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     assert.ok(readLogged, 'Expected TerminalSelectionService log (selection was read)');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Selected text copied to clipboard & sent to Terminal ("${boundName}")`,
+      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${boundName}")`,
     });
 
     const focusLogged = lines.some(
@@ -399,7 +399,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const lines = logCapture.getLinesSince('before-sts-010');
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
+      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
     assertTerminalBufferContains(capturing.getCapturedText(), markerText);
@@ -464,7 +464,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ Selected text copied to clipboard & sent to Terminal ("${destName}")`,
+      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${destName}")`,
     });
 
     assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);

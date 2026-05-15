@@ -115,15 +115,15 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-001');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${untitledDisplayName} @ 5`,
+      message: `Navigated to ${untitledDisplayName} @ 5`,
     });
     assertNoToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+      message: `Cannot find file: ${untitledDisplayName}`,
     });
     assertNoToastLogged(lines, {
       type: 'error',
-      message: `RangeLink: Failed to navigate to ${untitledDisplayName}`,
+      message: `Failed to navigate to ${untitledDisplayName}`,
     });
   });
 
@@ -155,11 +155,11 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-002');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${untitledDisplayName} @ 3-7`,
+      message: `Navigated to ${untitledDisplayName} @ 3-7`,
     });
     assertNoToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+      message: `Cannot find file: ${untitledDisplayName}`,
     });
   });
 
@@ -184,11 +184,11 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-003');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${fakeName}`,
+      message: `Cannot find file: ${fakeName}`,
     });
     assertNoToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${fakeName} @ 1`,
+      message: `Navigated to ${fakeName} @ 1`,
     });
   });
 
@@ -219,11 +219,11 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-004');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${untitledDisplayName} @ 5:10-5:20`,
+      message: `Navigated to ${untitledDisplayName} @ 5:10-5:20`,
     });
     assertNoToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+      message: `Cannot find file: ${untitledDisplayName}`,
     });
   });
 
@@ -256,11 +256,11 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-005');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
+      message: `Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
     });
     assertNoToastLogged(lines, {
       type: 'error',
-      message: `RangeLink: Failed to navigate to ${untitledDisplayName}`,
+      message: `Failed to navigate to ${untitledDisplayName}`,
     });
   });
 
@@ -293,11 +293,11 @@ standardSuite('Untitled File Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-untitled-nav-006');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${lowercaseName} @ 5`,
+      message: `Navigated to ${lowercaseName} @ 5`,
     });
     assertNoToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+      message: `Cannot find file: ${untitledDisplayName}`,
     });
   });
 });

@@ -110,12 +110,19 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setStatusBarMessage(message);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, 2000);
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        'RangeLink: test message',
+        2000,
+      );
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
-      expect(result).toBeDefined();
-      expect(result.dispose).toBeDefined();
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout: 2000 },
+        {
+          fn: 'VscodeAdapter.setStatusBarMessage',
+          message: 'RangeLink: test message',
+          timeout: 2000,
+        },
         'Setting status bar message',
       );
     });
@@ -126,11 +133,19 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setStatusBarMessage(message, customTimeout);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, customTimeout);
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        'RangeLink: test message',
+        customTimeout,
+      );
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
-      expect(result).toBeDefined();
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout: customTimeout },
+        {
+          fn: 'VscodeAdapter.setStatusBarMessage',
+          message: 'RangeLink: test message',
+          timeout: customTimeout,
+        },
         'Setting status bar message',
       );
     });
@@ -140,16 +155,88 @@ describe('VscodeAdapter', () => {
 
       adapter.setStatusBarMessage(message, 0);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, 0);
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        'RangeLink: test message',
+        0,
+      );
     });
 
     it('should return disposable that can be disposed', () => {
       const result = adapter.setStatusBarMessage('test');
 
-      expect(result).toBeDefined();
-      expect(result.dispose).toBeDefined();
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
       expect(typeof result.dispose).toBe('function');
       result.dispose();
+      expect(result.dispose).toHaveBeenCalled();
+    });
+  });
+
+  describe('setSuccessfulStatusBarMessage', () => {
+    it('should set success status bar message with default timeout when not specified', () => {
+      const message = 'success message';
+
+      const result = adapter.setSuccessfulStatusBarMessage(message);
+
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink: success message',
+        2000,
+      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.setSuccessfulStatusBarMessage',
+          message: '✓ RangeLink: success message',
+          timeout: 2000,
+        },
+        'Setting status bar message',
+      );
+    });
+
+    it('should forward custom timeout to underlying VSCode API', () => {
+      const message = 'success message';
+      const customTimeout = 5000;
+
+      const result = adapter.setSuccessfulStatusBarMessage(message, customTimeout);
+
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink: success message',
+        customTimeout,
+      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.setSuccessfulStatusBarMessage',
+          message: '✓ RangeLink: success message',
+          timeout: customTimeout,
+        },
+        'Setting status bar message',
+      );
+    });
+
+    it('should handle zero timeout', () => {
+      const message = 'success message';
+
+      adapter.setSuccessfulStatusBarMessage(message, 0);
+
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink: success message',
+        0,
+      );
+    });
+
+    it('should return disposable that can be disposed', () => {
+      const result = adapter.setSuccessfulStatusBarMessage('test');
+
+      const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
+      expect(result).toBe(rawDisposable);
+      expect(typeof result.dispose).toBe('function');
+      result.dispose();
+      expect(result.dispose).toHaveBeenCalled();
     });
   });
 
@@ -237,7 +324,7 @@ describe('VscodeAdapter', () => {
 
     it('should handle error message with details', async () => {
       const detailedError =
-        'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
+        'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
 
       await adapter.showErrorMessage(detailedError);
 
