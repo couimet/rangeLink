@@ -182,11 +182,36 @@ When `--assisted` is passed, only TCs marked `automated: assisted` are included.
 1. Add the test to the relevant themed file in `src/__integration-tests__/suite/` — do not create a separate directory.
 2. Prefix the test name with `[assisted]`: `test('[assisted] my-tc-id: description', ...)`.
 3. Call `printAssistedBanner()` in `suiteSetup()` if this is the first `[assisted]` test in the suite.
-4. Use `waitForHuman(tcId, action, consoleSteps, notificationSummary)` to pause for human input.
+4. Use `waitForHuman(tcId, action, consoleSteps)` or `waitForHumanVerdict(tcId, action, consoleSteps)` to pause for human input — see [Choosing between waitForHuman and waitForHumanVerdict](#choosing-between-waitforhuman-and-waitforhumanverdict) below for when to use each.
 5. Add assertions after `waitForHuman` returns (log-based, clipboard, etc.).
 6. Clean up in `teardown`/`suiteTeardown` — close editors, dispose terminals, delete temp files.
 
 **Two-screen workflow:** Run `pnpm test:release` in a terminal on one screen. The VS Code test host opens on the other. Instructions appear in both the terminal (structured steps) and as a persistent notification in VS Code (flowing summary). Perform the action, click Cancel on the notification, and the test continues.
+
+### Choosing between waitForHuman and waitForHumanVerdict
+
+The two helpers serve different contracts. Pick the right one based on what the test asserts.
+
+**`waitForHuman`** — use when the human performs a UI action that cannot be automated, and programmatic assertions verify the outcome. The human's role is mechanical (open a picker, press a chord, click a context menu). Clicking Cancel without performing the action causes the subsequent programmatic assertions to fail — the test cannot pass green against a broken state.
+
+Examples of correct `waitForHuman` usage:
+- Human selects an item from a QuickPick; log assertions verify the picked item and the effect
+- Human right-clicks a context menu; assertions read the terminal buffer or editor content
+- Human types text into an input box; assertions verify navigation or log output
+
+**`waitForHumanVerdict`** — use when the human's eye IS the assertion. The human observes a visible outcome (content arriving in a webview, a UI element appearing/disappearing, clipboard content after paste) and clicks PASS or FAIL. Always assert on the verdict:
+
+```typescript
+const verdict = await waitForHumanVerdict('tc-id', 'Did X appear?', ['step 1', 'step 2']);
+assert.strictEqual(verdict, 'pass', 'Human reported X did not appear');
+```
+
+Examples of correct `waitForHumanVerdict` usage:
+- Verifying a RangeLink appeared in Claude Code / Cursor AI / Copilot Chat (webviews are not inspectable)
+- Verifying clipboard was restored after paste to an AI assistant (human checks via manual paste)
+- Verifying a UI element is visible/hidden when no programmatic signal exists
+
+**Warmup pattern** — when a test needs a warm send before the actual verdict (warm paste tests), use `waitForHuman` for the warmup step and `waitForHumanVerdict` for the verdict step. The warmup is setup, not assertion — the verdict covers the test contract.
 
 ---
 
