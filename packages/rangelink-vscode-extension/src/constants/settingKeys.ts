@@ -27,6 +27,10 @@ export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS =
   'destinations.claudeCode.coldRefocusIntervalMs';
 export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS =
   'destinations.claudeCode.coldStartDelayMs';
+export const SETTING_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS =
+  'destinations.gemini.coldRefocusIntervalMs';
+export const SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS =
+  'destinations.gemini.coldStartDelayMs';
 
 // =============================================================================
 // Feature Flags — TODO: #366 remove when bookmarks graduates from beta

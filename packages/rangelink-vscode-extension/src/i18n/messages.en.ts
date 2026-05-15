@@ -38,6 +38,7 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE]: 'Claude Code Chat',
   [MessageCode.DESTINATION_DISPLAY_NAME_CURSOR_AI]: 'Cursor AI Assistant',
+  [MessageCode.DESTINATION_DISPLAY_NAME_GEMINI_CODE_ASSIST]: 'Gemini Code Assist',
   [MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT]: 'GitHub Copilot Chat',
   [MessageCode.DESTINATION_DISPLAY_NAME_TERMINAL]: 'Terminal',
   [MessageCode.DESTINATION_DISPLAY_NAME_TEXT_EDITOR]: 'Text Editor',
@@ -68,6 +69,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE]:
     'Cannot bind {extensionName} - extension not installed or not active',
   [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'Failed to open file {path}: {error}',
+  [MessageCode.ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE]:
+    'Cannot bind Gemini Code Assist - extension not installed or not active',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'Cannot bind GitHub Copilot Chat - extension not installed or not active',
   [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
@@ -121,6 +124,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_CURSOR_AI_NOT_AVAILABLE]:
     'This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.',
   [MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+  [MessageCode.INFO_GEMINI_CODE_ASSIST_NOT_AVAILABLE]:
+    'RangeLink can seamlessly integrate with Gemini Code Assist for faster context sharing of precise code ranges.\n\nInstall and activate the Gemini Code Assist extension to use it as a paste destination.',
+  [MessageCode.INFO_GEMINI_CODE_ASSIST_USER_INSTRUCTIONS]:
+    'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.',
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink can seamlessly integrate with GitHub Copilot Chat for faster context sharing of precise code ranges.\n\nInstall and activate the GitHub Copilot Chat extension to use it as a paste destination.',
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
@@ -171,6 +178,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: 'Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: 'Focused {extensionName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: 'Focused Editor: "{resourceName}"',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_GEMINI_CODE_ASSIST]: 'Focused Gemini Code Assist',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: 'Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: 'Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: 'Bookmark saved: {label}',

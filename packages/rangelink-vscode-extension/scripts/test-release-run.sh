@@ -7,7 +7,7 @@
 #   ./scripts/test-release-run.sh --automated                # CI-safe (skips [assisted])
 #   ./scripts/test-release-run.sh --grep "pattern"           # filtered by Mocha grep
 #   ./scripts/test-release-run.sh --grep "\[assisted\]"      # only [assisted] tests
-#   ./scripts/test-release-run.sh --with-extensions          # installs Claude Code marketplace extension
+#   ./scripts/test-release-run.sh --with-extensions          # installs real marketplace extensions (Gemini, Claude Code)
 #   ./scripts/test-release-run.sh --label "clipboard"         # only tests with matching label in QA YAML
 #   ./scripts/test-release-run.sh --label "clipboard" --assisted  # label + assisted-only filter
 #   ./scripts/test-release-run.sh --label "clipboard" --no-assisted # label + exclude assisted tests

@@ -21,6 +21,7 @@ import {
   createMockVscodeAdapter,
   spyOnIsClaudeCodeAvailable,
   spyOnIsCursorIDEDetected,
+  spyOnIsGeminiCodeAssistAvailable,
   spyOnIsGitHubCopilotChatAvailable,
 } from '../helpers';
 
@@ -288,6 +289,46 @@ describe('destinationBuilders', () => {
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
         'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+      );
+    });
+
+    it('creates gemini-code-assist destination with correct id and displayName', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+
+      const destination = builder({ kind: 'gemini-code-assist' }, context);
+
+      expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
+        id: 'gemini-code-assist',
+        displayName: 'Gemini Code Assist',
+      });
+    });
+
+    it('gemini-code-assist isAvailable delegates to isGeminiCodeAssistAvailable', async () => {
+      const spy = spyOnIsGeminiCodeAssistAvailable().mockResolvedValue(true);
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      const destination = builder({ kind: 'gemini-code-assist' }, context);
+
+      expect(await destination.isAvailable()).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('gemini-code-assist getUserInstruction returns undefined on auto-paste success', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      const destination = builder({ kind: 'gemini-code-assist' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('gemini-code-assist getUserInstruction returns instruction message on auto-paste failure', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      const destination = builder({ kind: 'gemini-code-assist' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.',
       );
     });
 
@@ -638,7 +679,7 @@ describe('destinationBuilders', () => {
   });
 
   describe('registerAllDestinationBuilders', () => {
-    it('registers all five built-in destination kinds', () => {
+    it('registers all six built-in destination kinds', () => {
       const registeredKinds: DestinationKind[] = [];
       const mockRegistry = {
         register: (kind: DestinationKind, _builder: DestinationBuilder) => {
@@ -653,6 +694,7 @@ describe('destinationBuilders', () => {
         'text-editor',
         'cursor-ai',
         'claude-code',
+        'gemini-code-assist',
         'github-copilot-chat',
       ]);
     });
@@ -680,6 +722,7 @@ describe('destinationBuilders', () => {
         'custom-ai:acme.spark-ai',
         'cursor-ai',
         'claude-code',
+        'gemini-code-assist',
         'github-copilot-chat',
       ]);
     });
@@ -706,6 +749,7 @@ describe('destinationBuilders', () => {
         'text-editor',
         'claude-code',
         'cursor-ai',
+        'gemini-code-assist',
         'github-copilot-chat',
       ]);
     });

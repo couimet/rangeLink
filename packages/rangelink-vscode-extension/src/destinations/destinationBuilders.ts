@@ -11,10 +11,14 @@ import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants'
 import {
   DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
   DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+  DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
 } from '../constants/settingDefaults';
 import {
   SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
   SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+  SETTING_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+  SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
 } from '../constants/settingKeys';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import {
@@ -29,12 +33,19 @@ import {
   getUntitledDisplayName,
   isClaudeCodeAvailable,
   isCursorIDEDetected,
+  isGeminiCodeAssistAvailable,
   isGitHubCopilotChatAvailable,
 } from '../utils';
+import {
+  EXTENSION_ID_CLAUDE_CODE,
+  EXTENSION_ID_GEMINI_CODE_ASSIST,
+  EXTENSION_ID_GITHUB_COPILOT_CHAT,
+} from '../utils/aiAssistants/';
 
 import {
   CLAUDE_CODE_FOCUS_COMMANDS,
   CURSOR_AI_FOCUS_COMMANDS,
+  GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
   GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from './aiAssistantFocusCommands';
 import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
@@ -67,7 +78,7 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
     userInstructionMessageCode: MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS,
     isAvailable: (ctx) => isCursorIDEDetected(ctx.ideAdapter, ctx.logger),
   },
-  'anthropic.claude-code': {
+  [EXTENSION_ID_CLAUDE_CODE]: {
     kind: 'claude-code',
     focusCommands: CLAUDE_CODE_FOCUS_COMMANDS,
     displayName: 'Claude Code Chat',
@@ -98,7 +109,38 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
       return { totalMs, intervalMs };
     },
   },
-  'github.copilot-chat': {
+  [EXTENSION_ID_GEMINI_CODE_ASSIST]: {
+    kind: 'gemini-code-assist',
+    focusCommands: GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
+    displayName: 'Gemini Code Assist',
+    jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_GEMINI_CODE_ASSIST,
+    userInstructionMessageCode: MessageCode.INFO_GEMINI_CODE_ASSIST_USER_INSTRUCTIONS,
+    isAvailable: (ctx) => isGeminiCodeAssistAvailable(ctx.ideAdapter, ctx.logger),
+    getColdRefocus: (context) => {
+      const totalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+        DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+      ) as number;
+      const intervalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+        DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+      ) as number;
+
+      if (totalMs <= intervalMs) {
+        context.logger.warn(
+          { fn: 'gemini.getColdRefocus', totalMs, intervalMs },
+          'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
+        );
+        return {
+          totalMs: DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+          intervalMs: DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+        };
+      }
+
+      return { totalMs, intervalMs };
+    },
+  },
+  [EXTENSION_ID_GITHUB_COPILOT_CHAT]: {
     kind: 'github-copilot-chat',
     focusCommands: GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
     displayName: 'GitHub Copilot Chat',
@@ -202,7 +244,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
 // ============================================================================
 
 /**
- * Build a built-in AI assistant destination (Cursor AI, Claude Code, GitHub Copilot Chat).
+ * Build a built-in AI assistant destination (Cursor AI, Claude Code, Gemini Code Assist, GitHub Copilot Chat).
  *
  * Uses the standard focus+paste flow via AIAssistantFocusCapability.
  */

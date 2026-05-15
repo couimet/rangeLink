@@ -28,6 +28,7 @@ import {
   createMockEditorComposablePasteDestination,
   createMockFocusCapability,
   createMockFormattedLink,
+  createMockGeminiCodeAssistDestination,
   createMockGitHubCopilotChatDestination,
   createMockTerminal,
   createMockTerminalComposablePasteDestination,
@@ -351,6 +352,14 @@ describe('PasteDestinationManager', () => {
         2000,
       );
       expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.commitBind',
+          kind: 'cursor-ai',
+          displayName: 'Cursor AI Assistant',
+        },
+        'Successfully bound to "Cursor AI Assistant"',
+      );
 
       localManager.dispose();
     });
@@ -415,6 +424,64 @@ describe('PasteDestinationManager', () => {
         2000,
       );
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.commitBind',
+          kind: 'claude-code',
+          displayName: 'Claude Code Chat',
+        },
+        'Successfully bound to "Claude Code Chat"',
+      );
+    });
+
+    it('should bind to gemini-code-assist when available', async () => {
+      const mockDestination = createMockGeminiCodeAssistDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind({ kind: 'gemini-code-assist' });
+
+      expect(result).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Gemini Code Assist',
+          destinationKind: 'gemini-code-assist',
+        });
+      });
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink: Bound to Gemini Code Assist',
+        2000,
+      );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.commitBind',
+          kind: 'gemini-code-assist',
+          displayName: 'Gemini Code Assist',
+        },
+        'Successfully bound to "Gemini Code Assist"',
+      );
+    });
+
+    it('should fail when gemini-code-assist not available', async () => {
+      const mockDestination = createMockGeminiCodeAssistDestination({ isAvailable: false });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind({ kind: 'gemini-code-assist' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Gemini Code Assist not available',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
+      });
+      expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE');
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'Cannot bind Gemini Code Assist - extension not installed or not active',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to github-copilot-chat when available', async () => {
@@ -1166,6 +1233,30 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         2,
         '✓ RangeLink: Unbound from Claude Code Chat',
+        2000,
+      );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
+    });
+
+    it('should unbind gemini-code-assist successfully', async () => {
+      const mockDestination = createMockGeminiCodeAssistDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind({ kind: 'gemini-code-assist' });
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundDestination()).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink: Bound to Gemini Code Assist',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        '✓ RangeLink: Unbound from Gemini Code Assist',
         2000,
       );
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
@@ -2131,6 +2222,22 @@ describe('PasteDestinationManager', () => {
       (manager as any).boundDestination = mockDest;
 
       expect(manager.isClipboardRestorationApplicable(false)).toBe(true);
+    });
+
+    it('returns false when built-in AI assistant is bound and paste failed', async () => {
+      const { manager: localManager } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
+      await localManager.bind({ kind: 'cursor-ai' });
+
+      // Real built-in AI assistants provide a failure instruction ("Paste (Cmd/Ctrl+V)").
+      // The mock defaults to undefined, so configure it to reflect the real contract.
+      const boundDest = localManager.getBoundDestination()!;
+      (boundDest.getUserInstruction as jest.Mock).mockReturnValue('Paste (Cmd/Ctrl+V)');
+
+      expect(localManager.isClipboardRestorationApplicable(false)).toBe(false);
+
+      localManager.dispose();
     });
   });
 

@@ -36,6 +36,13 @@ standardSuite('R-D Bind to Destination', (log) => {
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     findTestItemsByPrefix(items, '__rl-test-btd-');
 
+  const AI_ASSISTANT_DISPLAY_NAMES = [
+    'Claude Code Chat',
+    'Gemini Code Assist',
+    'Cursor AI Assistant',
+    'GitHub Copilot Chat',
+  ];
+
   test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
     await createTerminal('rl-btd-004');
 
@@ -134,22 +141,17 @@ standardSuite('R-D Bind to Destination', (log) => {
     log('✓ Picker showed unbound file; bind succeeded with correct status bar toast');
   });
 
-  test('[assisted] bind-to-destination-006: selecting an AI assistant destination binds it and shows success toast', async () => {
+  test('[assisted] bind-to-destination-006: selecting a built-in AI assistant destination binds it and shows success toast', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-006');
 
     await waitForHuman(
       'bind-to-destination-006',
-      'Press Cmd+R Cmd+D, select any available AI assistant entry',
+      'Press Cmd+R Cmd+D, select any available built-in AI assistant entry',
     );
 
     const lines = logCapture.getLinesSince('before-btd-006');
 
-    const AI_ASSISTANT_DISPLAY_NAMES = [
-      'Claude Code Chat',
-      'Cursor AI Assistant',
-      'GitHub Copilot Chat',
-    ];
     const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`✓ RangeLink: Bound to ${name}`)),
     );
@@ -309,17 +311,18 @@ standardSuite('R-D Bind to Destination', (log) => {
     log('✓ No bind or unbind toast after Escape — binding state unchanged');
   });
 
-  test('[assisted] bind-to-destination-011: re-binding same AI assistant shows already-bound message', async () => {
+  test('[assisted] bind-to-destination-011: re-binding same built-in AI assistant shows already-bound message', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-011');
 
     await waitForHuman(
       'bind-to-destination-011',
-      'Cmd+R Cmd+D → select an AI assistant → Cmd+R Cmd+D → select same AI assistant',
+      'Cmd+R Cmd+D → select a built-in AI assistant → Cmd+R Cmd+D → select same built-in AI assistant',
       [
-        '1. Press Cmd+R Cmd+D and select any AI assistant (e.g., Claude Code Chat)',
-        '2. Press Cmd+R Cmd+D again',
-        '3. Select the same AI assistant a second time',
+        '1. Press Cmd+R Cmd+D and select any built-in AI assistant (e.g., Claude Code Chat)',
+        '2. Press Cmd+R Cmd+D and select any built-in AI assistant (e.g., Gemini Code Assist)',
+        '3. Press Cmd+R Cmd+D again',
+        '3. Select the same built-in AI assistant a second time',
       ],
     );
 
@@ -334,11 +337,6 @@ standardSuite('R-D Bind to Destination', (log) => {
       `Expected exactly 2 showQuickPick entries (two destination picker opens, no confirmation dialog), got ${quickPickEntries.length}`,
     );
 
-    const AI_ASSISTANT_DISPLAY_NAMES = [
-      'Claude Code Chat',
-      'Cursor AI Assistant',
-      'GitHub Copilot Chat',
-    ];
     const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`Already bound to ${name}`)),
     );

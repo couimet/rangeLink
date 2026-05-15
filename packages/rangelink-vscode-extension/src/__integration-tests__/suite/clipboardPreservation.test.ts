@@ -19,6 +19,7 @@ import {
   createAndBindCapturingTerminal,
   createTerminal,
   createWorkspaceFile,
+  getLogCapture,
   loadSettingsProfile,
   openAndDismiss,
   openEditor,
@@ -300,5 +301,60 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
 
     await assertClipboardRestored('clipboard-preservation-009: always + picker dismissed');
     log('✓ Clipboard unchanged after picker dismissed (no operation performed)');
+  });
+
+  test('[assisted] clipboard-preservation-010: focus command failure preserves link in clipboard for manual paste', async () => {
+    await loadSettingsProfile('default', log);
+
+    const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
+    const fileUri = createWorkspaceFile('cbp-010', lines.join('\n') + '\n');
+    tmpFileUris.push(fileUri);
+
+    const relPath = vscode.workspace.asRelativePath(fileUri);
+    await openEditor(fileUri);
+    await settle();
+    await writeClipboardSentinel();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-010');
+
+    await waitForHuman(
+      'clipboard-preservation-010',
+      `clipboard.preserve="always". Bind "Dummy AI (Focus-Fail)" via Cmd+R Cmd+D, then select lines 1-3 in the test file and press Cmd+R Cmd+L. The focus command throws — you should see a warning. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Press Cmd+R Cmd+D → select "Dummy AI (Focus-Fail)" from the picker',
+        `2. Click back into the test file (${relPath}) and select lines 1-3`,
+        '3. Press Cmd+R Cmd+L — the focus command will throw an intentional error',
+        '4. Observe the warning message (manual paste instruction)',
+        '5. Press Cancel to continue (test verifies the link stayed in the clipboard)',
+      ],
+    );
+
+    await settle();
+
+    const lines010 = logCapture.getLinesSince('before-010');
+    const focusFailLog = lines010.find((line) => line.includes('Focus failed, cannot paste link'));
+    assert.ok(
+      focusFailLog,
+      'Expected "Focus failed, cannot paste link" log — the focus command should have thrown',
+    );
+
+    const warningToastLog = lines010.find(
+      (line) =>
+        line.includes('VscodeAdapter.showWarningMessage') && line.toLowerCase().includes('paste'),
+    );
+    assert.ok(
+      warningToastLog,
+      'Expected warning toast log instructing manual paste after focus failure',
+    );
+
+    const clipboardContent = await assertClipboardChanged(
+      'clipboard-preservation-010: focus-fail — link must stay in clipboard',
+    );
+    assert.ok(
+      clipboardContent.includes('#L'),
+      `Expected a RangeLink link in clipboard (with #L) but got: ${clipboardContent}`,
+    );
+    log('✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste');
   });
 });

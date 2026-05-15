@@ -16,6 +16,10 @@ export const CLAUDE_CODE_FOCUS_COMMANDS = [
   'claude-vscode.editor.open', // Fallback: Open in new tab
 ];
 
+export const GEMINI_CODE_ASSIST_FOCUS_COMMANDS = [
+  'cloudcode.gemini.chatView.focus', // google.geminicodeassist extension ≥ 2.79
+];
+
 export const GITHUB_COPILOT_CHAT_FOCUS_COMMANDS = [
   'workbench.action.chat.open', // Primary: Opens/focuses the chat view
   'workbench.panel.chat.view.copilot.focus', // Fallback: Direct panel focus

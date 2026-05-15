@@ -1,7 +1,3 @@
-/**
- * Tests for isGitHubCopilotChatAvailable utility.
- */
-
 import { createMockLogger } from 'barebone-logger-testing';
 
 import {
@@ -9,10 +5,10 @@ import {
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
 import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
+import { EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../../aiAssistants/builtInAiAssistants';
 import {
   isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,
-  GITHUB_COPILOT_CHAT_EXTENSION_ID,
 } from '../../aiAssistants/isGitHubCopilotChatAvailable';
 
 describe('isGitHubCopilotChatAvailable', () => {
@@ -35,7 +31,7 @@ describe('isGitHubCopilotChatAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isGitHubCopilotChatAvailable',
-          chatCommand: GITHUB_COPILOT_CHAT_COMMAND,
+          chatCommand: 'workbench.action.chat.open',
           detectionMethod: 'command',
         },
         'GitHub Copilot Chat detected via command availability',
@@ -57,25 +53,32 @@ describe('isGitHubCopilotChatAvailable', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ detectionMethod: 'command' }),
-        expect.any(String),
+        {
+          fn: 'isGitHubCopilotChatAvailable',
+          chatCommand: 'workbench.action.chat.open',
+          detectionMethod: 'command',
+        },
+        'GitHub Copilot Chat detected via command availability',
       );
     });
 
     it('should not check extension when command detection succeeds', async () => {
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: { availableCommands: [GITHUB_COPILOT_CHAT_COMMAND] },
-        extensionsOptions: [{ id: GITHUB_COPILOT_CHAT_EXTENSION_ID, isActive: true }],
+        extensionsOptions: [{ id: EXTENSION_ID_GITHUB_COPILOT_CHAT, isActive: true }],
       });
 
       const result = await isGitHubCopilotChatAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
-      // Should only log once for command detection
       expect(mockLogger.debug).toHaveBeenCalledTimes(1);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ detectionMethod: 'command' }),
-        expect.any(String),
+        {
+          fn: 'isGitHubCopilotChatAvailable',
+          chatCommand: 'workbench.action.chat.open',
+          detectionMethod: 'command',
+        },
+        'GitHub Copilot Chat detected via command availability',
       );
     });
   });
@@ -84,7 +87,7 @@ describe('isGitHubCopilotChatAvailable', () => {
     it('should return true when extension is installed and active', async () => {
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: { availableCommands: [] },
-        extensionsOptions: [{ id: GITHUB_COPILOT_CHAT_EXTENSION_ID, isActive: true }],
+        extensionsOptions: [{ id: EXTENSION_ID_GITHUB_COPILOT_CHAT, isActive: true }],
       });
 
       const result = await isGitHubCopilotChatAvailable(mockAdapter, mockLogger);
@@ -93,7 +96,7 @@ describe('isGitHubCopilotChatAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isGitHubCopilotChatAvailable',
-          extensionId: GITHUB_COPILOT_CHAT_EXTENSION_ID,
+          extensionId: 'github.copilot-chat',
           extensionFound: true,
           extensionActive: true,
           detectionMethod: 'extension',
@@ -105,7 +108,7 @@ describe('isGitHubCopilotChatAvailable', () => {
     it('should return false when extension is installed but inactive', async () => {
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: { availableCommands: [] },
-        extensionsOptions: [{ id: GITHUB_COPILOT_CHAT_EXTENSION_ID, isActive: false }],
+        extensionsOptions: [{ id: EXTENSION_ID_GITHUB_COPILOT_CHAT, isActive: false }],
       });
 
       const result = await isGitHubCopilotChatAvailable(mockAdapter, mockLogger);
@@ -114,7 +117,7 @@ describe('isGitHubCopilotChatAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isGitHubCopilotChatAvailable',
-          extensionId: GITHUB_COPILOT_CHAT_EXTENSION_ID,
+          extensionId: 'github.copilot-chat',
           extensionFound: true,
           extensionActive: false,
           detectionMethod: 'none',
@@ -135,7 +138,7 @@ describe('isGitHubCopilotChatAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isGitHubCopilotChatAvailable',
-          extensionId: GITHUB_COPILOT_CHAT_EXTENSION_ID,
+          extensionId: 'github.copilot-chat',
           extensionFound: false,
           extensionActive: false,
           detectionMethod: 'none',
@@ -157,8 +160,27 @@ describe('isGitHubCopilotChatAvailable', () => {
       expect(result).toBe(false);
     });
 
+    it('should match fallback focus command when primary is not registered', async () => {
+      mockAdapter = createMockVscodeAdapter({
+        commandsOptions: {
+          availableCommands: ['workbench.panel.chat.view.copilot.focus'],
+        },
+      });
+
+      const result = await isGitHubCopilotChatAvailable(mockAdapter, mockLogger);
+
+      expect(result).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'isGitHubCopilotChatAvailable',
+          chatCommand: 'workbench.panel.chat.view.copilot.focus',
+          detectionMethod: 'command',
+        },
+        'GitHub Copilot Chat detected via command availability',
+      );
+    });
+
     it('should handle other Copilot extensions without chat', async () => {
-      // Only the base Copilot extension (not chat)
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: { availableCommands: [] },
         extensionsOptions: [{ id: 'GitHub.copilot', isActive: true }],
@@ -174,7 +196,7 @@ describe('isGitHubCopilotChatAvailable', () => {
         commandsOptions: { availableCommands: [] },
         extensionsOptions: [
           { id: 'other.extension', isActive: true },
-          { id: GITHUB_COPILOT_CHAT_EXTENSION_ID, isActive: true },
+          { id: EXTENSION_ID_GITHUB_COPILOT_CHAT, isActive: true },
           { id: 'another.extension', isActive: false },
         ],
       });
@@ -182,6 +204,16 @@ describe('isGitHubCopilotChatAvailable', () => {
       const result = await isGitHubCopilotChatAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'isGitHubCopilotChatAvailable',
+          extensionId: 'github.copilot-chat',
+          extensionFound: true,
+          extensionActive: true,
+          detectionMethod: 'extension',
+        },
+        'GitHub Copilot Chat detected via extension',
+      );
     });
   });
 });
@@ -192,9 +224,5 @@ describe('GITHUB_COPILOT_CHAT_FOCUS_COMMANDS', () => {
       'workbench.action.chat.open',
       'workbench.panel.chat.view.copilot.focus',
     ]);
-  });
-
-  it('should have the chat.open command as the primary (first) command', () => {
-    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS[0]).toBe('workbench.action.chat.open');
   });
 });

@@ -54,6 +54,11 @@ const settings = {
       focusCommands: ['dummyAi.focusPanel'],
     },
     {
+      extensionId: 'rangelink.dummy-ai-extension-focus-fail',
+      extensionName: 'Dummy AI (Focus-Fail)',
+      focusAndPasteCommands: ['dummyAi.focusFail'],
+    },
+    {
       extensionId: 'github.copilot-chat',
       extensionName: 'Copilot Override',
       insertCommands: ['dummyAi.insertText'],

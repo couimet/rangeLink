@@ -7,6 +7,7 @@
 export const CMD_BIND_TO_CLAUDE_CODE = 'rangelink.bindToClaudeCode';
 export const CMD_BIND_TO_CURSOR_AI = 'rangelink.bindToCursorAI';
 export const CMD_BIND_TO_DESTINATION = 'rangelink.bindToDestination';
+export const CMD_BIND_TO_GEMINI_CODE_ASSIST = 'rangelink.bindToGeminiCodeAssist';
 export const CMD_BIND_TO_GITHUB_COPILOT_CHAT = 'rangelink.bindToGitHubCopilotChat';
 export const CMD_BIND_TO_TERMINAL = 'rangelink.bindToTerminal';
 export const CMD_BIND_TO_TERMINAL_HERE = 'rangelink.bindToTerminalHere';

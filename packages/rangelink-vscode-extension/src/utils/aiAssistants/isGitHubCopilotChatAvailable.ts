@@ -1,24 +1,27 @@
 import type { Logger } from 'barebone-logger';
-import type { Extension } from 'vscode';
 
+import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../destinations/aiAssistantFocusCommands';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';
+import { EXTENSION_ID_GITHUB_COPILOT_CHAT } from './builtInAiAssistants';
 
-export const GITHUB_COPILOT_CHAT_EXTENSION_ID = 'GitHub.copilot-chat';
+export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';
 
 export const isGitHubCopilotChatAvailable = async (
   ideAdapter: VscodeAdapter,
   logger: Logger,
 ): Promise<boolean> => {
   const commands = await ideAdapter.getCommands();
-  const commandExists = commands.includes(GITHUB_COPILOT_CHAT_COMMAND);
+  const chatCommand = GITHUB_COPILOT_CHAT_FOCUS_COMMANDS.find((command) =>
+    commands.includes(command),
+  );
+  const commandExists = chatCommand !== undefined;
 
   if (commandExists) {
     logger.debug(
       {
         fn: 'isGitHubCopilotChatAvailable',
-        chatCommand: GITHUB_COPILOT_CHAT_COMMAND,
+        chatCommand,
         detectionMethod: 'command',
       },
       'GitHub Copilot Chat detected via command availability',
@@ -26,15 +29,13 @@ export const isGitHubCopilotChatAvailable = async (
     return true;
   }
 
-  const extension = ideAdapter.extensions.find(
-    (ext: Extension<unknown>) => ext.id === GITHUB_COPILOT_CHAT_EXTENSION_ID,
-  );
+  const extension = ideAdapter.getExtension(EXTENSION_ID_GITHUB_COPILOT_CHAT);
   const extensionAvailable = extension !== undefined && extension.isActive;
 
   logger.debug(
     {
       fn: 'isGitHubCopilotChatAvailable',
-      extensionId: GITHUB_COPILOT_CHAT_EXTENSION_ID,
+      extensionId: EXTENSION_ID_GITHUB_COPILOT_CHAT,
       extensionFound: extension !== undefined,
       extensionActive: extension?.isActive ?? false,
       detectionMethod: extensionAvailable ? 'extension' : 'none',

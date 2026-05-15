@@ -8,6 +8,8 @@
  * - Claude Code (Anthropic extension)
  */
 
+export * from './builtInAiAssistants';
 export * from './isClaudeCodeAvailable';
 export * from './isCursorIDEDetected';
+export * from './isGeminiCodeAssistAvailable';
 export * from './isGitHubCopilotChatAvailable';

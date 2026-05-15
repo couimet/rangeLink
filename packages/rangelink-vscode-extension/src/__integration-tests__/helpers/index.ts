@@ -66,4 +66,5 @@ export {
   settle,
   SETTLE_MS,
   TERMINAL_READY_MS,
+  waitForExtensionActive,
 } from './testEnv';

@@ -16,7 +16,7 @@ import type { InsertFactory } from './insertFactories';
  * at intervals to keep the panel open while it initializes.
  * Uses InsertFactory injection for decoupled clipboard-based paste.
  *
- * Used by: Claude Code, Cursor AI, GitHub Copilot Chat
+ * Used by: Claude Code, Gemini Code Assist, Cursor AI, GitHub Copilot Chat
  */
 export class AIAssistantFocusCapability implements FocusCapability {
   private panelIsWarm = false;

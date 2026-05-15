@@ -162,6 +162,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToGeminiCodeAssist",
+        "title": "Bind to Gemini Code Assist",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToGitHubCopilotChat",
         "title": "Bind to GitHub Copilot Chat",
         "category": "RangeLink",
@@ -547,6 +553,20 @@
           "maximum": 5000,
           "description": "Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.",
           "title": "Claude Code Cold Re-focus Interval"
+        },
+        "rangelink.destinations.gemini.coldStartDelayMs": {
+          "type": "number",
+          "default": 2500,
+          "minimum": 500,
+          "maximum": 15000,
+          "description": "Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use, sending periodic refocus signals. Increase on slower machines if automatic paste does not work. Must be greater than coldRefocusIntervalMs."
+        },
+        "rangelink.destinations.gemini.coldRefocusIntervalMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 100,
+          "maximum": 5000,
+          "description": "Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs."
         },
         "rangelink.features.bookmarks.enabled": {
           "type": "boolean",

@@ -47,6 +47,7 @@ const isValidThreshold = (value: number): boolean =>
 const AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES: Record<AIAssistantDestinationKind, MessageCode> = {
   'claude-code': MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE,
   'cursor-ai': MessageCode.INFO_CURSOR_AI_NOT_AVAILABLE,
+  'gemini-code-assist': MessageCode.INFO_GEMINI_CODE_ASSIST_NOT_AVAILABLE,
   'github-copilot-chat': MessageCode.INFO_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
 };
 
@@ -227,6 +228,7 @@ export class DestinationAvailabilityService {
 
         case 'claude-code':
         case 'cursor-ai':
+        case 'gemini-code-assist':
         case 'github-copilot-chat': {
           const displayNames = this.registry.getDisplayNames();
           const available = await this.isAIAssistantAvailable(kind);

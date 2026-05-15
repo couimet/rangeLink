@@ -30,6 +30,34 @@ export const getExtensionVersion = (): string => {
 export const settle = (ms: number = SETTLE_MS): Promise<void> =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+export const waitForExtensionActive = async (
+  extensionId: string,
+  log: (msg: string) => void,
+  timeoutMs: number = 30000,
+): Promise<void> => {
+  const start = Date.now();
+  let lastState = '';
+  while (Date.now() - start < timeoutMs) {
+    const ext = vscode.extensions.getExtension(extensionId);
+    if (ext && ext.isActive) {
+      log(`[waitForExtensionActive] ${extensionId} → active after ${Date.now() - start}ms`);
+      return;
+    }
+    const currentState = ext ? `found, isActive=${ext.isActive}` : 'not found';
+    if (currentState !== lastState) {
+      log(
+        `[waitForExtensionActive] ${extensionId} → ${currentState} (${Date.now() - start}ms elapsed)`,
+      );
+      lastState = currentState;
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+  }
+  const ext = vscode.extensions.getExtension(extensionId);
+  throw new Error(
+    `Extension ${extensionId} did not activate within ${timeoutMs}ms (found=${ext !== undefined}, isActive=${ext?.isActive ?? 'N/A'})`,
+  );
+};
+
 /**
  * Open a QuickPick or InputBox via command, dismiss it with closeQuickOpen, and return after
  * the promise settles. The caller inspects log-captured items after this resolves.

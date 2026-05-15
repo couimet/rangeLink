@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 
 import {
   buildDestinationQuickPickItems,
+  BUILTIN_AI_COUNT,
   DESTINATION_PICKER_SEQUENCE,
 } from '../../../destinations/utils/buildDestinationQuickPickItems';
 import type { FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
+import { AI_ASSISTANT_KINDS } from '../../../types';
 import { createMockEligibleFile, createMockTextEditorQuickPickItem } from '../../helpers';
 
 const separator = (label: string): vscode.QuickPickItem => ({
@@ -17,6 +19,7 @@ describe('buildDestinationQuickPickItems', () => {
     it('defines the correct order of destination kinds', () => {
       expect(DESTINATION_PICKER_SEQUENCE).toStrictEqual([
         'claude-code',
+        'gemini-code-assist',
         'cursor-ai',
         'github-copilot-chat',
         'terminal',
@@ -24,6 +27,94 @@ describe('buildDestinationQuickPickItems', () => {
         'text-editor',
         'file-more',
       ]);
+    });
+  });
+
+  describe('BUILTIN_AI_COUNT', () => {
+    it('equals AI_ASSISTANT_KINDS.length — update this test and the behavioral test below when adding a new built-in AI assistant', () => {
+      expect(BUILTIN_AI_COUNT).toBe(AI_ASSISTANT_KINDS.length);
+      expect(BUILTIN_AI_COUNT).toBe(4);
+    });
+
+    it('places custom AI assistants between built-in AI assistants and non-AI destinations', () => {
+      const mockTerminal = { name: 'bash' } as vscode.Terminal;
+      const grouped: GroupedDestinationItems = {
+        'claude-code': [
+          {
+            label: 'Claude Code Chat',
+            displayName: 'Claude Code Chat',
+            bindOptions: { kind: 'claude-code' },
+            itemKind: 'bindable',
+          },
+        ],
+        'gemini-code-assist': [
+          {
+            label: 'Gemini Code Assist',
+            displayName: 'Gemini Code Assist',
+            bindOptions: { kind: 'gemini-code-assist' },
+            itemKind: 'bindable',
+          },
+        ],
+        'cursor-ai': [
+          {
+            label: 'Cursor AI',
+            displayName: 'Cursor AI',
+            bindOptions: { kind: 'cursor-ai' },
+            itemKind: 'bindable',
+          },
+        ],
+        'github-copilot-chat': [
+          {
+            label: 'GitHub Copilot Chat',
+            displayName: 'GitHub Copilot Chat',
+            bindOptions: { kind: 'github-copilot-chat' },
+            itemKind: 'bindable',
+          },
+        ],
+        'custom-ai:my-ai': [
+          {
+            label: 'My Custom AI',
+            displayName: 'My Custom AI',
+            bindOptions: { kind: 'custom-ai:my-ai' },
+            itemKind: 'bindable',
+          },
+        ],
+        terminal: [
+          {
+            label: 'Terminal "bash"',
+            displayName: 'Terminal "bash"',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            isActive: false,
+            itemKind: 'bindable',
+            terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: false },
+          },
+        ],
+      };
+
+      const identityLabelBuilder = (name: string): string => name;
+      const result = buildDestinationQuickPickItems(grouped, identityLabelBuilder);
+
+      const labels = result.map((item) => ('displayName' in item ? item.displayName : item.label));
+
+      expect(labels).toStrictEqual([
+        'AI Assistants',
+        'Claude Code Chat',
+        'Gemini Code Assist',
+        'Cursor AI',
+        'GitHub Copilot Chat',
+        'My Custom AI',
+        'Terminals',
+        'Terminal "bash"',
+      ]);
+
+      const aiSeparatorIndex = labels.indexOf('AI Assistants');
+      const terminalSeparatorIndex = labels.indexOf('Terminals');
+      const customAiIndex = labels.indexOf('My Custom AI');
+      const copilotIndex = labels.indexOf('GitHub Copilot Chat');
+
+      expect(customAiIndex).toBeGreaterThan(copilotIndex);
+      expect(customAiIndex).toBeLessThan(terminalSeparatorIndex);
+      expect(aiSeparatorIndex).toBeLessThan(copilotIndex);
     });
   });
 

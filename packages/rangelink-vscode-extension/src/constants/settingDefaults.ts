@@ -1,3 +1,8 @@
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+
+import type { ClipboardPreservationMode } from '../types/ClipboardPreservationMode';
+import type { PaddingMode } from '../utils/applySmartPadding';
+
 /**
  * Single source of truth for default values for all RangeLink extension settings.
  *
@@ -5,10 +10,14 @@
  * Keep entries sorted alphabetically by constant name within each section.
  */
 
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+// =============================================================================
+// Destination Defaults
+// =============================================================================
 
-import type { ClipboardPreservationMode } from '../types/ClipboardPreservationMode';
-import type { PaddingMode } from '../utils/applySmartPadding';
+export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS = 300;
+export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS = 1500;
+export const DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS = 300;
+export const DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS = 2500;
 
 // =============================================================================
 // Feature Flag Defaults — TODO: #366 remove when bookmarks graduates from beta
@@ -30,13 +39,6 @@ export const DEFAULT_DELIMITER_HASH = DEFAULT_DELIMITERS.hash;
 export const DEFAULT_DELIMITER_LINE = DEFAULT_DELIMITERS.line;
 export const DEFAULT_DELIMITER_POSITION = DEFAULT_DELIMITERS.position;
 export const DEFAULT_DELIMITER_RANGE = DEFAULT_DELIMITERS.range;
-
-// =============================================================================
-// Destination Defaults
-// =============================================================================
-
-export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS = 300;
-export const DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS = 1500;
 
 // =============================================================================
 // Navigation Defaults

@@ -717,7 +717,7 @@ test_cases:
       - 'Test calls assertClipboardChanged — clipboard must contain the RangeLink, NOT the sentinel'
     expected_result: 'Clipboard contains the generated RangeLink (not CLIPBOARD_SENTINEL). isClipboardRestorationApplicable returns false because getUserInstruction(Failure) is defined. The "Paste manually" warning toast was shown.'
     command_to_run: 'pnpm test:release:grep "clipboard-preservation-010"'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
@@ -3262,6 +3262,112 @@ test_cases:
       - 'Confirm logs show NO cold-start refocus signals in the warm send'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
     automated: false
+
+  - id: gemini-code-assist-001
+    labels:
+      - requires-extensions
+    feature: 'Built-in AI Assistants'
+    scenario: 'Gemini Code Assist appears in destination picker when extension is active'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'No destination currently bound'
+    steps:
+      - 'Open destination picker via R-D or Command Palette → "Bind to Destination"'
+      - 'Confirm "Gemini Code Assist" item appears in the AI Assistants group'
+      - 'Confirm it appears after "Claude Code Chat" and before "Cursor AI Assistant" in the picker'
+    expected_result: '"Gemini Code Assist" is listed in the AI Assistants group of the destination picker'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-001"'
+    automated: true
+
+  - id: gemini-code-assist-002
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Built-in AI Assistants'
+    scenario: 'Binding to Gemini Code Assist and sending a link delivers content to chat'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'A file is open in the editor with a selection'
+    steps:
+      - 'Run Command Palette → "RangeLink: Bind to Gemini Code Assist" (or select from R-D picker)'
+      - 'Confirm "✓ RangeLink bound to Gemini Code Assist" status bar message appears'
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm Gemini Code Assist chat panel opens and receives the link + selected text'
+    expected_result: 'Gemini Code Assist chat opens and contains the RangeLink and selected code snippet'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-002"'
+    automated: assisted
+
+  - id: gemini-code-assist-003
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold panel paste verification — content arrives in Gemini Code Assist chat input after a single R-L since bind'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'RangeLink is bound to Gemini Code Assist'
+      - 'No send has been performed since binding (cold start)'
+    steps:
+      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Gemini Code Assist chat panel receives the link and selected code'
+      - 'Confirm logs show paste command succeeded'
+    expected_result: 'Content arrives in Gemini Code Assist chat input. Logs show paste command succeeded.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-003"'
+    automated: assisted
+
+  - id: gemini-code-assist-004
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Built-in AI Assistants'
+    scenario: 'Warm panel paste verification — content arrives in Gemini Code Assist chat input on second R-L without cold-start refocus signals'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'RangeLink is bound to Gemini Code Assist'
+      - 'At least one send has been performed since binding (warm path)'
+    steps:
+      - 'Select a different range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
+      - 'Confirm the Gemini Code Assist chat panel receives the link and selected code'
+      - 'Confirm logs show NO cold-start refocus signals in the warm send'
+    expected_result: 'Content arrives in Gemini Code Assist chat input. Logs show no cold-start refocus signals.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-004"'
+    automated: assisted
+
+  - id: gemini-code-assist-005
+    labels:
+      - requires-extensions
+      - cold-start
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold-start default settings produce a valid ColdRefocusConfig where totalMs > intervalMs'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'VS Code is running with the standard test:release:with-extensions configuration'
+    steps:
+      - 'Read the rangelink.destinations.gemini.coldStartDelayMs and coldRefocusIntervalMs defaults from VS Code configuration'
+      - 'Confirm coldStartDelayMs > coldRefocusIntervalMs'
+    expected_result: 'Default settings produce a valid ColdRefocusConfig. coldStartDelayMs is greater than coldRefocusIntervalMs.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-005"'
+    automated: true
+
+  - id: gemini-code-assist-006
+    labels:
+      - requires-extensions
+      - cold-start
+      - validation
+    feature: 'Built-in AI Assistants'
+    scenario: 'Cold-start validation rejects invalid config (totalMs <= intervalMs) and falls back to defaults with a warning'
+    preconditions:
+      - 'Google Gemini Code Assist extension (google.geminicodeassist) is installed and active'
+      - 'VS Code is running with the standard test:release:with-extensions configuration'
+    steps:
+      - 'Set rangelink.destinations.gemini.coldStartDelayMs to 100 and coldRefocusIntervalMs to 400 (invalid: delay <= interval)'
+      - 'Bind to Gemini Code Assist to trigger getColdRefocus validation'
+      - 'Confirm a warning log is emitted about invalid cold-start config'
+      - 'Confirm the fallback defaults from coldStartDelayMs / coldRefocusIntervalMs are used instead of the invalid values'
+      - 'Restore original configuration values'
+    expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-006"'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Release Notifier
