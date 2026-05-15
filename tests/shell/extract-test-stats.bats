@@ -25,6 +25,12 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [[ "$output" == *"Usage:"* ]]
 }
 
+@test "--mode without value: exits 2 with usage" {
+  run "$SCRIPT" --mode
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"Error: --mode requires a value"* ]]
+}
+
 # --- File existence ---
 
 @test "nonexistent file: exits 1" {

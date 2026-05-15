@@ -19,6 +19,10 @@ OUTPUT_FILE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mode)
+      if [[ $# -lt 2 || "$2" == -* ]]; then
+        echo "Error: --mode requires a value" >&2
+        usage
+      fi
       MODE="$2"
       shift 2
       ;;

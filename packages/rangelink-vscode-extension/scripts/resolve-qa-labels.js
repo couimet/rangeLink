@@ -15,13 +15,13 @@ let excludeLabel = '';
 let outputFormat = 'lines';
 let yamlPath = '';
 
-const printUsage = () => {
+const printUsage = (exitCode = 2) => {
   process.stderr.write(
     'Usage: resolve-qa-labels.js [--label <name>] [--assisted] [--no-assisted]\n' +
       '                          [--automated-only] [--exclude-label <name>]\n' +
       '                          [--format csv|lines] [--yaml <path>]\n',
   );
-  process.exit(2);
+  process.exit(exitCode);
 };
 
 for (let i = 0; i < args.length; i++) {
@@ -68,7 +68,7 @@ for (let i = 0; i < args.length; i++) {
       yamlPath = args[++i];
       break;
     case '--help':
-      printUsage();
+      printUsage(0);
       break;
     default:
       process.stderr.write(`Unknown option: ${args[i]}\n`);
