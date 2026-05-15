@@ -182,6 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unbind hidden when nothing bound** - "RangeLink: Unbind" now hides from the command palette when no destination is bound (via `when: rangelink.isBound`) instead of showing grayed out (#571)
   - **Before:** Unbind always appeared in the command palette, grayed out when unbound
   - **After:** Unbind only appears when a destination is bound, matching the existing menu and keybinding behavior
+- **Consistent status bar prefix** - Every status bar message now carries `RangeLink: ` (or `✓ RangeLink: ` for success confirmations) so the source is always identifiable in the shared IDE status bar (#549)
+  - Toast messages (info/warning/error) no longer carry `RangeLink: ` since VS Code already shows the extension source in the toast popup
 
 ### Fixed
 
