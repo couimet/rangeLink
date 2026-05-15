@@ -10,7 +10,19 @@ const args = process.argv.slice(2);
 let labelFilter = '';
 let assistedOnly = false;
 let noAssisted = false;
+let automatedOnly = false;
+let excludeLabel = '';
+let outputFormat = 'lines';
 let yamlPath = '';
+
+const printUsage = () => {
+  process.stderr.write(
+    'Usage: resolve-qa-labels.js [--label <name>] [--assisted] [--no-assisted]\n' +
+      '                          [--automated-only] [--exclude-label <name>]\n' +
+      '                          [--format csv|lines] [--yaml <path>]\n',
+  );
+  process.exit(2);
+};
 
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
@@ -27,6 +39,27 @@ for (let i = 0; i < args.length; i++) {
     case '--no-assisted':
       noAssisted = true;
       break;
+    case '--automated-only':
+      automatedOnly = true;
+      break;
+    case '--exclude-label':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --exclude-label requires a value\n');
+        process.exit(1);
+      }
+      excludeLabel = args[++i];
+      break;
+    case '--format':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --format requires a value\n');
+        process.exit(1);
+      }
+      outputFormat = args[++i];
+      if (outputFormat !== 'csv' && outputFormat !== 'lines') {
+        process.stderr.write("Error: --format must be 'csv' or 'lines'\n");
+        process.exit(1);
+      }
+      break;
     case '--yaml':
       if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
         process.stderr.write('Error: --yaml requires a value\n');
@@ -34,15 +67,13 @@ for (let i = 0; i < args.length; i++) {
       }
       yamlPath = args[++i];
       break;
+    case '--help':
+      printUsage();
+      break;
     default:
       process.stderr.write(`Unknown option: ${args[i]}\n`);
       process.exit(1);
   }
-}
-
-if (!labelFilter) {
-  process.stderr.write('Error: --label is required\n');
-  process.exit(1);
 }
 
 if (assistedOnly && noAssisted) {
@@ -71,12 +102,10 @@ if (!yamlPath) {
     process.exit(1);
   }
 
-  // Sort by embedded version (extract from filename like qa-test-cases-v1.1.0.yaml)
   files.sort((a, b) => {
     const va = a.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
     const vb = b.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
     if (va !== vb) return va.localeCompare(vb, undefined, { numeric: true });
-    // If same version, no suffix wins (the base file)
     const suffixA = a.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
     const suffixB = b.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
     if (!suffixA && suffixB) return 1;
@@ -113,7 +142,6 @@ const finalizeCurrent = () => {
 for (const rawLine of lines) {
   const line = rawLine;
 
-  // Test case entry: "  - id: some-id"
   const idMatch = line.match(/^\s+- id:\s*(.+)$/);
   if (idMatch) {
     finalizeCurrent();
@@ -123,7 +151,6 @@ for (const rawLine of lines) {
 
   if (!currentCase) continue;
 
-  // automated field
   const autoMatch = line.match(/^\s+automated:\s*(.+)$/);
   if (autoMatch) {
     currentCase.automated = autoMatch[1].trim();
@@ -131,7 +158,6 @@ for (const rawLine of lines) {
     continue;
   }
 
-  // feature field
   const featMatch = line.match(/^\s+feature:\s*(.+)$/);
   if (featMatch) {
     currentCase.feature = featMatch[1].trim().replace(/^'|'$/g, '');
@@ -139,13 +165,11 @@ for (const rawLine of lines) {
     continue;
   }
 
-  // labels: key (opens label list)
   if (/^\s+labels:\s*$/.test(line)) {
     inLabels = true;
     continue;
   }
 
-  // Label entry within labels block: "    - labelname"
   if (inLabels && /^\s+-\s+(\S+)/.test(line)) {
     const labelMatch = line.match(/^\s+-\s+(\S+)/);
     if (labelMatch) {
@@ -154,7 +178,6 @@ for (const rawLine of lines) {
     continue;
   }
 
-  // Any other key (not a label line) ends the labels block
   if (inLabels && /^\s+\w+/.test(line) && !/^\s+-\s+/.test(line)) {
     inLabels = false;
   }
@@ -165,12 +188,20 @@ finalizeCurrent();
 // ── Filter and output ─────────────────────────────────────────────────────────
 
 const matching = testCases.filter((tc) => {
-  if (!tc.labels.includes(labelFilter)) return false;
+  if (labelFilter && !tc.labels.includes(labelFilter)) return false;
+  if (excludeLabel && tc.labels.includes(excludeLabel)) return false;
+  if (automatedOnly && tc.automated !== 'true') return false;
   if (assistedOnly && tc.automated !== 'assisted') return false;
   if (noAssisted && tc.automated === 'assisted') return false;
   return true;
 });
 
-for (const tc of matching) {
-  process.stdout.write(`${tc.id}\n`);
+const ids = matching.map((tc) => tc.id);
+
+if (outputFormat === 'csv') {
+  process.stdout.write(ids.join(', '));
+} else {
+  for (const id of ids) {
+    process.stdout.write(`${id}\n`);
+  }
 }
