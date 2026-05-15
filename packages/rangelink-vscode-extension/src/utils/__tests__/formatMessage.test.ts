@@ -339,7 +339,7 @@ describe('formatMessage', () => {
     it('should format STATUS_BAR_DESTINATION_NOT_BOUND (static)', () => {
       const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND);
 
-      expect(result).toStrictEqual('RangeLink: No destination bound');
+      expect(result).toStrictEqual('No destination bound');
     });
 
     it('should format STATUS_BAR_DESTINATION_UNBOUND with destinationName param', () => {
@@ -347,7 +347,7 @@ describe('formatMessage', () => {
         destinationName: 'Terminal',
       });
 
-      expect(result).toStrictEqual('✓ RangeLink unbound from Terminal');
+      expect(result).toStrictEqual('Unbound from Terminal');
     });
 
     it('should format STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED (static)', () => {
@@ -363,7 +363,7 @@ describe('formatMessage', () => {
         destinationName: 'Cursor AI Assistant',
       });
 
-      expect(result).toStrictEqual('✓ RangeLink bound to Cursor AI Assistant');
+      expect(result).toStrictEqual('Bound to Cursor AI Assistant');
     });
 
     it('should format STATUS_BAR_DESTINATION_REBOUND with two params', () => {
@@ -388,7 +388,7 @@ describe('formatMessage', () => {
         path: 'src/missing.ts',
       });
 
-      expect(result).toStrictEqual('RangeLink: Cannot find file: src/missing.ts');
+      expect(result).toStrictEqual('Cannot find file: src/missing.ts');
     });
 
     it('should format INFO_NAVIGATION_SUCCESS with path and position params', () => {
@@ -397,7 +397,7 @@ describe('formatMessage', () => {
         position: 'L42C10',
       });
 
-      expect(result).toStrictEqual('RangeLink: Navigated to src/utils/helper.ts @ L42C10');
+      expect(result).toStrictEqual('Navigated to src/utils/helper.ts @ L42C10');
     });
 
     it('should format ERROR_NAVIGATION_FAILED with path and error params', () => {
@@ -406,9 +406,7 @@ describe('formatMessage', () => {
         error: 'File is not readable',
       });
 
-      expect(result).toStrictEqual(
-        'RangeLink: Failed to navigate to src/broken.ts: File is not readable',
-      );
+      expect(result).toStrictEqual('Failed to navigate to src/broken.ts: File is not readable');
     });
   });
 });

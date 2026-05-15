@@ -12,7 +12,10 @@ const TOAST_FN_MAP = {
   error: 'VscodeAdapter.showErrorMessage',
 } as const;
 
-const STATUS_BAR_FN = 'VscodeAdapter.setStatusBarMessage';
+const STATUS_BAR_FNS = [
+  'VscodeAdapter.setStatusBarMessage',
+  'VscodeAdapter.setSuccessfulStatusBarMessage',
+];
 
 type ToastType = keyof typeof TOAST_FN_MAP;
 
@@ -45,10 +48,10 @@ const parseLogContext = (line: string): LoggingContext | undefined => {
   return undefined;
 };
 
-const findLogEntry = (lines: string[], expectedFn: string, expectedMessage: string): boolean =>
+const findLogEntry = (lines: string[], expectedFns: string[], expectedMessage: string): boolean =>
   lines.some((line) => {
     const ctx = parseLogContext(line);
-    return ctx !== undefined && ctx.fn === expectedFn && ctx.message === expectedMessage;
+    return ctx !== undefined && expectedFns.includes(ctx.fn) && ctx.message === expectedMessage;
   });
 
 /**
@@ -56,7 +59,7 @@ const findLogEntry = (lines: string[], expectedFn: string, expectedMessage: stri
  */
 export const assertToastLogged = (lines: string[], opts: ToastAssertionOptions): void => {
   assert.ok(
-    findLogEntry(lines, TOAST_FN_MAP[opts.type], opts.message),
+    findLogEntry(lines, [TOAST_FN_MAP[opts.type]], opts.message),
     `Expected ${opts.type} toast with message "${opts.message}" but it was not found in ${lines.length} log lines`,
   );
 };
@@ -66,7 +69,7 @@ export const assertToastLogged = (lines: string[], opts: ToastAssertionOptions):
  */
 export const assertNoToastLogged = (lines: string[], opts: ToastAssertionOptions): void => {
   assert.ok(
-    !findLogEntry(lines, TOAST_FN_MAP[opts.type], opts.message),
+    !findLogEntry(lines, [TOAST_FN_MAP[opts.type]], opts.message),
     `Expected ${opts.type} toast with message "${opts.message}" to NOT be logged, but it was found`,
   );
 };
@@ -76,7 +79,7 @@ export const assertNoToastLogged = (lines: string[], opts: ToastAssertionOptions
  */
 export const assertStatusBarMsgLogged = (lines: string[], opts: MessageAssertionOptions): void => {
   assert.ok(
-    findLogEntry(lines, STATUS_BAR_FN, opts.message),
+    findLogEntry(lines, STATUS_BAR_FNS, opts.message),
     `Expected status bar message "${opts.message}" but it was not found in ${lines.length} log lines`,
   );
 };
@@ -89,7 +92,7 @@ export const assertNoStatusBarMsgLogged = (
   opts: MessageAssertionOptions,
 ): void => {
   assert.ok(
-    !findLogEntry(lines, STATUS_BAR_FN, opts.message),
+    !findLogEntry(lines, STATUS_BAR_FNS, opts.message),
     `Expected status bar message "${opts.message}" to NOT be logged, but it was found`,
   );
 };

@@ -447,7 +447,7 @@ describe('destinationBuilders', () => {
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
-      expect(destination.getJumpSuccessMessage()).toBe('✓ Focused Spark AI');
+      expect(destination.getJumpSuccessMessage()).toBe('Focused Spark AI');
     });
 
     it('allCommands includes insertCommands when present', async () => {

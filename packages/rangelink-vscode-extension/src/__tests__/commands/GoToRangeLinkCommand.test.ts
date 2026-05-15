@@ -73,9 +73,7 @@ describe('GoToRangeLinkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Please enter a link to navigate',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -97,9 +95,7 @@ describe('GoToRangeLinkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Please enter a link to navigate',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -133,7 +129,7 @@ describe('GoToRangeLinkCommand', () => {
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(invalidInput);
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          "RangeLink: Invalid link format: 'not-a-valid-link'",
+          "Invalid link format: 'not-a-valid-link'",
         );
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -164,9 +160,7 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(trimmedInput);
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          "RangeLink: Invalid link format: 'invalid-link'",
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith("Invalid link format: 'invalid-link'");
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'GoToRangeLinkCommand.execute',

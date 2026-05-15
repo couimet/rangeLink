@@ -98,7 +98,7 @@ describe('EditorFocusCapability', () => {
         expect(error).toStrictEqual({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
       });
       expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
@@ -225,7 +225,7 @@ describe('EditorFocusCapability', () => {
         expect(error).toStrictEqual({ reason: 'EDITOR_NOT_VISIBLE' });
       });
       expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
+        'Bound editor is no longer visible. Re-open the file and bind again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING },
@@ -263,7 +263,7 @@ describe('EditorFocusCapability', () => {
         expect(error).toStrictEqual({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
       });
       expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
@@ -394,7 +394,7 @@ describe('EditorFocusCapability', () => {
         expect(error).toStrictEqual({ reason: 'EDITOR_NOT_VISIBLE' });
       });
       expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
+        'Bound editor is no longer visible. Re-open the file and bind again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING },

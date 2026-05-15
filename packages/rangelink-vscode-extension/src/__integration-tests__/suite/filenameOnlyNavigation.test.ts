@@ -96,7 +96,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
     const lines = logCapture.getLinesSince('before-fallback-001');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${uniqueFilename} @ 5`,
+      message: `Navigated to ${uniqueFilename} @ 5`,
     });
   });
 
@@ -120,7 +120,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
     const lines = logCapture.getLinesSince('before-fallback-002');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Multiple files match: ${duplicateFilename}`,
+      message: `Multiple files match: ${duplicateFilename}`,
     });
   });
 
@@ -144,7 +144,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
     const lines = logCapture.getLinesSince('before-fallback-003');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${missingFilename}`,
+      message: `Cannot find file: ${missingFilename}`,
     });
   });
 
@@ -177,7 +177,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
     const lines = logCapture.getLinesSince('before-fallback-004');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${relativeFilePath} @ 10`,
+      message: `Navigated to ${relativeFilePath} @ 10`,
     });
   });
 });

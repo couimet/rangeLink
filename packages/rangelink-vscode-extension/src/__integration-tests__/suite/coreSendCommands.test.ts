@@ -33,8 +33,7 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
-const NO_TERMINAL_SELECTION_MSG =
-  'RangeLink: No text selected in the terminal. Select text and try again.';
+const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text and try again.';
 
 standardSuite('Core Send Commands', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
@@ -86,7 +85,7 @@ standardSuite('Core Send Commands', (log) => {
     const lines = logCapture.getLinesSince('before-r-l-002');
     const destBasename = path.basename(destUri.fsPath);
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink copied to clipboard & sent to Text Editor ("${destBasename}")`,
+      message: `✓ RangeLink: RangeLink copied to clipboard & sent to Text Editor ("${destBasename}")`,
     });
     log('✓ R-L inserted RangeLink into bound text editor destination');
   });
@@ -163,7 +162,7 @@ standardSuite('Core Send Commands', (log) => {
     );
 
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-001'), {
-      message: '✓ RangeLink copied to clipboard',
+      message: '✓ RangeLink: RangeLink copied to clipboard',
     });
     log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
@@ -190,7 +189,7 @@ standardSuite('Core Send Commands', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), '#L');
 
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-l-004'), {
-      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-r-l-004-dest")',
+      message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-r-l-004-dest")',
     });
     log('✓ Command Palette "Send RangeLink" delivered link to bound terminal destination');
   });
@@ -228,7 +227,7 @@ standardSuite('Core Send Commands', (log) => {
       'Terminal should not have received anything from "Copy RangeLink"',
     );
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-002'), {
-      message: '✓ RangeLink copied to clipboard',
+      message: '✓ RangeLink: RangeLink copied to clipboard',
     });
     log('✓ Command Palette "Copy RangeLink" wrote link to clipboard; terminal received nothing');
   });
@@ -259,7 +258,8 @@ standardSuite('Core Send Commands', (log) => {
     assertTerminalBufferContains(capturing.getCapturedText(), MARKER);
 
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-sts-001'), {
-      message: '✓ Selected text copied to clipboard & sent to Terminal ("csc-sts-001-dest")',
+      message:
+        '✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("csc-sts-001-dest")',
     });
     log('✓ R-V sent selected terminal text to bound destination');
   });
@@ -401,14 +401,14 @@ standardSuite('Core Send Commands', (log) => {
     const lines = logCapture.getLinesSince('before-sts-006');
     assertToastLogged(lines, {
       type: 'error',
-      message: 'RangeLink: No active editor',
+      message: 'No active editor',
     });
     assert.ok(
       !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
       'Expected no clipboard write when R-L invoked from terminal focus',
     );
     assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-sts-006-dest")',
+      message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-sts-006-dest")',
     });
     log('✓ R-L from terminal focus shows no-active-editor error');
   });
@@ -427,7 +427,7 @@ standardSuite('Core Send Commands', (log) => {
     const lines = logCapture.getLinesSince('before-sts-007');
     assertToastLogged(lines, {
       type: 'error',
-      message: 'RangeLink: No active editor',
+      message: 'No active editor',
     });
     assert.ok(
       !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
@@ -454,7 +454,7 @@ standardSuite('Core Send Commands', (log) => {
 
     const lines = logCapture.getLinesSince('before-r-l-001');
     assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-r-l-001-dest")',
+      message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-r-l-001-dest")',
     });
     const captured = capturing.getCapturedText();
     assertTerminalBufferContains(captured, 'csc-r-l-001');
@@ -486,11 +486,12 @@ standardSuite('Core Send Commands', (log) => {
 
     const lines = logCapture.getLinesSince('before-fullline-001');
     assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink copied to clipboard & sent to Terminal ("csc-fullline-001-dest")',
+      message:
+        '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-fullline-001-dest")',
     });
     assertNoToastLogged(lines, {
       type: 'error',
-      message: 'RangeLink: No active editor',
+      message: 'No active editor',
     });
     const captured = capturing.getCapturedText();
     assertTerminalBufferContains(captured, 'csc-fullline-001');

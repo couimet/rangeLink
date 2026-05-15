@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { displayName } from '../../../package.json';
 import {
   AI_ASSISTANT_PASTE_COMMANDS,
   CLIPBOARD_POST_PASTE_DELAY_MS,
@@ -28,6 +29,8 @@ import type { QuickPickProvider } from '../QuickPickProvider';
  * Default timeout for status bar messages in milliseconds.
  */
 const DEFAULT_STATUS_BAR_TIMEOUT_MS = 2000;
+const STATUS_BAR_PREFIX = `${displayName}: `;
+const STATUS_BAR_SUCCESS_PREFIX = `✓ ${STATUS_BAR_PREFIX}`;
 
 const getUnknownFilename = (): string => formatMessage(MessageCode.UNKNOWN_FILENAME_FALLBACK);
 
@@ -140,16 +143,39 @@ export class VscodeAdapter
   }
 
   /**
-   * Show temporary status bar message using VSCode API
+   * Show temporary status bar message prefixed with "RangeLink: ".
    */
   setStatusBarMessage(
     message: string,
     timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
   ): vscode.Disposable {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout },
-      'Setting status bar message',
+    return this.setStatusBarMessageInternal(
+      `${STATUS_BAR_PREFIX}${message}`,
+      timeout,
+      'VscodeAdapter.setStatusBarMessage',
     );
+  }
+
+  /**
+   * Show temporary success status bar message prefixed with "✓ RangeLink: ".
+   */
+  setSuccessfulStatusBarMessage(
+    message: string,
+    timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
+  ): vscode.Disposable {
+    return this.setStatusBarMessageInternal(
+      `${STATUS_BAR_SUCCESS_PREFIX}${message}`,
+      timeout,
+      'VscodeAdapter.setSuccessfulStatusBarMessage',
+    );
+  }
+
+  private setStatusBarMessageInternal(
+    message: string,
+    timeout: number,
+    fn: string,
+  ): vscode.Disposable {
+    this.logger.debug({ fn, message, timeout }, 'Setting status bar message');
     return this.ideInstance.window.setStatusBarMessage(message, timeout);
   }
 

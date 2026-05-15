@@ -171,7 +171,7 @@ describe('RangeLinkTerminalProvider', () => {
       );
 
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
-        'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
+        'Cannot navigate - invalid link format: file.ts#L0',
       );
 
       expect(mockLogger.info).not.toHaveBeenCalled();

@@ -53,9 +53,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot add bookmark - no active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Cannot add bookmark - no active editor');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute' },
@@ -289,7 +287,7 @@ describe('AddBookmarkCommand', () => {
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
+          'Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -325,7 +323,7 @@ describe('AddBookmarkCommand', () => {
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Cannot add bookmark - failed to generate link from selection',
+          'Cannot add bookmark - failed to generate link from selection',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
       });
@@ -377,9 +375,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Bookmark label cannot be empty',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Bookmark label cannot be empty');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute' },
@@ -414,7 +410,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to save bookmark');
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Failed to save bookmark');
         expect(mockLogger.error).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute', error: storageError },
           'Failed to save bookmark',
@@ -443,7 +439,7 @@ describe('AddBookmarkCommand', () => {
         await command.execute();
 
         expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ Bookmark saved: Success Bookmark',
+          '✓ RangeLink: Bookmark saved: Success Bookmark',
           2000,
         );
         expect(mockLogger.info).toHaveBeenCalledWith(

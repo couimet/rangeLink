@@ -80,7 +80,7 @@ describe('getDelimitersForExtension', () => {
 
       expect(result).toStrictEqual(DEFAULT_DELIMITERS);
       expect(errorFeedbackProvider.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
+        'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
       );
       expect(errorFeedbackProvider.showErrorMessage).toHaveBeenCalledTimes(1);
     });

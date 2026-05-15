@@ -52,7 +52,7 @@ standardSuite('Send File Path', (log) => {
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-001');
     assertStatusBarMsgLogged(lines, {
-      message: '✓ File path copied to clipboard & sent to Terminal ("sfp-test")',
+      message: '✓ RangeLink: File path copied to clipboard & sent to Terminal ("sfp-test")',
     });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
     assertFilePathLogged(lines, {

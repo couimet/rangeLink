@@ -75,7 +75,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     );
 
     assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink bound to Terminal ("rl-btd-004")',
+      message: '✓ RangeLink: Bound to Terminal ("rl-btd-004")',
     });
 
     assertNoStatusBarMsgLogged(lines, {
@@ -124,7 +124,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     );
 
     assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink bound to Text Editor ("${fnB}")`,
+      message: `✓ RangeLink: Bound to Text Editor ("${fnB}")`,
     });
 
     assertNoStatusBarMsgLogged(lines, {
@@ -151,7 +151,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       'GitHub Copilot Chat',
     ];
     const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
-      lines.some((line) => line.includes(`✓ RangeLink bound to ${name}`)),
+      lines.some((line) => line.includes(`✓ RangeLink: Bound to ${name}`)),
     );
     assert.ok(
       boundToAny,
@@ -205,7 +205,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     );
 
     assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink bound to Terminal ("rl-btd-007-b")',
+      message: '✓ RangeLink: Bound to Terminal ("rl-btd-007-b")',
     });
     assertNoStatusBarMsgLogged(lines, {
       message: 'Unbound Terminal ("rl-btd-007-a"), now bound to Terminal ("rl-btd-007-b")',
@@ -240,7 +240,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     });
 
     assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink bound to Terminal ("rl-btd-008-a")',
+      message: '✓ RangeLink: Bound to Terminal ("rl-btd-008-a")',
     });
 
     log('✓ Replacement binding toast logged; old binding not re-confirmed');
@@ -273,7 +273,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: 'Unbound Terminal ("rl-btd-009-a"), now bound to Terminal ("rl-btd-009-b")',
     });
     assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink bound to Terminal ("rl-btd-009-b")',
+      message: '✓ RangeLink: Bound to Terminal ("rl-btd-009-b")',
     });
     assert.strictEqual(
       verdict,
@@ -300,7 +300,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     assert.ok(items, 'Expected showQuickPick log entry (picker did open)');
 
     assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink bound to Terminal ("rl-btd-010")',
+      message: '✓ RangeLink: Bound to Terminal ("rl-btd-010")',
     });
     assertNoStatusBarMsgLogged(lines, {
       message: 'RangeLink: No destination bound',
@@ -340,7 +340,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       'GitHub Copilot Chat',
     ];
     const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
-      lines.some((line) => line.includes(`RangeLink: Already bound to ${name}`)),
+      lines.some((line) => line.includes(`Already bound to ${name}`)),
     );
     assert.ok(
       alreadyBoundLogged,

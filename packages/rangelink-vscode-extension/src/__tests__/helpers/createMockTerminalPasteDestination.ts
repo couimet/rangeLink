@@ -33,7 +33,7 @@ export const createMockTerminalPasteDestination = (
     id: 'terminal',
     displayName: 'Terminal',
     getLoggingDetails: jest.fn().mockReturnValue({ terminalName: 'bash' }),
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Terminal: "bash"'),
+    getJumpSuccessMessage: jest.fn().mockReturnValue('Focused Terminal: "bash"'),
     ...overrides,
   });
 };

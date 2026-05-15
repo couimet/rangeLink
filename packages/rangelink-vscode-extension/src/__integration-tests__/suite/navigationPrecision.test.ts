@@ -60,7 +60,7 @@ standardSuite('Navigation Precision', (_log) => {
     const lines = logCapture.getLinesSince('before-nav-001');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${testFilename} @ 10`,
+      message: `Navigated to ${testFilename} @ 10`,
     });
   });
 
@@ -93,7 +93,7 @@ standardSuite('Navigation Precision', (_log) => {
     const lines = logCapture.getLinesSince('before-nav-002');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${testFilename} @ 10-15`,
+      message: `Navigated to ${testFilename} @ 10-15`,
     });
   });
 
@@ -121,7 +121,7 @@ standardSuite('Navigation Precision', (_log) => {
     const lines = logCapture.getLinesSince('before-char-001');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${testFilename} @ 10:5`,
+      message: `Navigated to ${testFilename} @ 10:5`,
     });
   });
 
@@ -149,7 +149,7 @@ standardSuite('Navigation Precision', (_log) => {
     const lines = logCapture.getLinesSince('before-char-002');
     assertToastLogged(lines, {
       type: 'info',
-      message: `RangeLink: Navigated to ${testFilename} @ 10:5-15:10`,
+      message: `Navigated to ${testFilename} @ 10:5-15:10`,
     });
   });
 });

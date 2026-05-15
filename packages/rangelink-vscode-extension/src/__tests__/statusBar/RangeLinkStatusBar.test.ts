@@ -557,7 +557,7 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from status bar menu',
       );
-      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
+      expect(showErrorMessageMock).toHaveBeenCalledWith('Failed to bind destination');
     });
 
     it('logs when info item is selected', async () => {
@@ -711,7 +711,7 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from overflow terminal picker',
       );
-      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
+      expect(showErrorMessageMock).toHaveBeenCalledWith('Failed to bind destination');
     });
 
     it('re-opens status bar menu when user cancels secondary terminal picker', async () => {
@@ -855,7 +855,7 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from overflow file picker',
       );
-      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
+      expect(showErrorMessageMock).toHaveBeenCalledWith('Failed to bind destination');
     });
 
     it('returns early and shows toast when no file items are available in secondary picker', async () => {
@@ -879,7 +879,7 @@ describe('RangeLinkStatusBar', () => {
         'No files available in secondary picker',
       );
       expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'RangeLink: No active text editor. Open a file and try again.',
+        'No active text editor. Open a file and try again.',
       );
     });
 
@@ -988,7 +988,7 @@ describe('RangeLinkStatusBar', () => {
         'Bookmark send failed',
       );
       expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'RangeLink: Cannot send bookmark — no destination is currently bound',
+        'Cannot send bookmark — no destination is currently bound',
       );
       expect(mockLogger.debug).toHaveBeenCalledTimes(1);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1024,7 +1024,7 @@ describe('RangeLinkStatusBar', () => {
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
         'Bookmark send failed',
       );
-      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to send bookmark');
+      expect(showErrorMessageMock).toHaveBeenCalledWith('Failed to send bookmark');
     });
   });
 

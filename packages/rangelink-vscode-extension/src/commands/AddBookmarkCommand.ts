@@ -140,7 +140,7 @@ export class AddBookmarkCommand {
 
     this.logger.info({ ...logCtx, label: trimmedLabel, link: linkToBookmark }, 'Bookmark saved');
 
-    this.ideAdapter.setStatusBarMessage(
+    this.ideAdapter.setSuccessfulStatusBarMessage(
       formatMessage(MessageCode.STATUS_BAR_BOOKMARK_SAVED, { label: trimmedLabel }),
     );
   }

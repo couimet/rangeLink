@@ -68,7 +68,7 @@ standardSuite('File Path Navigation', (_log) => {
     const lines = logCapture.getLinesSince('before-fp-011');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Cannot find file: ${nonExistentPath}`,
+      message: `Cannot find file: ${nonExistentPath}`,
     });
   });
 });

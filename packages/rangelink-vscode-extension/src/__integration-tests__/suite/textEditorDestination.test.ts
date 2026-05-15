@@ -191,7 +191,7 @@ standardSuite('Text Editor Destination', (log) => {
   });
 
   const WARN_DUPLICATE_TAB_GROUPS =
-    'RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.';
+    'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.';
 
   test('duplicate-tab-group-001: warning toast fires when bound file is opened in a second editor group', async () => {
     const destUri = createWorkspaceFile('dtg-001-dest', 'destination file\n');
@@ -323,7 +323,7 @@ standardSuite('Text Editor Destination', (log) => {
     assertToastLogged(logCapture.getLinesSince('before-dtg-003'), {
       type: 'error',
       message:
-        'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
     });
 
     const destContentAfter = (await vscode.workspace.openTextDocument(destUri)).getText();

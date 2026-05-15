@@ -25,7 +25,7 @@ import {
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
-const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink bound to Claude Code Chat';
+const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Claude Code Chat';
 
 standardSuite('Built-in AI Assistants', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
