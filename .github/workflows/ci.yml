@@ -60,6 +60,8 @@ jobs:
           unit-passed: ${{ steps.run-tests.outputs.unit-passed }}
           unit-total: ${{ steps.run-tests.outputs.unit-total }}
           int-passing: ${{ steps.run-integration-tests.outputs.int-passing }}
+          int-failed: ${{ steps.run-integration-tests.outputs.int-failed }}
+          report-file: '/tmp/test-report-automated.txt'
           label-filter: ''
           job-start: ${{ env.TEST_JOB_START }}
 
@@ -96,5 +98,7 @@ jobs:
           unit-passed: ''
           unit-total: ''
           int-passing: ${{ steps.run-integration-tests-with-extensions.outputs.int-passing }}
+          int-failed: ${{ steps.run-integration-tests-with-extensions.outputs.int-failed }}
+          report-file: '/tmp/test-report-with-extensions.txt'
           label-filter: 'requires-extensions'
           job-start: ${{ env.EXTENSIONS_JOB_START }}

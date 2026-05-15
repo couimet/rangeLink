@@ -1,0 +1,3 @@
+packages/rangelink-vscode-extension test: Test Suites: 108 passed, 108 total
+packages/rangelink-vscode-extension test: Tests:       1889 passed, 1889 total
+packages/rangelink-vscode-extension test: Snapshots:   0 total
