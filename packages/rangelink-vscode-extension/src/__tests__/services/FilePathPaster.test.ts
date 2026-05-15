@@ -146,6 +146,23 @@ describe('FilePathPaster', () => {
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+        control: {
+          contentType: 'Text',
+          destinationBehavior: 'bound-destination',
+        },
+        content: {
+          clipboard: ' /workspace/src/file.ts ',
+          send: ' /workspace/src/file.ts ',
+          sourceUri: uri,
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentName: 'File path',
+        fnName: 'pasteFilePath',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'FilePathPaster.pasteFilePath',

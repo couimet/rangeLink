@@ -8,6 +8,7 @@
 #   ./scripts/test-release-run.sh --grep "pattern"           # filtered by Mocha grep
 #   ./scripts/test-release-run.sh --grep "\[assisted\]"      # only [assisted] tests
 #   ./scripts/test-release-run.sh --with-extensions          # installs real marketplace extensions (Gemini, Claude Code)
+#   ./scripts/test-release-run.sh --without-extensions        # exclude tests requiring marketplace extensions
 #   ./scripts/test-release-run.sh --label "clipboard"         # only tests with matching label in QA YAML
 #   ./scripts/test-release-run.sh --label "clipboard" --assisted  # label + assisted-only filter
 #   ./scripts/test-release-run.sh --label "clipboard" --no-assisted # label + exclude assisted tests
@@ -25,6 +26,7 @@ VSCODE_TEST_CONFIG=""
 GREP_PATTERN=""
 COMMAND="pnpm test:release"
 WITH_EXTENSIONS=false
+WITHOUT_EXTENSIONS=false
 LABEL_FILTER=""
 ASSISTED_ONLY=false
 NO_ASSISTED=false
@@ -35,6 +37,7 @@ while [[ $# -gt 0 ]]; do
     --assisted) ASSISTED_ONLY=true; shift ;;
     --no-assisted) NO_ASSISTED=true; shift ;;
     --with-extensions) MODE="with-extensions"; VSCODE_TEST_CONFIG="--config .vscode-test.with-extensions.mjs"; COMMAND="pnpm test:release:with-extensions"; WITH_EXTENSIONS=true; shift ;;
+    --without-extensions) WITHOUT_EXTENSIONS=true; shift ;;
     --grep)
       if [[ $# -lt 2 ]]; then
         echo "Error: --grep requires a pattern argument" >&2
@@ -75,6 +78,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Guard: --with-extensions and --without-extensions are mutually exclusive
+if [[ "$WITH_EXTENSIONS" == "true" && "$WITHOUT_EXTENSIONS" == "true" ]]; then
+  echo "Error: --with-extensions and --without-extensions are mutually exclusive" >&2
+  exit 1
+fi
+
 # Resolve --label to test IDs from the latest QA YAML
 if [[ -n "$LABEL_FILTER" ]]; then
   RESOLVE_ARGS=("--label" "$LABEL_FILTER")
@@ -86,6 +95,11 @@ if [[ -n "$LABEL_FILTER" ]]; then
     exit 1
   }
 
+  if [[ -z "$LABEL_IDS" ]]; then
+    echo "Error: label '$LABEL_FILTER' matched zero tests" >&2
+    exit 1
+  fi
+
   LABEL_GREP=$(echo "$LABEL_IDS" | paste -sd '|' -)
   LABEL_COUNT=$(echo "$LABEL_IDS" | wc -l | tr -d ' ')
   echo "Label '$LABEL_FILTER' matched ${LABEL_COUNT} test(s): $LABEL_GREP"
@@ -93,7 +107,6 @@ if [[ -n "$LABEL_FILTER" ]]; then
 
   if [[ -n "$GREP_PATTERN" ]]; then
     GREP_PATTERN="$GREP_PATTERN|$LABEL_GREP"
-    COMMAND="$COMMAND --grep \"$LABEL_GREP\""
   else
     GREP_PATTERN="$LABEL_GREP"
     if [[ "$MODE" == "all" ]]; then
@@ -105,9 +118,41 @@ if [[ -n "$LABEL_FILTER" ]]; then
   fi
 fi
 
-if [[ -z "$GREP_PATTERN" && ( "$MODE" == "automated" || "$NO_ASSISTED" == true ) ]]; then
-  export MOCHA_GREP='\[assisted\]'
+# Build inclusion and exclusion patterns, then set MOCHA_GREP/MOCHA_INVERT.
+# Order matters: exclusions are combined first, then the final grep is set
+# once so that --grep, --automated, and --without-extensions compose correctly.
+unset MOCHA_GREP MOCHA_INVERT
+MOCHA_INCLUDE="${GREP_PATTERN:-}"
+MOCHA_EXCLUDE=""
+
+if [[ "$MODE" == "automated" || "$NO_ASSISTED" == true ]]; then
+  MOCHA_EXCLUDE='\[assisted\]'
+fi
+
+if [[ "$WITHOUT_EXTENSIONS" == "true" ]]; then
+  EXT_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --label requires-extensions) || {
+    echo "$EXT_IDS" >&2
+    exit 1
+  }
+  EXT_GREP=$(echo "$EXT_IDS" | paste -sd '|' -)
+  EXT_COUNT=$(echo "$EXT_IDS" | wc -l | tr -d ' ')
+  echo "Excluding ${EXT_COUNT} test(s) requiring extensions: $EXT_GREP"
+  echo ""
+
+  if [[ -n "$MOCHA_EXCLUDE" ]]; then
+    MOCHA_EXCLUDE="${MOCHA_EXCLUDE}|${EXT_GREP}"
+  else
+    MOCHA_EXCLUDE="$EXT_GREP"
+  fi
+fi
+
+if [[ -n "$MOCHA_INCLUDE" && -n "$MOCHA_EXCLUDE" ]]; then
+  export MOCHA_GREP="^(?!.*(${MOCHA_EXCLUDE})).*(${MOCHA_INCLUDE})"
+elif [[ -n "$MOCHA_EXCLUDE" ]]; then
+  export MOCHA_GREP="$MOCHA_EXCLUDE"
   export MOCHA_INVERT=true
+elif [[ -n "$MOCHA_INCLUDE" ]]; then
+  export MOCHA_GREP="$MOCHA_INCLUDE"
 fi
 
 OUTPUT_DIR="$PACKAGE_ROOT/qa/output"
@@ -150,9 +195,6 @@ fi
 
 TEST_EXIT=0
 # shellcheck disable=SC2086
-if [[ -n "$GREP_PATTERN" ]]; then
-  export MOCHA_GREP="$GREP_PATTERN"
-fi
 npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
 
 if [[ -n "$GREP_PATTERN" && $TEST_EXIT -eq 0 ]]; then
@@ -190,6 +232,9 @@ FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
       fi
       if [[ "$WITH_EXTENSIONS" == "true" ]]; then
         RERUN_CMD="$RERUN_CMD --with-extensions"
+      fi
+      if [[ "$WITHOUT_EXTENSIONS" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --without-extensions"
       fi
       echo ""
       echo ""

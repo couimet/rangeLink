@@ -26,6 +26,7 @@ export {
   createWorkspaceFile,
   findTestItemsByPrefix,
   openEditor,
+  openSourceWithSelection,
 } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {

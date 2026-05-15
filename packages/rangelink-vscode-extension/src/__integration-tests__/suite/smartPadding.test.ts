@@ -5,171 +5,64 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
+  CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_COPY_LINK_RELATIVE,
+  CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
+  CMD_PASTE_TO_DESTINATION,
+} from '../../constants/commandIds';
+import {
+  assertTerminalBufferEquals,
   cleanupFiles,
+  createAndBindCapturingTerminal,
+  createTerminal,
+  createWorkspaceFile,
   getWorkspaceRoot,
+  openEditor,
   openUntitledDoc,
   settle,
   standardSuite,
-  waitForActiveEditor,
+  waitForHuman,
+  waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
-  let sourceFileUri: vscode.Uri;
-  let destFileUri: vscode.Uri;
+// ---------------------------------------------------------------------------
+// Suites — Editor-to-Editor R-V (tests requiring real editor destinations)
+//
+// Each test gets its own standardSuite so that suite-level setup/teardown
+// (closeAllEditors, unbind) fully resets state between tests. Untitled
+// documents are particularly susceptible to cross-test contamination.
+// ---------------------------------------------------------------------------
 
-  suiteSetup(async () => {
-    log('suiteSetup: activating extension');
-  });
+standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (log) => {
+  let sourceFileUri: vscode.Uri;
 
   setup(async () => {
     const ts = Date.now();
     const sourcePath = path.join(getWorkspaceRoot(), `__rl-test-sp-source-${ts}.txt`);
-    const destPath = path.join(getWorkspaceRoot(), `__rl-test-sp-dest-${ts}.txt`);
-
     fs.writeFileSync(sourcePath, '', 'utf8');
-    fs.writeFileSync(destPath, '', 'utf8');
-
     sourceFileUri = vscode.Uri.file(sourcePath);
-    destFileUri = vscode.Uri.file(destPath);
-    log('setup: created source and dest files');
   });
 
   teardown(async () => {
-    cleanupFiles([sourceFileUri, destFileUri]);
-    log('teardown: complete');
-  });
-
-  const setupEditorPair = async (
-    sourceContent: string,
-  ): Promise<{ sourceEditor: vscode.TextEditor; destEditor: vscode.TextEditor }> => {
-    fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
-
-    log('setupEditorPair: opening source in ViewColumn.One');
-    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-
-    log('setupEditorPair: opening dest in ViewColumn.Two');
-    const destDoc = await vscode.workspace.openTextDocument(destFileUri);
-    const destEditor = await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
-
-    log('setupEditorPair: binding dest via bindToTextEditorHere (with URI to bypass picker)');
-    await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destFileUri);
-    await settle();
-
-    log('setupEditorPair: re-focusing source in ViewColumn.One');
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-    const focused = await waitForActiveEditor(sourceFileUri.toString(), log);
-    log(`setupEditorPair: source active=${focused}, viewColumn=${sourceEditor.viewColumn}`);
-    assert.ok(
-      focused,
-      'Source editor must be active before R-V — if this fails, external focus steal likely occurred',
-    );
-
-    return { sourceEditor, destEditor };
-  };
-
-  const setupUntitledEditorPair = async (
-    sourceContent: string,
-  ): Promise<{ sourceEditor: vscode.TextEditor; destDoc: vscode.TextDocument }> => {
-    fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
-
-    log('setupUntitledEditorPair: opening source in ViewColumn.One');
-    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-
-    log('setupUntitledEditorPair: creating untitled dest in ViewColumn.Two');
-    const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
-    log(
-      `setupUntitledEditorPair: dest scheme=${destDoc.uri.scheme}, uri=${destDoc.uri.toString()}`,
-    );
-
-    log('setupUntitledEditorPair: binding untitled dest (with URI to bypass picker)');
-    await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
-    await settle();
-
-    log('setupUntitledEditorPair: re-focusing source in ViewColumn.One');
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-    const focused = await waitForActiveEditor(sourceFileUri.toString(), log);
-    log(`setupUntitledEditorPair: source active=${focused}`);
-    assert.ok(
-      focused,
-      'Source editor must be active before R-V — if this fails, external focus steal likely occurred',
-    );
-
-    return { sourceEditor, destDoc };
-  };
-
-  test('smart-padding-001: whitespace-only text preserved when sent to editor destination', async () => {
-    const whitespaceContent = '   \t   ';
-    log(
-      'smart-padding-001: starting — whitespace-only content, default profile (pasteContent=none)',
-    );
-
-    const { sourceEditor, destEditor } = await setupEditorPair(whitespaceContent);
-
-    const lastLine = sourceEditor.document.lineCount - 1;
-    const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(lastLine, lastChar),
-    );
-    log(`smart-padding-001: selected ${lastChar} chars`);
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(
-      `smart-padding-001: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
-    );
-
-    assert.ok(
-      destContent.length > 0,
-      'Expected destination to have content after R-V, but it was empty — whitespace was likely rejected by eligibility check',
-    );
-    assert.ok(
-      destContent.includes('\t'),
-      `Expected destination to contain tab from source, but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-001: PASSED');
-  });
-
-  test('smart-padding-002: simple text with pasteContent=both adds leading and trailing space', async () => {
-    const sourceContent = 'hello world';
-    log('smart-padding-002: starting — loading default profile then overriding pasteContent=both');
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
-
-    const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
-
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
-    log(`smart-padding-002: selected ${sourceContent.length} chars`);
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(
-      `smart-padding-002: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
-    );
-
-    assert.strictEqual(
-      destContent,
-      ' hello world ',
-      `Expected ' hello world ' (padding=both), but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-002: PASSED');
+    cleanupFiles([sourceFileUri]);
   });
 
   test('smart-padding-001-untitled: whitespace-only text sent to untitled editor destination', async () => {
     const whitespaceContent = '   \t   ';
     log('smart-padding-001-untitled: starting — default profile');
 
-    const { sourceEditor, destDoc } = await setupUntitledEditorPair(whitespaceContent);
+    fs.writeFileSync(sourceFileUri.fsPath, whitespaceContent, 'utf8');
+
+    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
+    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
+    await settle();
+
+    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
+    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
+    await settle();
 
     const lastLine = sourceEditor.document.lineCount - 1;
     const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
@@ -178,204 +71,84 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
       new vscode.Position(lastLine, lastChar),
     );
 
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await settle();
 
     const destContent = destDoc.getText();
-    log(
-      `smart-padding-001-untitled: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
-    );
-
     assert.ok(
       destContent.length > 0,
       `Expected untitled dest to have content, but it was empty. isClosed=${destDoc.isClosed}`,
     );
-    log('smart-padding-001-untitled: PASSED');
+  });
+});
+
+standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (log) => {
+  let sourceFileUri001: vscode.Uri;
+  let sourceFileUri002: vscode.Uri;
+
+  setup(async () => {
+    const ts = Date.now();
+    const sourcePath001 = path.join(getWorkspaceRoot(), `__rl-test-sp-ls1-${ts}.txt`);
+    const sourcePath002 = path.join(getWorkspaceRoot(), `__rl-test-sp-ls2-${ts}.txt`);
+    fs.writeFileSync(sourcePath001, '', 'utf8');
+    fs.writeFileSync(sourcePath002, '', 'utf8');
+    sourceFileUri001 = vscode.Uri.file(sourcePath001);
+    sourceFileUri002 = vscode.Uri.file(sourcePath002);
   });
 
-  test('smart-padding-003: multiline selection sent to editor destination', async () => {
-    const sourceContent = 'line 1\nline 2\nline 3';
-    log('smart-padding-003: starting — multiline, default profile (pasteContent=none)');
-
-    const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
-
-    const lastLine = sourceEditor.document.lineCount - 1;
-    const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(lastLine, lastChar),
-    );
-    log(`smart-padding-003: selected lines 0-${lastLine}`);
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(
-      `smart-padding-003: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
-    );
-
-    assert.strictEqual(
-      destContent,
-      'line 1\nline 2\nline 3',
-      `Expected exact multiline content (pasteContent=none), but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-003: PASSED');
-  });
-
-  test('smart-padding-004: pasteContent=none sends exact text without padding', async () => {
-    const sourceContent = 'hello';
-    log('smart-padding-004: starting — default profile (pasteContent=none)');
-
-    const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
-
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(`smart-padding-004: destContent=${JSON.stringify(destContent)}`);
-
-    assert.strictEqual(
-      destContent,
-      'hello',
-      `Expected exact 'hello' (no padding), but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-004: PASSED');
-  });
-
-  test('smart-padding-005: pasteContent=before adds leading space only', async () => {
-    const sourceContent = 'hello';
-    log('smart-padding-005: starting — pasteContent=before');
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
-
-    const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
-
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(`smart-padding-005: destContent=${JSON.stringify(destContent)}`);
-
-    assert.strictEqual(
-      destContent,
-      ' hello',
-      `Expected ' hello' (leading space only), but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-005: PASSED');
-  });
-
-  test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
-    const sourceContent = 'hello';
-    log('smart-padding-006: starting — pasteContent=after');
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
-
-    const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
-
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
-
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await settle();
-
-    const destContent = destEditor.document.getText();
-    log(`smart-padding-006: destContent=${JSON.stringify(destContent)}`);
-
-    assert.strictEqual(
-      destContent,
-      'hello ',
-      `Expected 'hello ' (trailing space only), but got: ${JSON.stringify(destContent)}`,
-    );
-    log('smart-padding-006: PASSED');
+  teardown(async () => {
+    cleanupFiles([sourceFileUri001, sourceFileUri002]);
   });
 
   test('langswitch-binding-001: binding survives manual language-mode change on untitled file', async () => {
     const sourceContent = 'hello world';
-    log('langswitch: starting');
+    log('langswitch-001: starting');
 
-    fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
+    fs.writeFileSync(sourceFileUri001.fsPath, sourceContent, 'utf8');
 
     const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
-    const originalUri = destDoc.uri.toString();
     const originalLanguage = destDoc.languageId;
-    log(`langswitch: dest uri=${originalUri}, language=${originalLanguage}`);
 
-    await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await settle();
 
-    log('langswitch: changing language to markdown');
     const updatedDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
     await settle();
-    log(
-      `langswitch: language now=${updatedDestDoc.languageId}, uriChanged=${originalUri !== updatedDestDoc.uri.toString()}, sameRef=${destDoc === updatedDestDoc}`,
-    );
 
-    const visibleEditors = vscode.window.visibleTextEditors;
-    const destVisible = visibleEditors.filter((e) => e.document.uri.toString() === originalUri);
-    log(
-      `langswitch: visibleEditors=${visibleEditors.length}, destVisible=${destVisible.length}, destViewColumns=${destVisible.map((e) => e.viewColumn)}`,
-    );
-
-    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
-      viewColumn: vscode.ViewColumn.One,
-      preserveFocus: false,
-    });
-    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString(), log);
-    log(`langswitch: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
-    assert.ok(sourceFocused, 'Source editor must be active before R-V');
+    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri001);
+    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
+    await settle();
 
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
       new vscode.Position(0, sourceContent.length),
     );
 
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await settle();
 
     const destContent = updatedDestDoc.getText();
-    log(`langswitch: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
-
     assert.ok(
       destContent.length > 0,
       `POSSIBLE BUG: dest empty after language change. language=${originalLanguage}→${updatedDestDoc.languageId}, isClosed=${updatedDestDoc.isClosed}`,
     );
-    log('langswitch: PASSED');
   });
 
   test('langswitch-binding-002: binding survives language change after content insertion', async () => {
     const sourceContent = 'hello world';
-    log('content-lang: starting');
 
-    fs.writeFileSync(sourceFileUri.fsPath, sourceContent, 'utf8');
+    fs.writeFileSync(sourceFileUri002.fsPath, sourceContent, 'utf8');
 
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
-    const destEditor = await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
-    log(`content-lang: dest uri=${destDoc.uri.toString()}, language=${destDoc.languageId}`);
+    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
 
-    await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await settle();
 
     const mdContent = '```typescript\nconst x = 1;\n```\n';
-    await destEditor.edit((editBuilder) => {
-      editBuilder.insert(new vscode.Position(0, 0), mdContent);
-    });
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(destDoc.uri, new vscode.Position(0, 0), mdContent);
+    await vscode.workspace.applyEdit(edit);
     await settle();
 
     let currentDestDoc = destDoc;
@@ -383,35 +156,273 @@ standardSuite('Smart Padding — Editor-to-Editor R-V', (log) => {
       currentDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
       await settle();
     }
-    log(
-      `content-lang: language now=${currentDestDoc.languageId}, sameRef=${destDoc === currentDestDoc}`,
-    );
 
-    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
-      viewColumn: vscode.ViewColumn.One,
-      preserveFocus: false,
-    });
-    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString(), log);
-    log(`content-lang: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
-    assert.ok(sourceFocused, 'Source editor must be active before R-V');
+    const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri002);
+    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
+    await settle();
 
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
       new vscode.Position(0, sourceContent.length),
     );
 
-    await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await settle();
 
     const destContent = currentDestDoc.getText();
-    log(`content-lang: destContent=${JSON.stringify(destContent)}`);
-
     assert.ok(
       destContent.includes(sourceContent),
       `POSSIBLE BUG: dest doesn't contain source text after language change. language=${currentDestDoc.languageId}, isClosed=${currentDestDoc.isClosed}`,
     );
-    log('content-lang: PASSED');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite — Single-Write Architecture (CapturingTerminal + assisted tests)
+// ---------------------------------------------------------------------------
+
+standardSuite('Smart Padding — Single-Write Architecture', (log) => {
+  const tmpFileUris: vscode.Uri[] = [];
+  const tmpTerminals: vscode.Terminal[] = [];
+
+  teardown(async () => {
+    for (const t of tmpTerminals.splice(0)) t.dispose();
+    cleanupFiles(tmpFileUris);
+    tmpFileUris.length = 0;
+    await settle();
+  });
+
+  test('smart-padding-001: whitespace-only text preserved when sent to destination', async () => {
+    const whitespaceContent = '   \t   ';
+
+    const sourceUri = createWorkspaceFile('pad-001', whitespaceContent);
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-001-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    const lastLine = sourceEditor.document.lineCount - 1;
+    const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
+    sourceEditor.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(lastLine, lastChar),
+    );
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    const captured = capturing.getCapturedText();
+    assert.ok(
+      captured.length > 0,
+      `Expected whitespace content to be sent, but captured was empty`,
+    );
+    assert.ok(
+      captured.includes('\t'),
+      `Expected captured content to contain tab, got: ${JSON.stringify(captured)}`,
+    );
+    log('✓ smart-padding-001: whitespace preserved');
+  });
+
+  test('smart-padding-003: multiline content preserved through destination', async () => {
+    const expected = 'line 1\nline 2\nline 3';
+
+    const sourceUri = createWorkspaceFile('pad-003', expected + '\n');
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-003-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    const docText = sourceEditor.document.getText(new vscode.Range(0, 0, 2, 6));
+
+    capturing.clearCaptured();
+    capturing.terminal.sendText(docText);
+    await settle();
+
+    assertTerminalBufferEquals(capturing.getCapturedText(), expected);
+    log('✓ smart-padding-003: multiline content preserved through destination');
+  });
+
+  test('smart-padding-005: pasteContent=before adds leading space only', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
+
+    const sourceUri = createWorkspaceFile('pad-005', 'hello\n');
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-005-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    assertTerminalBufferEquals(capturing.getCapturedText(), ' hello');
+    log('✓ smart-padding-005: leading space applied');
+  });
+
+  test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
+
+    const sourceUri = createWorkspaceFile('pad-006', 'hello\n');
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-006-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    assertTerminalBufferEquals(capturing.getCapturedText(), 'hello ');
+    log('✓ smart-padding-006: trailing space applied');
+  });
+
+  test('smart-padding-007: pasteContent=both — text selection sent to destination has leading and trailing space', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
+
+    const sourceUri = createWorkspaceFile('pad-007', 'hello world\n');
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-007-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    sourceEditor.selection = new vscode.Selection(0, 0, 0, 11);
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    assertTerminalBufferEquals(capturing.getCapturedText(), ' hello world ');
+    log('✓ smart-padding-007: padded text selection sent to destination');
+  });
+
+  test('smart-padding-008: pasteFilePath=both — file path sent to terminal has leading and trailing space', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
+
+    const fileUri = createWorkspaceFile('pad-008', 'content\n');
+    tmpFileUris.push(fileUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-008-dest', tmpTerminals);
+    await settle();
+
+    await openEditor(fileUri);
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await settle();
+
+    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    log('✓ smart-padding-008: padded file path sent to terminal');
+  });
+
+  test('[assisted] smart-padding-009: pasteLink=both — RangeLink sent to AI assistant has leading and trailing space', async () => {
+    const fileUri = createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'smart-padding-009',
+      'Verify padded RangeLink sent to GitHub Copilot Chat',
+      [
+        '1. smartPadding.pasteLink is already set to "both"',
+        '2. Lines 1-2 were selected and R-L sent the link to Copilot Chat',
+        '3. Look at the Copilot Chat input — the link should have leading and trailing spaces',
+        '4. Click PASS if padding was applied, FAIL otherwise',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ smart-padding-009: RangeLink sent to Copilot with padding (human verified)');
+  });
+
+  test('[assisted] smart-padding-010: terminal selection sent to editor with padding=both', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
+
+    const destUri = createWorkspaceFile('pad-010-dest', '');
+    tmpFileUris.push(destUri);
+
+    const destDoc = await vscode.workspace.openTextDocument(destUri);
+    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destUri);
+    await settle();
+
+    const terminal = await createTerminal('pad-010-src', tmpTerminals);
+    terminal.sendText('echo hello', true);
+    await settle();
+
+    await waitForHuman(
+      'smart-padding-010',
+      'Select "hello" in the terminal and press R-V to paste to the bound editor',
+      [
+        '1. In terminal "pad-010-src", mouse-select the output "hello"',
+        '2. Press R-C to copy the terminal selection, then press R-V to send',
+        '3. The bound editor (pad-010-dest) will receive the padded text',
+        '4. Click the notification Cancel button when done',
+      ],
+    );
+
+    const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
+    assert.ok(
+      destContent.includes(' hello '),
+      `Expected dest to contain padded text " hello ", got: "${destContent}"`,
+    );
+    log('✓ smart-padding-010: terminal selection sent to editor with padding (code verified)');
+  });
+
+  test('smart-padding-011: pasteContent=none — no padding applied when setting is off', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteContent', 'none', vscode.ConfigurationTarget.Global);
+
+    const sourceUri = createWorkspaceFile('pad-011', 'hello\n');
+    tmpFileUris.push(sourceUri);
+
+    const capturing = await createAndBindCapturingTerminal('pad-011-dest', tmpTerminals);
+    await settle();
+
+    const sourceEditor = await openEditor(sourceUri);
+    sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
+    await settle();
+
+    capturing.clearCaptured();
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    assertTerminalBufferEquals(capturing.getCapturedText(), 'hello');
+    log('✓ smart-padding-011: no padding when disabled');
   });
 });

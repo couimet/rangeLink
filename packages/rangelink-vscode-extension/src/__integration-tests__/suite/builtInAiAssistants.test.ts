@@ -5,8 +5,10 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
@@ -21,6 +23,7 @@ import {
 import {
   assertStatusBarMsgLogged,
   cleanupFiles,
+  CLIPBOARD_SENTINEL,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -29,6 +32,7 @@ import {
   settle,
   standardSuite,
   waitForExtensionActive,
+  waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
@@ -441,6 +445,245 @@ standardSuite('Built-in AI Assistants', (log) => {
     );
 
     log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
+  });
+
+  test('[assisted] clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-011',
+      'Cold paste: verify prior clipboard is restored after Claude Code paste',
+      [
+        '1. Copy the sentinel value to clipboard — select some text and Cmd+C, then type Cmd+V to verify it is on clipboard',
+        '2. Lines 1-2 already selected in cp-011 — press Cmd+R Cmd+L',
+        '3. Wait for the RangeLink to appear in Claude Code chat',
+        '4. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        `5. Click PASS if the pasted content is "${CLIPBOARD_SENTINEL}" (restored), FAIL if RangeLink appears instead`,
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
+  });
+
+  test('[assisted] clipboard-preservation-012: warm paste to Claude Code — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await waitForHuman(
+      'clipboard-preservation-012-warmup',
+      'Warmup: press Cmd+R Cmd+L to send pre-selected lines 1-2, confirm link appears, then Cancel',
+      [
+        '1. Lines 1-2 already selected in cp-012 — press Cmd+R Cmd+L',
+        '2. Confirm the RangeLink appears in Claude Code chat',
+        '3. Press Cancel to continue',
+      ],
+    );
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-012',
+      'Warm paste: verify prior clipboard restored after second send',
+      [
+        '1. Copy the sentinel value to clipboard — select some text and Cmd+C, then type Cmd+V to verify it is on clipboard',
+        '2. Lines 3-4 already selected in cp-012 — press Cmd+R Cmd+L',
+        '3. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        `4. Click PASS if pasted content is "${CLIPBOARD_SENTINEL}" (restored), FAIL otherwise`,
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
+  });
+
+  test('[assisted] clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-013',
+      'Cold paste to Cursor AI: verify prior clipboard is restored',
+      [
+        '1. Copy a known string (e.g., "PRIOR-CURSOR") to clipboard — select it and Cmd+C',
+        '2. Lines 1-2 already selected in cp-013 — press Cmd+R Cmd+L',
+        '3. Wait for the RangeLink to appear in Cursor AI chat',
+        '4. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        '5. Click PASS if the pasted content is "PRIOR-CURSOR" (restored), FAIL if RangeLink appears instead',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
+  });
+
+  test('[assisted] clipboard-preservation-014: warm paste to Cursor AI — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await waitForHuman(
+      'clipboard-preservation-014-warmup',
+      'Warmup: press Cmd+R Cmd+L to send pre-selected lines 1-2, confirm link appears in Cursor AI, then Cancel',
+      [
+        '1. Lines 1-2 already selected in cp-014 — press Cmd+R Cmd+L',
+        '2. Confirm the RangeLink appears in Cursor AI chat',
+        '3. Press Cancel to continue',
+      ],
+    );
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-014',
+      'Warm paste to Cursor AI: verify prior clipboard restored after second send',
+      [
+        '1. Copy a known string (e.g., "PRIOR-CURSOR-WARM") to clipboard — select it and Cmd+C',
+        '2. Lines 3-4 already selected in cp-014 — press Cmd+R Cmd+L',
+        '3. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        '4. Click PASS if pasted content is "PRIOR-CURSOR-WARM" (restored), FAIL otherwise',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
+  });
+
+  test('[assisted] clipboard-preservation-015: cold paste to Copilot Chat — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-015',
+      'Cold paste to GitHub Copilot Chat: verify prior clipboard is restored',
+      [
+        '1. Copy a known string (e.g., "PRIOR-COPILOT") to clipboard — select it and Cmd+C',
+        '2. Lines 1-2 already selected in cp-015 — press Cmd+R Cmd+L',
+        '3. Wait for the RangeLink to appear in Copilot Chat input',
+        '4. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        '5. Click PASS if the pasted content is "PRIOR-COPILOT" (restored), FAIL if RangeLink appears instead',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
+  });
+
+  test('[assisted] clipboard-preservation-016: warm paste to Copilot Chat — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await waitForHuman(
+      'clipboard-preservation-016-warmup',
+      'Warmup: press Cmd+R Cmd+L to send pre-selected lines 1-2, confirm link appears in Copilot Chat, then Cancel',
+      [
+        '1. Lines 1-2 already selected in cp-016 — press Cmd+R Cmd+L',
+        '2. Confirm the RangeLink appears in Copilot Chat input',
+        '3. Press Cancel to continue',
+      ],
+    );
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-016',
+      'Warm paste to GitHub Copilot Chat: verify prior clipboard restored after second send',
+      [
+        '1. Copy a known string (e.g., "PRIOR-COPILOT-WARM") to clipboard — select it and Cmd+C',
+        '2. Lines 3-4 already selected in cp-016 — press Cmd+R Cmd+L',
+        '3. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        '4. Click PASS if pasted content is "PRIOR-COPILOT-WARM" (restored), FAIL otherwise',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
+  });
+
+  test('[assisted] clipboard-preservation-017: failed paste — RangeLink stays on clipboard for manual paste', async () => {
+    const fileUri = createWorkspaceFile('cp-017', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-017',
+      'Failed paste: verify RangeLink stays on clipboard when AI assistant focus/paste throws',
+      [
+        '1. PRECONDITION: Bind a Custom AI assistant named "Dummy AI (Focus-Fail)" that uses a failing focus command',
+        '2. Copy the sentinel value to clipboard — select some text and Cmd+C, then type Cmd+V to verify it is on clipboard',
+        '3. Lines 1-2 already selected in cp-017 — press Cmd+R Cmd+L',
+        '4. The paste should fail (focus command throws)',
+        '5. Open a new editor tab (Cmd+N) and paste (Cmd+V)',
+        `6. Click PASS if the clipboard contains the RangeLink (NOT restored), FAIL if "${CLIPBOARD_SENTINEL}" was restored`,
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass');
+    log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
 });
 

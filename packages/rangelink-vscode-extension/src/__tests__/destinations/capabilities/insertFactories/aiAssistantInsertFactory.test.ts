@@ -12,6 +12,7 @@ describe('AIAssistantInsertFactory', () => {
 
   it('delegates to ideAdapter.pasteClipboardToAiAssistant and returns true on success', async () => {
     const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard');
     const pasteSpy = jest.spyOn(mockAdapter, 'pasteClipboardToAiAssistant').mockResolvedValue(true);
 
     const factory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
@@ -22,10 +23,12 @@ describe('AIAssistantInsertFactory', () => {
     expect(result).toBe(true);
     expect(pasteSpy).toHaveBeenCalledWith();
     expect(mockLogger.warn).not.toHaveBeenCalled();
+    expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 
   it('returns false when pasteClipboardToAiAssistant returns false', async () => {
     const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard');
     jest.spyOn(mockAdapter, 'pasteClipboardToAiAssistant').mockResolvedValue(false);
 
     const factory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
@@ -38,5 +41,6 @@ describe('AIAssistantInsertFactory', () => {
       { fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true },
       'Clipboard paste command failed',
     );
+    expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 });

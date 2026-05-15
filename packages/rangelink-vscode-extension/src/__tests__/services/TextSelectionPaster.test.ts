@@ -70,10 +70,28 @@ describe('TextSelectionPaster', () => {
     mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
       DestinationBehavior.BoundDestination,
     );
+    mockConfigReader.getPaddingMode.mockReturnValue('both');
 
     await paster.pasteSelectedTextToDestination();
 
     expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+    expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+      control: {
+        contentType: 'Text',
+        destinationBehavior: 'bound-destination',
+      },
+      content: {
+        clipboard: ' selected text ',
+        send: ' selected text ',
+        sourceUri: mockDoc.uri,
+      },
+      strategies: {
+        sendFn: expect.any(Function) as unknown,
+        isEligibleFn: expect.any(Function) as unknown,
+      },
+      contentName: expect.any(String) as unknown,
+      fnName: 'pasteSelectedTextToDestination',
+    });
     expect(mockLogger.debug).toHaveBeenCalledWith(
       {
         fn: 'TextSelectionPaster.pasteSelectedTextToDestination',

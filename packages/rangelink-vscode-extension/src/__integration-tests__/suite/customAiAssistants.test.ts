@@ -15,6 +15,7 @@ import {
   settle,
   standardSuite,
   waitForHuman,
+  waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
@@ -142,42 +143,32 @@ standardSuite('Custom AI Assistants', (_log) => {
     );
   });
 
-  test('custom-ai-assistant-015: built-in override registers under built-in kind', () => {
+  test('custom-ai-assistant-015: built-in GitHub Copilot Chat registers as a destination kind', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const overrideRegistration = allLines.find(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('"kind":"github-copilot-chat"'),
-    );
-    assert.ok(
-      overrideRegistration,
-      'Expected override entry (github.copilot-chat extensionId) to register under github-copilot-chat kind',
-    );
-
-    const customAiRegistrations = allLines.filter(
+    const copilotRegistrations = allLines.filter(
       (line) =>
         line.includes('Registering builder for destination') &&
         line.includes('"kind":"github-copilot-chat"'),
     );
     assert.strictEqual(
-      customAiRegistrations.length,
+      copilotRegistrations.length,
       1,
-      `Expected exactly 1 registration for github-copilot-chat (override replaces built-in) but found ${customAiRegistrations.length}`,
+      `Expected exactly 1 registration for github-copilot-chat but found ${copilotRegistrations.length}`,
     );
   });
 
-  test('custom-ai-assistant-016: built-in override does not register a separate custom-ai kind', async () => {
+  test('custom-ai-assistant-016: built-in GitHub Copilot Chat does not register as custom-ai kind', async () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const overrideRegistration = allLines.find(
+    const copilotRegistration = allLines.find(
       (line) =>
         line.includes('Registering builder for destination') &&
         line.includes('"kind":"github-copilot-chat"'),
     );
-    assert.ok(overrideRegistration, 'Expected github-copilot-chat registration log');
+    assert.ok(copilotRegistration, 'Expected github-copilot-chat registration log');
 
     const noSeparateCustomRegistration = allLines.filter(
       (line) =>
@@ -187,7 +178,7 @@ standardSuite('Custom AI Assistants', (_log) => {
     assert.strictEqual(
       noSeparateCustomRegistration.length,
       0,
-      'Override should NOT register as custom-ai:github.copilot-chat — it takes over the built-in kind',
+      'GitHub Copilot Chat should register as built-in kind, not custom-ai: prefixed',
     );
   });
 
@@ -445,14 +436,15 @@ standardSuite('Custom AI Assistants — Paste Flow', (log) => {
     );
     assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log');
 
-    await waitForHuman(
+    const verdict = await waitForHumanVerdict(
       'custom-ai-assistant-012-paste',
-      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link',
+      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link. Click PASS if the RangeLink appears, FAIL otherwise.',
       [
         'Click on the Dummy AI sidebar panel (tier2 textarea).',
         'Press Cmd+V to paste — the RangeLink should appear.',
       ],
     );
+    assert.strictEqual(verdict, 'pass');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -525,14 +517,15 @@ standardSuite('Custom AI Assistants — Paste Flow', (log) => {
     );
     assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log for fallback→focusCommands');
 
-    await waitForHuman(
+    const verdict = await waitForHumanVerdict(
       'custom-ai-assistant-013-paste',
-      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link',
+      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link. Click PASS if the RangeLink appears, FAIL otherwise.',
       [
         'Click on the Dummy AI sidebar panel (tier2 textarea).',
         'Press Cmd+V to paste — the RangeLink should appear.',
       ],
     );
+    assert.strictEqual(verdict, 'pass');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }

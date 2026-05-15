@@ -559,11 +559,10 @@ test_cases:
       - 'Terminal "cbp-001-dest" pre-bound by the test'
     steps:
       - 'Test writes sentinel to clipboard automatically'
-      - 'Click into the test file (cbp-001-...) and select lines 2-4'
-      - 'Press Cmd+R Cmd+L — link appears in terminal "cbp-001-dest"'
-      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+      - 'Test programmatically selects lines 2-4 and invokes R-L'
+      - 'Test asserts clipboard restored to sentinel and terminal buffer contains link'
     expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-002
     labels:
@@ -627,11 +626,10 @@ test_cases:
       - 'Terminal "cbp-005-dest" pre-bound by the test'
     steps:
       - 'Test writes sentinel to clipboard automatically'
-      - 'Click back into the test file, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L — link appears in terminal "cbp-005-dest"'
-      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+      - 'Test programmatically selects lines 2-3 and invokes R-L'
+      - 'Test asserts clipboard restored to sentinel and terminal buffer contains link'
     expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-006
     labels:
@@ -718,6 +716,149 @@ test_cases:
     expected_result: 'Clipboard contains the generated RangeLink (not CLIPBOARD_SENTINEL). isClipboardRestorationApplicable returns false because getUserInstruction(Failure) is defined. The "Paste manually" warning toast was shown.'
     command_to_run: 'pnpm test:release:grep "clipboard-preservation-010"'
     automated: assisted
+
+  - id: clipboard-preservation-011
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Cold paste to Claude Code: prior clipboard content is restored after paste'
+    preconditions:
+      - 'Claude Code bound as destination (not already open)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists (e.g., "prior-content")'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Select lines 1-2 in a test file and press R-L'
+      - 'After the RangeLink appears in Claude Code chat, paste (Cmd+V) into a text editor'
+      - 'Click PASS if the pasted content is "prior-content" (restored), FAIL if RangeLink text appears instead'
+    expected_result: 'Prior clipboard content is restored after the paste operation completes and CLIPBOARD_POST_PASTE_DELAY_MS elapses.'
+    automated: assisted
+
+  - id: clipboard-preservation-012
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Warm paste to Claude Code: prior clipboard content is restored (panel already open)'
+    preconditions:
+      - 'Claude Code bound and panel is already open (warm)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Ensure Claude Code panel is visible'
+      - 'Select lines 1-2 and press R-L'
+      - 'After paste, paste (Cmd+V) into a text editor'
+      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+    expected_result: 'Single clipboard write. Prior content restored after CLIPBOARD_POST_PASTE_DELAY_MS without cold-start refocus overhead.'
+    automated: assisted
+
+  - id: clipboard-preservation-013
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Cold paste to Cursor AI: prior clipboard content is restored after paste'
+    preconditions:
+      - 'Cursor AI bound as destination (not already open)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Select lines 1-2 in a test file and press R-L'
+      - 'After paste, paste (Cmd+V) into a text editor'
+      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+    expected_result: 'Prior clipboard content is restored after paste completes.'
+    automated: assisted
+
+  - id: clipboard-preservation-014
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Warm paste to Cursor AI: prior clipboard content is restored (panel already open)'
+    preconditions:
+      - 'Cursor AI bound and panel is already open (warm)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Ensure Cursor AI panel is visible'
+      - 'Select lines and press R-L'
+      - 'After paste, paste (Cmd+V) into a text editor'
+      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+    expected_result: 'Prior clipboard content restored after warm paste.'
+    automated: assisted
+
+  - id: clipboard-preservation-015
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Cold paste to GitHub Copilot Chat: prior clipboard content is restored after paste'
+    preconditions:
+      - 'GitHub Copilot Chat bound as destination (not already open)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Select lines 1-2 in a test file and press R-L'
+      - 'After paste, paste (Cmd+V) into a text editor'
+      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+    expected_result: 'Prior clipboard content is restored after paste completes.'
+    automated: assisted
+
+  - id: clipboard-preservation-016
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Warm paste to GitHub Copilot Chat: prior clipboard content is restored (panel already open)'
+    preconditions:
+      - 'GitHub Copilot Chat bound and panel is already open (warm)'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+      - 'Prior clipboard content exists'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Ensure Copilot Chat panel is visible'
+      - 'Select lines and press R-L'
+      - 'After paste, paste (Cmd+V) into a text editor'
+      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+    expected_result: 'Prior clipboard content restored after warm paste.'
+    automated: assisted
+
+  - id: clipboard-preservation-017
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'AI assistant focus/paste command throws: RangeLink stays on clipboard for manual paste'
+    preconditions:
+      - 'Custom AI assistant "Dummy AI (Focus-Fail)" bound'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Select lines and press R-L targeting the failing assistant'
+      - 'The focus command throws — extension logs paste failure'
+      - 'Paste (Cmd+V) into a text editor'
+      - 'Click PASS if the clipboard contains the RangeLink (NOT restored), FAIL if "prior-content" was restored'
+    expected_result: 'RangeLink remains on clipboard (prior content NOT restored). isClipboardRestorationApplicable returns false — user must paste manually.'
+    automated: assisted
+
+  - id: clipboard-preservation-018
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Two rapid R-L operations to the same AI assistant — last write wins, prior content restored once'
+    preconditions:
+      - 'Claude Code bound as destination'
+      - 'rangelink.clipboard.preserve = "always" (default)'
+    steps:
+      - 'Copy "prior-content" to clipboard'
+      - 'Select lines 1-2 and press R-L (first send)'
+      - 'Immediately select lines 3-4 and press R-L (second send) without waiting for first to complete'
+      - 'After both pastes, paste (Cmd+V) into a text editor'
+      - 'Verify clipboard state'
+    expected_result: 'Both RangeLinks are delivered. Prior clipboard content is restored after the last operation completes. No clipboard corruption from overlapping writes.'
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
@@ -2437,54 +2578,26 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
     preconditions:
-      - 'A text editor is bound as destination'
+      - 'A terminal is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
       - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
-      - 'Press R-V or use Send Selected Text to send it to the bound editor destination'
+      - 'Press R-V to send it to the bound destination'
     expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
-    automated: true
-
-  - id: smart-padding-002
-    labels:
-      - clipboard
-    feature: 'Smart Padding'
-    scenario: 'Simple text with pasteContent=both adds leading and trailing space'
-    preconditions:
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "both"'
-    steps:
-      - 'Select text (e.g., "hello world") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives " hello world " — a leading space and trailing space are added by smart padding.'
     automated: true
 
   - id: smart-padding-003
     labels:
       - clipboard
     feature: 'Smart Padding'
-    scenario: 'Multiline selection sent to editor destination'
+    scenario: 'Multiline selection sent to destination'
     preconditions:
-      - 'A text editor is bound as destination'
+      - 'A terminal is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
       - 'Select multiple lines in an editor'
-      - 'Press R-V to send it to the bound editor destination'
+      - 'Press R-V to send it to the bound destination'
     expected_result: 'All selected lines arrive at the destination intact with no padding (pasteContent=none).'
-    automated: true
-
-  - id: smart-padding-004
-    labels:
-      - clipboard
-    feature: 'Smart Padding'
-    scenario: 'pasteContent=none sends exact text without padding'
-    preconditions:
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "none" (default)'
-    steps:
-      - 'Select text in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives the exact selected text with no added spaces.'
     automated: true
 
   - id: smart-padding-005
@@ -2493,11 +2606,11 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'pasteContent=before adds leading space only'
     preconditions:
-      - 'A text editor is bound as destination'
+      - 'A terminal is bound as destination'
       - 'smartPadding.pasteContent set to "before"'
     steps:
       - 'Select text (e.g., "hello") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
+      - 'Press R-V to send it to the bound destination'
     expected_result: 'The destination receives " hello" — only a leading space is added.'
     automated: true
 
@@ -2507,12 +2620,88 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'pasteContent=after adds trailing space only'
     preconditions:
-      - 'A text editor is bound as destination'
+      - 'A terminal is bound as destination'
       - 'smartPadding.pasteContent set to "after"'
     steps:
       - 'Select text (e.g., "hello") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
+      - 'Press R-V to send it to the bound destination'
     expected_result: 'The destination receives "hello " — only a trailing space is added.'
+    automated: true
+
+  - id: smart-padding-007
+    labels:
+      - clipboard
+    feature: 'Smart Padding — Single-Write Architecture'
+    scenario: 'pasteContent=both: text selection sent to destination has leading and trailing space'
+    preconditions:
+      - 'smartPadding.pasteContent set to "both"'
+      - 'A terminal is bound as destination'
+    steps:
+      - 'Select text "hello world" in the source editor'
+      - 'Press R-V to send it to the bound destination'
+      - 'Verify destination receives " hello world " — both leading and trailing spaces'
+    expected_result: 'The destination receives " hello world " — both leading and trailing spaces applied by applySmartPadding upstream.'
+    automated: true
+
+  - id: smart-padding-008
+    labels:
+      - clipboard
+    feature: 'Smart Padding — Single-Write Architecture'
+    scenario: 'pasteFilePath=both: file path sent to terminal has leading and trailing space'
+    preconditions:
+      - 'smartPadding.pasteFilePath set to "both"'
+      - 'A terminal is bound as destination'
+    steps:
+      - 'Open a file in the editor'
+      - 'Press R-F to send its path to the bound terminal'
+      - 'Verify terminal receives the file path with leading and trailing spaces'
+    expected_result: 'The terminal receives the padded file path with leading and trailing spaces.'
+    automated: true
+
+  - id: smart-padding-009
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Smart Padding — Single-Write Architecture'
+    scenario: 'pasteLink=both: RangeLink sent to AI assistant has leading and trailing space'
+    preconditions:
+      - 'smartPadding.pasteLink set to "both"'
+      - 'Claude Code or another AI assistant is bound as destination'
+    steps:
+      - 'Select lines 1-2 in a test file'
+      - 'Press R-L to generate and send a RangeLink to the AI assistant'
+      - 'Click PASS if the chat input shows the link with leading and trailing spaces, FAIL otherwise'
+    expected_result: 'The AI assistant chat input contains the RangeLink with leading and trailing spaces applied by applySmartPadding.'
+    automated: assisted
+
+  - id: smart-padding-010
+    labels:
+      - clipboard
+    feature: 'Smart Padding — Single-Write Architecture'
+    scenario: 'pasteContent=both: terminal selection sent to editor has padding applied'
+    preconditions:
+      - 'smartPadding.pasteContent set to "both"'
+      - 'A text editor is bound as destination'
+    steps:
+      - 'In a terminal, select some text using the mouse and press R-C to copy'
+      - 'Press R-V to send the terminal selection to the bound editor'
+      - 'Click PASS if the editor receives padded content, FAIL otherwise'
+    expected_result: 'The editor receives the terminal selection with leading and trailing spaces applied by applySmartPadding.'
+    automated: assisted
+
+  - id: smart-padding-011
+    labels:
+      - clipboard
+    feature: 'Smart Padding — Single-Write Architecture'
+    scenario: 'pasteContent=none: no padding applied when setting is off'
+    preconditions:
+      - 'smartPadding.pasteContent set to "none"'
+      - 'A terminal is bound as destination'
+    steps:
+      - 'Select text "hello" in the source editor'
+      - 'Press R-V to send it to the bound destination'
+      - 'Verify destination receives exactly "hello" — no padding applied'
+    expected_result: 'The destination receives "hello" without any added spaces — applySmartPadding returns text unchanged when mode is none.'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -3001,27 +3190,27 @@ test_cases:
   - id: custom-ai-assistant-015
     labels:
       - clipboard
-    feature: 'Custom AI Assistants — Built-in Override'
-    scenario: 'custom config with built-in extensionId registers under the built-in kind'
+    feature: 'Built-in AI Assistants'
+    scenario: 'GitHub Copilot Chat registers as a built-in destination kind'
     preconditions:
-      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+      - 'No user override for github-copilot-chat in rangelink.customAiAssistants'
     steps:
-      - 'Extension activates with override config'
+      - 'Extension activates'
       - 'Check activation logs for registration of github-copilot-chat kind'
-    expected_result: 'Exactly one registration for github-copilot-chat kind (override replaces built-in); no separate custom-ai: registration'
+    expected_result: 'Exactly one registration for github-copilot-chat kind as a built-in destination'
     automated: true
 
   - id: custom-ai-assistant-016
     labels:
       - clipboard
-    feature: 'Custom AI Assistants — Built-in Override'
-    scenario: 'built-in override does not register a separate custom-ai: kind'
+    feature: 'Built-in AI Assistants'
+    scenario: 'GitHub Copilot Chat does not register as custom-ai: prefixed kind'
     preconditions:
-      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+      - 'No user override for github-copilot-chat in rangelink.customAiAssistants'
     steps:
-      - 'Extension activates with override config'
+      - 'Extension activates'
       - 'Check activation logs for absence of custom-ai:github.copilot-chat registration'
-    expected_result: 'No custom-ai:github.copilot-chat registration found — override takes over the built-in kind instead'
+    expected_result: 'No custom-ai:github.copilot-chat registration found — registers as built-in kind only'
     automated: true
 
   - id: custom-ai-assistant-017
@@ -3044,6 +3233,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: claude-code-001
+    labels:
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'Claude Code Chat appears in destination picker when extension is active'
     preconditions:
@@ -3059,6 +3250,7 @@ test_cases:
   - id: claude-code-002
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'Binding to Claude Code Chat and sending a link delivers content to chat'
     preconditions:
@@ -3132,6 +3324,7 @@ test_cases:
   - id: claude-code-004
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'Cold panel paste verification — content arrives in Claude Code chat input after a single R-L since bind'
     preconditions:
@@ -3149,6 +3342,7 @@ test_cases:
   - id: claude-code-005
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'Warm panel paste verification — content arrives in Claude Code chat input on second R-L without cold-start refocus signals'
     preconditions:
