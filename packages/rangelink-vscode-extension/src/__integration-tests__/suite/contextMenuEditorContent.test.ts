@@ -11,6 +11,7 @@ import {
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   cleanupFiles,
+  clearSelection,
   createAndBindCapturingTerminal,
   createAndOpenFile,
   getLogCapture,
@@ -434,7 +435,7 @@ standardSuite('Context Menus — Editor Content', (log) => {
     await createAndBindCapturingTerminal(terminalName);
 
     const editor = await openEditor(uri);
-    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+    clearSelection(editor);
     await settle();
 
     const logCapture = getLogCapture();

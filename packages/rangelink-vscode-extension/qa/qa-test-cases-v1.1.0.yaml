@@ -894,7 +894,7 @@ test_cases:
       - 'Press Cmd+R Cmd+Shift+F'
       - 'Observe terminal'
     expected_result: 'Terminal receives full absolute path (e.g. /Users/you/project/src/utils/helper.ts).'
-    automated: assisted
+    automated: true
 
   - id: send-file-path-003
     labels:
@@ -926,7 +926,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal output'
     expected_result: "Terminal receives 'src/my folder/helper.ts' — single-quoted."
-    automated: assisted
+    automated: true
 
   - id: send-file-path-005
     labels:
@@ -941,7 +941,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal'
     expected_result: "Terminal receives 'src/utils (v2)/helper.ts' — single-quoted."
-    automated: assisted
+    automated: true
 
   - id: send-file-path-006
     labels:
@@ -1013,7 +1013,7 @@ test_cases:
       - 'Type Send Current File Path, press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives workspace-relative path. Same as Cmd+R Cmd+F.'
-    automated: assisted
+    automated: true
 
   - id: send-file-path-011
     labels:
@@ -1027,7 +1027,7 @@ test_cases:
       - 'Type Send Current File Path (Absolute), press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives absolute path. Same as Cmd+R Cmd+Shift+F.'
-    automated: assisted
+    automated: true
 
   - id: send-file-path-012
     labels:
@@ -1042,7 +1042,7 @@ test_cases:
       - 'Observe that the bound editor is brought to the foreground'
       - 'Confirm file path appears in the bound editor at cursor position'
     expected_result: 'Bound editor is surfaced automatically and receives the file path. Source editor had focus; paste still landed in bound editor.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 7 — Context Menu Integrations
@@ -2329,7 +2329,7 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe file B'
     expected_result: 'RangeLink text inserted at cursor in file B. Success toast confirms send.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-l-003
     labels:
@@ -2374,7 +2374,7 @@ test_cases:
       - 'Type Send RangeLink and press Enter on RangeLink: Send RangeLink'
       - 'Observe terminal'
     expected_result: 'Terminal receives the RangeLink. Identical to R-L keybinding.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-c-002
     labels:
@@ -2390,7 +2390,7 @@ test_cases:
       - 'Observe terminal — nothing should arrive'
       - 'Press Cmd+V in any text field'
     expected_result: 'Terminal received nothing. Clipboard contains the RangeLink.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-l-005
     labels:

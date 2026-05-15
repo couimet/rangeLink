@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
 } from '../../constants/commandIds';
 import {
@@ -63,7 +64,7 @@ standardSuite('Send File Path', (log) => {
     log('✓ R-F sends workspace-relative path to terminal');
   });
 
-  test('[assisted] send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
+  test('send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createWorkspaceFile('sfp-002', 'content\n');
@@ -75,16 +76,7 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-002');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-002',
-      'Cmd+R Cmd+Shift+F sends absolute path to bound terminal',
-      [
-        'Focus the file open in the editor.',
-        'Press Cmd+R Cmd+Shift+F (Send File Path Absolute).',
-        'Confirm terminal "sfp-test" receives the full absolute path.',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
     await settle();
 
     const absolutePath = fileUri.fsPath;
@@ -94,11 +86,11 @@ standardSuite('Send File Path', (log) => {
       uriSource: 'command-palette',
       filePath: absolutePath,
     });
-    assertTerminalBufferContains(capturing.getCapturedText(), absolutePath);
-    log('✓ Cmd+R Cmd+Shift+F sends absolute path to terminal');
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${absolutePath} `);
+    log('✓ Cmd+R Cmd+Shift+F sends exact absolute path to terminal');
   });
 
-  test('[assisted] send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
+  test('send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
@@ -110,19 +102,16 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-004');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-004',
-      'R-F on file with spaces in path → terminal receives single-quoted path',
-      [
-        'Focus the file open in the editor.',
-        "Press Cmd+R Cmd+F — terminal should receive the path wrapped in single quotes (e.g. '__rl-test-my folder.ts').",
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-004');
+    assertFilePathLogged(lines, {
+      pathFormat: 'workspace-relative',
+      uriSource: 'command-palette',
+      filePath: relativePath,
+    });
     const quotedLog = lines.find(
       (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
     );
@@ -130,11 +119,11 @@ standardSuite('Send File Path', (log) => {
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted before terminal send',
     );
-    assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` '${relativePath}' `);
     log('✓ Path with spaces auto-quoted for terminal destination');
   });
 
-  test('[assisted] send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
+  test('send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
@@ -146,19 +135,16 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-005');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-005',
-      'R-F on file with parentheses in path → terminal receives single-quoted path',
-      [
-        'Focus the file open in the editor.',
-        "Press Cmd+R Cmd+F — terminal should receive the path wrapped in single quotes (e.g. '__rl-test-utils (v2).ts').",
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-005');
+    assertFilePathLogged(lines, {
+      pathFormat: 'workspace-relative',
+      uriSource: 'command-palette',
+      filePath: relativePath,
+    });
     const quotedLog = lines.find(
       (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
     );
@@ -166,7 +152,7 @@ standardSuite('Send File Path', (log) => {
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with parentheses must be quoted before terminal send',
     );
-    assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` '${relativePath}' `);
     log('✓ Path with parentheses auto-quoted for terminal destination');
   });
 
@@ -186,7 +172,10 @@ standardSuite('Send File Path', (log) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    await openEditor(sourceUri, vscode.ViewColumn.One);
+    await vscode.window.showTextDocument(
+      await vscode.workspace.openTextDocument(sourceUri),
+      vscode.ViewColumn.Beside,
+    );
     await settle();
 
     const logCapture = getLogCapture();
@@ -339,7 +328,7 @@ standardSuite('Send File Path', (log) => {
     log('✓ Unbound R-F opens picker; path sent after selection');
   });
 
-  test('[assisted] send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
+  test('send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createWorkspaceFile('sfp-010', 'content\n');
@@ -351,17 +340,7 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-010');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-010',
-      'Command Palette "Send Current File Path" sends workspace-relative path',
-      [
-        'Focus the file open in the editor.',
-        'Open Command Palette (Cmd+Shift+P).',
-        'Type "Send Current File Path" and press Enter.',
-        'Confirm terminal "sfp-test" receives the workspace-relative path (not absolute).',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
@@ -375,7 +354,7 @@ standardSuite('Send File Path', (log) => {
     log('✓ Command Palette "Send Current File Path" sends workspace-relative path');
   });
 
-  test('[assisted] send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
+  test('send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createWorkspaceFile('sfp-011', 'content\n');
@@ -387,17 +366,7 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-011');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-011',
-      'Command Palette "Send Current File Path (Absolute)" sends absolute path',
-      [
-        'Focus the file open in the editor.',
-        'Open Command Palette (Cmd+Shift+P).',
-        'Type "Send Current File Path (Absolute)" and press Enter.',
-        'Confirm terminal "sfp-test" receives the full absolute path.',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
     await settle();
 
     const absolutePath = fileUri.fsPath;
@@ -407,11 +376,11 @@ standardSuite('Send File Path', (log) => {
       uriSource: 'command-palette',
       filePath: absolutePath,
     });
-    assertTerminalBufferContains(capturing.getCapturedText(), absolutePath);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${absolutePath} `);
     log('✓ Command Palette "Send Current File Path (Absolute)" sends absolute path');
   });
 
-  test('[assisted] send-file-path-012: bound text editor hidden behind another tab — paste still lands in bound editor', async () => {
+  test('send-file-path-012: bound text editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = createWorkspaceFile('sfp-012-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
@@ -439,16 +408,7 @@ standardSuite('Send File Path', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-012');
 
-    await waitForHuman(
-      'send-file-path-012',
-      'R-F with bound editor hidden behind another tab in same column — paste still lands in bound editor',
-      [
-        'The source file is active (sfp-012-source). The bound editor (sfp-012-dest) is hidden behind it in the same column.',
-        'Press Cmd+R Cmd+F.',
-        'Observe that the bound editor is brought to the foreground and receives the file path.',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await settle();
 
     assert.strictEqual(
@@ -465,11 +425,12 @@ standardSuite('Send File Path', (log) => {
       filePath: relativePath,
     });
     const destDoc = await vscode.workspace.openTextDocument(destUri);
-    const content = destDoc.getText();
-    assert.ok(
-      content.includes(`${ANCHOR_START}\n ${relativePath} ${ANCHOR_END}`),
-      `Expected file path inserted in bound editor at cursor position, got: ${JSON.stringify(content)}`,
+    const expectedContent = `${ANCHOR_START}\n ${relativePath} ${ANCHOR_END}\n`;
+    assert.strictEqual(
+      destDoc.getText(),
+      expectedContent,
+      `Expected exact dest content, got: ${JSON.stringify(destDoc.getText())}`,
     );
-    log('✓ Bound editor brought to foreground and received file path');
+    log('✓ Bound editor brought to foreground and received exact file path');
   });
 });

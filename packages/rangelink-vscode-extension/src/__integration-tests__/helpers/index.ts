@@ -14,6 +14,7 @@ export {
 } from './clipboardHelpers';
 export {
   clearEditorSelection,
+  clearSelection,
   openUntitledDoc,
   selectAll,
   waitForActiveEditor,

@@ -17,9 +17,11 @@ import {
   assertNoToastLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
+  assertTerminalBufferEquals,
   assertToastLogged,
   type CapturingTerminal,
   cleanupFiles,
+  clearSelection,
   createAndBindCapturingTerminal,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
@@ -45,7 +47,7 @@ standardSuite('Core Send Commands', (log) => {
     await settle();
   });
 
-  test('[assisted] core-send-commands-r-l-002: R-L sends RangeLink to bound text editor destination', async () => {
+  test('core-send-commands-r-l-002: R-L sends RangeLink to bound text editor destination', async () => {
     const srcUri = createWorkspaceFile(
       'csc-r-l-002-src',
       'line 1\nline 2\nline 3\nline 4\nline 5\n',
@@ -54,12 +56,13 @@ standardSuite('Core Send Commands', (log) => {
     tmpFileUris.push(srcUri, destUri);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
-    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    const destEditor = await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    clearSelection(destEditor);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
     const srcDoc = await vscode.workspace.openTextDocument(srcUri);
-    const srcEditor = await vscode.window.showTextDocument(srcDoc, vscode.ViewColumn.One);
+    const srcEditor = await vscode.window.showTextDocument(srcDoc, vscode.ViewColumn.Beside);
     srcEditor.selection = new vscode.Selection(
       new vscode.Position(1, 0),
       new vscode.Position(3, 0),
@@ -69,25 +72,26 @@ standardSuite('Core Send Commands', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-002');
 
-    await waitForHuman(
-      'core-send-commands-r-l-002',
-      'Lines 2-3 selected in "csc-r-l-002-src". "csc-r-l-002-dest" is bound as text editor destination.',
-      ['1. Press Cmd+R Cmd+L'],
-    );
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-r-l-002');
 
     const updatedDestDoc = await vscode.workspace.openTextDocument(destUri);
     const destText = updatedDestDoc.getText();
-    assert.ok(
-      destText.includes('#L'),
-      `Expected RangeLink inserted into dest editor, got: ${JSON.stringify(destText)}`,
+    const relPath = vscode.workspace.asRelativePath(srcUri);
+    const expectedContent = ` ${relPath}#L2-L3 `;
+    assert.strictEqual(
+      destText,
+      expectedContent,
+      `Expected dest editor to contain exactly "${expectedContent}", got: ${JSON.stringify(destText)}`,
     );
 
-    const lines = logCapture.getLinesSince('before-r-l-002');
     const destBasename = path.basename(destUri.fsPath);
     assertStatusBarMsgLogged(lines, {
       message: `✓ RangeLink: RangeLink copied to clipboard & sent to Text Editor ("${destBasename}")`,
     });
-    log('✓ R-L inserted RangeLink into bound text editor destination');
+    log('✓ R-L sent exact RangeLink to bound text editor destination');
   });
 
   test('[assisted] core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
@@ -167,7 +171,7 @@ standardSuite('Core Send Commands', (log) => {
     log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
 
-  test('[assisted] core-send-commands-r-l-004: Command Palette "Send RangeLink" behaves identically to R-L keybinding', async () => {
+  test('core-send-commands-r-l-004: Command Palette "Send RangeLink" behaves identically to R-L keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
@@ -180,21 +184,20 @@ standardSuite('Core Send Commands', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-004');
 
-    await waitForHuman(
-      'core-send-commands-r-l-004',
-      '"csc-r-l-004-dest" is bound. Lines 1-2 selected.',
-      ['1. Press Cmd+Shift+P → "RangeLink: Send RangeLink"'],
-    );
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
 
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+    const relPath = vscode.workspace.asRelativePath(fileUri);
+    const expectedContent = ` ${relPath}#L1-L2 `;
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedContent);
 
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-l-004'), {
       message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-r-l-004-dest")',
     });
-    log('✓ Command Palette "Send RangeLink" delivered link to bound terminal destination');
+    log('✓ Command Palette "Send RangeLink" delivered exact link to bound terminal destination');
   });
 
-  test('[assisted] core-send-commands-r-c-002: Command Palette "Copy RangeLink" behaves identically to R-C keybinding', async () => {
+  test('core-send-commands-r-c-002: Command Palette "Copy RangeLink" behaves identically to R-C keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
@@ -209,16 +212,16 @@ standardSuite('Core Send Commands', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-r-c-002');
 
-    await waitForHuman(
-      'core-send-commands-r-c-002',
-      '"csc-r-c-002-dest" is bound but should NOT receive anything. Lines 1-2 selected.',
-      ['1. Press Cmd+Shift+P → "RangeLink: Copy RangeLink"'],
-    );
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await settle();
 
+    const relPath = vscode.workspace.asRelativePath(fileUri);
+    const expectedContent = `${relPath}#L1-L2`;
     const clipboard = await assertClipboardChanged('R-C palette should write link to clipboard');
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected line-range link in clipboard, got: ${JSON.stringify(clipboard)}`,
+    assert.strictEqual(
+      clipboard,
+      expectedContent,
+      `Expected exact link on clipboard, got: ${JSON.stringify(clipboard)}`,
     );
 
     assert.strictEqual(
@@ -229,7 +232,7 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-002'), {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
-    log('✓ Command Palette "Copy RangeLink" wrote link to clipboard; terminal received nothing');
+    log('✓ Command Palette "Copy RangeLink" wrote exact link to clipboard; terminal received nothing');
   });
 
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {

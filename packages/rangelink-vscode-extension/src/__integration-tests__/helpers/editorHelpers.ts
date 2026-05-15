@@ -20,6 +20,10 @@ export const waitForActiveEditor = async (
   return false;
 };
 
+export const clearSelection = (editor: vscode.TextEditor): void => {
+  editor.selection = new vscode.Selection(0, 0, 0, 0);
+};
+
 /**
  * Collapse the active editor's selection to position (0,0).
  * Call before navigateViaHandleLinkClick to guarantee the navigation's
@@ -29,8 +33,7 @@ export const waitForActiveEditor = async (
 export const clearEditorSelection = async (): Promise<void> => {
   const editor = vscode.window.activeTextEditor;
   if (editor !== undefined) {
-    const origin = new vscode.Position(0, 0);
-    editor.selection = new vscode.Selection(origin, origin);
+    clearSelection(editor);
     await settle();
   }
 };
