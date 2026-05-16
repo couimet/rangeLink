@@ -733,7 +733,7 @@ test_cases:
       - 'After the RangeLink appears in Claude Code chat, paste (Cmd+V) into a text editor'
       - 'Click PASS if the pasted content is "prior-content" (restored), FAIL if RangeLink text appears instead'
     expected_result: 'Prior clipboard content is restored after the paste operation completes and CLIPBOARD_POST_PASTE_DELAY_MS elapses.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-012
     labels:
@@ -752,7 +752,7 @@ test_cases:
       - 'After paste, paste (Cmd+V) into a text editor'
       - 'Click PASS if "prior-content" is restored, FAIL otherwise'
     expected_result: 'Single clipboard write. Prior content restored after CLIPBOARD_POST_PASTE_DELAY_MS without cold-start refocus overhead.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-013
     labels:
@@ -770,7 +770,7 @@ test_cases:
       - 'After paste, paste (Cmd+V) into a text editor'
       - 'Click PASS if "prior-content" is restored, FAIL otherwise'
     expected_result: 'Prior clipboard content is restored after paste completes.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-014
     labels:
@@ -789,7 +789,7 @@ test_cases:
       - 'After paste, paste (Cmd+V) into a text editor'
       - 'Click PASS if "prior-content" is restored, FAIL otherwise'
     expected_result: 'Prior clipboard content restored after warm paste.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-015
     labels:
@@ -806,7 +806,7 @@ test_cases:
       - 'After paste, paste (Cmd+V) into a text editor'
       - 'Click PASS if "prior-content" is restored, FAIL otherwise'
     expected_result: 'Prior clipboard content is restored after paste completes.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-016
     labels:
@@ -824,7 +824,7 @@ test_cases:
       - 'After paste, paste (Cmd+V) into a text editor'
       - 'Click PASS if "prior-content" is restored, FAIL otherwise'
     expected_result: 'Prior clipboard content restored after warm paste.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-017
     labels:
@@ -832,14 +832,13 @@ test_cases:
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'AI assistant focus/paste command throws: RangeLink stays on clipboard for manual paste'
     preconditions:
-      - 'Custom AI assistant "Dummy AI (Focus-Fail)" bound'
+      - 'Custom AI assistant "Dummy AI (Focus-Fail)" bound via R-D picker'
       - 'rangelink.clipboard.preserve = "always" (default)'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Select lines and press R-L targeting the failing assistant'
-      - 'The focus command throws — extension logs paste failure'
-      - 'Paste (Cmd+V) into a text editor'
-      - 'Click PASS if the clipboard contains the RangeLink (NOT restored), FAIL if "prior-content" was restored'
+      - 'Human binds "Dummy AI (Focus-Fail)" via R-D picker'
+      - 'Sentinel written, selection set, R-L dispatched programmatically'
+      - 'Focus command throws — extension logs paste failure'
+      - 'assertClipboardChanged + #L check verify RangeLink remained on clipboard'
     expected_result: 'RangeLink remains on clipboard (prior content NOT restored). isClipboardRestorationApplicable returns false — user must paste manually.'
     automated: assisted
 

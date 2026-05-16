@@ -184,20 +184,22 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     tmpFileUris.push(fileUri);
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
-    const expectedLink = `${relPath}#L1-L3`;
+    const expectedLink = `${relPath}#L1C1-L3C7`;
 
-    await openEditor(fileUri);
+    const editor = await openEditor(fileUri);
     await writeClipboardSentinel();
+
+    editor.selection = new vscode.Selection(0, 0, 2, 6);
+    await settle();
 
     await waitForHuman(
       'clipboard-preservation-004',
-      `clipboard.preserve="always". Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)"; click back into the cbp-004 file, select exactly lines 1-3, press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      `Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)", click back into the editor, press Cmd+R Cmd+L`,
       [
         '1. Press Cmd+R Cmd+D → select "Dummy AI (Tier 1)" from the picker',
-        `2. Click back into the test file (${relPath})`,
-        '3. Select exactly lines 1-3 (click line 1, shift-click end of line 3)',
-        '4. Press Cmd+R Cmd+L — the link should appear in Dummy AI Tier 1 textarea',
-        '5. Press Cancel to continue (assertions happen automatically)',
+        '2. Click back into the editor (lines 1-3 are pre-selected)',
+        '3. Press Cmd+R Cmd+L — the link should appear in Dummy AI Tier 1 textarea',
+        '4. Press Cancel to continue (assertions happen automatically)',
       ],
     );
 
