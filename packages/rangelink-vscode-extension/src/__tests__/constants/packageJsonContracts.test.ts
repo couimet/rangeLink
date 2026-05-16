@@ -804,8 +804,28 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(19);
+    it('has the expected set of configuration properties', () => {
+      expect(Object.keys(properties).sort()).toStrictEqual([
+        'rangelink.clipboard.preserve',
+        'rangelink.customAiAssistants',
+        'rangelink.delimiterHash',
+        'rangelink.delimiterLine',
+        'rangelink.delimiterPosition',
+        'rangelink.delimiterRange',
+        'rangelink.destinations.claudeCode.coldRefocusIntervalMs',
+        'rangelink.destinations.claudeCode.coldStartDelayMs',
+        'rangelink.destinations.gemini.coldRefocusIntervalMs',
+        'rangelink.destinations.gemini.coldStartDelayMs',
+        'rangelink.features.bookmarks.enabled',
+        'rangelink.navigation.showClampingWarning',
+        'rangelink.navigation.showNavigatedToast',
+        'rangelink.smartPadding.pasteBookmark',
+        'rangelink.smartPadding.pasteContent',
+        'rangelink.smartPadding.pasteFilePath',
+        'rangelink.smartPadding.pasteLink',
+        'rangelink.terminalPicker.maxInline',
+        'rangelink.warnOnDirtyBuffer',
+      ]);
     });
   });
 
