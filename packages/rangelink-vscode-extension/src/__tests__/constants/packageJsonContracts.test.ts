@@ -778,6 +778,30 @@ describe('package.json contributions', () => {
           },
         );
       });
+
+      it('rangelink.destinations.gemini.coldStartDelayMs', () => {
+        expect(properties['rangelink.destinations.gemini.coldStartDelayMs']).toStrictEqual({
+          type: 'number',
+          default: 2500,
+          minimum: 500,
+          maximum: 15000,
+          description:
+            'Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use, sending periodic refocus signals. Increase on slower machines if automatic paste does not work. Must be greater than coldRefocusIntervalMs.',
+          title: 'Gemini Code Assist Cold Start Delay',
+        });
+      });
+
+      it('rangelink.destinations.gemini.coldRefocusIntervalMs', () => {
+        expect(properties['rangelink.destinations.gemini.coldRefocusIntervalMs']).toStrictEqual({
+          type: 'number',
+          default: 300,
+          minimum: 100,
+          maximum: 5000,
+          description:
+            'Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs.',
+          title: 'Gemini Code Assist Cold Re-focus Interval',
+        });
+      });
     });
 
     it('has the expected number of configuration properties', () => {

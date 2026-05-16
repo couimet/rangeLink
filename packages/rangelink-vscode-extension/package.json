@@ -559,14 +559,16 @@
           "default": 2500,
           "minimum": 500,
           "maximum": 15000,
-          "description": "Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use, sending periodic refocus signals. Increase on slower machines if automatic paste does not work. Must be greater than coldRefocusIntervalMs."
+          "description": "Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use, sending periodic refocus signals. Increase on slower machines if automatic paste does not work. Must be greater than coldRefocusIntervalMs.",
+          "title": "Gemini Code Assist Cold Start Delay"
         },
         "rangelink.destinations.gemini.coldRefocusIntervalMs": {
           "type": "number",
           "default": 300,
           "minimum": 100,
           "maximum": 5000,
-          "description": "Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs."
+          "description": "Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs.",
+          "title": "Gemini Code Assist Cold Re-focus Interval"
         },
         "rangelink.features.bookmarks.enabled": {
           "type": "boolean",

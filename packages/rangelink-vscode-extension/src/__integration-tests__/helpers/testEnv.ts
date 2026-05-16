@@ -8,6 +8,7 @@ export const SETTLE_MS = 500;
 export const TERMINAL_READY_MS = 1500;
 export const POLL_INTERVAL_MS = 100;
 export const POLL_TIMEOUT_MS = 5000;
+export const WAIT_FOR_EXTENSION_ACTIVE_TIMEOUT_MS = 30000;
 
 export const getWorkspaceRoot = (): string => {
   const folder = vscode.workspace.workspaceFolders?.[0];
@@ -33,7 +34,7 @@ export const settle = (ms: number = SETTLE_MS): Promise<void> =>
 export const waitForExtensionActive = async (
   extensionId: string,
   log: (msg: string) => void,
-  timeoutMs: number = 30000,
+  timeoutMs: number = WAIT_FOR_EXTENSION_ACTIVE_TIMEOUT_MS,
 ): Promise<void> => {
   const start = Date.now();
   let lastState = '';

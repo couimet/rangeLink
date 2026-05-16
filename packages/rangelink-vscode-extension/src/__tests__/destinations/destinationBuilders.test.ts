@@ -5,6 +5,7 @@ import {
   buildTerminalDestination,
   buildTextEditorDestination,
   createCustomAiAssistantBuilder,
+  GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
   type DestinationBuilderContext,
   type DestinationBuilder,
   registerAllDestinationBuilders,
@@ -856,6 +857,75 @@ describe('destinationBuilders', () => {
       });
       expect(context.logger.warn).toHaveBeenCalledWith(
         { fn: 'claudeCode.getColdRefocus', totalMs: 100, intervalMs: 500 },
+        'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
+      );
+    });
+  });
+
+  describe('getColdRefocus', () => {
+    it('provides a getColdRefocus function for Gemini Code Assist', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      builder({ kind: 'gemini-code-assist' }, context);
+
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
+      expect(capabilities).toStrictEqual(GEMINI_CODE_ASSIST_FOCUS_COMMANDS);
+      expect(typeof getColdRefocusArg).toBe('function');
+
+      const result = getColdRefocusArg();
+      expect(result).toStrictEqual({
+        totalMs: 2500,
+        intervalMs: 300,
+      });
+    });
+
+    it('uses config values from settings when valid', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.gemini.coldStartDelayMs') return 5000;
+        if (_key === 'destinations.gemini.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'gemini-code-assist' }, context);
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 5000,
+        intervalMs: 500,
+      });
+    });
+
+    it('falls back to defaults when config values are invalid (totalMs <= intervalMs)', () => {
+      const builder = getBuiltinBuilder('gemini-code-assist');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.gemini.coldStartDelayMs') return 100;
+        if (_key === 'destinations.gemini.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'gemini-code-assist' }, context);
+      const createCapabilityMock = context.factories.focusCapability
+        .createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 2500,
+        intervalMs: 300,
+      });
+      expect(context.logger.warn).toHaveBeenCalledWith(
+        { fn: 'gemini.getColdRefocus', totalMs: 100, intervalMs: 500 },
         'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
       );
     });
