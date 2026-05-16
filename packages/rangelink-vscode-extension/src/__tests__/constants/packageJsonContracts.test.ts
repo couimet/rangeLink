@@ -1,4 +1,5 @@
 import packageJson from '../../../package.json';
+import { AI_ASSISTANT_KINDS } from '../../types';
 
 interface CommandContribution {
   command: string;
@@ -184,6 +185,15 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.bindToGeminiCodeAssist', () => {
+        expect(findCommand('rangelink.bindToGeminiCodeAssist')).toStrictEqual({
+          command: 'rangelink.bindToGeminiCodeAssist',
+          title: 'Bind to Gemini Code Assist',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToGitHubCopilotChat', () => {
         expect(findCommand('rangelink.bindToGitHubCopilotChat')).toStrictEqual({
           command: 'rangelink.bindToGitHubCopilotChat',
@@ -191,6 +201,22 @@ describe('package.json contributions', () => {
           category: 'RangeLink',
           icon: '$(link)',
         });
+      });
+
+      it('has a bind command for every AI_ASSISTANT_KIND — add a new it() above when extending AI_ASSISTANT_KINDS', () => {
+        const kindToCommandId: Record<string, string> = {
+          'claude-code': 'rangelink.bindToClaudeCode',
+          'cursor-ai': 'rangelink.bindToCursorAI',
+          'gemini-code-assist': 'rangelink.bindToGeminiCodeAssist',
+          'github-copilot-chat': 'rangelink.bindToGitHubCopilotChat',
+        };
+
+        expect(AI_ASSISTANT_KINDS).toHaveLength(4);
+
+        for (const kind of AI_ASSISTANT_KINDS) {
+          const commandId = kindToCommandId[kind];
+          expect(findCommand(commandId)).toBeDefined();
+        }
       });
 
       it('rangelink.unbindDestination', () => {
@@ -478,7 +504,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(47);
+      expect(commands).toHaveLength(48);
     });
   });
 
@@ -752,10 +778,54 @@ describe('package.json contributions', () => {
           },
         );
       });
+
+      it('rangelink.destinations.gemini.coldStartDelayMs', () => {
+        expect(properties['rangelink.destinations.gemini.coldStartDelayMs']).toStrictEqual({
+          type: 'number',
+          default: 2500,
+          minimum: 500,
+          maximum: 15000,
+          description:
+            'Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use, sending periodic refocus signals. Increase on slower machines if automatic paste does not work. Must be greater than coldRefocusIntervalMs.',
+          title: 'Gemini Code Assist Cold Start Delay',
+        });
+      });
+
+      it('rangelink.destinations.gemini.coldRefocusIntervalMs', () => {
+        expect(properties['rangelink.destinations.gemini.coldRefocusIntervalMs']).toStrictEqual({
+          type: 'number',
+          default: 300,
+          minimum: 100,
+          maximum: 5000,
+          description:
+            'Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs.',
+          title: 'Gemini Code Assist Cold Re-focus Interval',
+        });
+      });
     });
 
-    it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(17);
+    it('has the expected set of configuration properties', () => {
+      expect(Object.keys(properties).sort()).toStrictEqual([
+        'rangelink.clipboard.preserve',
+        'rangelink.customAiAssistants',
+        'rangelink.delimiterHash',
+        'rangelink.delimiterLine',
+        'rangelink.delimiterPosition',
+        'rangelink.delimiterRange',
+        'rangelink.destinations.claudeCode.coldRefocusIntervalMs',
+        'rangelink.destinations.claudeCode.coldStartDelayMs',
+        'rangelink.destinations.gemini.coldRefocusIntervalMs',
+        'rangelink.destinations.gemini.coldStartDelayMs',
+        'rangelink.features.bookmarks.enabled',
+        'rangelink.navigation.showClampingWarning',
+        'rangelink.navigation.showNavigatedToast',
+        'rangelink.smartPadding.pasteBookmark',
+        'rangelink.smartPadding.pasteContent',
+        'rangelink.smartPadding.pasteFilePath',
+        'rangelink.smartPadding.pasteLink',
+        'rangelink.terminalPicker.maxInline',
+        'rangelink.warnOnDirtyBuffer',
+      ]);
     });
   });
 

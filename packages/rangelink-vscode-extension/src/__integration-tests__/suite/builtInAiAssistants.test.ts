@@ -6,10 +6,18 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
-import { CLAUDE_CODE_EXTENSION_ID } from '../../utils/aiAssistants/isClaudeCodeAvailable';
+import {
+  DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+} from '../../constants/settingDefaults';
+import {
+  EXTENSION_ID_CLAUDE_CODE,
+  EXTENSION_ID_GEMINI_CODE_ASSIST,
+} from '../../utils/aiAssistants/builtInAiAssistants';
 import {
   assertStatusBarMsgLogged,
   cleanupFiles,
@@ -20,12 +28,15 @@ import {
   openEditor,
   settle,
   standardSuite,
+  waitForExtensionActive,
   waitForHumanVerdict,
 } from '../helpers';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
 const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Claude Code Chat';
+const GEMINI_CODE_ASSIST_DISPLAY_NAME = 'Gemini Code Assist';
+const GEMINI_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Gemini Code Assist';
 
 standardSuite('Built-in AI Assistants', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
@@ -229,6 +240,208 @@ standardSuite('Built-in AI Assistants', (log) => {
 
     log('✓ Warm paste: content delivered to Claude Code (cold + warm both PASS)');
   });
+
+  test('[assisted] gemini-code-assist-002: binding to Gemini Code Assist and sending a link delivers content to chat', async () => {
+    const fileUri = createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    await openEditor(fileUri);
+    await settle();
+
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-gc-002-bind');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
+    await settle();
+
+    const bindLines = logCapture.getLinesSince('before-gc-002-bind');
+    assertStatusBarMsgLogged(bindLines, {
+      message: GEMINI_BIND_STATUS_BAR_MESSAGE,
+    });
+
+    const bindDestinationLog = bindLines.find(
+      (line) => line.includes('PasteDestinationManager') && line.includes('bound to'),
+    );
+    assert.ok(
+      bindDestinationLog,
+      `Expected a PasteDestinationManager "bound to" log line in the ${bindLines.length} bind lines`,
+    );
+
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    logCapture.mark('before-gc-002-send');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const sendLines = logCapture.getLinesSince('before-gc-002-send');
+
+    const pasteSuccessLog = sendLines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(
+      pasteSuccessLog,
+      'Expected paste link success log after send (code-side paste fired)',
+    );
+
+    const clipboardPasteLog = sendLines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+
+    const verdict = await waitForHumanVerdict(
+      'gemini-code-assist-002',
+      'Did the RangeLink + selected code appear in Gemini Code Assist chat?',
+      [
+        '1. The RangeLink send was fired automatically',
+        '2. Click PASS if the link + selected code appeared in Gemini Code Assist chat input',
+        '3. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in Gemini Code Assist chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    log('✓ Bind status confirmed + content delivered to Gemini Code Assist chat');
+  });
+
+  test('[assisted] gemini-code-assist-003: cold panel paste — content arrives in Gemini Code Assist chat after first R-L since bind', async () => {
+    const fileUri = createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
+    await settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-gc-003');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-gc-003');
+
+    const pasteSuccessLog = lines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(pasteSuccessLog, 'Expected paste link success log after cold paste send');
+
+    const clipboardPasteLog = lines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+
+    const verdict = await waitForHumanVerdict(
+      'gemini-code-assist-003',
+      'Cold paste: did the RangeLink appear in Gemini Code Assist chat?',
+      [
+        '1. Lines 1-2 of gc-003 are already selected',
+        '2. The send was fired automatically (no keypress needed)',
+        '3. Click PASS if the RangeLink appeared in Gemini Code Assist chat input',
+        '4. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in Gemini Code Assist chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    log('✓ Cold paste: content delivered to Gemini Code Assist (verdict PASS)');
+  });
+
+  test('[assisted] gemini-code-assist-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    const fileUri = createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
+    await settle();
+
+    // First send (cold) — warms the panel
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const coldVerdict = await waitForHumanVerdict(
+      'gemini-code-assist-004-cold',
+      'Cold send: did the RangeLink appear in Gemini Code Assist chat?',
+      [
+        '1. Lines 1-2 of gc-004 are selected; cold send was fired automatically',
+        '2. Click PASS if the RangeLink appeared in Gemini Code Assist chat input',
+        '3. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      coldVerdict,
+      'pass',
+      'Human reported the cold-send RangeLink did not appear in Gemini Code Assist chat',
+    );
+
+    // Select lines 3-4 for warm send
+    await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-gc-004-warm');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-gc-004-warm');
+
+    const pasteSuccessLog = lines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(pasteSuccessLog, 'Expected paste link success log on warm send');
+
+    const clipboardPasteLog = lines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
+
+    const warmVerdict = await waitForHumanVerdict(
+      'gemini-code-assist-004-warm',
+      'Warm send: did the lines 3-4 RangeLink appear in Gemini Code Assist chat without refocus flicker?',
+      [
+        '1. Lines 3-4 of gc-004 are selected; warm send was fired automatically',
+        '2. Click PASS if the new RangeLink appeared AND the panel did not flicker/refocus',
+        '3. Click FAIL otherwise (no content, or visible flicker indicating cold-start path)',
+      ],
+    );
+    assert.strictEqual(
+      warmVerdict,
+      'pass',
+      'Human reported the warm-send RangeLink did not appear cleanly in Gemini Code Assist chat',
+    );
+
+    log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
+  });
 });
 
 standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
@@ -239,9 +452,9 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     // `test:release:with-extensions` config installs it; the standard `test:release:automated`
     // config does not. Without this guard, the test runs in both configs and fails in the
     // standard one because "GitHub Copilot Chat" takes the top slot when Claude Code is absent.
-    if (!vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID)) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_CLAUDE_CODE)) {
       log(
-        `Skipping claude-code-001 — "${CLAUDE_CODE_EXTENSION_ID}" extension is not installed in this test config (expected in test:release:automated; runs only under test:release:with-extensions).`,
+        `Skipping claude-code-001 — "${EXTENSION_ID_CLAUDE_CODE}" extension is not installed in this test config (expected in test:release:automated; runs only under test:release:with-extensions).`,
       );
       this.skip();
     }
@@ -319,17 +532,112 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
   });
 
   test('claude-code-007: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
-    if (!vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID)) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_CLAUDE_CODE)) {
       log('Skipping claude-code-007 — Claude Code extension not installed in this test config');
       this.skip();
     }
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
-    // Set delay <= interval so the validation rejects it (by default, delay >
-    // interval so the config is valid; flipping that relationship makes it invalid).
+    // Set invalid config: delay (100) <= interval (400)
+    await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
+    await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
+    await settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cc-007');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-cc-007');
+    const warningLog = lines.find((line) =>
+      line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs'),
+    );
+    assert.ok(
+      warningLog,
+      'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
+    );
+
+    log('✓ claude-code-007 — invalid config triggers fallback to defaults');
+  });
+
+  test('gemini-code-assist-001: Gemini Code Assist appears in destination picker when available', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
+      log(
+        `Skipping gemini-code-assist-001 — "${EXTENSION_ID_GEMINI_CODE_ASSIST}" extension is not installed in this test config.`,
+      );
+      this.skip();
+    }
+
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-gc-001');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-gc-001');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry from destination picker');
+
+    const geminiItem = items!.find((item) => item.displayName === GEMINI_CODE_ASSIST_DISPLAY_NAME);
+    assert.ok(
+      geminiItem,
+      `Expected "${GEMINI_CODE_ASSIST_DISPLAY_NAME}" in the destination picker items`,
+    );
+    assert.strictEqual(geminiItem!.itemKind, 'bindable');
+
+    log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
+  });
+
+  test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', async () => {
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.gemini');
+    const totalMs = config.get<number>(
+      'coldStartDelayMs',
+      DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+    );
+    const intervalMs = config.get<number>(
+      'coldRefocusIntervalMs',
+      DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+    );
+
+    assert.strictEqual(
+      totalMs,
+      DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+      'Expected default coldStartDelayMs',
+    );
+    assert.strictEqual(
+      intervalMs,
+      DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+      'Expected default coldRefocusIntervalMs',
+    );
+    assert.ok(
+      totalMs > intervalMs,
+      `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
+    );
+
+    log('✓ Default Gemini cold-start config produces valid ColdRefocusConfig');
+  });
+
+  test('gemini-code-assist-006: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
+      log(
+        'Skipping gemini-code-assist-006 — Gemini Code Assist extension not installed in this test config',
+      );
+      this.skip();
+    }
+
     const INVALID_DELAY_MS = 100;
     const INVALID_INTERVAL_MS = 400;
+
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.gemini');
+
+    // Set delay <= interval so the validation rejects it (by default, delay >
+    // interval so the config is valid; flipping that relationship makes it invalid).
     await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
     await config.update(
       'coldRefocusIntervalMs',
@@ -338,19 +646,21 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     );
     await settle();
 
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
     const logCapture = getLogCapture();
-    logCapture.mark('before-cc-007');
+    logCapture.mark('before-gc-006');
 
     // Validation lives inside getColdRefocus, which is a thunk only invoked
     // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
     // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
-    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
     await settle();
 
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
     await settle();
 
-    const lines = logCapture.getLinesSince('before-cc-007');
+    const lines = logCapture.getLinesSince('before-gc-006');
     const warningLog = lines.find(
       (line) =>
         line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs') &&
@@ -361,6 +671,6 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
     );
 
-    log('✓ claude-code-007 — invalid config triggers fallback to defaults');
+    log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
   });
 });

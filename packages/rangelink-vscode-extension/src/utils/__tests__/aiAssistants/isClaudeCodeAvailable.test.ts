@@ -1,17 +1,12 @@
-/**
- * Tests for isClaudeCodeAvailable utility.
- */
-
 import { createMockLogger } from 'barebone-logger-testing';
 
 import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
-import {
-  isClaudeCodeAvailable,
-  CLAUDE_CODE_EXTENSION_ID,
-} from '../../aiAssistants/isClaudeCodeAvailable';
+import { CLAUDE_CODE_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
+import { EXTENSION_ID_CLAUDE_CODE } from '../../aiAssistants/builtInAiAssistants';
+import { isClaudeCodeAvailable } from '../../aiAssistants/isClaudeCodeAvailable';
 
 describe('isClaudeCodeAvailable', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;
@@ -24,7 +19,7 @@ describe('isClaudeCodeAvailable', () => {
   describe('extension detection', () => {
     it('should return true when Claude Code extension is installed and active', () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: CLAUDE_CODE_EXTENSION_ID, isActive: true }],
+        extensionsOptions: [{ id: EXTENSION_ID_CLAUDE_CODE, isActive: true }],
       });
 
       const result = isClaudeCodeAvailable(mockAdapter, mockLogger);
@@ -33,7 +28,7 @@ describe('isClaudeCodeAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isClaudeCodeAvailable',
-          extensionId: CLAUDE_CODE_EXTENSION_ID,
+          extensionId: 'anthropic.claude-code',
           extensionFound: true,
           extensionActive: true,
           isAvailable: true,
@@ -44,7 +39,7 @@ describe('isClaudeCodeAvailable', () => {
 
     it('should return false when Claude Code extension is installed but inactive', () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: CLAUDE_CODE_EXTENSION_ID, isActive: false }],
+        extensionsOptions: [{ id: EXTENSION_ID_CLAUDE_CODE, isActive: false }],
       });
 
       const result = isClaudeCodeAvailable(mockAdapter, mockLogger);
@@ -53,7 +48,7 @@ describe('isClaudeCodeAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isClaudeCodeAvailable',
-          extensionId: CLAUDE_CODE_EXTENSION_ID,
+          extensionId: 'anthropic.claude-code',
           extensionFound: true,
           extensionActive: false,
           isAvailable: false,
@@ -73,7 +68,7 @@ describe('isClaudeCodeAvailable', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'isClaudeCodeAvailable',
-          extensionId: CLAUDE_CODE_EXTENSION_ID,
+          extensionId: 'anthropic.claude-code',
           extensionFound: false,
           extensionActive: false,
           isAvailable: false,
@@ -98,7 +93,7 @@ describe('isClaudeCodeAvailable', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [
           { id: 'ms-vscode.csharp', isActive: true },
-          { id: CLAUDE_CODE_EXTENSION_ID, isActive: true },
+          { id: EXTENSION_ID_CLAUDE_CODE, isActive: true },
           { id: 'GitHub.copilot', isActive: true },
         ],
       });
@@ -110,15 +105,22 @@ describe('isClaudeCodeAvailable', () => {
 
     it('should use exact extension ID match', () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [
-          // Similar but not exact match
-          { id: 'anthropic.claude-code-beta', isActive: true },
-        ],
+        extensionsOptions: [{ id: 'anthropic.claude-code-beta', isActive: true }],
       });
 
       const result = isClaudeCodeAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
     });
+  });
+});
+
+describe('CLAUDE_CODE_FOCUS_COMMANDS', () => {
+  it('should export focus commands array with primary and fallback commands', () => {
+    expect(CLAUDE_CODE_FOCUS_COMMANDS).toStrictEqual([
+      'claude-vscode.focus',
+      'claude-vscode.sidebar.open',
+      'claude-vscode.editor.open',
+    ]);
   });
 });

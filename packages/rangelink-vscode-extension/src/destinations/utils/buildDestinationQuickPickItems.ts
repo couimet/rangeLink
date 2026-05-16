@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
+  AI_ASSISTANT_KINDS,
   type BindableQuickPickItem,
   DESTINATION_KINDS,
   type DestinationQuickPickItem,
@@ -17,6 +18,8 @@ import {
 import { formatMessage } from '../../utils';
 
 import { buildTerminalDescription } from './buildTerminalDescription';
+
+export const BUILTIN_AI_COUNT = AI_ASSISTANT_KINDS.length;
 
 const isDestinationKind = (key: string): key is DestinationKind =>
   (DESTINATION_KINDS as readonly string[]).includes(key) || key.startsWith('custom-ai:');
@@ -35,6 +38,7 @@ type PickerSequenceKey = DestinationKind | 'file-more' | 'terminal-more';
  */
 export const DESTINATION_PICKER_SEQUENCE: readonly PickerSequenceKey[] = [
   'claude-code',
+  'gemini-code-assist',
   'cursor-ai',
   'github-copilot-chat',
   'terminal',
@@ -48,6 +52,7 @@ type DestinationGroup = 'ai' | 'terminal' | 'file';
 const DESTINATION_GROUP_MAP: Record<PickerSequenceKey, DestinationGroup> = {
   'claude-code': 'ai',
   'cursor-ai': 'ai',
+  'gemini-code-assist': 'ai',
   'github-copilot-chat': 'ai',
   terminal: 'terminal',
   'terminal-more': 'terminal',
@@ -89,9 +94,9 @@ export const buildDestinationQuickPickItems = (
     (key) => isCustomAiAssistantKind(key) && grouped[key as keyof GroupedDestinationItems],
   );
   const fullSequence: PickerSequenceKey[] = [
-    ...DESTINATION_PICKER_SEQUENCE.slice(0, 3),
+    ...DESTINATION_PICKER_SEQUENCE.slice(0, BUILTIN_AI_COUNT),
     ...(customAiKinds as PickerSequenceKey[]),
-    ...DESTINATION_PICKER_SEQUENCE.slice(3),
+    ...DESTINATION_PICKER_SEQUENCE.slice(BUILTIN_AI_COUNT),
   ];
 
   for (const key of fullSequence) {

@@ -20,6 +20,7 @@ const DISPLAY_NAME_CODES: Record<DestinationKind, MessageCode> = {
   terminal: MessageCode.DESTINATION_DISPLAY_NAME_TERMINAL,
   'text-editor': MessageCode.DESTINATION_DISPLAY_NAME_TEXT_EDITOR,
   'cursor-ai': MessageCode.DESTINATION_DISPLAY_NAME_CURSOR_AI,
+  'gemini-code-assist': MessageCode.DESTINATION_DISPLAY_NAME_GEMINI_CODE_ASSIST,
   'github-copilot-chat': MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT,
   'claude-code': MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE,
 };

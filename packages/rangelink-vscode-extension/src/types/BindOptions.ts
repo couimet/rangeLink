@@ -49,6 +49,14 @@ export interface ClaudeCodeBindOptions extends WithDestinationKind {
 }
 
 /**
+ * Bind to Gemini Code Assist chat panel.
+ * Future: may include panel reference for specific instance targeting.
+ */
+export interface GeminiCodeAssistBindOptions extends WithDestinationKind {
+  readonly kind: Extract<DestinationKind, 'gemini-code-assist'>;
+}
+
+/**
  * Bind to a user-defined custom AI assistant.
  */
 export interface CustomAiAssistantBindOptions extends WithDestinationKind {
@@ -73,4 +81,5 @@ export type BindOptions =
   | CursorAIBindOptions
   | CopilotChatBindOptions
   | ClaudeCodeBindOptions
+  | GeminiCodeAssistBindOptions
   | CustomAiAssistantBindOptions;

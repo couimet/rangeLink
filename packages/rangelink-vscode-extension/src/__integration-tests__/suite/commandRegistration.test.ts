@@ -20,6 +20,7 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.bindToTextEditorHere',
   'rangelink.bindToCursorAI',
   'rangelink.bindToClaudeCode',
+  'rangelink.bindToGeminiCodeAssist',
   'rangelink.bindToGitHubCopilotChat',
   'rangelink.unbindDestination',
   'rangelink.jumpToBoundDestination',

@@ -5,6 +5,7 @@ import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
@@ -55,7 +56,12 @@ import {
 } from './constants';
 import type { WiringServices } from './createWiringServices';
 import type { SubscriptionRegistrar } from './SubscriptionRegistrar';
-import { type FilePathClickArgs, PathFormat, type RangeLinkClickArgs } from './types';
+import {
+  type AIAssistantDestinationKind,
+  type FilePathClickArgs,
+  PathFormat,
+  type RangeLinkClickArgs,
+} from './types';
 
 /**
  * Wire all commands and providers into subscriptions.
@@ -152,8 +158,9 @@ export const wireSubscriptions = (
   for (const [cmd, kind] of [
     [CMD_BIND_TO_CURSOR_AI, 'cursor-ai'],
     [CMD_BIND_TO_CLAUDE_CODE, 'claude-code'],
+    [CMD_BIND_TO_GEMINI_CODE_ASSIST, 'gemini-code-assist'],
     [CMD_BIND_TO_GITHUB_COPILOT_CHAT, 'github-copilot-chat'],
-  ] as const) {
+  ] satisfies [string, AIAssistantDestinationKind][]) {
     registrar.registerCommand(
       cmd,
       createBindAIAssistantCommand(

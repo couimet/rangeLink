@@ -42,6 +42,14 @@ function activate(context) {
   );
 
   context.subscriptions.push(
+    vscode.commands.registerCommand('dummyAi.focusFail', async () => {
+      throw new Error(
+        'dummyAi.focusFail: intentional failure for TC-010 clipboard-preservation test',
+      );
+    }),
+  );
+
+  context.subscriptions.push(
     vscode.commands.registerCommand('dummyAi.focusPanel', async () => {
       if (!provider?._view) {
         await vscode.commands.executeCommand('dummyAi.chatView.focus');

@@ -7,6 +7,7 @@
 export const DESTINATION_KINDS = [
   'claude-code',
   'cursor-ai',
+  'gemini-code-assist',
   'github-copilot-chat',
   'terminal',
   'text-editor',
@@ -43,6 +44,7 @@ export const isCustomAiAssistantKind = (kind: string): kind is CustomAiAssistant
 export const AI_ASSISTANT_KINDS = [
   'claude-code',
   'cursor-ai',
+  'gemini-code-assist',
   'github-copilot-chat',
 ] as const satisfies readonly BuiltInDestinationKind[];
 

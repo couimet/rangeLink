@@ -71,6 +71,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   > = {
     'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
     'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
+    'gemini-code-assist': MessageCode.ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE,
     'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
   };
 
@@ -112,6 +113,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       case 'text-editor':
         return this.bindTextEditor(options);
       case 'cursor-ai':
+      case 'gemini-code-assist':
       case 'github-copilot-chat':
       case 'claude-code':
         return this.bindGenericDestination(options.kind);
@@ -822,6 +824,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       case 'claude-code':
       case 'cursor-ai':
+      case 'gemini-code-assist':
       case 'github-copilot-chat':
         // Chat assistants should provide getUserInstruction(AutoPasteResult.Failure)
         // and never reach this fallback method

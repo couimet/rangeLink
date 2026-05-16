@@ -145,7 +145,7 @@ describe('ClipboardRouter', () => {
 
       expect(mockPreserver.preserve).toHaveBeenCalledTimes(1);
       expect(capturedShouldRestore?.()).toBe(false);
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledTimes(1);
+      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
     });
 
     it('skips preservation when destinationBehavior is ClipboardOnly', async () => {

@@ -66,6 +66,7 @@ export const resetRangelinkSettings = async (log: (msg: string) => void): Promis
 
   for (const key of keys) {
     await config.update(key, undefined, vscode.ConfigurationTarget.Global);
+    await config.update(key, undefined, vscode.ConfigurationTarget.Workspace);
   }
   log(`resetRangelinkSettings: cleared ${keys.length} rangelink settings to defaults`);
 };

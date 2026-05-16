@@ -18,8 +18,8 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
-const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 6;
-const EXPECTED_CUSTOM_AI_REGISTRATIONS = 5;
+const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 7;
+const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
 
 standardSuite('Custom AI Assistants', (_log) => {
   test('custom-ai-assistant-001: three-tier config is parsed and logged at activation', () => {
@@ -77,6 +77,10 @@ standardSuite('Custom AI Assistants', (_log) => {
       registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-fallback')),
       'Expected registration for Fallback (rangelink.dummy-ai-extension-fallback)',
     );
+    assert.ok(
+      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-focus-fail')),
+      'Expected registration for Focus-Fail (rangelink.dummy-ai-extension-focus-fail)',
+    );
   });
 
   test('custom-ai-assistant-004: dummy extension insertText command is detectable', async () => {
@@ -116,6 +120,7 @@ standardSuite('Custom AI Assistants', (_log) => {
       'Expected dummyAi.insertWithArgs command',
     );
     assert.ok(commands.includes('dummyAi.focusForPaste'), 'Expected dummyAi.focusForPaste command');
+    assert.ok(commands.includes('dummyAi.focusFail'), 'Expected dummyAi.focusFail command');
     assert.ok(commands.includes('dummyAi.focusPanel'), 'Expected dummyAi.focusPanel command');
     assert.ok(commands.includes('dummyAi.getText'), 'Expected dummyAi.getText command');
     assert.ok(commands.includes('dummyAi.clearAll'), 'Expected dummyAi.clearAll command');

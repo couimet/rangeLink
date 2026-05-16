@@ -20,6 +20,10 @@
         "title": "Dummy AI: Focus for Paste"
       },
       {
+        "command": "dummyAi.focusFail",
+        "title": "Dummy AI: Focus Fail (intentional failure)"
+      },
+      {
         "command": "dummyAi.focusPanel",
         "title": "Dummy AI: Focus Panel"
       },

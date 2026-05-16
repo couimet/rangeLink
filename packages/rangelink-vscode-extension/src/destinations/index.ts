@@ -1,3 +1,4 @@
+export * from './aiAssistantFocusCommands';
 export * from './capabilities';
 export * from './equality';
 export * from './types';

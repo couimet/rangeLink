@@ -21,14 +21,14 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 
 **RangeLink unifies it:**
 
-- **One keybinding** — `Cmd+R Cmd+L` works with Claude, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
+- **One keybinding** — `Cmd+R Cmd+L` works with Claude Code, Gemini Code Assist, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
 - **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
 - **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
-- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants. Bring your own AI tool — if it has a VS Code extension with a focus command, RangeLink can paste into it.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI tools. Bring your own — if it has a VS Code extension with a focus command, or runs in a terminal, RangeLink can paste into it.
 
 ### For AI-Assisted Development
 
-**Using Claude Code, Cursor, Copilot, or any other AI tool?** RangeLink eliminates the context-sharing friction:
+**Using Claude Code, Gemini Code Assist, Cursor, Copilot, or any other AI tool — in an extension or terminal?** RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Destination handles delivery** → Link appears where your AI can see it
@@ -38,14 +38,15 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 **Compete with built-in AI features** by making external AI assistants feel integrated. You get:
 
 - ⚡ **Zero-friction AI context** — Destinations auto-send links. No clipboard juggling.
-- 🎯 **Choice of AI model** — Claude, GPT, Gemini, anything. Not locked into one vendor.
+- 🎯 **Choice of AI tool** — Claude Code, Gemini Code Assist, Copilot, Cursor, terminal CLI tools, anything. Not locked into one vendor or one interface.
 - 📐 **Full control over context** — Character-level precision (`#L42C10`), not just line-level.
 - 🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt.
 - 🌐 **Universal compatibility** — Works across editors (VSCode, Cursor) and in any text-based tool.
 
 ### Perfect For
 
-- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with _exact_ context + clickable navigation
+- 🤖 **AI assistants** — Claude Code (extension or terminal), Gemini Code Assist, Cursor AI, Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with _exact_ context + clickable navigation
+- 💻 **Terminal AI tools** — Claude Code CLI, gemini-cli, or any terminal-based AI workflow — links paste at your cursor and the terminal auto-focuses
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team collaboration** — Universal format everyone can use and navigate
 
@@ -146,6 +147,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 **Built-in AI assistants:**
 
 - **[Claude Code Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)** — Anthropic's official extension (works in VSCode and Cursor)
+- **[Gemini Code Assist](https://marketplace.visualstudio.com/items?itemName=Google.geminicodeassist)** — Google's AI coding assistant
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
 
@@ -157,7 +159,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-**One destination at a time:** Bind to Claude Code, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
+**One destination at a time:** Bind to Claude Code, Gemini Code Assist, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
 
 ---
 
@@ -283,6 +285,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Send Current File Path (Absolute) <sup>Unreleased</sup> | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
 | Bind to Destination <sup>Unreleased</sup>               | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
 | Bind to Claude Code                                     | —                   | —                     | Auto-send links to Claude Code chat                          |
+| Bind to Gemini Code Assist <sup>Unreleased</sup>        | —                   | —                     | Auto-send links to Gemini Code Assist chat                   |
 | Bind to Cursor AI                                       | —                   | —                     | Auto-send links to Cursor AI chat                            |
 | Bind to GitHub Copilot Chat                             | —                   | —                     | Auto-send links to Copilot Chat                              |
 | Bind to Terminal                                        | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
@@ -368,7 +371,7 @@ Customize settings in VSCode (Preferences > Settings > search "rangelink").
 | ------------------------------ | ------- | ---------------------------------------------------- |
 | `rangelink.customAiAssistants` | `[]`    | Array of custom AI assistant definitions (see below) |
 
-Define custom AI assistants to extend RangeLink beyond the three built-in AI tools. Each entry has two required fields and three optional command arrays:
+Define custom AI assistants to extend RangeLink beyond the four built-in AI tools. Each entry has two required fields and three optional command arrays:
 
 | Field                   | Type                   | Required | Description                                                                                                                                                                                          |
 | ----------------------- | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -411,7 +414,7 @@ At least one of the three command arrays must be present. RangeLink tries them i
 
 When `sparkAi.insertText` is registered (extension supports it), RangeLink uses direct insertion — no clipboard involved. If the command isn't available (older extension version), RangeLink falls back to the focus + manual paste flow automatically.
 
-**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Cursor, Claude Code, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
+**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Claude Code, Gemini Code Assist, Cursor, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
 
 ```json
 {
@@ -443,6 +446,24 @@ Here `insertCommands` is tried first (Tier 1). If `myPlugin.sendToCopilot` isn't
 > **Duplicate entries:** If two entries use the same `extensionId`, only the first is used — duplicates are skipped with a warning in the RangeLink output channel.
 
 Run **Developer: Reload Window** (or restart VS Code) after changing this setting.
+
+### Destination Settings — Claude Code <sup>Unreleased</sup>
+
+| Setting                                                   | Default | Description                                                                                       |
+| --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `rangelink.destinations.claudeCode.coldStartDelayMs`      | `1500`  | Total duration (ms) RangeLink waits for the Claude Code panel to become ready on first use        |
+| `rangelink.destinations.claudeCode.coldRefocusIntervalMs` | `300`   | Interval (ms) at which RangeLink re-sends the Claude Code focus signal during the cold-start wait |
+
+On first use after binding, the Claude Code chat panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
+
+### Destination Settings — Gemini Code Assist <sup>Unreleased</sup>
+
+| Setting                                               | Default | Description                                                                                  |
+| ----------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `rangelink.destinations.gemini.coldStartDelayMs`      | `2500`  | Total duration (ms) RangeLink waits for the Gemini panel to become ready on first use        |
+| `rangelink.destinations.gemini.coldRefocusIntervalMs` | `300`   | Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start wait |
+
+On first use after binding, Gemini Code Assist's webview panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
 
 ### Clipboard Settings <sup>Unreleased</sup>
 
@@ -490,13 +511,6 @@ Set the navigation settings to `false` for a quieter workflow. Navigation itself
 | `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
 
 When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
-
-### Claude Code Settings <sup>Unreleased</sup>
-
-| Setting                                                   | Default | Description                                                                          |
-| --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| `rangelink.destinations.claudeCode.coldStartDelayMs`      | `1500`  | Total duration (ms) of the cold-start re-focus window for Claude Code                |
-| `rangelink.destinations.claudeCode.coldRefocusIntervalMs` | `300`   | Interval (ms) between successive focus-command re-sends during the cold-start window |
 
 ### Delimiter Settings
 

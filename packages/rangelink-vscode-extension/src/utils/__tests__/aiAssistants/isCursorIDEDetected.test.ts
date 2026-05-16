@@ -8,6 +8,7 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
+import { CURSOR_AI_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { isCursorIDEDetected } from '../../aiAssistants/isCursorIDEDetected';
 
 describe('isCursorIDEDetected', () => {
@@ -234,5 +235,14 @@ describe('isCursorIDEDetected', () => {
 
       expect(result).toBe(false);
     });
+  });
+});
+
+describe('CURSOR_AI_FOCUS_COMMANDS', () => {
+  it('should export focus commands array with primary and fallback commands', () => {
+    expect(CURSOR_AI_FOCUS_COMMANDS).toStrictEqual([
+      'aichat.newchataction',
+      'workbench.action.toggleAuxiliaryBar',
+    ]);
   });
 });

@@ -1,6 +1,7 @@
 import type * as vscode from 'vscode';
 
 import type {
+  AIAssistantDestinationKind,
   BindableQuickPickItem,
   EligibleFile,
   EligibleTerminal,
@@ -44,7 +45,7 @@ export const createMockTerminalQuickPickItem = (
  * @returns A BindableQuickPickItem for the AI assistant
  */
 export const createMockAIAssistantQuickPickItem = (
-  kind: 'claude-code' | 'cursor-ai' | 'github-copilot-chat',
+  kind: AIAssistantDestinationKind,
   displayName: string,
 ): BindableQuickPickItem => ({
   label: displayName,

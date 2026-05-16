@@ -300,9 +300,10 @@ describe('DestinationRegistry', () => {
       expect(displayNames).toStrictEqual({
         terminal: 'Terminal',
         'text-editor': 'Text Editor',
-        'cursor-ai': 'Cursor AI Assistant',
-        'github-copilot-chat': 'GitHub Copilot Chat',
         'claude-code': 'Claude Code Chat',
+        'cursor-ai': 'Cursor AI Assistant',
+        'gemini-code-assist': 'Gemini Code Assist',
+        'github-copilot-chat': 'GitHub Copilot Chat',
       });
     });
   });

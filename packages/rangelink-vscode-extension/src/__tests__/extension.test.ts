@@ -504,6 +504,61 @@ describe('Extension lifecycle', () => {
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
   });
 
+  // Command IDs registered (sorted alphabetically)
+  const expectedCommands = [
+    'rangelink.bindToClaudeCode',
+    'rangelink.bindToCursorAI',
+    'rangelink.bindToDestination',
+    'rangelink.bindToGeminiCodeAssist',
+    'rangelink.bindToGitHubCopilotChat',
+    'rangelink.bindToTerminal',
+    'rangelink.bindToTerminalHere',
+    'rangelink.bindToTextEditor',
+    'rangelink.bindToTextEditorHere',
+    'rangelink.bookmark.add',
+    'rangelink.bookmark.list',
+    'rangelink.bookmark.manage',
+    'rangelink.copyLinkOnlyWithAbsolutePath',
+    'rangelink.copyLinkOnlyWithRelativePath',
+    'rangelink.copyLinkWithAbsolutePath',
+    'rangelink.copyLinkWithRelativePath',
+    'rangelink.copyPortableLinkWithAbsolutePath',
+    'rangelink.copyPortableLinkWithRelativePath',
+    'rangelink.editorContent.bind',
+    'rangelink.editorContent.pasteFilePath',
+    'rangelink.editorContent.pasteRelativeFilePath',
+    'rangelink.editorContent.unbind',
+    'rangelink.editorContext.copyLink',
+    'rangelink.editorContext.copyLinkAbsolute',
+    'rangelink.editorContext.copyPortableLink',
+    'rangelink.editorContext.copyPortableLinkAbsolute',
+    'rangelink.editorContext.pasteSelectedText',
+    'rangelink.editorContext.saveBookmark',
+    'rangelink.editorTab.pasteFilePath',
+    'rangelink.editorTab.pasteRelativeFilePath',
+    'rangelink.explorer.bind',
+    'rangelink.explorer.pasteFilePath',
+    'rangelink.explorer.pasteRelativeFilePath',
+    'rangelink.explorer.unbind',
+    'rangelink.goToRangeLink',
+    'rangelink.handleDocumentLinkClick',
+    'rangelink.handleFilePathClick',
+    'rangelink.jumpToBoundDestination',
+    'rangelink.openStatusBarMenu',
+    'rangelink.pasteCurrentFileAbsolutePath',
+    'rangelink.pasteCurrentFileRelativePath',
+    'rangelink.pasteFileAbsolutePath',
+    'rangelink.pasteFileRelativePath',
+    'rangelink.pasteSelectedTextToDestination',
+    'rangelink.showVersion',
+    'rangelink.terminal.bind',
+    'rangelink.terminal.copyLinkGuard',
+    'rangelink.terminal.linkBridge',
+    'rangelink.terminal.pasteSelectedTextToDestination',
+    'rangelink.terminal.unbind',
+    'rangelink.unbindDestination',
+  ];
+
   it('should register all commands on activate', async () => {
     const mockContext = {
       subscriptions: [] as vscode.Disposable[],
@@ -535,60 +590,6 @@ describe('Extension lifecycle', () => {
 
     // Extension imported at top
     extension.activate(mockContext as any);
-
-    // Command IDs registered (sorted alphabetically)
-    const expectedCommands = [
-      'rangelink.bindToClaudeCode',
-      'rangelink.bindToCursorAI',
-      'rangelink.bindToDestination',
-      'rangelink.bindToGitHubCopilotChat',
-      'rangelink.bindToTerminal',
-      'rangelink.bindToTerminalHere',
-      'rangelink.bindToTextEditor',
-      'rangelink.bindToTextEditorHere',
-      'rangelink.bookmark.add',
-      'rangelink.bookmark.list',
-      'rangelink.bookmark.manage',
-      'rangelink.copyLinkOnlyWithAbsolutePath',
-      'rangelink.copyLinkOnlyWithRelativePath',
-      'rangelink.copyLinkWithAbsolutePath',
-      'rangelink.copyLinkWithRelativePath',
-      'rangelink.copyPortableLinkWithAbsolutePath',
-      'rangelink.copyPortableLinkWithRelativePath',
-      'rangelink.editorContent.bind',
-      'rangelink.editorContent.pasteFilePath',
-      'rangelink.editorContent.pasteRelativeFilePath',
-      'rangelink.editorContent.unbind',
-      'rangelink.editorContext.copyLink',
-      'rangelink.editorContext.copyLinkAbsolute',
-      'rangelink.editorContext.copyPortableLink',
-      'rangelink.editorContext.copyPortableLinkAbsolute',
-      'rangelink.editorContext.pasteSelectedText',
-      'rangelink.editorContext.saveBookmark',
-      'rangelink.editorTab.pasteFilePath',
-      'rangelink.editorTab.pasteRelativeFilePath',
-      'rangelink.explorer.bind',
-      'rangelink.explorer.pasteFilePath',
-      'rangelink.explorer.pasteRelativeFilePath',
-      'rangelink.explorer.unbind',
-      'rangelink.goToRangeLink',
-      'rangelink.handleDocumentLinkClick',
-      'rangelink.handleFilePathClick',
-      'rangelink.jumpToBoundDestination',
-      'rangelink.openStatusBarMenu',
-      'rangelink.pasteCurrentFileAbsolutePath',
-      'rangelink.pasteCurrentFileRelativePath',
-      'rangelink.pasteFileAbsolutePath',
-      'rangelink.pasteFileRelativePath',
-      'rangelink.pasteSelectedTextToDestination',
-      'rangelink.showVersion',
-      'rangelink.terminal.bind',
-      'rangelink.terminal.copyLinkGuard',
-      'rangelink.terminal.linkBridge',
-      'rangelink.terminal.pasteSelectedTextToDestination',
-      'rangelink.terminal.unbind',
-      'rangelink.unbindDestination',
-    ];
 
     expect(mockCommands.registerCommand).toHaveBeenCalledTimes(expectedCommands.length);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
@@ -622,10 +623,12 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 3;
     const PROVIDER_COUNT = 4;
-    const COMMAND_COUNT = 50;
     const DESTINATION_MANAGER_LISTENERS = 3;
     const EXPECTED_SUBSCRIPTION_COUNT =
-      INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;
+      INFRASTRUCTURE_COUNT +
+      PROVIDER_COUNT +
+      expectedCommands.length +
+      DESTINATION_MANAGER_LISTENERS;
 
     expect(mockContext.subscriptions.length).toBe(EXPECTED_SUBSCRIPTION_COUNT);
   });
