@@ -22,9 +22,18 @@ runs:
     - name: Cache VS Code test binary
       uses: actions/cache@v4
       with:
-        path: ~/.vscode-test
+        path: |
+          ~/.vscode-test
+          !~/.vscode-test/extensions
         key: vscode-test-${{ runner.os }}-stable
         restore-keys: vscode-test-${{ runner.os }}-
+
+    - name: Cache VS Code marketplace extensions
+      uses: actions/cache@v4
+      with:
+        path: ~/.vscode-test/extensions
+        key: vscode-extensions-${{ runner.os }}-${{ hashFiles('packages/rangelink-vscode-extension/.vscode-test.with-extensions.mjs') }}
+        restore-keys: vscode-extensions-${{ runner.os }}-
 
     - name: Run integration tests under Xvfb
       id: run
