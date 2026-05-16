@@ -2,6 +2,11 @@ import * as vscode from 'vscode';
 
 import { settle, TERMINAL_READY_MS } from './testEnv';
 
+export const echoToTerminal = (terminal: vscode.Terminal, text: string): void => {
+  const escaped = text.replace(/'/g, "'\\''");
+  terminal.sendText(`echo '${escaped}'`, true);
+};
+
 export const disposeAllTerminals = (): void => {
   for (const t of vscode.window.terminals) {
     t.dispose();

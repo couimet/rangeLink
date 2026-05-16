@@ -32,6 +32,7 @@ import {
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
+  echoToTerminal,
   writeClipboardSentinel,
 } from '../helpers';
 

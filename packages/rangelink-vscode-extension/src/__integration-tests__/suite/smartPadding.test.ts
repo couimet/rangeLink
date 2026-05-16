@@ -17,6 +17,7 @@ import {
   createAndBindCapturingTerminal,
   createTerminal,
   createWorkspaceFile,
+  echoToTerminal,
   getWorkspaceRoot,
   openEditor,
   openUntitledDoc,
@@ -381,7 +382,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     await settle();
 
     const terminal = await createTerminal('pad-010-src', tmpTerminals);
-    terminal.sendText('echo hello', true);
+    echoToTerminal(terminal, 'hello');
     await settle();
 
     await waitForHuman(
