@@ -350,6 +350,7 @@
           "type": "array",
           "default": [],
           "description": "Custom AI assistants for RangeLink destination picker. At least one command tier required per entry. Run \"Developer: Reload Window\" after changes. See README for details.",
+          "title": "Custom AI Assistants",
           "markdownDescription": "Custom AI assistants for the RangeLink destination picker. At least one command tier required per entry. Run **Developer: Reload Window** after changes. See the README for configuration guide and examples.",
           "items": {
             "type": "object",
@@ -423,7 +424,8 @@
             "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
             "Never restore clipboard — clipboard always contains last RangeLink output"
           ],
-          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
+          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism",
+          "title": "Clipboard Preservation"
         },
         "rangelink.smartPadding.pasteLink": {
           "type": "string",
@@ -440,7 +442,8 @@
             "Add space after only",
             "No padding (paste link as-is)"
           ],
-          "description": "Smart padding for generated RangeLinks when pasting to destinations"
+          "description": "Smart padding for generated RangeLinks when pasting to destinations",
+          "title": "Paste: Link Padding"
         },
         "rangelink.smartPadding.pasteContent": {
           "type": "string",
@@ -457,7 +460,8 @@
             "Add space after only",
             "No padding (paste text exactly as selected)"
           ],
-          "description": "Smart padding for selected text when using Paste Selected Text to Destination (R-V)"
+          "description": "Smart padding for selected text when using Paste Selected Text to Destination (R-V)",
+          "title": "Paste: Content Padding"
         },
         "rangelink.smartPadding.pasteFilePath": {
           "type": "string",
@@ -474,7 +478,8 @@
             "Add space after only",
             "No padding (paste path as-is)"
           ],
-          "description": "Smart padding for file paths when using Paste Path commands"
+          "description": "Smart padding for file paths when using Paste Path commands",
+          "title": "Paste: File Path Padding"
         },
         "rangelink.smartPadding.pasteBookmark": {
           "type": "string",
@@ -491,51 +496,60 @@
             "Add space after only",
             "No padding (paste bookmark as-is)"
           ],
-          "description": "Smart padding for saved bookmarks when pasting to destinations"
+          "description": "Smart padding for saved bookmarks when pasting to destinations",
+          "title": "Paste: Bookmark Padding"
         },
         "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning when generating link from file with unsaved changes"
+          "description": "Show warning when generating link from file with unsaved changes",
+          "title": "Warn on Unsaved Changes"
         },
         "rangelink.navigation.showNavigatedToast": {
           "type": "boolean",
           "default": true,
-          "description": "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')"
+          "description": "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')",
+          "title": "Navigation: Show Confirmation Toast"
         },
         "rangelink.navigation.showClampingWarning": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning toast when navigation position is clamped to file boundaries"
+          "description": "Show warning toast when navigation position is clamped to file boundaries",
+          "title": "Navigation: Show Clamping Warning"
         },
         "rangelink.terminalPicker.maxInline": {
           "type": "number",
           "default": 5,
           "minimum": 1,
-          "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')"
+          "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')",
+          "title": "Terminal Picker: Max Inline Items"
         },
         "rangelink.delimiterHash": {
           "type": "string",
           "default": "#",
           "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
+          "title": "Delimiter: Hash",
           "pattern": "^[^0-9]+$"
         },
         "rangelink.delimiterLine": {
           "type": "string",
           "default": "L",
           "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
+          "title": "Delimiter: Line",
           "pattern": "^[^0-9]+$"
         },
         "rangelink.delimiterPosition": {
           "type": "string",
           "default": "C",
           "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
+          "title": "Delimiter: Position",
           "pattern": "^[^0-9]+$"
         },
         "rangelink.delimiterRange": {
           "type": "string",
           "default": "-",
           "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
+          "title": "Delimiter: Range",
           "pattern": "^[^0-9]+$"
         },
         "rangelink.destinations.claudeCode.coldStartDelayMs": {
@@ -573,7 +587,8 @@
         "rangelink.features.bookmarks.enabled": {
           "type": "boolean",
           "default": false,
-          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
+          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later.",
+          "title": "Feature: Bookmarks"
         }
       }
     },

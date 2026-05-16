@@ -13,6 +13,7 @@ interface ConfigurationProperty {
   type: string;
   default: string | boolean | number | unknown[];
   description: string;
+  title: string;
   markdownDescription?: string;
   pattern?: string;
   enum?: string[];
@@ -521,6 +522,7 @@ describe('package.json contributions', () => {
           default: false,
           description:
             'Enable Bookmarks feature (beta). Save code locations for quick access later.',
+          title: 'Feature: Bookmarks',
         });
       });
     });
@@ -537,6 +539,7 @@ describe('package.json contributions', () => {
           ],
           description:
             'Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism',
+          title: 'Clipboard Preservation',
         });
       });
     });
@@ -548,6 +551,7 @@ describe('package.json contributions', () => {
           default: [],
           description:
             'Custom AI assistants for RangeLink destination picker. At least one command tier required per entry. Run "Developer: Reload Window" after changes. See README for details.',
+          title: 'Custom AI Assistants',
           markdownDescription:
             'Custom AI assistants for the RangeLink destination picker. At least one command tier required per entry. Run **Developer: Reload Window** after changes. See the README for configuration guide and examples.',
           items: {
@@ -616,6 +620,7 @@ describe('package.json contributions', () => {
           type: 'string',
           default: 'L',
           description: 'Delimiter used before line numbers (e.g., L in #L10-L20)',
+          title: 'Delimiter: Line',
           pattern: '^[^0-9]+$',
         });
       });
@@ -625,6 +630,7 @@ describe('package.json contributions', () => {
           type: 'string',
           default: 'C',
           description: 'Delimiter used before position numbers (e.g., C in #L10C5-L20C10)',
+          title: 'Delimiter: Position',
           pattern: '^[^0-9]+$',
         });
       });
@@ -634,6 +640,7 @@ describe('package.json contributions', () => {
           type: 'string',
           default: '#',
           description: 'Delimiter used before the range specification (e.g., # in path#L10-L20)',
+          title: 'Delimiter: Hash',
           pattern: '^[^0-9]+$',
         });
       });
@@ -643,6 +650,7 @@ describe('package.json contributions', () => {
           type: 'string',
           default: '-',
           description: 'Delimiter used between start and end positions (e.g., - in #L10-L20)',
+          title: 'Delimiter: Range',
           pattern: '^[^0-9]+$',
         });
       });
@@ -661,6 +669,7 @@ describe('package.json contributions', () => {
             'No padding (paste link as-is)',
           ],
           description: 'Smart padding for generated RangeLinks when pasting to destinations',
+          title: 'Paste: Link Padding',
         });
       });
 
@@ -677,6 +686,7 @@ describe('package.json contributions', () => {
           ],
           description:
             'Smart padding for selected text when using Paste Selected Text to Destination (R-V)',
+          title: 'Paste: Content Padding',
         });
       });
 
@@ -692,6 +702,7 @@ describe('package.json contributions', () => {
             'No padding (paste path as-is)',
           ],
           description: 'Smart padding for file paths when using Paste Path commands',
+          title: 'Paste: File Path Padding',
         });
       });
 
@@ -707,6 +718,7 @@ describe('package.json contributions', () => {
             'No padding (paste bookmark as-is)',
           ],
           description: 'Smart padding for saved bookmarks when pasting to destinations',
+          title: 'Paste: Bookmark Padding',
         });
       });
     });
@@ -718,6 +730,7 @@ describe('package.json contributions', () => {
           default: true,
           description:
             "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')",
+          title: 'Navigation: Show Confirmation Toast',
         });
       });
 
@@ -726,6 +739,7 @@ describe('package.json contributions', () => {
           type: 'boolean',
           default: true,
           description: 'Show warning toast when navigation position is clamped to file boundaries',
+          title: 'Navigation: Show Clamping Warning',
         });
       });
     });
@@ -736,6 +750,7 @@ describe('package.json contributions', () => {
           type: 'boolean',
           default: true,
           description: 'Show warning when generating link from file with unsaved changes',
+          title: 'Warn on Unsaved Changes',
         });
       });
     });
@@ -748,6 +763,7 @@ describe('package.json contributions', () => {
           minimum: 1,
           description:
             "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')",
+          title: 'Terminal Picker: Max Inline Items',
         });
       });
     });
