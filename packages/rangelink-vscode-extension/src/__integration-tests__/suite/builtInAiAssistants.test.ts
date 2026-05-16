@@ -573,6 +573,8 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       this.skip();
     }
 
+    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-001');
 
