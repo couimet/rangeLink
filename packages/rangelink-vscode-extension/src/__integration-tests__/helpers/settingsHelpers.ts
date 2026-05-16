@@ -28,6 +28,7 @@ export const loadSettingsProfile = async (
 
   for (const [key, value] of Object.entries(settings)) {
     await config.update(key, value, vscode.ConfigurationTarget.Global);
+    await config.update(key, value, vscode.ConfigurationTarget.Workspace);
   }
   log(`loadSettingsProfile: applied ${Object.keys(settings).length} settings from ${profileName}`);
 };
