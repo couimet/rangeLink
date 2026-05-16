@@ -15,7 +15,6 @@ import {
   assertTerminalBufferContains,
   type CapturingTerminal,
   cleanupFiles,
-  CLIPBOARD_SENTINEL,
   createAndBindCapturingTerminal,
   createTerminal,
   createWorkspaceFile,

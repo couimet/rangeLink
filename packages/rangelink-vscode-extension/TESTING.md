@@ -195,6 +195,7 @@ The two helpers serve different contracts. Pick the right one based on what the 
 **`waitForHuman`** — use when the human performs a UI action that cannot be automated, and programmatic assertions verify the outcome. The human's role is mechanical (open a picker, press a chord, click a context menu). Clicking Cancel without performing the action causes the subsequent programmatic assertions to fail — the test cannot pass green against a broken state.
 
 Examples of correct `waitForHuman` usage:
+
 - Human selects an item from a QuickPick; log assertions verify the picked item and the effect
 - Human right-clicks a context menu; assertions read the terminal buffer or editor content
 - Human types text into an input box; assertions verify navigation or log output
@@ -207,6 +208,7 @@ assert.strictEqual(verdict, 'pass', 'Human reported X did not appear');
 ```
 
 Examples of correct `waitForHumanVerdict` usage:
+
 - Verifying a RangeLink appeared in Claude Code / Cursor AI / Copilot Chat (webviews are not inspectable)
 - Verifying clipboard was restored after paste to an AI assistant (human checks via manual paste)
 - Verifying a UI element is visible/hidden when no programmatic signal exists

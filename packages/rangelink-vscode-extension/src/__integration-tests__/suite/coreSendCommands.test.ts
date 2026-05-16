@@ -232,7 +232,9 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-002'), {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
-    log('✓ Command Palette "Copy RangeLink" wrote exact link to clipboard; terminal received nothing');
+    log(
+      '✓ Command Palette "Copy RangeLink" wrote exact link to clipboard; terminal received nothing',
+    );
   });
 
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {
