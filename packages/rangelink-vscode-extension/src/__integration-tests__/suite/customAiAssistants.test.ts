@@ -143,6 +143,9 @@ standardSuite('Custom AI Assistants', (_log) => {
     );
   });
 
+  const EXPECTED_GITHUB_COPILOT_CHAT_REGISTRATION_COUNT = 1;
+  const EXPECTED_NO_CUSTOM_AI_COPILOT_REGISTRATIONS = 0;
+
   test('custom-ai-assistant-015: built-in GitHub Copilot Chat registers as a destination kind', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
@@ -154,7 +157,7 @@ standardSuite('Custom AI Assistants', (_log) => {
     );
     assert.strictEqual(
       copilotRegistrations.length,
-      1,
+      EXPECTED_GITHUB_COPILOT_CHAT_REGISTRATION_COUNT,
       `Expected exactly 1 registration for github-copilot-chat but found ${copilotRegistrations.length}`,
     );
   });
@@ -177,7 +180,7 @@ standardSuite('Custom AI Assistants', (_log) => {
     );
     assert.strictEqual(
       noSeparateCustomRegistration.length,
-      0,
+      EXPECTED_NO_CUSTOM_AI_COPILOT_REGISTRATIONS,
       'GitHub Copilot Chat should register as built-in kind, not custom-ai: prefixed',
     );
   });

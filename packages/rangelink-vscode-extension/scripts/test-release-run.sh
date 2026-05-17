@@ -134,15 +134,20 @@ if [[ "$WITHOUT_EXTENSIONS" == "true" ]]; then
     echo "$EXT_IDS" >&2
     exit 1
   }
-  EXT_GREP=$(echo "$EXT_IDS" | paste -sd '|' -)
-  EXT_COUNT=$(echo "$EXT_IDS" | wc -l | tr -d ' ')
-  echo "Excluding ${EXT_COUNT} test(s) requiring extensions: $EXT_GREP"
-  echo ""
+  if [[ -n "$EXT_IDS" ]]; then
+    EXT_GREP=$(echo "$EXT_IDS" | paste -sd '|' -)
+    EXT_COUNT=$(echo "$EXT_IDS" | wc -l | tr -d ' ')
+    echo "Excluding ${EXT_COUNT} test(s) requiring extensions: $EXT_GREP"
+    echo ""
 
-  if [[ -n "$MOCHA_EXCLUDE" ]]; then
-    MOCHA_EXCLUDE="${MOCHA_EXCLUDE}|${EXT_GREP}"
+    if [[ -n "$MOCHA_EXCLUDE" ]]; then
+      MOCHA_EXCLUDE="${MOCHA_EXCLUDE}|${EXT_GREP}"
+    else
+      MOCHA_EXCLUDE="$EXT_GREP"
+    fi
   else
-    MOCHA_EXCLUDE="$EXT_GREP"
+    echo "No tests requiring extensions to exclude."
+    echo ""
   fi
 fi
 

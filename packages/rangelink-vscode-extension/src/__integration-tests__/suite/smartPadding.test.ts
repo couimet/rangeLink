@@ -233,17 +233,27 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     const sourceUri = createWorkspaceFile('pad-003', expected + '\n');
     tmpFileUris.push(sourceUri);
 
-    const capturing = await createAndBindCapturingTerminal('pad-003-dest', tmpTerminals);
+    const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
+    await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    const sourceEditor = await openEditor(sourceUri);
-    const docText = sourceEditor.document.getText(new vscode.Range(0, 0, 2, 6));
-
-    capturing.clearCaptured();
-    capturing.terminal.sendText(docText);
+    const sourceEditor = await openEditor(sourceUri, vscode.ViewColumn.Beside);
+    sourceEditor.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(2, 6),
+    );
     await settle();
 
-    assertTerminalBufferEquals(capturing.getCapturedText(), expected);
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
+
+    const destContent = destDoc.getText();
+    assert.strictEqual(
+      destContent,
+      expected,
+      `Expected multiline content to arrive intact, got: ${JSON.stringify(destContent)}`,
+    );
     log('✓ smart-padding-003: multiline content preserved through destination');
   });
 

@@ -166,7 +166,7 @@ describe('TerminalSelectionService', () => {
           sendFn: expect.any(Function) as unknown,
           isEligibleFn: expect.any(Function) as unknown,
         },
-        contentName: expect.any(String) as unknown,
+        contentName: 'Selected text',
         fnName: 'pasteTerminalSelectionToDestination',
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(

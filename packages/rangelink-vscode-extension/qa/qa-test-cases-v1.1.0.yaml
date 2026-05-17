@@ -728,11 +728,10 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists (e.g., "prior-content")'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Select lines 1-2 in a test file and press R-L'
-      - 'After the RangeLink appears in Claude Code chat, paste (Cmd+V) into a text editor'
-      - 'Click PASS if the pasted content is "prior-content" (restored), FAIL if RangeLink text appears instead'
-    expected_result: 'Prior clipboard content is restored after the paste operation completes and CLIPBOARD_POST_PASTE_DELAY_MS elapses.'
+      - 'Sentinel written to clipboard programmatically'
+      - 'R-L dispatched programmatically to cold-bound Claude Code'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
+    expected_result: 'Prior clipboard content is restored after the paste operation completes.'
     automated: true
 
   - id: clipboard-preservation-012
@@ -746,12 +745,11 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Ensure Claude Code panel is visible'
-      - 'Select lines 1-2 and press R-L'
-      - 'After paste, paste (Cmd+V) into a text editor'
-      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
-    expected_result: 'Single clipboard write. Prior content restored after CLIPBOARD_POST_PASTE_DELAY_MS without cold-start refocus overhead.'
+      - 'Warmup R-L dispatched programmatically'
+      - 'Sentinel written to clipboard programmatically'
+      - 'Second R-L dispatched programmatically to warm-bound Claude Code'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
+    expected_result: 'Single clipboard write. Prior content restored without cold-start refocus overhead.'
     automated: true
 
   - id: clipboard-preservation-013
@@ -765,10 +763,9 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Select lines 1-2 in a test file and press R-L'
-      - 'After paste, paste (Cmd+V) into a text editor'
-      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+      - 'Sentinel written to clipboard programmatically'
+      - 'R-L dispatched programmatically to cold-bound Cursor AI'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content is restored after paste completes.'
     automated: true
 
@@ -783,11 +780,10 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Ensure Cursor AI panel is visible'
-      - 'Select lines and press R-L'
-      - 'After paste, paste (Cmd+V) into a text editor'
-      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+      - 'Warmup R-L dispatched programmatically'
+      - 'Sentinel written to clipboard programmatically'
+      - 'Second R-L dispatched programmatically to warm-bound Cursor AI'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content restored after warm paste.'
     automated: true
 
@@ -801,10 +797,9 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Select lines 1-2 in a test file and press R-L'
-      - 'After paste, paste (Cmd+V) into a text editor'
-      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+      - 'Sentinel written to clipboard programmatically'
+      - 'R-L dispatched programmatically to cold-bound Copilot Chat'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content is restored after paste completes.'
     automated: true
 
@@ -818,11 +813,10 @@ test_cases:
       - 'rangelink.clipboard.preserve = "always" (default)'
       - 'Prior clipboard content exists'
     steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Ensure Copilot Chat panel is visible'
-      - 'Select lines and press R-L'
-      - 'After paste, paste (Cmd+V) into a text editor'
-      - 'Click PASS if "prior-content" is restored, FAIL otherwise'
+      - 'Warmup R-L dispatched programmatically'
+      - 'Sentinel written to clipboard programmatically'
+      - 'Second R-L dispatched programmatically to warm-bound Copilot Chat'
+      - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content restored after warm paste.'
     automated: true
 
@@ -2591,7 +2585,7 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'Multiline selection sent to destination'
     preconditions:
-      - 'A terminal is bound as destination'
+      - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
       - 'Select multiple lines in an editor'

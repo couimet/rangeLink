@@ -23,6 +23,7 @@ import {
   cleanupFiles,
   clearSelection,
   createAndBindCapturingTerminal,
+  createTerminal,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -40,8 +41,10 @@ const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text
 
 standardSuite('Core Send Commands', (log) => {
   const tmpFileUris: vscode.Uri[] = [];
+  const tmpTerminals: vscode.Terminal[] = [];
 
   teardown(async () => {
+    for (const t of tmpTerminals.splice(0)) t.dispose();
     await vscode.commands.executeCommand('dummyAi.clearAll');
     cleanupFiles(tmpFileUris);
     tmpFileUris.splice(0);
@@ -244,12 +247,9 @@ standardSuite('Core Send Commands', (log) => {
     const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-001-dest');
     await settle();
 
-    const srcTerminal = vscode.window.createTerminal({ name: 'csc-sts-001-src' });
-    srcTerminal.show(true);
+    const srcTerminal = await createTerminal('csc-sts-001-src', tmpTerminals);
 
-    await settle(TERMINAL_READY_MS);
-
-    srcTerminal.sendText(`echo "${MARKER}"`, true);
+    echoToTerminal(srcTerminal, MARKER);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -271,10 +271,7 @@ standardSuite('Core Send Commands', (log) => {
   });
 
   test('send-terminal-selection-003: R-V with no text selected in terminal shows error message', async () => {
-    const terminal = vscode.window.createTerminal({ name: 'csc-sts-003' });
-    terminal.show(true);
-
-    await settle(TERMINAL_READY_MS);
+    await createTerminal('csc-sts-003', tmpTerminals);
 
     // On macOS, terminal.copySelection leaves the clipboard unchanged when nothing
     // is selected — so we prime the clipboard to empty so the preserve/read roundtrip
@@ -297,12 +294,9 @@ standardSuite('Core Send Commands', (log) => {
   test('[assisted] send-terminal-selection-004: R-V with no bound destination opens destination picker', async () => {
     const MARKER = 'rl-sts-004-marker';
 
-    const srcTerminal = vscode.window.createTerminal({ name: 'csc-sts-004-src' });
-    srcTerminal.show(true);
+    const srcTerminal = await createTerminal('csc-sts-004-src', tmpTerminals);
 
-    await settle(TERMINAL_READY_MS);
-
-    srcTerminal.sendText(`echo "${MARKER}"`, true);
+    echoToTerminal(srcTerminal, MARKER);
     await settle(TERMINAL_READY_MS);
 
     const logCapture004 = getLogCapture();
