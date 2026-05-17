@@ -6,21 +6,21 @@
 
 ## Quick Reference
 
-| Test type                | Command                                                       | When to run                                                                               | Runs in CI           |
-| ------------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------- |
-| Unit tests               | `pnpm test`                                                   | Every change                                                                              | ✅                   |
-| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development                                                                 | —                    |
-| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand                                                                     | ✅ (with thresholds) |
-| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work                                                             | —                    |
-| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments                                                                | ✅                   |
-| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions                                                          | ✅                   |
-| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite                                                           | —                    |
-| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle                                                                    | —                    |
-| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle                                                        | —                    |
-| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass                                                           | —                    |
-| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests                                                            | ✅                   |
-| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle                                                                    | —                    |
-| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes                                                                   | —                    |
+| Test type                | Command                                                       | When to run                        | Runs in CI           |
+| ------------------------ | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests               | `pnpm test`                                                   | Every change                       | ✅                   |
+| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
+| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
+| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
+| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions   | ✅                   |
+| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
+| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
+| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
+| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
+| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
+| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
+| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
 
 All commands run from the project root unless noted.
 
