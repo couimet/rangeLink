@@ -755,7 +755,6 @@ test_cases:
   - id: clipboard-preservation-013
     labels:
       - clipboard
-      - requires-extensions
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'Cold paste to Cursor AI: prior clipboard content is restored after paste'
     preconditions:
@@ -767,12 +766,11 @@ test_cases:
       - 'R-L dispatched programmatically to cold-bound Cursor AI'
       - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content is restored after paste completes.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-014
     labels:
       - clipboard
-      - requires-extensions
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'Warm paste to Cursor AI: prior clipboard content is restored (panel already open)'
     preconditions:
@@ -785,7 +783,7 @@ test_cases:
       - 'Second R-L dispatched programmatically to warm-bound Cursor AI'
       - 'assertClipboardRestored verifies sentinel is back on clipboard'
     expected_result: 'Prior clipboard content restored after warm paste.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-015
     labels:
