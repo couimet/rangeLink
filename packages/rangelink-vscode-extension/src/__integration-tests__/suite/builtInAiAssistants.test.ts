@@ -5,8 +5,10 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
@@ -19,6 +21,8 @@ import {
   EXTENSION_ID_GEMINI_CODE_ASSIST,
 } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
+  assertClipboardChanged,
+  assertClipboardRestored,
   assertStatusBarMsgLogged,
   cleanupFiles,
   createWorkspaceFile,
@@ -29,7 +33,9 @@ import {
   settle,
   standardSuite,
   waitForExtensionActive,
+  waitForHuman,
   waitForHumanVerdict,
+  writeClipboardSentinel,
 } from '../helpers';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
@@ -441,6 +447,178 @@ standardSuite('Built-in AI Assistants', (log) => {
     );
 
     log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
+  });
+
+  test('clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-011: always + Claude Code cold paste');
+    log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
+  });
+
+  test('clipboard-preservation-012: warm paste to Claude Code — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-012: always + Claude Code warm paste');
+    log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
+  });
+
+  test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-013: always + Cursor AI cold paste');
+    log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
+  });
+
+  test('clipboard-preservation-014: warm paste to Cursor AI — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-014: always + Cursor AI warm paste');
+    log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
+  });
+
+  test('clipboard-preservation-015: cold paste to Copilot Chat — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-015: always + Copilot Chat cold paste');
+    log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
+  });
+
+  test('clipboard-preservation-016: warm paste to Copilot Chat — prior clipboard restored', async () => {
+    const fileUri = createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await settle();
+
+    // Warmup: lines 1-2 pre-selected
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+
+    // Pre-select lines 3-4 for the warm send
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    await assertClipboardRestored('clipboard-preservation-016: always + Copilot Chat warm paste');
+    log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
+  });
+
+  test('[assisted] clipboard-preservation-017: failed paste — RangeLink stays on clipboard for manual paste', async () => {
+    const fileUri = createWorkspaceFile('cp-017', 'line 1\nline 2\nline 3\n');
+    tmpFileUris.push(fileUri);
+    const editor = await openEditor(fileUri);
+    await settle();
+
+    await waitForHuman(
+      'clipboard-preservation-017',
+      'Bind "Dummy AI (Focus-Fail)" via R-D picker, then Cancel',
+      [
+        '1. Press Cmd+R Cmd+D → select "Dummy AI (Focus-Fail)" from the picker',
+        '2. Press Cancel to continue (assertions happen automatically)',
+      ],
+    );
+    await settle();
+
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
+    const clipboard017 = await assertClipboardChanged('clipboard-preservation-017: failed paste');
+    assert.ok(clipboard017.includes('#L'), `Expected RangeLink on clipboard, got: ${clipboard017}`);
+    log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
 });
 

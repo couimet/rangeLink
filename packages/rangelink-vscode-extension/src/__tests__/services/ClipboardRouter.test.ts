@@ -148,6 +148,109 @@ describe('ClipboardRouter', () => {
       expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
     });
 
+    it('passes pasteSucceeded=true to isClipboardRestorationApplicable when sendFn succeeds', async () => {
+      const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: dest,
+      });
+      let capturedShouldRestore: (() => boolean) | undefined;
+      mockPreserver.preserve.mockImplementation(
+        async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
+          capturedShouldRestore = shouldRestore;
+          return fn();
+        },
+      );
+
+      router = new ClipboardRouter(
+        mockAdapter,
+        mockDestinationManager,
+        mockPicker,
+        mockPreserver,
+        mockLogger,
+      );
+
+      const options = buildOptions({
+        strategies: {
+          sendFn: jest.fn().mockResolvedValue(true),
+          isEligibleFn: jest.fn().mockResolvedValue(true),
+        },
+      });
+
+      await router.copyAndSendToDestination(options);
+
+      capturedShouldRestore?.();
+      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
+    });
+
+    it('passes pasteSucceeded=false to isClipboardRestorationApplicable when content is ineligible', async () => {
+      const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: dest,
+      });
+      let capturedShouldRestore: (() => boolean) | undefined;
+      mockPreserver.preserve.mockImplementation(
+        async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
+          capturedShouldRestore = shouldRestore;
+          return fn();
+        },
+      );
+
+      router = new ClipboardRouter(
+        mockAdapter,
+        mockDestinationManager,
+        mockPicker,
+        mockPreserver,
+        mockLogger,
+      );
+
+      const options = buildOptions({
+        strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn().mockResolvedValue(false) },
+      });
+
+      await router.copyAndSendToDestination(options);
+
+      capturedShouldRestore?.();
+      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+    });
+
+    it('passes pasteSucceeded=false to isClipboardRestorationApplicable for self-paste detection', async () => {
+      const sourceUri = createMockUri('/workspace/file.ts');
+      const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: dest,
+      });
+      let capturedShouldRestore: (() => boolean) | undefined;
+      mockPreserver.preserve.mockImplementation(
+        async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
+          capturedShouldRestore = shouldRestore;
+          return fn();
+        },
+      );
+
+      jest.spyOn(isSameFileDestinationModule, 'isSameFileDestination').mockReturnValue(true);
+
+      router = new ClipboardRouter(
+        mockAdapter,
+        mockDestinationManager,
+        mockPicker,
+        mockPreserver,
+        mockLogger,
+      );
+
+      const options = buildOptions({
+        content: { clipboard: 'link', send: 'link', sourceUri },
+        strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn().mockResolvedValue(true) },
+      });
+
+      await router.copyAndSendToDestination(options);
+
+      capturedShouldRestore?.();
+      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+    });
+
     it('skips preservation when destinationBehavior is ClipboardOnly', async () => {
       const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
       mockDestinationManager = createMockDestinationManager({

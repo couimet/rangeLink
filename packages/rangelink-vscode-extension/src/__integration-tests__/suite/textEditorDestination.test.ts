@@ -2,16 +2,21 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_COPY_LINK_RELATIVE,
+  CMD_PASTE_TO_DESTINATION,
+} from '../../constants/commandIds';
 import {
   assertNoToastLogged,
   assertToastLogged,
   cleanupFiles,
   createWorkspaceFile,
   getLogCapture,
+  openSourceWithSelection,
   settle,
   standardSuite,
-  waitForHuman,
+  waitForHumanVerdict,
 } from '../helpers';
 
 standardSuite('Text Editor Destination', (log) => {
@@ -38,17 +43,8 @@ standardSuite('Text Editor Destination', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ted-001');
 
-    await waitForHuman(
-      'text-editor-destination-001',
-      'The file is bound to itself. Press Cmd+R Cmd+L — verify info message appears and file is unchanged.',
-      [
-        '1. The current file is already set as its own destination (bound via test setup)',
-        '2. Text "self-paste" is already selected',
-        '3. Press Cmd+R Cmd+L',
-        '4. Verify an info notification appears saying the link was copied and cannot auto-paste to same file',
-        '5. Verify the file content has NOT changed',
-      ],
-    );
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
 
     const lines = logCapture.getLinesSince('before-ted-001');
 
@@ -57,6 +53,17 @@ standardSuite('Text Editor Destination', (log) => {
       message:
         'RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links.',
     });
+
+    const verdict = await waitForHumanVerdict(
+      'text-editor-destination-001',
+      'Verify info message appeared and file content is unchanged',
+      [
+        '1. An info notification appeared about self-paste',
+        '2. The file content has NOT changed',
+        '3. Click PASS if both checks pass, FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(verdict, 'pass');
 
     log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
   });
@@ -93,16 +100,8 @@ standardSuite('Text Editor Destination', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-htl-001');
 
-    await waitForHuman(
-      'hidden-tab-paste-001',
-      'R-L with bound editor hidden behind another tab — paste still lands in bound editor',
-      [
-        '1. The source file is active (htl-001-source). The bound editor (htl-001-dest) is hidden behind it in the same column.',
-        `2. "${SOURCE_CONTENT}" is already selected.`,
-        '3. Press Cmd+R Cmd+L.',
-        '4. Observe that the bound editor is brought to the foreground and receives the RangeLink.',
-      ],
-    );
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await settle();
 
     const lines = logCapture.getLinesSince('before-htl-001');
 
@@ -160,16 +159,8 @@ standardSuite('Text Editor Destination', (log) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-htl-002');
 
-    await waitForHuman(
-      'hidden-tab-paste-002',
-      'R-V with bound editor hidden behind another tab — paste still lands in bound editor',
-      [
-        '1. The source file is active (htl-002-source). The bound editor (htl-002-dest) is hidden behind it in the same column.',
-        `2. "${SELECTED_TEXT}" is already selected.`,
-        '3. Press Cmd+R Cmd+V.',
-        '4. Observe that the bound editor is brought to the foreground and receives the selected text.',
-      ],
-    );
+    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+    await settle();
 
     const lines = logCapture.getLinesSince('before-htl-002');
 
@@ -303,16 +294,10 @@ standardSuite('Text Editor Destination', (log) => {
     });
     await settle();
 
-    // Focus source in col 1 with selection.
-    const sourceEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(sourceUri),
-      { viewColumn: vscode.ViewColumn.One, preview: false },
-    );
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, SOURCE_TEXT.length),
-    );
-    await settle();
+    // Open source in col 4 — a fresh column that reliably gets focus in the
+    // test runner (col 2 and 3 are occupied by dest; col 1 is unreliable
+    // after prior tests have manipulated it).
+    await openSourceWithSelection(sourceUri, vscode.ViewColumn.Four);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-dtg-003');
@@ -418,7 +403,6 @@ standardSuite('Text Editor Destination', (log) => {
     tmpFileUris.push(destUri, sourceUri, dummyUri);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
-    const sourceDoc = await vscode.workspace.openTextDocument(sourceUri);
 
     // Open dest in col 2, bind (boundViewColumn = 2).
     const destEditor = await vscode.window.showTextDocument(destDoc, {
@@ -449,16 +433,9 @@ standardSuite('Text Editor Destination', (log) => {
     });
     await settle();
 
-    // Focus source in col 1 with a text selection.
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
-      viewColumn: vscode.ViewColumn.One,
-      preview: false,
-    });
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, SOURCE_TEXT.length),
-    );
-    await settle();
+    // Open source in col 4 — a fresh column that reliably gets focus.
+    // Col 2 is occupied by dummy (dest hidden behind it), col 3 by dest.
+    await openSourceWithSelection(sourceUri, vscode.ViewColumn.Four);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-svc-001');

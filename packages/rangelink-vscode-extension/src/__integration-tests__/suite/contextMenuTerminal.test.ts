@@ -17,6 +17,7 @@ import {
   createAndOpenFile,
   createCapturingTerminal,
   createTerminal,
+  echoToTerminal,
   extractQuickPickItemsLogged,
   getLogCapture,
   settle,
@@ -230,7 +231,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const terminal = await createTerminal(terminalName);
 
     const markerText = 'STS_005_MARKER_TEXT';
-    terminal.sendText(`echo ${markerText}`, true);
+    echoToTerminal(terminal, markerText);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -280,7 +281,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     const sourceTerminal = await createTerminal(sourceName);
     const markerText = 'STS_008_CROSS_TERMINAL_MARKER';
-    sourceTerminal.sendText(`echo ${markerText}`, true);
+    echoToTerminal(sourceTerminal, markerText);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -331,7 +332,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const terminal = await createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
-    terminal.sendText(`echo STS_009_MARKER_TEXT`, true);
+    echoToTerminal(terminal, 'STS_009_MARKER_TEXT');
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -423,7 +424,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     const sourceTerminal = await createTerminal(sourceName);
     const markerText = 'STS_011_MARKER_TEXT';
-    sourceTerminal.sendText(`echo ${markerText}`, true);
+    echoToTerminal(sourceTerminal, markerText);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -484,7 +485,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const terminal = await createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
-    terminal.sendText(`echo STS_012_MARKER_TEXT`, true);
+    echoToTerminal(terminal, 'STS_012_MARKER_TEXT');
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
@@ -539,7 +540,7 @@ standardSuite('Context Menus — Terminal', (log) => {
     const terminalName = 'rl-sts-013';
     const terminal = await createTerminal(terminalName);
     const markerText = 'STS_013_AI_DELIVERY_MARKER';
-    terminal.sendText(`echo ${markerText}`, true);
+    echoToTerminal(terminal, markerText);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();

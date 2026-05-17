@@ -311,6 +311,23 @@ describe('LinkGenerator', () => {
         'Sending link to destination',
       );
       expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+        control: {
+          contentType: 'Link',
+          destinationBehavior: 'bound-destination',
+        },
+        content: {
+          clipboard: ' src/file.ts#L1 ',
+          send: { ...link, link: ' src/file.ts#L1 ' },
+          sourceUri: mockDoc.uri,
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentName: 'RangeLink',
+        fnName: 'copyToClipboardAndDestination',
+      });
     });
   });
 });

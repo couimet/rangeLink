@@ -12,6 +12,7 @@ describe('TerminalInsertFactory', () => {
 
   it('delegates to ideAdapter.pasteIntoTerminal and returns true on success', async () => {
     const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard');
     const mockTerminal = createMockTerminal({ name: 'My Terminal' });
     const pasteIntoTerminalSpy = jest
       .spyOn(mockAdapter, 'pasteIntoTerminal')
@@ -29,10 +30,12 @@ describe('TerminalInsertFactory', () => {
       { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
       'Terminal paste succeeded',
     );
+    expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 
   it('returns false when pasteIntoTerminal throws', async () => {
     const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard');
     const mockTerminal = createMockTerminal({ name: 'My Terminal' });
     const testError = new Error('Paste failed');
     jest.spyOn(mockAdapter, 'pasteIntoTerminal').mockRejectedValue(testError);
@@ -47,10 +50,12 @@ describe('TerminalInsertFactory', () => {
       { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal', error: testError },
       'Terminal paste failed',
     );
+    expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 
   it('captures terminal reference in closure', async () => {
     const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard');
     const terminal1 = createMockTerminal({ name: 'Terminal 1' });
     const terminal2 = createMockTerminal({ name: 'Terminal 2' });
     const pasteIntoTerminalSpy = jest
@@ -67,5 +72,6 @@ describe('TerminalInsertFactory', () => {
     expect(pasteIntoTerminalSpy).toHaveBeenNthCalledWith(1, terminal1);
     expect(pasteIntoTerminalSpy).toHaveBeenNthCalledWith(2, terminal2);
     expect(mockLogger.error).not.toHaveBeenCalled();
+    expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 });

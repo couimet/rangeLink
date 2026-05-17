@@ -72,3 +72,26 @@ export const cleanupFiles = (uris: vscode.Uri[]): void => {
 export const closeAllEditors = async (): Promise<void> => {
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 };
+
+/**
+ * Open a file as a source editor with a text selection, using a viewColumn
+ * that avoids the VS Code test runner's focus-steal issue.
+ *
+ * In the automated test host, showTextDocument in an already-used column may
+ * not transfer focus — the prior dest editor stays active. Using a fresh
+ * column (one not occupied by dest-setup editors) works around this.
+ *
+ * Returns the editor so callers can dispatch paste/navigate commands.
+ */
+export const openSourceWithSelection = async (
+  uri: vscode.Uri,
+  viewColumn: vscode.ViewColumn,
+): Promise<vscode.TextEditor> => {
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const editor = await vscode.window.showTextDocument(doc, viewColumn);
+  const lastLine = doc.lineAt(doc.lineCount - 1);
+  const endPos = lastLine.range.end;
+  editor.selection = new vscode.Selection(new vscode.Position(0, 0), endPos);
+  await settle();
+  return editor;
+};

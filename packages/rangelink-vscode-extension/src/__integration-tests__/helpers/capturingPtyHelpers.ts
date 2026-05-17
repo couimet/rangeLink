@@ -87,10 +87,11 @@ export const createAndBindCapturingTerminal = async (
  * Use for content-level validation of what reached the terminal.
  */
 export const assertTerminalBufferEquals = (captured: string, expected: string): void => {
+  const normalized = captured.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n$/, '');
   assert.strictEqual(
-    captured,
+    normalized,
     expected,
-    `Terminal buffer mismatch:\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(captured)}`,
+    `Terminal buffer mismatch:\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(normalized)}`,
   );
 };
 

@@ -147,11 +147,28 @@ describe('TerminalSelectionService', () => {
       mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
         DestinationBehavior.BoundDestination,
       );
+      mockConfigReader.getPaddingMode.mockReturnValue('both');
 
       const result = await service.pasteTerminalSelectionToDestination();
 
       expect(result).toStrictEqual({ outcome: 'success' });
       expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+        control: {
+          contentType: 'Text',
+          destinationBehavior: 'bound-destination',
+        },
+        content: {
+          clipboard: ' selected text ',
+          send: ' selected text ',
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentName: 'Selected text',
+        fnName: 'pasteTerminalSelectionToDestination',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',

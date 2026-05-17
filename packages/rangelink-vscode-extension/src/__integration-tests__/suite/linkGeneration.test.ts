@@ -175,13 +175,12 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
 
     const verdict = await waitForHumanVerdict(
       'url-exclusion-002',
-      'Hover over https://example.com/path/file.ts#L10 in the editor',
+      'Verify RangeLink does NOT add its own hover/tooltip on a regular https:// URL',
       [
-        '1. Look at the line: https://example.com/path/file.ts#L10',
-        '2. Hover your cursor over any part of that URL',
-        '3. PASS if: no RangeLink tooltip or clickable underline appears',
-        '4. A browser-style VS Code link tooltip is OK — only RangeLink must NOT add its own',
-        '5. FAIL if: a RangeLink tooltip or clickable underline appears',
+        '1. Hover your cursor over https://example.com/path/file.ts#L10 in the editor',
+        '2. The URL will show a regular VS Code browser-style link hover — that is expected and fine',
+        '3. PASS if: RangeLink does NOT add its own clickable underline or tooltip',
+        '4. FAIL if: RangeLink adds a clickable underline or tooltip on the URL',
       ],
     );
 
@@ -203,11 +202,11 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
 
     const verdict = await waitForHumanVerdict(
       'document-link-tooltip-001',
-      'Hover over src/utils/helper.ts#L5 in the editor',
+      'Hover over the RangeLink — expect a clean human-readable tooltip (file path + line number)',
       [
         '1. Look at the line: See code at src/utils/helper.ts#L5 for details',
-        '2. Hover your cursor over the link text (it should be underlined/clickable)',
-        '3. PASS if: the tooltip shows clean human-readable text (file path and line number)',
+        '2. Hover your cursor over the RangeLink (it should be underlined/clickable)',
+        '3. PASS if: the RangeLink tooltip shows clean text (file path and line number)',
         '4. FAIL if: the tooltip shows raw JSON, a command: URI, or internal parameters',
       ],
     );
