@@ -221,7 +221,9 @@ standardSuite('Core Send Commands', (log) => {
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedContent = `${relPath}#L1-L2`;
-    const clipboard = await assertClipboardChanged('R-C command dispatch should write link to clipboard');
+    const clipboard = await assertClipboardChanged(
+      'R-C command dispatch should write link to clipboard',
+    );
     assert.strictEqual(
       clipboard,
       expectedContent,
