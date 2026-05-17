@@ -316,18 +316,6 @@ describe('resolveWorkspacePath', () => {
       expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
-    it('should return root match when bare filename exists at workspace root even if findFiles would fail', async () => {
-      mockStat.mockResolvedValue({} as any);
-
-      const result = await resolveWorkspacePath('auth.ts', mockVscode);
-
-      const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
-      expect(resolved.uri.fsPath).toBe('/Users/name/project/auth.ts');
-      expect(mockStat).toHaveBeenCalledTimes(1);
-      expect(mockFindFiles).not.toHaveBeenCalled();
-    });
-
     it('should return undefined when bare filename not at workspace root and findFiles returns empty', async () => {
       // Root fs.stat fails (file not at root), findFiles returns empty
       mockFindFiles.mockResolvedValueOnce([]);
