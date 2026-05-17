@@ -18,8 +18,8 @@ set -euo pipefail
 # Version is derived from the filename — no extra flags needed.
 #
 # Requires:
-#   python3 with PyYAML  — auto-installed into .venv/ if missing
-#   gh CLI               — authenticated with write access to the repo (not needed with --dry-run or --local)
+#   node       — resolves QA YAML labels and generates JSON
+#   gh CLI     — authenticated with write access to the repo (not needed with --dry-run or --local)
 
 DRY_RUN=false
 LOCAL_MODE=false
@@ -75,28 +75,6 @@ if [[ ! -f "$YAML_FILE" ]]; then
   exit 1
 fi
 
-if ! command -v python3 &>/dev/null; then
-  echo "Error: python3 is required but not found on PATH" >&2
-  exit 1
-fi
-
-REPO_ROOT_FOR_VENV="$(git rev-parse --show-toplevel)"
-VENV_DIR="$REPO_ROOT_FOR_VENV/.venv"
-
-if ! python3 -c "import yaml" 2>/dev/null; then
-  if [[ -d "$VENV_DIR" ]] && "$VENV_DIR/bin/python3" -c "import yaml" 2>/dev/null; then
-    # shellcheck disable=SC1091
-    source "$VENV_DIR/bin/activate"
-  else
-    echo "PyYAML not found — creating venv and installing..." >&2
-    python3 -m venv "$VENV_DIR"
-    "$VENV_DIR/bin/pip" install --quiet pyyaml
-    # shellcheck disable=SC1091
-    source "$VENV_DIR/bin/activate"
-    echo "PyYAML installed in $VENV_DIR" >&2
-  fi
-fi
-
 if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v gh &>/dev/null; then
   echo "Error: gh CLI is required but not found on PATH" >&2
   exit 1
@@ -125,120 +103,15 @@ echo ""
 # "feature" is the most common feature: value among TCs in the group.
 # Only includes groups where at least one TC has automated: assisted or automated: false.
 # Special labels (cursor, ubuntu) extract TCs into their own sections.
-GROUPS_JSON=$(python3 - "$YAML_FILE" <<'PYEOF'
-import sys, json, yaml, re
-from collections import Counter
-
-with open(sys.argv[1]) as f:
-    data = yaml.safe_load(f)
-
-tcs = data.get('test_cases', [])
-if not tcs:
-    sys.exit(1)
-
-# Group TCs by ID prefix (everything before the final -NNN)
-groups = {}  # prefix -> list of TCs
-for tc in tcs:
-    tc_id = str(tc.get('id', ''))
-    m = re.match(r'^(.*?)-\d{3}$', tc_id)
-    prefix = m.group(1) if m else tc_id
-    groups.setdefault(prefix, []).append(tc)
-
-result_groups = []
-cursor_tcs = []
-ubuntu_tcs = []
-total_assisted = 0
-total_manual = 0
-
-for prefix, tc_list in sorted(groups.items()):
-    feature_counts = Counter()
-    assisted_count = 0
-    manual_count = 0
-    requires_extensions = False
-
-    for tc in tc_list:
-        labels = tc.get('labels') or []
-
-        # Check for special labels BEFORE counting in group
-        tc_id = str(tc.get('id', ''))
-        automated = tc.get('automated', False)
-        feat = tc.get('feature', 'Uncategorized')
-
-        if 'cursor' in labels and automated is not True:
-            cursor_tcs.append({
-                "id": tc_id,
-                "feature": feat,
-                "scenario": tc.get('scenario', ''),
-                "automated": automated,
-            })
-            continue  # skip normal group counting
-
-        if 'ubuntu' in labels and automated is not True:
-            ubuntu_tcs.append({
-                "id": tc_id,
-                "feature": feat,
-                "scenario": tc.get('scenario', ''),
-                "automated": automated,
-            })
-            continue  # skip normal group counting
-
-        if 'requires-extensions' in labels:
-            requires_extensions = True
-
-        feature_counts[feat] += 1
-
-        if automated == 'assisted':
-            assisted_count += 1
-        elif automated is False:
-            manual_count += 1
-
-    non_automated = assisted_count + manual_count
-    if non_automated == 0:
-        continue
-
-    total_assisted += assisted_count
-    total_manual += manual_count
-    most_common = feature_counts.most_common(1)[0][0]
-
-    result_groups.append({
-        "prefix": prefix,
-        "feature": most_common,
-        "assisted": assisted_count,
-        "manual": manual_count,
-        "total": non_automated,
-        "requires_extensions": requires_extensions,
-    })
-
-# Count cursor/ubuntu TCs for totals
-for tc in cursor_tcs:
-    if tc['automated'] == 'assisted':
-        total_assisted += 1
-    elif tc['automated'] is False:
-        total_manual += 1
-
-for tc in ubuntu_tcs:
-    if tc['automated'] == 'assisted':
-        total_assisted += 1
-    elif tc['automated'] is False:
-        total_manual += 1
-
-json.dump({
-    "groups": result_groups,
-    "cursor_tcs": cursor_tcs,
-    "ubuntu_tcs": ubuntu_tcs,
-    "total_assisted": total_assisted,
-    "total_manual": total_manual,
-}, sys.stdout)
-PYEOF
-)
+GROUPS_JSON=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_FILE" --json)
 
 if [[ -z "$GROUPS_JSON" ]]; then
   echo "Error: No test cases found in $YAML_FILE" >&2
   exit 1
 fi
 
-TOTAL_GROUPS=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['groups']))")
-TOTAL_TCS=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(sum(g['total'] for g in d['groups']) + len(d['cursor_tcs']) + len(d['ubuntu_tcs']))")
+TOTAL_GROUPS=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups.length))")
+TOTAL_TCS=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(String(d.groups.reduce((s,g)=>s+g.total,0)+d.cursor_tcs.length+d.ubuntu_tcs.length))")
 
 echo "Found $TOTAL_TCS assisted/manual test cases across $TOTAL_GROUPS groups"
 echo ""
@@ -254,11 +127,11 @@ CI runs fully automated tests (\`test:release:automated\`). The checkboxes below
 # Collect group checkbox lines
 GROUP_CHECKBOXES=""
 for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
-  PREFIX=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['prefix'])")
-  FEATURE=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['feature'])")
-  ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['assisted'])")
-  MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['manual'])")
-  REQ_EXT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['requires_extensions'])")
+  PREFIX=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].prefix)")
+  FEATURE=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].feature)")
+  ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].assisted))")
+  MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].manual))")
+  REQ_EXT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].requires_extensions))")
 
   # Build label: (N assisted, M manual) or just (N assisted) or (M manual)
   LABEL_PARTS=""
@@ -281,42 +154,16 @@ for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
 done
 
 # Cursor section — sub-checkboxes for each cursor-labeled TC
-CURSOR_SECTION=$(echo "$GROUPS_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-tcs = data['cursor_tcs']
-if not tcs:
-    print('')
-    sys.exit(0)
-lines = []
-lines.append('- [ ] **Cursor — IDE-Specific Tests** — \`./scripts/qa-smoke-setup.sh --editor cursor\`:')
-for tc in tcs:
-    auto = 'manual' if tc['automated'] is False else tc['automated']
-    lines.append(f'  - [ ] {tc[\"id\"]} ({auto}): {tc[\"scenario\"]}')
-print('\n'.join(lines))
-")
-CURSOR_COUNT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['cursor_tcs']))")
+CURSOR_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.cursor_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Cursor — IDE-Specific Tests** — \`pnpm package:vscode-extension:withInstall:both && cursor qa/fixtures/workspace\`:'];for(const x of t){const a=x.automated===false?'manual':x.automated;l.push('  - [ ] '+x.id+' ('+a+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
+CURSOR_COUNT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).cursor_tcs.length))")
 if [[ "$CURSOR_COUNT" -gt 0 ]]; then
   GROUP_CHECKBOXES+=$'\n'
   GROUP_CHECKBOXES+="${CURSOR_SECTION}"$'\n'
 fi
 
 # Ubuntu section — sub-checkboxes for each ubuntu-labeled TC
-UBUNTU_SECTION=$(echo "$GROUPS_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-tcs = data['ubuntu_tcs']
-if not tcs:
-    print('')
-    sys.exit(0)
-lines = []
-lines.append('- [ ] **Ubuntu — Ctrl+R Keybindings** — \`./scripts/qa-ubuntu-docker.sh\` (Docker):')
-for tc in tcs:
-    auto = 'manual' if tc['automated'] is False else tc['automated']
-    lines.append(f'  - [ ] {tc[\"id\"]} ({auto}): {tc[\"scenario\"]}')
-print('\n'.join(lines))
-")
-UBUNTU_COUNT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['ubuntu_tcs']))")
+UBUNTU_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.ubuntu_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Ubuntu — Ctrl+R Keybindings** — \`./scripts/qa-ubuntu-docker.sh\` (Docker):'];for(const x of t){const a=x.automated===false?'manual':x.automated;l.push('  - [ ] '+x.id+' ('+a+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
+UBUNTU_COUNT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).ubuntu_tcs.length))")
 if [[ "$UBUNTU_COUNT" -gt 0 ]]; then
   GROUP_CHECKBOXES+=$'\n'
   GROUP_CHECKBOXES+="${UBUNTU_SECTION}"$'\n'
@@ -324,8 +171,8 @@ fi
 
 ISSUE_BODY="${ISSUE_BODY}${GROUP_CHECKBOXES}"
 
-TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_assisted'])")
-TOTAL_MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_manual'])")
+TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_assisted))")
+TOTAL_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_manual))")
 ISSUE_BODY="${ISSUE_BODY}"$'\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
 
 # --- Local mode: write to a markdown file ---
@@ -335,8 +182,8 @@ if [[ "$LOCAL_MODE" == true ]]; then
   TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
   LOCAL_FILE="$OUTPUT_DIR/qa-checklist-${VERSION}-${TIMESTAMP}.md"
 
-  TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_assisted'])")
-  TOTAL_MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_manual'])")
+  TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_assisted))")
+  TOTAL_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_manual))")
 
   {
     echo "# QA Checklist — ${VERSION}"

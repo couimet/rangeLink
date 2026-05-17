@@ -11,7 +11,7 @@ set -euo pipefail
 # Filename: qa/release-testing-instructions-v<version>.md
 #
 # Requires: jq, nextTargetVersion set in package.json
-# Optional: gh CLI (authenticated), python3 with PyYAML
+# Optional: gh CLI (authenticated)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -40,12 +40,6 @@ if ! command -v gh &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not found — Phase 2 (GitHub QA Issues) requires it${NC}\n"
 elif ! gh auth status &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
-fi
-
-if ! command -v python3 &>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: python3 not found — Phases 2 and 5 require it (PyYAML)${NC}\n"
-elif ! python3 -c "import yaml" 2>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: PyYAML not installed — scripts that need it will auto-install into .venv/${NC}\n"
 fi
 
 echo -e "${GREEN}Generating release testing instructions for v${NEXT_VERSION}${NC}"
@@ -101,13 +95,6 @@ jq -r '.nextTargetVersion' packages/rangelink-vscode-extension/package.json
 
 \`\`\`bash
 gh auth status
-\`\`\`
-
-### PyYAML (required for Phases 2 and 5)
-
-\`\`\`bash
-python3 -c "import yaml; print('PyYAML OK')"
-# If missing, scripts will auto-install into .venv/ on first run
 \`\`\`
 
 ---
@@ -183,37 +170,14 @@ This compiles the extension, launches a VS Code extension host, runs integration
 
 ---
 
-## Phase 5: QA Smoke Setup + Manual QA Pass
-
-### Build, install, and launch
-
-\`\`\`bash
-pnpm qa:setup:vscode-extension
-\`\`\`
-
-This builds the .vsix, installs it into an isolated \`qa-test\` profile, copies settings, generates a QA checklist, and launches VS Code/Cursor with the fixture workspace.
-
-### Settings profile switching
-
-Switch profiles between QA passes to test different configurations:
-
-\`\`\`bash
-# Available profiles:
-pnpm qa:setup:vscode-extension -- --list-profiles
-
-# Switch to a specific profile:
-pnpm qa:setup:vscode-extension -- --settings clipboard-never
-pnpm qa:setup:vscode-extension -- --settings no-dirty-warning
-pnpm qa:setup:vscode-extension -- --settings custom-delimiters
-pnpm qa:setup:vscode-extension -- --settings terminal-picker-low
-\`\`\`
+## Phase 5: Manual QA Pass
 
 ### Walk through the checklist
 
 Generate a local QA checklist:
 
 \`\`\`bash
-pnpm generate:qa-issue:vscode-extension -- --local
+pnpm generate:qa-issue:vscode-extension --local
 \`\`\`
 
 The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timestamp>.md\`.
@@ -222,7 +186,6 @@ The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timesta
 1. **Ready-now TCs** — no terminal setup needed, test immediately
 2. **Open 1+ terminals** and bind a destination (\`R-D\`)
 3. **Terminal-dependent TCs** — require a bound destination
-4. **Settings-specific TCs** — switch profiles as indicated by the \`[settings: ...]\` tags
 
 ---
 

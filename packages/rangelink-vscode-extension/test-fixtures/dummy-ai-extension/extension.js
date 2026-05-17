@@ -43,7 +43,9 @@ function activate(context) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('dummyAi.focusFail', async () => {
-      throw new Error('Simulated focus failure for integration testing');
+      throw new Error(
+        'dummyAi.focusFail: intentional failure for TC-010 clipboard-preservation test',
+      );
     }),
   );
 
@@ -60,6 +62,12 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand('dummyAi.getText', () => {
       return provider?.requestText();
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dummyAi.focusFail', () => {
+      throw new Error('Simulated focus failure for integration testing');
     }),
   );
 
