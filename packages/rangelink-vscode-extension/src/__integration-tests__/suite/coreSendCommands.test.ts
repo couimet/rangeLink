@@ -175,7 +175,7 @@ standardSuite('Core Send Commands', (log) => {
     log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
 
-  test('core-send-commands-r-l-004: Command Palette "Send RangeLink" behaves identically to R-L keybinding', async () => {
+  test('core-send-commands-r-l-004: Command dispatch "Send RangeLink" behaves identically to R-L keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
@@ -198,10 +198,10 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-l-004'), {
       message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-r-l-004-dest")',
     });
-    log('✓ Command Palette "Send RangeLink" delivered exact link to bound terminal destination');
+    log('✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination');
   });
 
-  test('core-send-commands-r-c-002: Command Palette "Copy RangeLink" behaves identically to R-C keybinding', async () => {
+  test('core-send-commands-r-c-002: Command dispatch "Copy RangeLink" behaves identically to R-C keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
 
@@ -221,7 +221,7 @@ standardSuite('Core Send Commands', (log) => {
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedContent = `${relPath}#L1-L2`;
-    const clipboard = await assertClipboardChanged('R-C palette should write link to clipboard');
+    const clipboard = await assertClipboardChanged('R-C command dispatch should write link to clipboard');
     assert.strictEqual(
       clipboard,
       expectedContent,
@@ -237,7 +237,7 @@ standardSuite('Core Send Commands', (log) => {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
     log(
-      '✓ Command Palette "Copy RangeLink" wrote exact link to clipboard; terminal received nothing',
+      '✓ Command dispatch "Copy RangeLink" wrote exact link to clipboard; terminal received nothing',
     );
   });
 
