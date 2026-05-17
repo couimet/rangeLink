@@ -26,6 +26,7 @@ import {
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
+  CLIPBOARD_SENTINEL,
   writeClipboardSentinel,
 } from '../helpers';
 

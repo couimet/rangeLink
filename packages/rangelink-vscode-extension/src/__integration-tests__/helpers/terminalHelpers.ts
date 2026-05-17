@@ -32,11 +32,6 @@ export const findTerminalItems = (items: Record<string, unknown>[]): Record<stri
       (item.label as string).includes('Terminal ('),
   );
 
-export const echoToTerminal = (terminal: vscode.Terminal, text: string): void => {
-  const escaped = text.replace(/'/g, "'\\''");
-  terminal.sendText(`echo '${escaped}'`, true);
-};
-
 export const createAndBindTerminal = async (name: string): Promise<vscode.Terminal> => {
   const terminal = vscode.window.createTerminal({ name });
   terminal.show(true);
