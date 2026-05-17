@@ -181,7 +181,7 @@ describe('resolveWorkspacePath', () => {
       const resolved = expectResolvedPath(result);
       expect(resolved.uri.fsPath).toBe('/Users/name/project/src/deep/auth.ts');
       expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', '{**/node_modules/**}', 2);
     });
 
     it('should return FILENAME_AMBIGUOUS when bare filename matches multiple files', async () => {
@@ -192,7 +192,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       expect(result).toBe(FILENAME_AMBIGUOUS);
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', '{**/node_modules/**}', 2);
     });
 
     it('should return undefined when bare filename matches no files', async () => {
@@ -201,7 +201,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('nonexistent.ts', mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockFindFiles).toHaveBeenCalledWith('**/nonexistent.ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/nonexistent.ts', '{**/node_modules/**}', 2);
     });
 
     it('should skip fallback for paths with forward slash separators', async () => {
@@ -218,13 +218,30 @@ describe('resolveWorkspacePath', () => {
       expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
-    it('should return undefined when findFiles rejects', async () => {
+    it('should return undefined when findFiles rejects (file not at root)', async () => {
       mockFindFiles.mockRejectedValueOnce(new Error('workspace error'));
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(mockStat).toHaveBeenCalledTimes(1);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', '{**/node_modules/**}', 2);
+    });
+
+    it('should return FILENAME_AMBIGUOUS when bare filename exists at multiple workspace roots', async () => {
+      const workspace1 = '/Users/name/project1';
+      const workspace2 = '/Users/name/project2';
+      mockVscode.workspace.workspaceFolders = [
+        createMockWorkspaceFolder(workspace1),
+        createMockWorkspaceFolder(workspace2),
+      ];
+      mockStat.mockResolvedValue({} as any);
+
+      const result = await resolveWorkspacePath('package.json', mockVscode);
+
+      expect(result).toBe(FILENAME_AMBIGUOUS);
+      expect(mockStat).toHaveBeenCalledTimes(2);
+      expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
     it('should escape square brackets in bare filename', async () => {
@@ -236,7 +253,7 @@ describe('resolveWorkspacePath', () => {
       const resolved = expectResolvedPath(result);
       expect(resolved.uri.fsPath).toBe('/Users/name/project/src/routes/[id].ts');
       expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/[[]id[]].ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/[[]id[]].ts', '{**/node_modules/**}', 2);
     });
 
     it('should escape asterisk in bare filename', async () => {
@@ -247,7 +264,7 @@ describe('resolveWorkspacePath', () => {
 
       const resolved = expectResolvedPath(result);
       expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/file[*].ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/file[*].ts', '{**/node_modules/**}', 2);
     });
 
     it('should escape question mark in bare filename', async () => {
@@ -258,7 +275,7 @@ describe('resolveWorkspacePath', () => {
 
       const resolved = expectResolvedPath(result);
       expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/foo[?].ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/foo[?].ts', '{**/node_modules/**}', 2);
     });
 
     it('should escape curly braces in bare filename', async () => {
@@ -269,10 +286,10 @@ describe('resolveWorkspacePath', () => {
 
       const resolved = expectResolvedPath(result);
       expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/[{]slug[}].ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/[{]slug[}].ts', '{**/node_modules/**}', 2);
     });
 
-    it('should return FILENAME_AMBIGUOUS when bare filename exists at workspace root and subdirectory', async () => {
+    it('should return root match when bare filename exists at both workspace root and subdirectory', async () => {
       const rootMatch = createMockUri('/Users/name/project/index.ts');
       const subMatch = createMockUri('/Users/name/project/src/index.ts');
       mockFindFiles.mockResolvedValueOnce([rootMatch, subMatch]);
@@ -280,40 +297,33 @@ describe('resolveWorkspacePath', () => {
 
       const result = await resolveWorkspacePath('index.ts', mockVscode);
 
-      expect(result).toBe(FILENAME_AMBIGUOUS);
-      expect(mockStat).not.toHaveBeenCalled();
+      const resolved = expectResolvedPath(result);
+      expect(resolved.uri.fsPath).toBe('/Users/name/project/index.ts');
+      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(mockStat).toHaveBeenCalledTimes(1);
+      expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
-    it('should return filename-fallback when bare filename exists only at workspace root', async () => {
-      const rootMatch = createMockUri('/Users/name/project/auth.ts');
-      mockFindFiles.mockResolvedValueOnce([rootMatch]);
+    it('should return workspace-relative when bare filename exists only at workspace root', async () => {
+      mockStat.mockResolvedValue({} as any);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('filename-fallback');
+      expect(resolved.resolvedVia).toBe('workspace-relative');
       expect(resolved.uri.fsPath).toBe('/Users/name/project/auth.ts');
-      expect(mockStat).not.toHaveBeenCalled();
+      expect(mockStat).toHaveBeenCalledTimes(1);
+      expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
-    it('should return undefined when findFiles rejects even if file exists at workspace root', async () => {
-      mockFindFiles.mockRejectedValueOnce(new Error('workspace error'));
-      mockStat.mockResolvedValue({} as any);
-
-      const result = await resolveWorkspacePath('auth.ts', mockVscode);
-
-      expect(result).toBeUndefined();
-      expect(mockStat).not.toHaveBeenCalled();
-    });
-
-    it('should return undefined when findFiles returns empty even if workspace-relative would match', async () => {
+    it('should return undefined when bare filename not at workspace root and findFiles returns empty', async () => {
+      // Root fs.stat fails (file not at root), findFiles returns empty
       mockFindFiles.mockResolvedValueOnce([]);
-      mockStat.mockResolvedValue({} as any);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockStat).not.toHaveBeenCalled();
+      expect(mockStat).toHaveBeenCalledTimes(1);
     });
   });
 

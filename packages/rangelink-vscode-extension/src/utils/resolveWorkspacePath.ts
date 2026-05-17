@@ -29,9 +29,10 @@ const escapeGlobPattern = (filename: string): string => {
  *
  * Attempts to resolve the path in the following order:
  * 1. If path is absolute and exists, use it directly
- * 2. If path is a bare filename (no directory separators), search workspace
- *    via findFiles — return the URI only when exactly one match exists,
- *    return FILENAME_AMBIGUOUS when multiple matches exist
+ * 2. If path is a bare filename (no directory separators):
+ *    a. Check workspace root(s) via fs.stat — return match if exactly one root has it
+ *    b. If multiple roots have it, return FILENAME_AMBIGUOUS
+ *    c. Fall back to findFiles across workspace (node_modules excluded) to check uniqueness
  * 3. Try resolving relative to each workspace folder
  * 4. If no workspace or file not found, return undefined
  *
@@ -62,16 +63,35 @@ export const resolveWorkspacePath = async (
     return undefined;
   }
 
-  // Bare-filename resolution: if the path has no directory separators,
-  // use findFiles to check for ambiguity BEFORE the workspace-relative
-  // loop — otherwise a root-level match would silently win (Issue #342)
+  // Bare-filename resolution: check workspace root(s) first via fs.stat,
+  // then fall back to findFiles with node_modules excluded (Issue #541).
   const isBareFilename = !linkPath.includes('/') && !linkPath.includes('\\');
   if (isBareFilename) {
+    let rootMatchCount = 0;
+    let rootMatch: vscode.Uri | undefined;
+    for (const folder of workspaceFolders) {
+      const rootPath = path.join(folder.uri.fsPath, linkPath);
+      const rootUri = ideInstance.Uri.file(rootPath);
+      try {
+        await ideInstance.workspace.fs.stat(rootUri);
+        rootMatchCount++;
+        rootMatch = rootUri;
+      } catch {
+        // Not at this root
+      }
+    }
+    if (rootMatchCount === 1) {
+      return { uri: rootMatch!, resolvedVia: 'workspace-relative' };
+    }
+    if (rootMatchCount >= AMBIGUITY_THRESHOLD) {
+      return FILENAME_AMBIGUOUS;
+    }
+
     const pattern = `**/${escapeGlobPattern(linkPath)}`;
     try {
       const matches = await ideInstance.workspace.findFiles(
         pattern,
-        undefined,
+        '{**/node_modules/**}',
         AMBIGUITY_THRESHOLD,
       );
       if (matches.length === 1) {
