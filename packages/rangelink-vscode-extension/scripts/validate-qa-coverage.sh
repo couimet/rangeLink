@@ -21,10 +21,6 @@ PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INTEGRATION_TEST_DIR="$PACKAGE_ROOT/src/__integration-tests__/suite"
 QA_DIR="$PACKAGE_ROOT/qa"
 
-relative_path() {
-  python3 -c "import os.path; print(os.path.relpath('$1', '$2'))"
-}
-
 find_latest_qa_yaml() {
   # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
   # (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
@@ -49,27 +45,6 @@ find_latest_qa_yaml() {
   echo "$latest"
 }
 
-# Extract TC IDs by automated value from YAML.
-# Usage: parse_ids_by_automated <yaml_path> <value>
-# where <value> is "true", "assisted", or "false"
-parse_ids_by_automated() {
-  local yaml_path="$1"
-  local target_value="$2"
-  awk -v target="$target_value" '
-    /^[[:space:]]+-[[:space:]]+id:/ {
-      gsub(/^[[:space:]]+-[[:space:]]+id:[[:space:]]+/, "")
-      gsub(/^'\''|'\''$/, "")
-      gsub(/^"/, ""); gsub(/"$/, "")
-      current_id = $0
-    }
-    /^[[:space:]]+automated:/ {
-      gsub(/^[[:space:]]+automated:[[:space:]]+/, "")
-      if ($0 == target && current_id != "") print current_id
-      current_id = ""
-    }
-  ' "$yaml_path" | sort
-}
-
 # Extract TC IDs from non-[assisted] integration tests.
 find_automated_test_ids() {
   if [[ ! -d "$INTEGRATION_TEST_DIR" ]]; then
@@ -80,7 +55,7 @@ find_automated_test_ids() {
   grep -hE '(test|it|describe|suite)[[:space:]]*\(' "$INTEGRATION_TEST_DIR"/*.test.ts \
     | grep -v '\[assisted\]' \
     | grep -oE '[a-z][-a-z]*-[0-9]{3}' \
-    | sort -u
+    | sort -u || true
 }
 
 # Extract TC IDs from [assisted]-tagged integration tests.
@@ -93,7 +68,7 @@ find_assisted_test_ids() {
   grep -hE '(test|it|describe|suite)[[:space:]]*\(' "$INTEGRATION_TEST_DIR"/*.test.ts \
     | grep '\[assisted\]' \
     | grep -oE '[a-z][-a-z]*-[0-9]{3}' \
-    | sort -u
+    | sort -u || true
 }
 
 YAML_PATH="${1:-$(find_latest_qa_yaml)}"
@@ -121,19 +96,18 @@ REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
   echo "QA Coverage Report"
   echo "Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
   echo ""
-  echo "QA YAML: $(relative_path "$YAML_PATH" "$PACKAGE_ROOT")"
-  echo "Tests:   $(relative_path "$INTEGRATION_TEST_DIR" "$PACKAGE_ROOT")"
+  echo "QA YAML: ${YAML_PATH#"$PACKAGE_ROOT"/}"
+  echo "Tests:   ${INTEGRATION_TEST_DIR#"$PACKAGE_ROOT"/}"
   echo ""
 
-  YAML_AUTOMATED_IDS=$(parse_ids_by_automated "$YAML_PATH" "true")
-  YAML_ASSISTED_IDS=$(parse_ids_by_automated "$YAML_PATH" "assisted")
-  YAML_MANUAL_IDS=$(parse_ids_by_automated "$YAML_PATH" "false")
+  YAML_AUTOMATED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --automated-only | sort -u)
+  YAML_ASSISTED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --assisted | sort -u)
   CODE_AUTOMATED_IDS=$(find_automated_test_ids)
   CODE_ASSISTED_IDS=$(find_assisted_test_ids)
 
   YAML_AUTOMATED_COUNT=$(echo "$YAML_AUTOMATED_IDS" | grep -c . || true)
   YAML_ASSISTED_COUNT=$(echo "$YAML_ASSISTED_IDS" | grep -c . || true)
-  YAML_MANUAL_COUNT=$(echo "$YAML_MANUAL_IDS" | grep -c . || true)
+  YAML_MANUAL_COUNT=$(grep -cE '^\s+automated:\s*["'"'"']?false["'"'"']?\s*$' "$YAML_PATH" || true)
   CODE_AUTOMATED_COUNT=$(echo "$CODE_AUTOMATED_IDS" | grep -c . || true)
   CODE_ASSISTED_COUNT=$(echo "$CODE_ASSISTED_IDS" | grep -c . || true)
 

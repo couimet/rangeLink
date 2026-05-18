@@ -7,19 +7,20 @@ const path = require('node:path');
 // ── Argument parsing ──────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
-let labelFilter = '';
+const labelFilters = [];
 let assistedOnly = false;
-let noAssisted = false;
+let excludeAssisted = false;
 let automatedOnly = false;
-let excludeLabel = '';
+const excludeLabels = [];
 let outputFormat = 'lines';
+let jsonOutput = false;
 let yamlPath = '';
 
 const printUsage = (exitCode = 2) => {
   process.stderr.write(
-    'Usage: resolve-qa-labels.js [--label <name>] [--assisted] [--no-assisted]\n' +
-      '                          [--automated-only] [--exclude-label <name>]\n' +
-      '                          [--format csv|lines] [--yaml <path>]\n',
+    'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
+      '                          [--automated-only] [--exclude-label <name>]...\n' +
+      '                          [--json] [--format csv|lines] [--yaml <path>]\n',
   );
   process.exit(exitCode);
 };
@@ -31,13 +32,14 @@ for (let i = 0; i < args.length; i++) {
         process.stderr.write('Error: --label requires a value\n');
         process.exit(1);
       }
-      labelFilter = args[++i];
+      labelFilters.push(args[++i]);
       break;
     case '--assisted':
       assistedOnly = true;
       break;
     case '--no-assisted':
-      noAssisted = true;
+    case '--exclude-assisted':
+      excludeAssisted = true;
       break;
     case '--automated-only':
       automatedOnly = true;
@@ -47,7 +49,10 @@ for (let i = 0; i < args.length; i++) {
         process.stderr.write('Error: --exclude-label requires a value\n');
         process.exit(1);
       }
-      excludeLabel = args[++i];
+      excludeLabels.push(args[++i]);
+      break;
+    case '--json':
+      jsonOutput = true;
       break;
     case '--format':
       if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
@@ -76,8 +81,8 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-if (assistedOnly && noAssisted) {
-  process.stderr.write('Error: --assisted and --no-assisted are mutually exclusive\n');
+if (assistedOnly && excludeAssisted) {
+  process.stderr.write('Error: --assisted and --exclude-assisted are mutually exclusive\n');
   process.exit(1);
 }
 
@@ -153,14 +158,38 @@ for (const rawLine of lines) {
 
   const autoMatch = line.match(/^\s+automated:\s*(.+)$/);
   if (autoMatch) {
-    currentCase.automated = autoMatch[1].trim();
+    const raw = autoMatch[1].trim();
+    currentCase.automated =
+      raw.length >= 2 &&
+      ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
+        ? raw.slice(1, -1)
+        : raw;
     inLabels = false;
     continue;
   }
 
   const featMatch = line.match(/^\s+feature:\s*(.+)$/);
   if (featMatch) {
-    currentCase.feature = featMatch[1].trim().replace(/^'|'$/g, '');
+    const rawFeature = featMatch[1].trim();
+    currentCase.feature =
+      rawFeature.length >= 2 &&
+      ((rawFeature.startsWith('"') && rawFeature.endsWith('"')) ||
+        (rawFeature.startsWith("'") && rawFeature.endsWith("'")))
+        ? rawFeature.slice(1, -1)
+        : rawFeature;
+    inLabels = false;
+    continue;
+  }
+
+  const scenarioMatch = line.match(/^\s+scenario:\s*(.+)$/);
+  if (scenarioMatch) {
+    const rawScenario = scenarioMatch[1].trim();
+    currentCase.scenario =
+      rawScenario.length >= 2 &&
+      ((rawScenario.startsWith('"') && rawScenario.endsWith('"')) ||
+        (rawScenario.startsWith("'") && rawScenario.endsWith("'")))
+        ? rawScenario.slice(1, -1)
+        : rawScenario;
     inLabels = false;
     continue;
   }
@@ -185,14 +214,123 @@ for (const rawLine of lines) {
 
 finalizeCurrent();
 
+// ── JSON output (ungrouped, unfiltered) ────────────────────────────────────────
+
+if (jsonOutput) {
+  const groups = {};
+  const cursorTcs = [];
+  const ubuntuTcs = [];
+  let totalAssisted = 0;
+  let totalManual = 0;
+
+  for (const tc of testCases) {
+    const m = tc.id.match(/^(.*?)-\d{3}$/);
+    const prefix = m ? m[1] : tc.id;
+    (groups[prefix] ??= []).push(tc);
+  }
+
+  const resultGroups = [];
+
+  const sortedPrefixes = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+
+  for (const prefix of sortedPrefixes) {
+    const tcList = groups[prefix];
+    const featureCounts = {};
+    let assistedCount = 0;
+    let manualCount = 0;
+    let requiresExtensions = false;
+
+    for (const tc of tcList) {
+      const labels = tc.labels || [];
+
+      if (labels.includes('cursor') && tc.automated !== 'true') {
+        cursorTcs.push({
+          id: tc.id,
+          feature: tc.feature,
+          scenario: tc.scenario || '',
+          automated: tc.automated === 'false' ? false : tc.automated,
+        });
+        continue;
+      }
+
+      if (labels.includes('ubuntu') && tc.automated !== 'true') {
+        ubuntuTcs.push({
+          id: tc.id,
+          feature: tc.feature,
+          scenario: tc.scenario || '',
+          automated: tc.automated === 'false' ? false : tc.automated,
+        });
+        continue;
+      }
+
+      if (labels.includes('requires-extensions')) {
+        requiresExtensions = true;
+      }
+
+      featureCounts[tc.feature] = (featureCounts[tc.feature] || 0) + 1;
+
+      if (tc.automated === 'assisted') {
+        assistedCount++;
+      } else if (tc.automated === 'false') {
+        manualCount++;
+      }
+    }
+
+    const nonAutomated = assistedCount + manualCount;
+    if (nonAutomated === 0) continue;
+
+    totalAssisted += assistedCount;
+    totalManual += manualCount;
+
+    let mostCommon = 'Uncategorized';
+    let maxCount = 0;
+    for (const [feat, count] of Object.entries(featureCounts)) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommon = feat;
+      }
+    }
+
+    resultGroups.push({
+      prefix,
+      feature: mostCommon,
+      assisted: assistedCount,
+      manual: manualCount,
+      total: nonAutomated,
+      requires_extensions: requiresExtensions,
+    });
+  }
+
+  for (const tc of cursorTcs) {
+    if (tc.automated === 'assisted') totalAssisted++;
+    else if (tc.automated === false) totalManual++;
+  }
+
+  for (const tc of ubuntuTcs) {
+    if (tc.automated === 'assisted') totalAssisted++;
+    else if (tc.automated === false) totalManual++;
+  }
+
+  process.stdout.write(
+    JSON.stringify({
+      groups: resultGroups,
+      cursor_tcs: cursorTcs,
+      ubuntu_tcs: ubuntuTcs,
+      total_assisted: totalAssisted,
+      total_manual: totalManual,
+    }),
+  );
+  process.exit(0);
+}
+
 // ── Filter and output ─────────────────────────────────────────────────────────
 
 const matching = testCases.filter((tc) => {
-  if (labelFilter && !tc.labels.includes(labelFilter)) return false;
-  if (excludeLabel && tc.labels.includes(excludeLabel)) return false;
+  if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
+  if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
   if (automatedOnly && tc.automated !== 'true') return false;
   if (assistedOnly && tc.automated !== 'assisted') return false;
-  if (noAssisted && tc.automated === 'assisted') return false;
+  if (excludeAssisted && tc.automated === 'assisted') return false;
   return true;
 });
 

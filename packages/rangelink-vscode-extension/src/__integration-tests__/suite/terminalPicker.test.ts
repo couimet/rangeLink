@@ -11,7 +11,6 @@ import {
   extractQuickPickItemsLogged,
   findTerminalItems,
   getLogCapture,
-  loadSettingsProfile,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   settle,
@@ -516,8 +515,14 @@ standardSuite('Terminal Picker', (log) => {
   });
 
   test('terminal-picker-011: maxInline setting changes overflow threshold', async () => {
-    await loadSettingsProfile('terminal-picker-low', log);
     const LOW_MAX_INLINE = 2;
+    const config = vscode.workspace.getConfiguration();
+    await config.update(
+      'rangelink.terminalPicker.maxInline',
+      LOW_MAX_INLINE,
+      vscode.ConfigurationTarget.Global,
+    );
+    log(`set rangelink.terminalPicker.maxInline to ${LOW_MAX_INLINE}`);
     const TC_TERMINAL_COUNT = 3;
 
     for (let i = 1; i <= TC_TERMINAL_COUNT; i++) {

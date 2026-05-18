@@ -106,7 +106,7 @@ The Extension Development Host runs your extension in a separate Cursor/VSCode w
 Use this when you want to test the extension in your actual Cursor/VSCode instance with all your other extensions and settings. This is the "real world" test before publishing.
 
 > [!TIP]
-> For **QA testing** with an isolated profile and pre-built fixture workspace, use `pnpm qa:setup:vscode-extension` instead. It installs into a separate `qa-test` profile so your personal config isn't affected. See [TESTING.md § Running a QA pass](./TESTING.md#running-a-qa-pass).
+> For **QA testing**, build and install the extension (`pnpm package:vscode-extension:withInstall:both`), then open the fixture workspace (`code qa/fixtures/workspace` or `cursor qa/fixtures/workspace`). See [TESTING.md § Release QA Cycle](./TESTING.md#release-qa-cycle-once-per-release).
 
 ### Quick Install with Scripts
 

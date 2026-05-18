@@ -1,5 +1,5 @@
 name: 'Run Integration Tests (with extensions)'
-description: 'Run pnpm test:release:with-extensions --no-assisted under Xvfb — installs marketplace extensions and runs automated tests that depend on them'
+description: 'Run pnpm test:release:with-extensions --exclude-assisted under Xvfb — installs marketplace extensions and runs automated tests that depend on them'
 
 outputs:
   int-passing:
@@ -41,7 +41,7 @@ runs:
       run: |
         set -o pipefail
         xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" \
-          pnpm test:release:with-extensions --no-assisted 2>&1 | tee /tmp/test-report-with-extensions.txt
+          pnpm test:release:with-extensions --exclude-assisted --exclude-label cursor 2>&1 | tee /tmp/test-report-with-extensions.txt
 
     - name: Extract integration test stats
       id: stats
