@@ -33,6 +33,7 @@ EXCLUDE_LABELS=()
 ASSISTED_ONLY=false
 EXCLUDE_ASSISTED=false
 SHOW_HELP=false
+ORIGINAL_ARGS="$*"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -137,7 +138,8 @@ else
 fi
 
 HAS_FILTER=false
-[[ -n "$GREP_PATTERN" || ${#LABEL_FILTERS[@]} -gt 0 ]] && HAS_FILTER=true
+[[ -n "$GREP_PATTERN" || ${#LABEL_FILTERS[@]} -gt 0 || ${#EXCLUDE_LABELS[@]} -gt 0 ]] && HAS_FILTER=true
+[[ "$ASSISTED_ONLY" == true || "$EXCLUDE_ASSISTED" == true ]] && HAS_FILTER=true
 
 if [[ "$CONFIG_EXTENSIONS" == true ]]; then
   REPORT_MODE="with-extensions"
@@ -231,7 +233,7 @@ RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
 {
   echo "Test Run Report"
   echo "Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-  echo "Args:      $0 $*"
+  echo "Args:      $0 $ORIGINAL_ARGS"
   echo "Mode:      $REPORT_MODE"
   if [[ -n "$GREP_PATTERN" ]]; then
     echo "Grep:      $GREP_PATTERN"
@@ -280,18 +282,23 @@ FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
   echo "Report complete: $RELATIVE_REPORT"
 
   if [[ $FINAL_EXIT -ne 0 ]]; then
-    FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u || true)
+    FAILED_IDS=$(grep -A1 '^[[:space:]]*[0-9][0-9]*)[[:space:]]' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u || true)
     if [[ -n "$FAILED_IDS" ]]; then
       RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
       RERUN_CMD="./scripts/run-integration-tests.sh"
-      for label in "${LABEL_FILTERS[@]}"; do
-        RERUN_CMD="$RERUN_CMD --label \"$label\""
-      done
-      for exclude in "${EXCLUDE_LABELS[@]}"; do
-        RERUN_CMD="$RERUN_CMD --exclude-label \"$exclude\""
-      done
+      if [[ ${#LABEL_FILTERS[@]} -gt 0 ]]; then
+        for label in "${LABEL_FILTERS[@]}"; do
+          RERUN_CMD="$RERUN_CMD --label \"$label\""
+        done
+      fi
+      if [[ ${#EXCLUDE_LABELS[@]} -gt 0 ]]; then
+        for exclude in "${EXCLUDE_LABELS[@]}"; do
+          RERUN_CMD="$RERUN_CMD --exclude-label \"$exclude\""
+        done
+      fi
       [[ "$ASSISTED_ONLY" == true ]] && RERUN_CMD="$RERUN_CMD --assisted"
       [[ "$EXCLUDE_ASSISTED" == true ]] && RERUN_CMD="$RERUN_CMD --exclude-assisted"
+      [[ "$CONFIG_AUTOMATED" == true ]] && RERUN_CMD="$RERUN_CMD --automated"
       [[ "$CONFIG_EXTENSIONS" == true ]] && RERUN_CMD="$RERUN_CMD --with-extensions"
       echo ""
       echo ""

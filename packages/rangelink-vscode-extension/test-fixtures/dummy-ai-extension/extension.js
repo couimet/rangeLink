@@ -66,12 +66,6 @@ function activate(context) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dummyAi.focusFail', () => {
-      throw new Error('Simulated focus failure for integration testing');
-    }),
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand('dummyAi.clearAll', () => {
       provider?.postMessage({ type: 'clearAll' });
     }),

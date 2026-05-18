@@ -22,14 +22,12 @@ stub_dir() {
   export PATH="$STUB_DIR:$PATH"
 }
 
-# Create a stub that records args to a log file and exits with a controlled code.
-# Usage: make_stub <name> <exit_code_var> <output_var> [extra_body]
-# The stub writes "$@" to TEST_TEMP_DIR/<name>-args and whatever $output_var
-# contains to stdout. It exits with the code in $exit_code_var.
+# Create a stub whose body is provided via stdin (heredoc). Callers must
+# supply the full script; the exit_var / output_var args are accepted for
+# signature compatibility with older call sites but are not used.
+# Usage: make_stub <name> <exit_code_var> <output_var> <<'ENDOFSTUB' ... ENDOFSTUB
 make_stub() {
   local name="$1"
-  local exit_var="$2"
-  local output_var="$3"
 
   cat > "$STUB_DIR/$name"
   chmod +x "$STUB_DIR/$name"

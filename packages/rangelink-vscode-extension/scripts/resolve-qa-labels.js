@@ -20,7 +20,7 @@ const printUsage = (exitCode = 2) => {
   process.stderr.write(
     'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
       '                          [--automated-only] [--exclude-label <name>]...\n' +
-      '                          [--format csv|lines] [--yaml <path>]\n',
+      '                          [--json] [--format csv|lines] [--yaml <path>]\n',
   );
   process.exit(exitCode);
 };
@@ -158,7 +158,12 @@ for (const rawLine of lines) {
 
   const autoMatch = line.match(/^\s+automated:\s*(.+)$/);
   if (autoMatch) {
-    currentCase.automated = autoMatch[1].trim();
+    const raw = autoMatch[1].trim();
+    currentCase.automated =
+      raw.length >= 2 &&
+      ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
+        ? raw.slice(1, -1)
+        : raw;
     inLabels = false;
     continue;
   }

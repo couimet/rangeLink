@@ -100,14 +100,14 @@ REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
   echo "Tests:   ${INTEGRATION_TEST_DIR#"$PACKAGE_ROOT"/}"
   echo ""
 
-  YAML_AUTOMATED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --automated-only)
-  YAML_ASSISTED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --assisted)
+  YAML_AUTOMATED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --automated-only | sort -u)
+  YAML_ASSISTED_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --yaml "$YAML_PATH" --assisted | sort -u)
   CODE_AUTOMATED_IDS=$(find_automated_test_ids)
   CODE_ASSISTED_IDS=$(find_assisted_test_ids)
 
   YAML_AUTOMATED_COUNT=$(echo "$YAML_AUTOMATED_IDS" | grep -c . || true)
   YAML_ASSISTED_COUNT=$(echo "$YAML_ASSISTED_IDS" | grep -c . || true)
-  YAML_MANUAL_COUNT=$(grep -c "^    automated: false$" "$YAML_PATH" || true)
+  YAML_MANUAL_COUNT=$(grep -cE '^\s+automated:\s*["'"'"']?false["'"'"']?\s*$' "$YAML_PATH" || true)
   CODE_AUTOMATED_COUNT=$(echo "$CODE_AUTOMATED_IDS" | grep -c . || true)
   CODE_ASSISTED_COUNT=$(echo "$CODE_ASSISTED_IDS" | grep -c . || true)
 

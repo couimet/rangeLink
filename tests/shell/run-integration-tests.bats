@@ -217,7 +217,7 @@ ENDOFSTUB
   grep -q "Grep:      status-bar-menu-002" "$REPORT"
 
   # QA validator skipped
-  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args" || true
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
 }
 
 # ── --label: label resolution ─────────────────────────────────────────────────
@@ -237,7 +237,7 @@ ENDOFSTUB
   grep -q "clipboard" "$TEST_TEMP_DIR/node-args"
 
   # QA validator skipped
-  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args" || true
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
 }
 
 @test "--label: zero matches exits 1" {
@@ -558,7 +558,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "foo"
   [ "$status" -eq 0 ]
 
-  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args" || true
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
 }
 
 @test "QA validator: skipped for --label" {
@@ -568,7 +568,7 @@ ENDOFSTUB
   run "$SCRIPT" --label clipboard
   [ "$status" -eq 0 ]
 
-  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args" || true
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
 }
 
 # ── Zero-test detection ───────────────────────────────────────────────────────
@@ -603,7 +603,7 @@ ENDOFSTUB
 
   REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   # No ANSI escape chars in report
-  ! grep -q $'\x1b' "$REPORT" || true
+  ! grep -q $'\x1b' "$REPORT"
   grep -q "42 passing" "$REPORT"
 }
 
@@ -612,26 +612,29 @@ ENDOFSTUB
 @test "re-run: generated on failure with failed TC IDs" {
   setup_mocks
   STUB_VSCODE_EXIT=1
-  VSCODE_OUTPUT="$(printf '  1) tests something\n  2 passing\n  1 failing\n')"
+  # Mocha failure output format the script greps for FAILED_IDS
+  VSCODE_OUTPUT="$(printf '  1 passing\n  1 failing\n\n  1) clipboard-preservation-001:\n     Error: something\n\n  2) bind-to-destination-005:\n     Error: other\n')"
 
-  cat > "$TEST_TEMP_DIR/report-mock.txt" <<'EOF'
-  1) clipboard-preservation-001
-  2) bind-to-destination-005
-EOF
-
-  # Override npx to write a report file with known failed IDs in the mocha
-  # failure format that the script greps for
-  cat > "$STUB_DIR/npx" <<'ENDOFSTUB'
-#!/usr/bin/env bash
-echo "  1 passing" | tee -a "$TEST_TEMP_DIR/report-mock.txt"
-exit 1
-ENDOFSTUB
-  chmod +x "$STUB_DIR/npx"
-
-  # Point output to our known report
-  # (Cannot easily override OUTPUT_DIR, so skip full file verification)
   run "$SCRIPT"
   [ "$status" -eq 1 ]
+
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  grep -q "Re-run failed tests:" "$REPORT"
+  grep -q "bind-to-destination-005|clipboard-preservation-001" "$REPORT"
+}
+
+@test "re-run: preserves --automated flag" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'tc-auto-001\ntc-auto-002'
+  STUB_VSCODE_EXIT=1
+  VSCODE_OUTPUT="$(printf '  1 failing\n\n  1) tc-auto-001:\n     Error: test\n')"
+
+  run "$SCRIPT" --automated
+  [ "$status" -eq 1 ]
+
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
+  grep -q "Re-run failed tests:" "$REPORT"
+  grep -q "\-\-automated" "$REPORT"
 }
 
 @test "re-run: not generated on success" {
@@ -644,7 +647,7 @@ ENDOFSTUB
 
   REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   # No "Re-run failed tests" block
-  ! grep -q "Re-run failed tests:" "$REPORT" || true
+  ! grep -q "Re-run failed tests:" "$REPORT"
 }
 
 # ── --with-extensions: setup integration test settings ─────────────────────────
@@ -669,4 +672,49 @@ ENDOFSTUB
   # The script cd's to "$SCRIPT_DIR/.." which is the package root.
   # verify that npx vscode-test was invoked (proves script ran)
   grep -q "vscode-test" "$TEST_TEMP_DIR/npx-args"
+}
+
+# ── Report header preserves original args (C) ────────────────────────────────
+
+@test "report header: preserves original args after parsing" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'tc-auto-001'
+
+  run "$SCRIPT" --grep "foo" --automated
+  [ "$status" -eq 0 ]
+
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
+  grep -q "Args:.*--grep foo --automated" "$REPORT"
+}
+
+# ── QA validation skip for exclude/assisted flags alone (D) ───────────────────
+
+@test "QA validator: skipped for --exclude-label alone" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'tc-001\ntc-002'
+
+  run "$SCRIPT" --exclude-label requires-extensions
+  [ "$status" -eq 0 ]
+
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
+}
+
+@test "QA validator: skipped for --assisted alone" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'assisted-001'
+
+  run "$SCRIPT" --assisted
+  [ "$status" -eq 0 ]
+
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
+}
+
+@test "QA validator: skipped for --exclude-assisted alone" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'auto-001'
+
+  run "$SCRIPT" --exclude-assisted
+  [ "$status" -eq 0 ]
+
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
 }

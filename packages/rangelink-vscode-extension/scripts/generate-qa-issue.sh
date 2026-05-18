@@ -146,7 +146,7 @@ for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
     fi
   fi
 
-  if [[ "$REQ_EXT" == "True" ]]; then
+  if [[ "$REQ_EXT" == "true" ]]; then
     GROUP_CHECKBOXES+="- [ ] **${FEATURE}** (${LABEL_PARTS}) — \`pnpm test:release:with-extensions --grep \"${PREFIX}\"\`"$'\n'
   else
     GROUP_CHECKBOXES+="- [ ] **${FEATURE}** (${LABEL_PARTS}) — \`pnpm test:release:grep \"${PREFIX}\"\`"$'\n'
