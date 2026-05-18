@@ -12,15 +12,9 @@ import {
   assertSetContextLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
-  cleanupFiles,
-  createAndBindCapturingTerminal,
-  createAndOpenFile,
-  createCapturingTerminal,
-  createTerminal,
   echoToTerminal,
   extractQuickPickItemsLogged,
   getLogCapture,
-  settle,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -28,18 +22,10 @@ import {
 
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Terminal', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-001';
-    await createTerminal(terminalName);
+    await ss.createTerminal(terminalName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-001');
@@ -62,12 +48,12 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
-    log('✓ Terminal-tab context menu bound the terminal destination');
+    ss.log('✓ Terminal-tab context menu bound the terminal destination');
   });
 
   test('[assisted] context-menus-terminal-002: Terminal content-area "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-002';
-    await createTerminal(terminalName);
+    await ss.createTerminal(terminalName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-002');
@@ -90,14 +76,14 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
-    log('✓ Terminal content-area context menu bound the terminal destination');
+    ss.log('✓ Terminal content-area context menu bound the terminal destination');
   });
 
   test('[assisted] context-menus-terminal-003: Terminal content-area "Unbind" is visible when bound and unbinds on click', async () => {
     const terminalName = 'rl-ctxmenu-term-003';
-    await createTerminal(terminalName);
+    await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-003');
@@ -121,14 +107,14 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
-    log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
+    ss.log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
   });
 
   test('[assisted] context-menus-terminal-004: Right-clicking a specific terminal TAB binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-004-TARGET';
     const otherName = 'rl-ctxmenu-term-004-OTHER';
-    await createTerminal(otherName);
-    await createTerminal(targetName);
+    await ss.createTerminal(otherName);
+    await ss.createTerminal(targetName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-004');
@@ -163,14 +149,14 @@ standardSuite('Context Menus — Terminal', (log) => {
       `Expected direct-bind log for "${targetName}" from context-menu source`,
     );
 
-    log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
+    ss.log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
   });
 
   test('[assisted] context-menus-terminal-005: Right-clicking a specific terminal CONTENT AREA binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-005-TARGET';
     const otherName = 'rl-ctxmenu-term-005-OTHER';
-    await createTerminal(otherName);
-    await createTerminal(targetName);
+    await ss.createTerminal(otherName);
+    await ss.createTerminal(targetName);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-005');
@@ -205,7 +191,7 @@ standardSuite('Context Menus — Terminal', (log) => {
       `Expected direct-bind log for "${targetName}" from context-menu source`,
     );
 
-    log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
+    ss.log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
   });
 
   // ---------------------------------------------------------------------------
@@ -216,23 +202,21 @@ standardSuite('Context Menus — Terminal', (log) => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-005: Terminal content-area "Send Selection to Destination" sends selected text to bound editor', async () => {
-    const editorUri = await createAndOpenFile(
+    const editorUri = await ss.createAndOpenFile(
       'ctxmenu-term-sts-005',
       'destination file — terminal selection arrives here\n',
-      undefined,
-      tmpFileUris,
     );
     const editorFn = path.basename(editorUri.fsPath);
 
     await vscode.commands.executeCommand(CMD_CONTEXT_EDITOR_CONTENT_BIND, editorUri);
-    await settle();
+    await ss.settle();
 
     const terminalName = 'rl-ctxmenu-term-sts-005';
-    const terminal = await createTerminal(terminalName);
+    const terminal = await ss.createTerminal(terminalName);
 
     const markerText = 'STS_005_MARKER_TEXT';
     echoToTerminal(terminal, markerText);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-005');
@@ -265,7 +249,9 @@ standardSuite('Context Menus — Terminal', (log) => {
       message: `✓ RangeLink: Selected text copied to clipboard & sent to Text Editor ("${editorFn}")`,
     });
 
-    log('✓ Terminal context-menu "Send Selection to Destination" routed selection to bound editor');
+    ss.log(
+      '✓ Terminal context-menu "Send Selection to Destination" routed selection to bound editor',
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -277,12 +263,12 @@ standardSuite('Context Menus — Terminal', (log) => {
     const boundName = 'rl-sts-008-BOUND';
     const sourceName = 'rl-sts-008-SOURCE';
 
-    const capturingBound = await createAndBindCapturingTerminal(boundName);
+    const capturingBound = await ss.createAndBindCapturingTerminal(boundName);
 
-    const sourceTerminal = await createTerminal(sourceName);
+    const sourceTerminal = await ss.createTerminal(sourceName);
     const markerText = 'STS_008_CROSS_TERMINAL_MARKER';
     echoToTerminal(sourceTerminal, markerText);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-008');
@@ -322,18 +308,18 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertTerminalBufferContains(capturingBound.getCapturedText(), markerText);
 
-    log(
+    ss.log(
       '✓ Cross-terminal send: source selection landed in bound terminal buffer (pty-captured) with focus shift',
     );
   });
 
   test('[assisted] send-terminal-selection-009: "Send Selection to Destination" is NOT in the terminal TAB menu', async () => {
     const terminalName = 'rl-sts-009';
-    const terminal = await createTerminal(terminalName);
+    const terminal = await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
     echoToTerminal(terminal, 'STS_009_MARKER_TEXT');
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-009');
@@ -365,7 +351,7 @@ standardSuite('Context Menus — Terminal', (log) => {
       'Expected no TerminalSelectionService log — nothing should have triggered a paste during observation',
     );
 
-    log('✓ Tab menu did NOT offer "Send Selection" (human verdict + no paste log)');
+    ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict + no paste log)');
   });
 
   // ---------------------------------------------------------------------------
@@ -376,10 +362,10 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] send-terminal-selection-010: Self-paste — bound terminal selection is sent back to itself (current behavior, no guard)', async () => {
     const terminalName = 'rl-sts-010';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
     const markerText = 'STS_010_SELF_PASTE_MARKER';
     capturing.terminal.sendText(markerText, false);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-010');
@@ -405,7 +391,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertTerminalBufferContains(capturing.getCapturedText(), markerText);
 
-    log(
+    ss.log(
       '✓ Self-paste: selection echoed back into bound terminal buffer (pty-captured; follow-up issue worth filing for guard)',
     );
   });
@@ -420,12 +406,12 @@ standardSuite('Context Menus — Terminal', (log) => {
     const sourceName = 'rl-sts-011-SOURCE';
     const destName = 'rl-sts-011-DEST';
 
-    const capturingDest = await createCapturingTerminal(destName);
+    const capturingDest = await ss.createCapturingTerminal(destName);
 
-    const sourceTerminal = await createTerminal(sourceName);
+    const sourceTerminal = await ss.createTerminal(sourceName);
     const markerText = 'STS_011_MARKER_TEXT';
     echoToTerminal(sourceTerminal, markerText);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-011');
@@ -470,7 +456,7 @@ standardSuite('Context Menus — Terminal', (log) => {
 
     assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);
 
-    log(
+    ss.log(
       '✓ Unbound state: menu item shown; click opened picker; selection landed in picked destination buffer (pty-captured)',
     );
   });
@@ -482,11 +468,11 @@ standardSuite('Context Menus — Terminal', (log) => {
 
   test('[assisted] send-terminal-selection-012: "Send Selection" is hidden when no terminal text is selected', async () => {
     const terminalName = 'rl-sts-012';
-    const terminal = await createTerminal(terminalName);
+    const terminal = await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
     echoToTerminal(terminal, 'STS_012_MARKER_TEXT');
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-012');
@@ -518,7 +504,7 @@ standardSuite('Context Menus — Terminal', (log) => {
       'Expected no paste log — nothing should have triggered a paste during observation',
     );
 
-    log('✓ No-selection state: "Send Selection" absent (human verdict + no paste log)');
+    ss.log('✓ No-selection state: "Send Selection" absent (human verdict + no paste log)');
   });
 
   // ---------------------------------------------------------------------------
@@ -538,10 +524,10 @@ standardSuite('Context Menus — Terminal', (log) => {
     );
 
     const terminalName = 'rl-sts-013';
-    const terminal = await createTerminal(terminalName);
+    const terminal = await ss.createTerminal(terminalName);
     const markerText = 'STS_013_AI_DELIVERY_MARKER';
     echoToTerminal(terminal, markerText);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-013');
@@ -585,7 +571,7 @@ standardSuite('Context Menus — Terminal', (log) => {
       `Expected Dummy AI tier1 textarea to contain "${markerText}" but got: ${textResult!.tier1}`,
     );
 
-    log(
+    ss.log(
       '✓ Terminal context-menu "Send Selection" delivered selection to Dummy AI via Tier 1 direct insert',
     );
   });

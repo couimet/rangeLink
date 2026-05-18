@@ -18,7 +18,7 @@ import {
 
 const DUPLICATE_FILE_CONTENT = 'duplicate file content\n';
 
-standardSuite('Filename-Only Navigation Fallback', (_log) => {
+standardSuite('Filename-Only Navigation Fallback', (_ss) => {
   let uniqueFilename: string;
   let uniqueFilePath: string;
   let relativeFilePath: string;

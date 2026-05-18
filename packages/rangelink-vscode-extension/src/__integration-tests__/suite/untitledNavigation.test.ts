@@ -76,7 +76,7 @@ const UNTITLED_CONTENT = Array.from(
   (_, i) => `untitled line ${i + 1} content here`,
 ).join('\n');
 
-standardSuite('Untitled File Navigation', (_log) => {
+standardSuite('Untitled File Navigation', (_ss) => {
   let untitledDoc: vscode.TextDocument;
   let untitledDisplayName: string;
 

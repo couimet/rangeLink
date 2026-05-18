@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-import * as path from 'node:path';
 
 import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
@@ -8,28 +7,13 @@ import {
   assertNoToastLogged,
   assertSuppressionLogged,
   assertToastLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   getLogCapture,
   navigateViaHandleLinkClick,
   settle,
   standardSuite,
 } from '../helpers';
 
-standardSuite('Navigation Toast Settings', (_log) => {
-  let testFilename: string;
-  let testFileUri: vscode.Uri;
-
-  suiteSetup(async () => {
-    const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content here`);
-    testFileUri = createWorkspaceFile('toast settings', lines.join('\n') + '\n');
-    testFilename = path.basename(testFileUri.fsPath);
-  });
-
-  suiteTeardown(async () => {
-    cleanupFiles([testFileUri]);
-  });
-
+standardSuite('Navigation Toast Settings', (ss) => {
   teardown(async () => {
     const config = vscode.workspace.getConfiguration('rangelink');
     await config.update(
@@ -45,6 +29,12 @@ standardSuite('Navigation Toast Settings', (_log) => {
   });
 
   test('navigation-toast-settings-001: showNavigatedToast=false suppresses info toast but navigation still works', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'toast-settings-001',
+      10,
+      (i) => `line ${i + 1} content here`,
+    );
+
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('navigation.showNavigatedToast', false, vscode.ConfigurationTarget.Workspace);
@@ -73,6 +63,12 @@ standardSuite('Navigation Toast Settings', (_log) => {
   });
 
   test('navigation-toast-settings-002: showClampingWarning=false suppresses clamping warning but navigation still works', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'toast-settings-002',
+      10,
+      (i) => `line ${i + 1} content here`,
+    );
+
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('navigation.showClampingWarning', false, vscode.ConfigurationTarget.Workspace);
@@ -106,6 +102,12 @@ standardSuite('Navigation Toast Settings', (_log) => {
   });
 
   test('navigation-toast-settings-003: default settings show info toast after successful navigation', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'toast-settings-003',
+      10,
+      (i) => `line ${i + 1} content here`,
+    );
+
     const linkText = `${testFilename}#L3`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);

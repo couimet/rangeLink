@@ -20,50 +20,36 @@ import {
   assertTerminalBufferEquals,
   assertToastLogged,
   type CapturingTerminal,
-  cleanupFiles,
   clearSelection,
-  createAndBindCapturingTerminal,
-  createTerminal,
-  createWorkspaceFile,
+  echoToTerminal,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
-  openEditor,
-  settle,
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
-  echoToTerminal,
   writeClipboardSentinel,
 } from '../helpers';
 
 const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text and try again.';
 
-standardSuite('Core Send Commands', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
-
+standardSuite('Core Send Commands', (ss) => {
   teardown(async () => {
-    for (const t of tmpTerminals.splice(0)) t.dispose();
     await vscode.commands.executeCommand('dummyAi.clearAll');
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.splice(0);
-    await settle();
   });
 
   test('core-send-commands-r-l-002: R-L sends RangeLink to bound text editor destination', async () => {
-    const srcUri = createWorkspaceFile(
+    const srcUri = ss.createWorkspaceFile(
       'csc-r-l-002-src',
       'line 1\nline 2\nline 3\nline 4\nline 5\n',
     );
-    const destUri = createWorkspaceFile('csc-r-l-002-dest', '');
-    tmpFileUris.push(srcUri, destUri);
+    const destUri = ss.createWorkspaceFile('csc-r-l-002-dest', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     const destEditor = await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
     clearSelection(destEditor);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     const srcDoc = await vscode.workspace.openTextDocument(srcUri);
     const srcEditor = await vscode.window.showTextDocument(srcDoc, vscode.ViewColumn.Beside);
@@ -71,13 +57,13 @@ standardSuite('Core Send Commands', (log) => {
       new vscode.Position(1, 0),
       new vscode.Position(3, 0),
     );
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-002');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-r-l-002');
 
@@ -95,19 +81,21 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(lines, {
       message: `✓ RangeLink: RangeLink copied to clipboard & sent to Text Editor ("${destBasename}")`,
     });
-    log('✓ R-L sent exact RangeLink to bound text editor destination');
+    ss.log('✓ R-L sent exact RangeLink to bound text editor destination');
   });
 
   test('[assisted] core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
-    const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
-    const fileUri = createWorkspaceFile('csc-r-l-003', lines.join('\n') + '\n');
-    tmpFileUris.push(fileUri);
+    const { uri: fileUri } = ss.createContentFile(
+      'csc-r-l-003',
+      10,
+      (i) => `line ${i + 1} content`,
+    );
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedLink = `${relPath}#L1-L3`;
 
-    await openEditor(fileUri);
-    await settle();
+    await ss.openEditor(fileUri);
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-003');
@@ -122,7 +110,7 @@ standardSuite('Core Send Commands', (log) => {
       ],
     );
 
-    await settle();
+    await ss.settle();
     const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
       tier1: string;
       tier2: string;
@@ -137,25 +125,25 @@ standardSuite('Core Send Commands', (log) => {
       logCapture.getLinesSince('before-r-l-003').some((l) => l.includes('sent to')),
       'Expected "sent to" log line after R-L to AI destination',
     );
-    log('✓ R-L sent RangeLink to Dummy AI (Tier 1) destination');
+    ss.log('✓ R-L sent RangeLink to Dummy AI (Tier 1) destination');
   });
 
   test('core-send-commands-r-c-001: R-C copies RangeLink to clipboard and does NOT send to terminal', async () => {
-    const fileUri = createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-c-001-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-r-c-001-dest');
 
-    const editor = await openEditor(fileUri);
+    const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-c-001');
 
     await writeClipboardSentinel();
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const clipboard = await assertClipboardChanged('R-C should write link to clipboard');
     assert.ok(
@@ -172,24 +160,24 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-001'), {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
-    log('✓ R-C wrote link to clipboard; terminal received nothing');
+    ss.log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
 
   test('core-send-commands-r-l-004: Command dispatch "Send RangeLink" behaves identically to R-L keybinding', async () => {
-    const fileUri = createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-l-004-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-r-l-004-dest');
 
-    const editor = await openEditor(fileUri);
+    const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-004');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedContent = ` ${relPath}#L1-L2 `;
@@ -198,18 +186,20 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-l-004'), {
       message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-r-l-004-dest")',
     });
-    log('✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination');
+    ss.log(
+      '✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination',
+    );
   });
 
   test('core-send-commands-r-c-002: Command dispatch "Copy RangeLink" behaves identically to R-C keybinding', async () => {
-    const fileUri = createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-c-002-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-r-c-002-dest');
 
-    const editor = await openEditor(fileUri);
+    const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
@@ -217,7 +207,7 @@ standardSuite('Core Send Commands', (log) => {
     logCapture.mark('before-r-c-002');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedContent = `${relPath}#L1-L2`;
@@ -238,7 +228,7 @@ standardSuite('Core Send Commands', (log) => {
     assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-002'), {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
-    log(
+    ss.log(
       '✓ Command dispatch "Copy RangeLink" wrote exact link to clipboard; terminal received nothing',
     );
   });
@@ -246,13 +236,14 @@ standardSuite('Core Send Commands', (log) => {
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {
     const MARKER = 'rl-sts-001-marker';
 
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-001-dest');
-    await settle();
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-sts-001-dest');
+    await ss.settle();
 
-    const srcTerminal = await createTerminal('csc-sts-001-src', tmpTerminals);
+    const srcTerminal = await ss.createTerminal('csc-sts-001-src');
 
     echoToTerminal(srcTerminal, MARKER);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-001');
@@ -269,11 +260,11 @@ standardSuite('Core Send Commands', (log) => {
       message:
         '✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("csc-sts-001-dest")',
     });
-    log('✓ R-V sent selected terminal text to bound destination');
+    ss.log('✓ R-V sent selected terminal text to bound destination');
   });
 
   test('send-terminal-selection-003: R-V with no text selected in terminal shows error message', async () => {
-    await createTerminal('csc-sts-003', tmpTerminals);
+    await ss.createTerminal('csc-sts-003');
 
     // On macOS, terminal.copySelection leaves the clipboard unchanged when nothing
     // is selected — so we prime the clipboard to empty so the preserve/read roundtrip
@@ -284,22 +275,22 @@ standardSuite('Core Send Commands', (log) => {
     logCapture.mark('before-sts-003');
 
     await vscode.commands.executeCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT);
-    await settle();
+    await ss.settle();
 
     assertToastLogged(logCapture.getLinesSince('before-sts-003'), {
       type: 'error',
       message: NO_TERMINAL_SELECTION_MSG,
     });
-    log('✓ R-V with no selection shows "no text selected" error toast');
+    ss.log('✓ R-V with no selection shows "no text selected" error toast');
   });
 
   test('[assisted] send-terminal-selection-004: R-V with no bound destination opens destination picker', async () => {
     const MARKER = 'rl-sts-004-marker';
 
-    const srcTerminal = await createTerminal('csc-sts-004-src', tmpTerminals);
+    const srcTerminal = await ss.createTerminal('csc-sts-004-src');
 
     echoToTerminal(srcTerminal, MARKER);
-    await settle(TERMINAL_READY_MS);
+    await ss.settle(TERMINAL_READY_MS);
 
     const logCapture004 = getLogCapture();
     logCapture004.mark('before-sts-004');
@@ -320,16 +311,15 @@ standardSuite('Core Send Commands', (log) => {
       'Expected destination picker to open (no showQuickPick log entry found)',
     );
     assert.ok(items004.length > 0, 'Expected destination picker to contain at least one item');
-    log('✓ R-V with no bound destination opens picker (log-based)');
+    ss.log('✓ R-V with no bound destination opens picker (log-based)');
   });
 
   test('core-send-commands-r-l-005: R-L with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('csc-r-l-005', 'test content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-l-005', 'test content\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 4));
-    await settle();
+    await ss.settle();
 
     const logCaptureRl005 = getLogCapture();
     logCaptureRl005.mark('before-r-l-005');
@@ -342,16 +332,15 @@ standardSuite('Core Send Commands', (log) => {
       'Expected destination picker to open (no showQuickPick log entry found)',
     );
     assert.ok(itemsRl005.length > 0, 'Expected destination picker to contain at least one item');
-    log('✓ R-L with no destination opens picker (log-based)');
+    ss.log('✓ R-L with no destination opens picker (log-based)');
   });
 
   test('core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('csc-r-p-001', 'test content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-p-001', 'test content\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 4));
-    await settle();
+    await ss.settle();
 
     const logCaptureRp001 = getLogCapture();
     logCaptureRp001.mark('before-r-p-001');
@@ -364,16 +353,15 @@ standardSuite('Core Send Commands', (log) => {
       'Expected destination picker to open (no showQuickPick log entry found)',
     );
     assert.ok(itemsRp001.length > 0, 'Expected destination picker to contain at least one item');
-    log('✓ Send Portable Link with no destination opens picker (log-based)');
+    ss.log('✓ Send Portable Link with no destination opens picker (log-based)');
   });
 
   test('core-send-commands-r-v-001: Send Selected Text with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('csc-r-v-001', 'test content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('csc-r-v-001', 'test content\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 4));
-    await settle();
+    await ss.settle();
 
     const logCaptureRv001 = getLogCapture();
     logCaptureRv001.mark('before-r-v-001');
@@ -386,19 +374,20 @@ standardSuite('Core Send Commands', (log) => {
       'Expected destination picker to open (no showQuickPick log entry found)',
     );
     assert.ok(itemsRv001.length > 0, 'Expected destination picker to contain at least one item');
-    log('✓ Send Selected Text with no destination opens picker (log-based)');
+    ss.log('✓ Send Selected Text with no destination opens picker (log-based)');
   });
 
   test('send-terminal-selection-006: R-L with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-006-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-sts-006-dest');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-006');
 
     capturing.terminal.show();
-    await settle();
+    await ss.settle();
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-sts-006');
     assertToastLogged(lines, {
@@ -412,19 +401,20 @@ standardSuite('Core Send Commands', (log) => {
     assertNoStatusBarMsgLogged(lines, {
       message: '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("csc-sts-006-dest")',
     });
-    log('✓ R-L from terminal focus shows no-active-editor error');
+    ss.log('✓ R-L from terminal focus shows no-active-editor error');
   });
 
   test('send-terminal-selection-007: R-C with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-sts-007-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-sts-007-dest');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-007');
 
     capturing.terminal.show();
-    await settle();
+    await ss.settle();
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-sts-007');
     assertToastLogged(lines, {
@@ -435,24 +425,27 @@ standardSuite('Core Send Commands', (log) => {
       !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
       'Expected no clipboard write when R-C invoked from terminal focus',
     );
-    log('✓ R-C from terminal focus shows no-active-editor error');
+    ss.log('✓ R-C from terminal focus shows no-active-editor error');
   });
 
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
-    const capturing: CapturingTerminal = await createAndBindCapturingTerminal('csc-r-l-001-dest');
+    const capturing: CapturingTerminal =
+      await ss.createAndBindCapturingTerminal('csc-r-l-001-dest');
 
-    const fileUri = createWorkspaceFile('csc-r-l-001', 'line 1\nline 2\nline 3\nline 4\nline 5\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
+    const fileUri = ss.createWorkspaceFile(
+      'csc-r-l-001',
+      'line 1\nline 2\nline 3\nline 4\nline 5\n',
+    );
+    const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(4, 0));
-    await settle();
+    await ss.settle();
     capturing.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-r-l-001');
     assertStatusBarMsgLogged(lines, {
@@ -464,27 +457,26 @@ standardSuite('Core Send Commands', (log) => {
       captured.startsWith(' ') && captured.endsWith(' '),
       `Expected padded (space-bracketed) link in terminal buffer, got: ${JSON.stringify(captured)}`,
     );
-    log('✓ R-L sent padded RangeLink to bound terminal');
+    ss.log('✓ R-L sent padded RangeLink to bound terminal');
   });
 
   test('full-line-selection-validation-001: R-L after expandLineSelection generates link without error', async () => {
     const capturing: CapturingTerminal =
-      await createAndBindCapturingTerminal('csc-fullline-001-dest');
+      await ss.createAndBindCapturingTerminal('csc-fullline-001-dest');
 
-    const fileUri = createWorkspaceFile('csc-fullline-001', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('csc-fullline-001', 'line 1\nline 2\nline 3\n');
+    await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand('expandLineSelection');
-    await settle();
+    await ss.settle();
     capturing.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fullline-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-fullline-001');
     assertStatusBarMsgLogged(lines, {
@@ -501,6 +493,6 @@ standardSuite('Core Send Commands', (log) => {
       captured.startsWith(' ') && captured.endsWith(' '),
       `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
     );
-    log('✓ Full-line selection → R-L: link generated, no error');
+    ss.log('✓ Full-line selection → R-L: link generated, no error');
   });
 });

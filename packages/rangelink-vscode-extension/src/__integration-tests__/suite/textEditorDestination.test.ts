@@ -10,41 +10,30 @@ import {
 import {
   assertNoToastLogged,
   assertToastLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   getLogCapture,
   openSourceWithSelection,
-  settle,
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Text Editor Destination', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    await settle();
-  });
-
+standardSuite('Text Editor Destination', (ss) => {
   test('[assisted] text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {
-    const fileUri = createWorkspaceFile('ted-001', 'self-paste test\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('ted-001', 'self-paste test\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ted-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-ted-001');
 
@@ -65,16 +54,15 @@ standardSuite('Text Editor Destination', (log) => {
     );
     assert.strictEqual(verdict, 'pass');
 
-    log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
+    ss.log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
   });
 
   test('[assisted] hidden-tab-paste-001: R-L with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const SOURCE_CONTENT = 'source-for-rangelink';
-    const destUri = createWorkspaceFile('htl-001-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
-    const sourceUri = createWorkspaceFile('htl-001-source', `${SOURCE_CONTENT}\n`);
-    tmpFileUris.push(destUri, sourceUri);
+    const destUri = ss.createWorkspaceFile('htl-001-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const sourceUri = ss.createWorkspaceFile('htl-001-source', `${SOURCE_CONTENT}\n`);
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -85,7 +73,7 @@ standardSuite('Text Editor Destination', (log) => {
       new vscode.Position(1, 0),
     );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(sourceUri),
@@ -95,13 +83,13 @@ standardSuite('Text Editor Destination', (log) => {
       new vscode.Position(0, 0),
       new vscode.Position(0, SOURCE_CONTENT.length),
     );
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-htl-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-htl-001');
 
@@ -124,16 +112,15 @@ standardSuite('Text Editor Destination', (log) => {
       `Expected line reference "#L1" in bound editor, got: "${destContent}"`,
     );
 
-    log('✓ Bound editor brought to foreground and received RangeLink');
+    ss.log('✓ Bound editor brought to foreground and received RangeLink');
   });
 
   test('[assisted] hidden-tab-paste-002: R-V with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const SELECTED_TEXT = 'text-to-paste';
-    const destUri = createWorkspaceFile('htl-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
-    const sourceUri = createWorkspaceFile('htl-002-source', `${SELECTED_TEXT}\n`);
-    tmpFileUris.push(destUri, sourceUri);
+    const destUri = ss.createWorkspaceFile('htl-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const sourceUri = ss.createWorkspaceFile('htl-002-source', `${SELECTED_TEXT}\n`);
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -144,7 +131,7 @@ standardSuite('Text Editor Destination', (log) => {
       new vscode.Position(1, 0),
     );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(sourceUri),
@@ -154,13 +141,13 @@ standardSuite('Text Editor Destination', (log) => {
       new vscode.Position(0, 0),
       new vscode.Position(0, SELECTED_TEXT.length),
     );
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-htl-002');
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-htl-002');
 
@@ -178,16 +165,15 @@ standardSuite('Text Editor Destination', (log) => {
       `Expected selected text inserted in bound editor at cursor position, got: "${destContent}"`,
     );
 
-    log('✓ Bound editor brought to foreground and received selected text');
+    ss.log('✓ Bound editor brought to foreground and received selected text');
   });
 
   const WARN_DUPLICATE_TAB_GROUPS =
     'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.';
 
   test('duplicate-tab-group-001: warning toast fires when bound file is opened in a second editor group', async () => {
-    const destUri = createWorkspaceFile('dtg-001-dest', 'destination file\n');
-    const triggerUri = createWorkspaceFile('dtg-001-trigger', '');
-    tmpFileUris.push(destUri, triggerUri);
+    const destUri = ss.createWorkspaceFile('dtg-001-dest', 'destination file\n');
+    const triggerUri = ss.createWorkspaceFile('dtg-001-trigger', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, {
@@ -195,7 +181,7 @@ standardSuite('Text Editor Destination', (log) => {
       preview: false,
     });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     // Open same file in col 2 so both instances are visible. onDidChangeTabs fires
     // during this call but visibleTextEditors may not include col 2 yet.
@@ -203,7 +189,7 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-dtg-001');
@@ -215,21 +201,20 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     assertToastLogged(logCapture.getLinesSince('before-dtg-001'), {
       type: 'warning',
       message: WARN_DUPLICATE_TAB_GROUPS,
     });
 
-    log('✓ Warning toast fired when bound file open in multiple editor groups');
+    ss.log('✓ Warning toast fired when bound file open in multiple editor groups');
   });
 
   test('duplicate-tab-group-002: warning is not repeated when duplicate state is already active', async () => {
-    const destUri = createWorkspaceFile('dtg-002-dest', 'destination file\n');
-    const trigger1Uri = createWorkspaceFile('dtg-002-trigger1', '');
-    const trigger2Uri = createWorkspaceFile('dtg-002-trigger2', '');
-    tmpFileUris.push(destUri, trigger1Uri, trigger2Uri);
+    const destUri = ss.createWorkspaceFile('dtg-002-dest', 'destination file\n');
+    const trigger1Uri = ss.createWorkspaceFile('dtg-002-trigger1', '');
+    const trigger2Uri = ss.createWorkspaceFile('dtg-002-trigger2', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, {
@@ -237,20 +222,20 @@ standardSuite('Text Editor Destination', (log) => {
       preview: false,
     });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     await vscode.window.showTextDocument(destDoc, {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     // Open trigger1 in col 3 — fires onDidChangeTabs with both dest instances visible → first warning.
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(trigger1Uri), {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-dtg-002');
@@ -261,21 +246,20 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Four,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     assertNoToastLogged(logCapture.getLinesSince('before-dtg-002'), {
       type: 'warning',
       message: WARN_DUPLICATE_TAB_GROUPS,
     });
 
-    log('✓ No second warning fired while already in duplicate tab state');
+    ss.log('✓ No second warning fired while already in duplicate tab state');
   });
 
   test('duplicate-tab-group-003: paste is blocked with error when bound file is visible in multiple tab groups', async () => {
     const SOURCE_TEXT = 'dtg-003-source-text';
-    const destUri = createWorkspaceFile('dtg-003-dest', 'ANCHOR\n');
-    const sourceUri = createWorkspaceFile('dtg-003-source', `${SOURCE_TEXT}\n`);
-    tmpFileUris.push(destUri, sourceUri);
+    const destUri = ss.createWorkspaceFile('dtg-003-dest', 'ANCHOR\n');
+    const sourceUri = ss.createWorkspaceFile('dtg-003-source', `${SOURCE_TEXT}\n`);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
 
@@ -285,14 +269,14 @@ standardSuite('Text Editor Destination', (log) => {
       preview: false,
     });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     // Open dest in col 3 as well (both instances now visible).
     await vscode.window.showTextDocument(destDoc, {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     // Open source in col 4 — a fresh column that reliably gets focus in the
     // test runner (col 2 and 3 are occupied by dest; col 1 is unreliable
@@ -303,7 +287,7 @@ standardSuite('Text Editor Destination', (log) => {
     logCapture.mark('before-dtg-003');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     assertToastLogged(logCapture.getLinesSince('before-dtg-003'), {
       type: 'error',
@@ -318,15 +302,14 @@ standardSuite('Text Editor Destination', (log) => {
       `Expected destination to remain unchanged when duplicate-tab guard blocks paste, got: "${destContentAfter}"`,
     );
 
-    log('✓ Paste blocked with ambiguous-columns error when dest is in multiple tab groups');
+    ss.log('✓ Paste blocked with ambiguous-columns error when dest is in multiple tab groups');
   });
 
   test('duplicate-tab-group-004: duplicate state clears when conflict resolves and re-entry triggers a fresh warning', async () => {
-    const destUri = createWorkspaceFile('dtg-004-dest', 'destination file\n');
-    const trigger1Uri = createWorkspaceFile('dtg-004-trigger1', '');
-    const trigger2Uri = createWorkspaceFile('dtg-004-trigger2', '');
-    const trigger3Uri = createWorkspaceFile('dtg-004-trigger3', '');
-    tmpFileUris.push(destUri, trigger1Uri, trigger2Uri, trigger3Uri);
+    const destUri = ss.createWorkspaceFile('dtg-004-dest', 'destination file\n');
+    const trigger1Uri = ss.createWorkspaceFile('dtg-004-trigger1', '');
+    const trigger2Uri = ss.createWorkspaceFile('dtg-004-trigger2', '');
+    const trigger3Uri = ss.createWorkspaceFile('dtg-004-trigger3', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, {
@@ -334,20 +317,20 @@ standardSuite('Text Editor Destination', (log) => {
       preview: false,
     });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     await vscode.window.showTextDocument(destDoc, {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     // Open trigger1 in col 3 → first warning fires, isInDuplicateTabState becomes true.
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(trigger1Uri), {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-dtg-004-close');
@@ -355,7 +338,7 @@ standardSuite('Text Editor Destination', (log) => {
     // Close col 2 dest: focus it first, then close the active editor.
     await vscode.window.showTextDocument(destDoc, { viewColumn: vscode.ViewColumn.Two });
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    await settle();
+    await ss.settle();
 
     // Open trigger2 in col 2 to force onDidChangeTabs — visibleTextEditors now has only
     // one dest instance (col 1), so the listener clears the duplicate state.
@@ -363,7 +346,7 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     const linesSinceClose = logCapture.getLinesSince('before-dtg-004-close');
     const stateCleared = linesSinceClose.some((l) =>
@@ -376,7 +359,7 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     logCapture.mark('before-dtg-004-rewarn');
 
@@ -385,22 +368,21 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     assertToastLogged(logCapture.getLinesSince('before-dtg-004-rewarn'), {
       type: 'warning',
       message: WARN_DUPLICATE_TAB_GROUPS,
     });
 
-    log('✓ Duplicate state cleared on resolve; re-entry triggered a fresh warning');
+    ss.log('✓ Duplicate state cleared on resolve; re-entry triggered a fresh warning');
   });
 
   test('stale-viewcolumn-001: paste targets the correct new column after bound editor is moved', async () => {
     const SOURCE_TEXT = 'stale-vc-001-source-text';
-    const destUri = createWorkspaceFile('svc-001-dest', 'ANCHOR\n');
-    const sourceUri = createWorkspaceFile('svc-001-source', `${SOURCE_TEXT}\n`);
-    const dummyUri = createWorkspaceFile('svc-001-dummy', '');
-    tmpFileUris.push(destUri, sourceUri, dummyUri);
+    const destUri = ss.createWorkspaceFile('svc-001-dest', 'ANCHOR\n');
+    const sourceUri = ss.createWorkspaceFile('svc-001-source', `${SOURCE_TEXT}\n`);
+    const dummyUri = ss.createWorkspaceFile('svc-001-dummy', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
 
@@ -414,14 +396,14 @@ standardSuite('Text Editor Destination', (log) => {
       new vscode.Position(1, 0),
     );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     // Open dest in col 3 — dest is now visible in col 2 AND col 3.
     await vscode.window.showTextDocument(destDoc, {
       viewColumn: vscode.ViewColumn.Three,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     // Open dummy in col 2 (active) — dest in col 2 is now HIDDEN behind dummy.
     // After this: col 2 shows dummy (visible), dest (hidden). Col 3 shows dest (visible).
@@ -431,7 +413,7 @@ standardSuite('Text Editor Destination', (log) => {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     // Open source in col 4 — a fresh column that reliably gets focus.
     // Col 2 is occupied by dummy (dest hidden behind it), col 3 by dest.
@@ -441,7 +423,7 @@ standardSuite('Text Editor Destination', (log) => {
     logCapture.mark('before-svc-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-svc-001');
     const movedLog = lines.some((l) =>
@@ -456,6 +438,6 @@ standardSuite('Text Editor Destination', (log) => {
       `Expected RangeLink referencing "${relativeSourcePath}" in dest, got: "${destContent}"`,
     );
 
-    log('✓ Paste followed bound editor to new view column');
+    ss.log('✓ Paste followed bound editor to new view column');
   });
 });

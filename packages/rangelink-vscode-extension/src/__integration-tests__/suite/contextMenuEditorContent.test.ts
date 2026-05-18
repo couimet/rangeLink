@@ -10,13 +10,8 @@ import {
   assertSetContextLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
-  cleanupFiles,
   clearSelection,
-  createAndBindCapturingTerminal,
-  createAndOpenFile,
   getLogCapture,
-  openEditor,
-  settle,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -25,8 +20,7 @@ import {
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Editor Content', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
+standardSuite('Context Menus — Editor Content', (ss) => {
   let originalMultiLinePasteWarning: unknown;
 
   suiteSetup(async () => {
@@ -54,23 +48,17 @@ standardSuite('Context Menus — Editor Content', (log) => {
       );
   });
 
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
   test('[assisted] context-menus-editor-content-001: Editor content "Send RangeLink" sends workspace-relative link to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-001', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-001', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-001';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-001');
@@ -96,19 +84,19 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    log('✓ Editor-content "Send RangeLink" delivered workspace-relative link to bound terminal');
+    ss.log('✓ Editor-content "Send RangeLink" delivered workspace-relative link to bound terminal');
   });
 
   test('[assisted] context-menus-editor-content-002: Editor content "Send RangeLink (Absolute)" sends absolute link to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-002', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-002', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-002';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-002');
@@ -133,20 +121,22 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    log('✓ Editor-content "Send RangeLink (Absolute)" delivered absolute link to bound terminal');
+    ss.log(
+      '✓ Editor-content "Send RangeLink (Absolute)" delivered absolute link to bound terminal',
+    );
   });
 
   test('[assisted] context-menus-editor-content-003: Editor content "Send Portable Link" sends portable link with workspace-relative path', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-003', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-003';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-003');
@@ -171,19 +161,19 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    log('✓ Editor-content "Send Portable Link" delivered portable link to bound terminal');
+    ss.log('✓ Editor-content "Send Portable Link" delivered portable link to bound terminal');
   });
 
   test('[assisted] context-menus-editor-content-004: Editor content "Send Portable Link (Absolute)" sends portable link with absolute path', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-004', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-004', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-004';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-004');
@@ -208,21 +198,21 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: Portable RangeLink copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    log(
+    ss.log(
       '✓ Editor-content "Send Portable Link (Absolute)" delivered portable link with absolute path',
     );
   });
 
   test('[assisted] context-menus-editor-content-005: Editor content "Send Selected Text" sends raw selected text to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-005', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-005', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-005';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 6));
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-005');
@@ -251,17 +241,17 @@ standardSuite('Context Menus — Editor Content', (log) => {
     // sends `\r` between lines so a real shell treats each line as Enter-terminated;
     // our capturing pty preserves exactly what was sent.
     const normalizedCapture = capturing.getCapturedText().replace(/\r\n|\r/g, '\n');
-    log(`TC 005 captured (normalized): ${JSON.stringify(normalizedCapture)}`);
+    ss.log(`TC 005 captured (normalized): ${JSON.stringify(normalizedCapture)}`);
     assertTerminalBufferContains(normalizedCapture, 'line 1\nline 2\nline 3');
     assertStatusBarMsgLogged(lines, {
       message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    log('✓ Editor-content "Send Selected Text" delivered raw selected text to bound terminal');
+    ss.log('✓ Editor-content "Send Selected Text" delivered raw selected text to bound terminal');
   });
 
   test('[assisted] context-menus-editor-content-006: Visual separator is visible between RangeLink commands and other menu items', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-006', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-006', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const verdict = await waitForHumanVerdict(
@@ -281,18 +271,18 @@ standardSuite('Context Menus — Editor Content', (log) => {
       'Human reported the RangeLink block has no visual separator — group prefixes in package.json may have drifted',
     );
 
-    log('✓ Editor-content context menu renders a visual separator for the RangeLink block');
+    ss.log('✓ Editor-content context menu renders a visual separator for the RangeLink block');
   });
 
   test('[assisted] context-menus-editor-content-007: Editor content "Send This File\'s Path" sends absolute path to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-007', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-007', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-007';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    await openEditor(uri);
-    await settle();
+    await ss.openEditor(uri);
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-007');
@@ -317,19 +307,19 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
     assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
 
-    log('✓ Editor-content "Send This File\'s Path" delivered absolute path to bound terminal');
+    ss.log('✓ Editor-content "Send This File\'s Path" delivered absolute path to bound terminal');
   });
 
   test('[assisted] context-menus-editor-content-008: Editor content "Send This File\'s Relative Path" sends workspace-relative path to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-008', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-008', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-008';
-    const capturing = await createAndBindCapturingTerminal(terminalName);
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
 
-    await openEditor(uri);
-    await settle();
+    await ss.openEditor(uri);
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-008');
@@ -354,13 +344,13 @@ standardSuite('Context Menus — Editor Content', (log) => {
     assertClipboardWriteLogged(lines, { textLength: relativePath.length });
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
 
-    log(
+    ss.log(
       '✓ Editor-content "Send This File\'s Relative Path" delivered relative path to bound terminal',
     );
   });
 
   test('[assisted] context-menus-editor-content-009: Editor content "Bind Here" binds the current file as the text editor destination', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-009', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-009', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
@@ -383,18 +373,18 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: Bound to Text Editor ("${fn}")`,
     });
 
-    log('✓ Editor-content "Bind Here" committed a text-editor binding for the current file');
+    ss.log('✓ Editor-content "Bind Here" committed a text-editor binding for the current file');
   });
 
   test('[assisted] context-menus-editor-content-010: Editor content "Unbind" is visible when bound and unbinds on click', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-010', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-010', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-010';
-    await createAndBindCapturingTerminal(terminalName);
+    await ss.createAndBindCapturingTerminal(terminalName);
 
-    await openEditor(uri);
-    await settle();
+    await ss.openEditor(uri);
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-010');
@@ -424,19 +414,19 @@ standardSuite('Context Menus — Editor Content', (log) => {
       message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
     });
 
-    log('✓ Editor-content "Unbind" was visible (clicked it) and fired the unbind path');
+    ss.log('✓ Editor-content "Unbind" was visible (clicked it) and fired the unbind path');
   });
 
   test('[assisted] context-menus-editor-content-011: Selection-dependent RangeLink items are hidden when no text is selected', async () => {
-    const uri = await createAndOpenFile('ctxmenu-ed-011', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-ed-011', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-ed-011';
-    await createAndBindCapturingTerminal(terminalName);
+    await ss.createAndBindCapturingTerminal(terminalName);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
     clearSelection(editor);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-011');
@@ -474,6 +464,8 @@ standardSuite('Context Menus — Editor Content', (log) => {
       'Expected no clipboard write log — nothing should have been sent during observation',
     );
 
-    log('✓ No-selection state: selection-dependent items hidden (human verdict + state invariant)');
+    ss.log(
+      '✓ No-selection state: selection-dependent items hidden (human verdict + state invariant)',
+    );
   });
 });

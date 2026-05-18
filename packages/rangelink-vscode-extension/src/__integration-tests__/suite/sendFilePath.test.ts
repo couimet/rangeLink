@@ -13,42 +13,29 @@ import {
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
   assertToastLogged,
-  cleanupFiles,
-  createAndBindCapturingTerminal,
-  createCapturingTerminal,
   createFileAt,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openEditor,
-  settle,
   standardSuite,
   waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
 
-standardSuite('Send File Path', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris.splice(0));
-    await settle();
-  });
-
+standardSuite('Send File Path', (ss) => {
   test('send-file-path-001: R-F sends workspace-relative path to bound terminal', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = createWorkspaceFile('sfp-001', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-001', 'content\n');
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
     capturing.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-001');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-001');
@@ -61,23 +48,22 @@ standardSuite('Send File Path', (log) => {
       uriSource: 'command-palette',
       filePath: relativePath,
     });
-    log('✓ R-F sends workspace-relative path to terminal');
+    ss.log('✓ R-F sends workspace-relative path to terminal');
   });
 
   test('send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = createWorkspaceFile('sfp-002', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-002', 'content\n');
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-002');
     capturing.clearCaptured();
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
-    await settle();
+    await ss.settle();
 
     const absolutePath = fileUri.fsPath;
     const lines = logCapture.getLinesSince('before-002');
@@ -87,23 +73,22 @@ standardSuite('Send File Path', (log) => {
       filePath: absolutePath,
     });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${absolutePath} `);
-    log('✓ Cmd+R Cmd+Shift+F sends exact absolute path to terminal');
+    ss.log('✓ Cmd+R Cmd+Shift+F sends exact absolute path to terminal');
   });
 
   test('send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
-    tmpFileUris.push(fileUri);
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-004');
     capturing.clearCaptured();
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-004');
@@ -120,23 +105,22 @@ standardSuite('Send File Path', (log) => {
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted before terminal send',
     );
     assertTerminalBufferEquals(capturing.getCapturedText(), ` '${relativePath}' `);
-    log('✓ Path with spaces auto-quoted for terminal destination');
+    ss.log('✓ Path with spaces auto-quoted for terminal destination');
   });
 
   test('send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
-    tmpFileUris.push(fileUri);
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-005');
     capturing.clearCaptured();
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-005');
@@ -153,16 +137,14 @@ standardSuite('Send File Path', (log) => {
       'Expected "Quoted path for unsafe characters" log — path with parentheses must be quoted before terminal send',
     );
     assertTerminalBufferEquals(capturing.getCapturedText(), ` '${relativePath}' `);
-    log('✓ Path with parentheses auto-quoted for terminal destination');
+    ss.log('✓ Path with parentheses auto-quoted for terminal destination');
   });
 
   test('send-file-path-006: text editor destination — path with spaces is auto-quoted', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
-    const destUri = createWorkspaceFile('sfp-006-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
-    tmpFileUris.push(destUri);
+    const destUri = ss.createWorkspaceFile('sfp-006-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = createFileAt('__rl-test-source with spaces.ts', 'content\n');
-    tmpFileUris.push(sourceUri);
 
     const destEditor = await openEditor(destUri, vscode.ViewColumn.Two);
     destEditor.selection = new vscode.Selection(
@@ -170,19 +152,19 @@ standardSuite('Send File Path', (log) => {
       new vscode.Position(1, 0),
     );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(sourceUri),
       vscode.ViewColumn.Beside,
     );
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-006');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(sourceUri, false);
     const lines = logCapture.getLinesSince('before-006');
@@ -204,7 +186,7 @@ standardSuite('Send File Path', (log) => {
       content.includes(`${ANCHOR_START}\n '${relativePath}' ${ANCHOR_END}`),
       `Expected single-quoted path inserted between anchors, got: ${JSON.stringify(content)}`,
     );
-    log('✓ Text editor destination receives auto-quoted path (spaces → single quotes)');
+    ss.log('✓ Text editor destination receives auto-quoted path (spaces → single quotes)');
   });
 
   test('send-file-path-007: clipboard and terminal both receive the quoted path (single clipboard write)', async () => {
@@ -212,12 +194,11 @@ standardSuite('Send File Path', (log) => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
     const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
-    tmpFileUris.push(fileUri);
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
 
@@ -225,7 +206,7 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-007');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const clipboard = await vscode.env.clipboard.readText();
@@ -247,7 +228,7 @@ standardSuite('Send File Path', (log) => {
       clipboard.includes(relativePath),
       `Expected clipboard to include the file path, got: ${JSON.stringify(clipboard)}`,
     );
-    log('✓ Both terminal and clipboard receive the quoted path (single clipboard write)');
+    ss.log('✓ Both terminal and clipboard receive the quoted path (single clipboard write)');
   });
 
   test('send-file-path-008: self-paste shows info notification and copies smart-padded path to clipboard without modifying file', async () => {
@@ -258,11 +239,10 @@ standardSuite('Send File Path', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
 
-    const fileUri = createWorkspaceFile('sfp-008-self', 'original content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-008-self', 'original content\n');
     await openEditor(fileUri);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
@@ -270,7 +250,7 @@ standardSuite('Send File Path', (log) => {
     logCapture.mark('before-008');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-008');
@@ -287,16 +267,15 @@ standardSuite('Send File Path', (log) => {
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
-    log('✓ Self-paste: info notification shown, smart-padded path on clipboard, file unchanged');
+    ss.log('✓ Self-paste: info notification shown, smart-padded path on clipboard, file unchanged');
   });
 
   test('[assisted] send-file-path-009: unbound — R-F opens destination picker before sending', async () => {
-    const capturing = await createCapturingTerminal('sfp-picker-test');
+    const capturing = await ss.createCapturingTerminal('sfp-picker-test');
 
-    const fileUri = createWorkspaceFile('sfp-009', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-009', 'content\n');
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-009');
@@ -313,7 +292,7 @@ standardSuite('Send File Path', (log) => {
       ],
     );
 
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-009');
@@ -325,23 +304,22 @@ standardSuite('Send File Path', (log) => {
     );
     assert.ok(terminalItem !== undefined, 'Expected "sfp-picker-test" to appear in the picker');
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
-    log('✓ Unbound R-F opens picker; path sent after selection');
+    ss.log('✓ Unbound R-F opens picker; path sent after selection');
   });
 
   test('send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = createWorkspaceFile('sfp-010', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-010', 'content\n');
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-010');
     capturing.clearCaptured();
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-010');
@@ -351,23 +329,22 @@ standardSuite('Send File Path', (log) => {
       filePath: relativePath,
     });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
-    log('✓ Command Palette "Send Current File Path" sends workspace-relative path');
+    ss.log('✓ Command Palette "Send Current File Path" sends workspace-relative path');
   });
 
   test('send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
-    const capturing = await createAndBindCapturingTerminal('sfp-test');
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = createWorkspaceFile('sfp-011', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('sfp-011', 'content\n');
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-011');
     capturing.clearCaptured();
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
-    await settle();
+    await ss.settle();
 
     const absolutePath = fileUri.fsPath;
     const lines = logCapture.getLinesSince('before-011');
@@ -377,16 +354,14 @@ standardSuite('Send File Path', (log) => {
       filePath: absolutePath,
     });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${absolutePath} `);
-    log('✓ Command Palette "Send Current File Path (Absolute)" sends absolute path');
+    ss.log('✓ Command Palette "Send Current File Path (Absolute)" sends absolute path');
   });
 
   test('send-file-path-012: bound text editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
-    const destUri = createWorkspaceFile('sfp-012-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
-    tmpFileUris.push(destUri);
-    const sourceUri = createWorkspaceFile('sfp-012-source', 'content\n');
-    tmpFileUris.push(sourceUri);
+    const destUri = ss.createWorkspaceFile('sfp-012-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const sourceUri = ss.createWorkspaceFile('sfp-012-source', 'content\n');
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -397,19 +372,19 @@ standardSuite('Send File Path', (log) => {
       new vscode.Position(1, 0),
     );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(sourceUri), {
       viewColumn: vscode.ViewColumn.One,
       preview: false,
     });
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-012');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(
       vscode.window.activeTextEditor?.document.uri.toString(),
@@ -431,6 +406,6 @@ standardSuite('Send File Path', (log) => {
       expectedContent,
       `Expected exact dest content, got: ${JSON.stringify(destDoc.getText())}`,
     );
-    log('✓ Bound editor brought to foreground and received exact file path');
+    ss.log('✓ Bound editor brought to foreground and received exact file path');
   });
 });

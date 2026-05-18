@@ -7,32 +7,19 @@ import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
   assertNoStatusBarMsgLogged,
   assertStatusBarMsgLogged,
-  cleanupFiles,
   closeAllEditors,
-  createAndOpenFile,
-  createTerminal,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
   findTerminalItems,
   findTestItemsByPrefix,
   getLogCapture,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
-  settle,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('R-D Bind to Destination', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('R-D Bind to Destination', (ss) => {
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     findTestItemsByPrefix(items, '__rl-test-btd-');
 
@@ -44,7 +31,7 @@ standardSuite('R-D Bind to Destination', (log) => {
   ];
 
   test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
-    await createTerminal('rl-btd-004');
+    await ss.createTerminal('rl-btd-004');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-004');
@@ -89,17 +76,12 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: 'RangeLink: No destination bound',
     });
 
-    log('✓ Picker showed unbound terminal; bind succeeded with correct status bar toast');
+    ss.log('✓ Picker showed unbound terminal; bind succeeded with correct status bar toast');
   });
 
   test('[assisted] bind-to-destination-005: selecting a text editor destination binds it and shows success toast', async () => {
-    await createAndOpenFile('btd-005-a', 'line 1\n', undefined, tmpFileUris);
-    const uriB = await createAndOpenFile(
-      'btd-005-b',
-      'line 2\n',
-      vscode.ViewColumn.Two,
-      tmpFileUris,
-    );
+    await ss.createAndOpenFile('btd-005-a', 'line 1\n', undefined);
+    const uriB = await ss.createAndOpenFile('btd-005-b', 'line 2\n', vscode.ViewColumn.Two);
     const fnB = path.basename(uriB.fsPath);
 
     const logCapture = getLogCapture();
@@ -138,7 +120,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: 'RangeLink: No destination bound',
     });
 
-    log('✓ Picker showed unbound file; bind succeeded with correct status bar toast');
+    ss.log('✓ Picker showed unbound file; bind succeeded with correct status bar toast');
   });
 
   test('[assisted] bind-to-destination-006: selecting a built-in AI assistant destination binds it and shows success toast', async () => {
@@ -160,14 +142,14 @@ standardSuite('R-D Bind to Destination', (log) => {
       `Expected status bar message "✓ RangeLink bound to <AI assistant>" for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
     );
 
-    log('✓ AI assistant bind success toast logged');
+    ss.log('✓ AI assistant bind success toast logged');
   });
 
   test('[assisted] bind-to-destination-007: when already bound, destination picker shows smart-bind confirmation dialog', async () => {
-    await createTerminal('rl-btd-007-a');
+    await ss.createTerminal('rl-btd-007-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await settle();
-    await createTerminal('rl-btd-007-b');
+    await ss.settle();
+    await ss.createTerminal('rl-btd-007-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-007');
@@ -213,14 +195,14 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: 'Unbound Terminal ("rl-btd-007-a"), now bound to Terminal ("rl-btd-007-b")',
     });
 
-    log('✓ Confirmation dialog items validated; no bind/rebind toast after Escape');
+    ss.log('✓ Confirmation dialog items validated; no bind/rebind toast after Escape');
   });
 
   test('[assisted] bind-to-destination-008: smart-bind confirmation Yes replaces the binding', async () => {
-    await createTerminal('rl-btd-008-a');
+    await ss.createTerminal('rl-btd-008-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await settle();
-    await createTerminal('rl-btd-008-b');
+    await ss.settle();
+    await ss.createTerminal('rl-btd-008-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
@@ -245,14 +227,14 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: '✓ RangeLink: Bound to Terminal ("rl-btd-008-a")',
     });
 
-    log('✓ Replacement binding toast logged; old binding not re-confirmed');
+    ss.log('✓ Replacement binding toast logged; old binding not re-confirmed');
   });
 
   test('[assisted] bind-to-destination-009: smart-bind confirmation No keeps existing binding', async () => {
-    await createTerminal('rl-btd-009-a');
+    await ss.createTerminal('rl-btd-009-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await settle();
-    await createTerminal('rl-btd-009-b');
+    await ss.settle();
+    await ss.createTerminal('rl-btd-009-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
@@ -283,13 +265,13 @@ standardSuite('R-D Bind to Destination', (log) => {
       'Human reported the original binding was NOT preserved when clicking "No, keep current binding"',
     );
 
-    log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
+    ss.log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
   });
 
   test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
-    await createTerminal('rl-btd-010');
+    await ss.createTerminal('rl-btd-010');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-010');
@@ -308,7 +290,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       message: 'RangeLink: No destination bound',
     });
 
-    log('✓ No bind or unbind toast after Escape — binding state unchanged');
+    ss.log('✓ No bind or unbind toast after Escape — binding state unchanged');
   });
 
   test('[assisted] bind-to-destination-011: re-binding same built-in AI assistant shows already-bound message', async () => {
@@ -345,7 +327,7 @@ standardSuite('R-D Bind to Destination', (log) => {
       `Expected "Already bound to <AI assistant>" info toast for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
     );
 
-    log('✓ Already-bound info toast logged; no confirmation dialog shown');
+    ss.log('✓ Already-bound info toast logged; no confirmation dialog shown');
   });
 
   test('[assisted] bind-to-destination-012: switching between different AI assistants shows confirmation dialog', async () => {
@@ -387,7 +369,7 @@ standardSuite('R-D Bind to Destination', (log) => {
     );
     assert.ok(reboundLogged, 'Expected rebound status bar message after "Yes, replace"');
 
-    log('✓ Confirmation dialog shown; rebind toast logged after "Yes, replace"');
+    ss.log('✓ Confirmation dialog shown; rebind toast logged after "Yes, replace"');
   });
 
   test('[assisted] bind-to-destination-014: Jump to Bound Destination with no bound destination opens picker', async () => {
@@ -408,20 +390,19 @@ standardSuite('R-D Bind to Destination', (log) => {
       'pass',
       'Jump to Bound Destination with no destination did not open picker',
     );
-    log('✓ Jump to Bound Destination with no destination opens picker (human verdict)');
+    ss.log('✓ Jump to Bound Destination with no destination opens picker (human verdict)');
   });
 
   test('[assisted] bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
     await closeAllEditors();
 
-    const fileA = createWorkspaceFile('btd-015-a', 'file A content\n');
-    const fileB = createWorkspaceFile('btd-015-b', 'file B content\n');
-    tmpFileUris.push(fileA, fileB);
+    const fileA = ss.createWorkspaceFile('btd-015-a', 'file A content\n');
+    const fileB = ss.createWorkspaceFile('btd-015-b', 'file B content\n');
     const docA = await vscode.workspace.openTextDocument(fileA);
     const docB = await vscode.workspace.openTextDocument(fileB);
     await vscode.window.showTextDocument(docA, vscode.ViewColumn.One);
     await vscode.window.showTextDocument(docB, vscode.ViewColumn.One);
-    await settle();
+    await ss.settle();
 
     const verdict = await waitForHumanVerdict(
       'bind-to-destination-015',
@@ -441,6 +422,6 @@ standardSuite('R-D Bind to Destination', (log) => {
       'pass',
       'Binding a text editor in a single tab group failed or required a split',
     );
-    log('✓ Text editor binding works in single tab group — no split required (human verdict)');
+    ss.log('✓ Text editor binding works in single tab group — no split required (human verdict)');
   });
 });

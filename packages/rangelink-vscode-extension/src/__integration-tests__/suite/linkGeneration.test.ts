@@ -4,29 +4,13 @@ import { NoOpLogger } from 'barebone-logger';
 import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import {
-  cleanupFiles,
-  createAndOpenFile,
-  createWorkspaceFile,
-  openEditor,
-  settle,
-  standardSuite,
-  waitForHumanVerdict,
-} from '../helpers';
+import { openEditor, settle, standardSuite, waitForHumanVerdict } from '../helpers';
 
 const LOGGER = new NoOpLogger();
 
-standardSuite('Link Generation', (_log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  suiteTeardown(async () => {
-    cleanupFiles(tmpFileUris);
-  });
-
+standardSuite('Link Generation', (ss) => {
   test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
-    const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
-    const uri = createWorkspaceFile('tc132', lines.join('\n') + '\n');
-    tmpFileUris.push(uri);
+    const { uri } = ss.createContentFile('tc132', 25, (i) => `line ${i + 1} content`);
 
     const editor = await openEditor(uri);
 
@@ -156,21 +140,12 @@ standardSuite('Link Generation', (_log) => {
   });
 });
 
-standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('Link Generation — Clickable Links (Assisted)', (ss) => {
   test('[assisted] url-exclusion-002: https:// URL in document does not receive a RangeLink document link', async () => {
-    const uri = await createAndOpenFile(
+    await ss.createAndOpenFile(
       '__rl-test-url-exclusion',
       'Some text\nhttps://example.com/path/file.ts#L10\nMore text\n',
     );
-    tmpFileUris.push(uri);
     await settle();
 
     const verdict = await waitForHumanVerdict(
@@ -189,15 +164,14 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
       'pass',
       'Human reported FAIL: RangeLink document link appeared on https:// URL',
     );
-    log('✓ url-exclusion-002 — no RangeLink document link on https:// URL (human verified)');
+    ss.log('✓ url-exclusion-002 — no RangeLink document link on https:// URL (human verified)');
   });
 
   test('[assisted] document-link-tooltip-001: hovering a clickable RangeLink shows clean tooltip', async () => {
-    const uri = await createAndOpenFile(
+    await ss.createAndOpenFile(
       '__rl-test-doc-link-tooltip',
       'See code at src/utils/helper.ts#L5 for details\n',
     );
-    tmpFileUris.push(uri);
     await settle();
 
     const verdict = await waitForHumanVerdict(
@@ -212,6 +186,8 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (log) => {
     );
 
     assert.strictEqual(verdict, 'pass', 'Human reported FAIL: document link tooltip was not clean');
-    log('✓ document-link-tooltip-001 — clean tooltip on RangeLink document link (human verified)');
+    ss.log(
+      '✓ document-link-tooltip-001 — clean tooltip on RangeLink document link (human verified)',
+    );
   });
 });

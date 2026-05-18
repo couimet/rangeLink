@@ -1,16 +1,11 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import {
   assertToastLogged,
-  cleanupFiles,
   clearEditorSelection,
   getLogCapture,
-  getWorkspaceRoot,
   navigateViaHandleLinkClick,
   standardSuite,
 } from '../helpers';
@@ -18,23 +13,14 @@ import {
 const LINE_COUNT = 10;
 const LINE_CONTENT = 'abcdefghijklmnopqrst';
 
-standardSuite('Navigation Clamping', (_log) => {
-  let testFilename: string;
-  let testFileUri: vscode.Uri;
-
-  suiteSetup(async () => {
-    const lines = Array.from({ length: LINE_COUNT }, () => LINE_CONTENT);
-    testFilename = `__rl-test-clamp-${Date.now()}.ts`;
-    const testFilePath = path.join(getWorkspaceRoot(), testFilename);
-    fs.writeFileSync(testFilePath, lines.join('\n') + '\n', 'utf8');
-    testFileUri = vscode.Uri.file(testFilePath);
-  });
-
-  suiteTeardown(async () => {
-    cleanupFiles([testFileUri]);
-  });
-
+standardSuite('Navigation Clamping', (ss) => {
   test('navigation-clamping-001: #L50 on 10-line file — selection clamped to last line', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'clamp-001',
+      LINE_COUNT,
+      () => LINE_CONTENT,
+    );
+
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-001');
 
@@ -69,6 +55,12 @@ standardSuite('Navigation Clamping', (_log) => {
   });
 
   test('navigation-clamping-002: #L1C200 on 20-char line — character clamped to line length', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'clamp-002',
+      LINE_COUNT,
+      () => LINE_CONTENT,
+    );
+
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-002');
 
@@ -102,6 +94,12 @@ standardSuite('Navigation Clamping', (_log) => {
   });
 
   test('navigation-clamping-003: #L5C10 within bounds — selection at exact position', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'clamp-003',
+      LINE_COUNT,
+      () => LINE_CONTENT,
+    );
+
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-003');
 
@@ -130,6 +128,12 @@ standardSuite('Navigation Clamping', (_log) => {
   });
 
   test('navigation-clamping-004: #L50C200 — both line and column clamped', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'clamp-004',
+      LINE_COUNT,
+      () => LINE_CONTENT,
+    );
+
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-004');
 

@@ -5,27 +5,17 @@ import * as vscode from 'vscode';
 import { CMD_BIND_TO_TERMINAL_HERE, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   assertQuickPickItemsLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
-  settle,
   standardSuite,
-  TERMINAL_READY_MS,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
 
 const SEPARATOR_KIND = -1;
 
-standardSuite('R-M Status Bar Menu', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  suiteTeardown(async () => {
-    cleanupFiles(tmpFileUris);
-  });
-
+standardSuite('R-M Status Bar Menu', (ss) => {
   test('status-bar-menu-002: invoking openStatusBarMenu command opens the R-M menu', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-002');
@@ -57,15 +47,14 @@ standardSuite('R-M Status Bar Menu', (log) => {
       ],
     );
 
-    log('✓ Unbound menu: no Jump item, correct structure');
+    ss.log('✓ Unbound menu: no Jump item, correct structure');
   });
 
   test('status-bar-menu-003: invoking openStatusBarMenu command opens the R-M menu', async () => {
-    const testFileUri = createWorkspaceFile('menu-003', 'line 1\nline 2\n');
-    tmpFileUris.push(testFileUri);
-    const doc = await vscode.workspace.openTextDocument(testFileUri);
+    const fileUri = ss.createWorkspaceFile('menu-003', 'line 1\nline 2\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-003');
@@ -97,16 +86,14 @@ standardSuite('R-M Status Bar Menu', (log) => {
       ],
     );
 
-    log('✓ Direct command menu: no Jump item, correct structure');
+    ss.log('✓ Direct command menu: no Jump item, correct structure');
   });
 
   test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
-    const terminal = vscode.window.createTerminal({ name: 'rl-menu-test' });
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    await ss.createTerminal('rl-menu-test');
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-005');
@@ -126,7 +113,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       { label: '$(info) Show Version Info', itemKind: 'command' },
     ]);
 
-    log('✓ Bound-state menu items validated via log capture');
+    ss.log('✓ Bound-state menu items validated via log capture');
   });
 
   test('[assisted] status-bar-menu-001: status bar item visible with correct text and tooltip', async () => {
@@ -141,7 +128,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       ],
     );
     assert.strictEqual(verdict, 'pass', 'Human reported status bar text or tooltip was incorrect');
-    log('✓ Status bar item shows correct text and tooltip');
+    ss.log('✓ Status bar item shows correct text and tooltip');
   });
 
   test('status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
@@ -162,15 +149,13 @@ standardSuite('R-M Status Bar Menu', (log) => {
       undefined,
       'Expected no Jump item in unbound state',
     );
-    log('✓ Unbound menu shows "choose below" info item and no Jump item');
+    ss.log('✓ Unbound menu shows "choose below" info item and no Jump item');
   });
 
   test('[assisted] status-bar-menu-007: R-M menu Unbind Destination item unbinds the destination when selected', async () => {
-    const terminal = vscode.window.createTerminal({ name: 'rl-sbm-007' });
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    await ss.createTerminal('rl-sbm-007');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-007');
@@ -222,7 +207,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       undefined,
       'Expected no Jump item after unbind',
     );
-    log(
+    ss.log(
       '✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent',
     );
   });
@@ -257,7 +242,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       (l) => l.includes('GoToRangeLinkCommand.execute') && l.includes('Showing input box'),
     );
     assert.ok(inputBoxLog, 'Expected GoToRangeLinkCommand to log input box presentation');
-    log('✓ R-M menu "Go to Link" dispatched the R-G command and input box was shown');
+    ss.log('✓ R-M menu "Go to Link" dispatched the R-G command and input box was shown');
   });
 
   test('[assisted] status-bar-menu-009: R-M menu Show Version Info displays version, commit, branch, and build date', async () => {
@@ -292,7 +277,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       'pass',
       'Human reported version info notification was missing fields',
     );
-    log(
+    ss.log(
       '✓ Show Version Info dispatched and notification displayed all required fields (human verified)',
     );
   });

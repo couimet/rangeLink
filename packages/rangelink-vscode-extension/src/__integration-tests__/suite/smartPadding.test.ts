@@ -14,9 +14,6 @@ import {
 import {
   assertTerminalBufferEquals,
   cleanupFiles,
-  createAndBindCapturingTerminal,
-  createTerminal,
-  createWorkspaceFile,
   echoToTerminal,
   getWorkspaceRoot,
   openEditor,
@@ -35,7 +32,7 @@ import {
 // documents are particularly susceptible to cross-test contamination.
 // ---------------------------------------------------------------------------
 
-standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (log) => {
+standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
   let sourceFileUri: vscode.Uri;
 
   setup(async () => {
@@ -51,7 +48,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (log) => {
 
   test('smart-padding-001-untitled: whitespace-only text sent to untitled editor destination', async () => {
     const whitespaceContent = '   \t   ';
-    log('smart-padding-001-untitled: starting — default profile');
+    ss.log('smart-padding-001-untitled: starting — default profile');
 
     fs.writeFileSync(sourceFileUri.fsPath, whitespaceContent, 'utf8');
 
@@ -83,7 +80,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (log) => {
   });
 });
 
-standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (log) => {
+standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
   let sourceFileUri001: vscode.Uri;
   let sourceFileUri002: vscode.Uri;
 
@@ -103,7 +100,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (log) => {
 
   test('langswitch-binding-001: binding survives manual language-mode change on untitled file', async () => {
     const sourceContent = 'hello world';
-    log('langswitch-001: starting');
+    ss.log('langswitch-001: starting');
 
     fs.writeFileSync(sourceFileUri001.fsPath, sourceContent, 'utf8');
 
@@ -182,24 +179,13 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (log) => {
 // Suite — Single-Write Architecture (CapturingTerminal + assisted tests)
 // ---------------------------------------------------------------------------
 
-standardSuite('Smart Padding — Single-Write Architecture', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-  const tmpTerminals: vscode.Terminal[] = [];
-
-  teardown(async () => {
-    for (const t of tmpTerminals.splice(0)) t.dispose();
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   test('smart-padding-001: whitespace-only text preserved when sent to destination', async () => {
     const whitespaceContent = '   \t   ';
 
-    const sourceUri = createWorkspaceFile('pad-001', whitespaceContent);
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-001', whitespaceContent);
 
-    const capturing = await createAndBindCapturingTerminal('pad-001-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-001-dest');
     await settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -224,14 +210,13 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       captured.includes('\t'),
       `Expected captured content to contain tab, got: ${JSON.stringify(captured)}`,
     );
-    log('✓ smart-padding-001: whitespace preserved');
+    ss.log('✓ smart-padding-001: whitespace preserved');
   });
 
   test('smart-padding-003: multiline content preserved through destination', async () => {
     const expected = 'line 1\nline 2\nline 3';
 
-    const sourceUri = createWorkspaceFile('pad-003', expected + '\n');
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-003', expected + '\n');
 
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
@@ -254,7 +239,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       expected,
       `Expected multiline content to arrive intact, got: ${JSON.stringify(destContent)}`,
     );
-    log('✓ smart-padding-003: multiline content preserved through destination');
+    ss.log('✓ smart-padding-003: multiline content preserved through destination');
   });
 
   test('smart-padding-005: pasteContent=before adds leading space only', async () => {
@@ -262,10 +247,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
 
-    const sourceUri = createWorkspaceFile('pad-005', 'hello\n');
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-005', 'hello\n');
 
-    const capturing = await createAndBindCapturingTerminal('pad-005-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-005-dest');
     await settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -277,7 +261,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     await settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), ' hello');
-    log('✓ smart-padding-005: leading space applied');
+    ss.log('✓ smart-padding-005: leading space applied');
   });
 
   test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
@@ -285,10 +269,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
 
-    const sourceUri = createWorkspaceFile('pad-006', 'hello\n');
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-006', 'hello\n');
 
-    const capturing = await createAndBindCapturingTerminal('pad-006-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-006-dest');
     await settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -300,7 +283,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     await settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), 'hello ');
-    log('✓ smart-padding-006: trailing space applied');
+    ss.log('✓ smart-padding-006: trailing space applied');
   });
 
   test('smart-padding-007: pasteContent=both — text selection sent to destination has leading and trailing space', async () => {
@@ -308,10 +291,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
-    const sourceUri = createWorkspaceFile('pad-007', 'hello world\n');
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-007', 'hello world\n');
 
-    const capturing = await createAndBindCapturingTerminal('pad-007-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-007-dest');
     await settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -323,7 +305,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     await settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), ' hello world ');
-    log('✓ smart-padding-007: padded text selection sent to destination');
+    ss.log('✓ smart-padding-007: padded text selection sent to destination');
   });
 
   test('smart-padding-008: pasteFilePath=both — file path sent to terminal has leading and trailing space', async () => {
@@ -331,10 +313,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
 
-    const fileUri = createWorkspaceFile('pad-008', 'content\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('pad-008', 'content\n');
 
-    const capturing = await createAndBindCapturingTerminal('pad-008-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-008-dest');
     await settle();
 
     await openEditor(fileUri);
@@ -346,12 +327,11 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
-    log('✓ smart-padding-008: padded file path sent to terminal');
+    ss.log('✓ smart-padding-008: padded file path sent to terminal');
   });
 
   test('[assisted] smart-padding-009: pasteLink=both — RangeLink sent to AI assistant has leading and trailing space', async () => {
-    const fileUri = createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
     const editor = await openEditor(fileUri);
     await settle();
 
@@ -375,7 +355,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     );
 
     assert.strictEqual(verdict, 'pass');
-    log('✓ smart-padding-009: RangeLink sent to Copilot with padding (human verified)');
+    ss.log('✓ smart-padding-009: RangeLink sent to Copilot with padding (human verified)');
   });
 
   test('[assisted] smart-padding-010: terminal selection sent to editor with padding=both', async () => {
@@ -383,15 +363,14 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
-    const destUri = createWorkspaceFile('pad-010-dest', '');
-    tmpFileUris.push(destUri);
+    const destUri = ss.createWorkspaceFile('pad-010-dest', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destUri);
     await settle();
 
-    const terminal = await createTerminal('pad-010-src', tmpTerminals);
+    const terminal = await ss.createTerminal('pad-010-src');
     echoToTerminal(terminal, 'hello');
     await settle();
 
@@ -411,7 +390,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       destContent.includes(' hello '),
       `Expected dest to contain padded text " hello ", got: "${destContent}"`,
     );
-    log('✓ smart-padding-010: terminal selection sent to editor with padding (code verified)');
+    ss.log('✓ smart-padding-010: terminal selection sent to editor with padding (code verified)');
   });
 
   test('smart-padding-011: pasteContent=none — no padding applied when setting is off', async () => {
@@ -419,10 +398,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'none', vscode.ConfigurationTarget.Global);
 
-    const sourceUri = createWorkspaceFile('pad-011', 'hello\n');
-    tmpFileUris.push(sourceUri);
+    const sourceUri = ss.createWorkspaceFile('pad-011', 'hello\n');
 
-    const capturing = await createAndBindCapturingTerminal('pad-011-dest', tmpTerminals);
+    const capturing = await ss.createAndBindCapturingTerminal('pad-011-dest');
     await settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -434,6 +412,6 @@ standardSuite('Smart Padding — Single-Write Architecture', (log) => {
     await settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), 'hello');
-    log('✓ smart-padding-011: no padding when disabled');
+    ss.log('✓ smart-padding-011: no padding when disabled');
   });
 });
