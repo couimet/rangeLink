@@ -755,7 +755,7 @@ test_cases:
   - id: clipboard-preservation-013
     labels:
       - clipboard
-      - requires-extensions
+      - cursor
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'Cold paste to Cursor AI: prior clipboard content is restored after paste'
     preconditions:
@@ -772,7 +772,7 @@ test_cases:
   - id: clipboard-preservation-014
     labels:
       - clipboard
-      - requires-extensions
+      - cursor
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'Warm paste to Cursor AI: prior clipboard content is restored (panel already open)'
     preconditions:
