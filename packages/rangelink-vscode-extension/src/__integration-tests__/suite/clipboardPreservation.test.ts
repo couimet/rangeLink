@@ -13,6 +13,7 @@ import {
   assertClipboardChanged,
   assertClipboardRestored,
   assertTerminalBufferContains,
+  extractGeneratedLink,
   getLogCapture,
   openAndDismiss,
   standardSuite,
@@ -54,15 +55,25 @@ standardSuite('Clipboard Preservation', (ss) => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-006');
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-006');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-L with preserve=never');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
     const captured = capturing.getCapturedText();
     assertTerminalBufferContains(captured, 'clipboard');
     assert.ok(
-      captured.includes('#L'),
-      `Expected line reference in terminal buffer, got: ${captured}`,
+      captured.includes(generatedLink),
+      `Expected terminal buffer to contain generated link "${generatedLink}", got: ${captured}`,
     );
   });
 
@@ -71,15 +82,35 @@ standardSuite('Clipboard Preservation', (ss) => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-008a');
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-008a');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with preserve=always');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
   });
 
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-008b');
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-008b');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with default preserve');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
   });
 
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
@@ -87,9 +118,19 @@ standardSuite('Clipboard Preservation', (ss) => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-008c');
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-008c');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with preserve=never');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
   });
 });
 
@@ -108,12 +149,17 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await ss.settle();
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-001');
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    const lines = logCapture.getLinesSince('before-001');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
 
     await assertClipboardRestored('clipboard-preservation-001: always + R-L');
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+    assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
     ss.log('✓ Clipboard restored to sentinel after R-L; terminal received link');
   });
 
@@ -203,12 +249,17 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await ss.settle();
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-005');
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    const lines = logCapture.getLinesSince('before-005');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
 
     await assertClipboardRestored('clipboard-preservation-005: always + terminal paste');
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+    assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
     ss.log('✓ Clipboard restored to sentinel after terminal paste (preserve=always)');
   });
 
@@ -315,9 +366,12 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const clipboardContent = await assertClipboardChanged(
       'clipboard-preservation-010: focus-fail — link must stay in clipboard',
     );
-    assert.ok(
-      clipboardContent.includes('#L'),
-      `Expected a RangeLink link in clipboard (with #L) but got: ${clipboardContent}`,
+    const generatedLink = extractGeneratedLink(lines010);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboardContent,
+      generatedLink,
+      `Expected clipboard to equal generated link "${generatedLink}", got: ${clipboardContent}`,
     );
     ss.log(
       '✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste',

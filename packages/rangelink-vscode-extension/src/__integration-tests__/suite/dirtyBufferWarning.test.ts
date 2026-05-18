@@ -35,9 +35,15 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       .getConfiguration('rangelink')
       .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-004');
     await vscode.env.clipboard.writeText('rangelink-dirty-test-sentinel');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await ss.settle();
+    const lines004 = logCapture.getLinesSince('before-004');
+    const generatedLink = extractGeneratedLink(lines004);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.notStrictEqual(
@@ -45,9 +51,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       'rangelink-dirty-test-sentinel',
       'Expected clipboard to contain a generated link, not the sentinel — warnOnDirtyBuffer=false should bypass dialog',
     );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
     assert.ok(
       editor.document.isDirty,
@@ -270,7 +277,9 @@ standardSuite('Dirty Buffer Warning', (ss) => {
         'Expected no dialog log — setting should bypass dialog',
       );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+      const generatedLink = extractGeneratedLink(lines);
+      assert.ok(generatedLink, 'Expected "Generated link:" log line');
+      assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
 
       assert.ok(
         editor.document.isDirty,
@@ -299,6 +308,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     logCapture.mark('before-019');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-019');
+    const generatedLink019 = extractGeneratedLink(lines);
+    assert.ok(generatedLink019, 'Expected "Generated link:" log line');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.notStrictEqual(
@@ -306,13 +319,13 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       'rangelink-rc-clean-sentinel',
       'Expected clipboard to contain a generated link, not the sentinel',
     );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    assert.strictEqual(
+      clipboard,
+      generatedLink019,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
     assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
 
-    const lines = logCapture.getLinesSince('before-019');
     const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
     assert.strictEqual(
       warningLog,
@@ -645,7 +658,13 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       'rc-save-sentinel',
       'Expected clipboard to change from sentinel',
     );
-    assert.ok(clipboard.includes('#L'), `Expected a RangeLink on clipboard but got: ${clipboard}`);
+    const generatedLink010 = extractGeneratedLink(lines);
+    assert.ok(generatedLink010, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboard,
+      generatedLink010,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
     assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
 
     ss.log('✓ R-C Save & Generate: file saved, link generated');
@@ -688,7 +707,13 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     );
 
     assert.notStrictEqual(clipboard, 'rc-anyway-sentinel', 'Expected clipboard to change');
-    assert.ok(clipboard.includes('#L'), `Expected a RangeLink on clipboard but got: ${clipboard}`);
+    const generatedLink011 = extractGeneratedLink(lines);
+    assert.ok(generatedLink011, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboard,
+      generatedLink011,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
     assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
     ss.log('✓ R-C Generate Anyway: link generated, file still dirty');
