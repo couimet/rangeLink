@@ -1167,11 +1167,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const filesConfig = vscode.workspace.getConfiguration('files');
     const originalTrimTrailingWhitespace =
       filesConfig.inspect('trimTrailingWhitespace')?.workspaceValue;
-    await filesConfig.update(
-      'trimTrailingWhitespace',
-      true,
-      vscode.ConfigurationTarget.Workspace,
-    );
+    await filesConfig.update('trimTrailingWhitespace', true, vscode.ConfigurationTarget.Workspace);
 
     try {
       const editor = await ss.openEditor(testFileUri);
@@ -1254,12 +1250,13 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
 
       const generatedLink = extractSentLink(lines);
-      assert.ok(generatedLink, 'Expected "Sending link to destination" log with formattedLink.link');
+      assert.ok(
+        generatedLink,
+        'Expected "Sending link to destination" log with formattedLink.link',
+      );
 
       const L = targetLineIdx + 1;
-      const rangeRefPattern = new RegExp(
-        `#L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}\\b`,
-      );
+      const rangeRefPattern = new RegExp(`#L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}\\b`);
       assert.ok(
         rangeRefPattern.test(generatedLink),
         `Expected link to contain #L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}, got: ${generatedLink}`,
@@ -1269,7 +1266,9 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
         'R-L Save & Generate (trim-on-save): clipboard should be restored to sentinel after send',
       );
 
-      ss.log('✓ R-L Save & Generate with trim-on-save: selections re-read, link coordinates correct');
+      ss.log(
+        '✓ R-L Save & Generate with trim-on-save: selections re-read, link coordinates correct',
+      );
     } finally {
       await vscode.workspace
         .getConfiguration('files')
