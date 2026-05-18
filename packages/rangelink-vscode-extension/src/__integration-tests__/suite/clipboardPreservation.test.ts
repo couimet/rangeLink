@@ -19,7 +19,6 @@ import {
   createTerminal,
   createWorkspaceFile,
   getLogCapture,
-  loadSettingsProfile,
   openAndDismiss,
   openEditor,
   settle,
@@ -246,7 +245,9 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   test('clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
     const PHRASE = 'test phrase cbp-007';
 
-    await loadSettingsProfile('clipboard-never', log);
+    const config = vscode.workspace.getConfiguration();
+    await config.update('rangelink.clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+    log('set rangelink.clipboard.preserve to never');
 
     const fileUri = createWorkspaceFile('cbp-007', '');
     tmpFileUris.push(fileUri);
@@ -304,7 +305,6 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   });
 
   test('[assisted] clipboard-preservation-010: focus command failure preserves link in clipboard for manual paste', async () => {
-    await loadSettingsProfile('default', log);
 
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-010', lines.join('\n') + '\n');

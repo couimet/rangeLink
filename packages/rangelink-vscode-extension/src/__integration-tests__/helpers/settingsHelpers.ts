@@ -5,34 +5,6 @@ import * as vscode from 'vscode';
 
 import { getWorkspaceRoot } from './testEnv';
 
-const SETTINGS_PROFILES_DIR = 'qa/fixtures/settings';
-
-export const loadSettingsProfile = async (
-  profileName: string,
-  log: (msg: string) => void,
-): Promise<void> => {
-  const profilePath = path.join(getWorkspaceRoot(), SETTINGS_PROFILES_DIR, `${profileName}.json`);
-  log(`loadSettingsProfile: loading ${profileName} from ${profilePath}`);
-
-  if (!fs.existsSync(profilePath)) {
-    throw new Error(`loadSettingsProfile: profile file not found at ${profilePath}`);
-  }
-
-  let settings: Record<string, unknown>;
-  try {
-    settings = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
-  } catch (err) {
-    throw new Error(`loadSettingsProfile: Failed to parse profile ${profileName}: ${err}`);
-  }
-  const config = vscode.workspace.getConfiguration();
-
-  for (const [key, value] of Object.entries(settings)) {
-    await config.update(key, value, vscode.ConfigurationTarget.Global);
-    await config.update(key, value, vscode.ConfigurationTarget.Workspace);
-  }
-  log(`loadSettingsProfile: applied ${Object.keys(settings).length} settings from ${profileName}`);
-};
-
 let cachedRangelinkKeys: string[] | undefined;
 
 const getRangelinkKeys = (): string[] => {
