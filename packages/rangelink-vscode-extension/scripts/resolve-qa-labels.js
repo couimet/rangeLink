@@ -170,14 +170,26 @@ for (const rawLine of lines) {
 
   const featMatch = line.match(/^\s+feature:\s*(.+)$/);
   if (featMatch) {
-    currentCase.feature = featMatch[1].trim().replace(/^'|'$/g, '');
+    const rawFeature = featMatch[1].trim();
+    currentCase.feature =
+      rawFeature.length >= 2 &&
+      ((rawFeature.startsWith('"') && rawFeature.endsWith('"')) ||
+        (rawFeature.startsWith("'") && rawFeature.endsWith("'")))
+        ? rawFeature.slice(1, -1)
+        : rawFeature;
     inLabels = false;
     continue;
   }
 
   const scenarioMatch = line.match(/^\s+scenario:\s*(.+)$/);
   if (scenarioMatch) {
-    currentCase.scenario = scenarioMatch[1].trim().replace(/^'|'$/g, '');
+    const rawScenario = scenarioMatch[1].trim();
+    currentCase.scenario =
+      rawScenario.length >= 2 &&
+      ((rawScenario.startsWith('"') && rawScenario.endsWith('"')) ||
+        (rawScenario.startsWith("'") && rawScenario.endsWith("'")))
+        ? rawScenario.slice(1, -1)
+        : rawScenario;
     inLabels = false;
     continue;
   }
