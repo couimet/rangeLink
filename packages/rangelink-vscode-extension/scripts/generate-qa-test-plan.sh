@@ -73,10 +73,20 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 #   id:              Unique test case identifier (<feature-slug>-NNN)
 #   feature:         Feature area / CHANGELOG section
 #   scenario:        One-line description of the specific scenario being tested
-#   preconditions:   List of required setup steps before executing
-#   steps:           Ordered list of test actions
+#   labels:          Optional tags (e.g., cursor, ubuntu, requires-extensions)
+#   preconditions:   Required setup steps — only on \`automated: false\` entries
+#   steps:           Ordered test actions — only on \`automated: false\` entries
 #   expected_result: What a passing run looks like
-#   automated:       false (manual) | true (covered by TypeScript integration tests)"
+#   automated:       Coverage status:
+#                      true     — covered by a non-[assisted] integration test in
+#                                 src/__integration-tests__/suite/ (runs in CI)
+#                      assisted — covered by an [assisted]-tagged integration test
+#                                 that pauses for a human UI action
+#                      false    — fully manual; preconditions and steps are required
+#
+# For \`automated: true\` and \`automated: assisted\` entries the integration test in
+# src/__integration-tests__/suite/ is the canonical source of setup and actions —
+# \`preconditions:\` and \`steps:\` are omitted to prevent duplication and drift."
 
 BODY=$(sed '1,/^test_cases:/{ /^#/d; }' "$PREVIOUS_YAML")
 
