@@ -13,6 +13,7 @@ import {
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
   assertToastLogged,
+  createFileAt,
   extractQuickPickItemsLogged,
   getLogCapture,
   openEditor,
@@ -78,7 +79,8 @@ standardSuite('Send File Path', (ss) => {
   test('send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = ss.createWorkspaceFile('sfp-004', 'content\n');
+    const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
+    ss.trackFileUri(fileUri);
     await openEditor(fileUri);
     await ss.settle();
 
@@ -110,7 +112,8 @@ standardSuite('Send File Path', (ss) => {
   test('send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = ss.createWorkspaceFile('sfp-005', 'content\n');
+    const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
+    ss.trackFileUri(fileUri);
     await openEditor(fileUri);
     await ss.settle();
 
@@ -143,7 +146,8 @@ standardSuite('Send File Path', (ss) => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = ss.createWorkspaceFile('sfp-006-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
-    const sourceUri = ss.createWorkspaceFile('sfp-006-source', 'content\n');
+    const sourceUri = createFileAt('__rl-test-source with spaces.ts', 'content\n');
+    ss.trackFileUri(sourceUri);
 
     const destEditor = await openEditor(destUri, vscode.ViewColumn.Two);
     destEditor.selection = new vscode.Selection(
@@ -195,7 +199,8 @@ standardSuite('Send File Path', (ss) => {
 
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
 
-    const fileUri = ss.createWorkspaceFile('sfp-008', 'content\n');
+    const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
+    ss.trackFileUri(fileUri);
     await openEditor(fileUri);
     await ss.settle();
 
