@@ -45,10 +45,6 @@ test_cases:
   - id: status-bar-menu-002
     feature: 'R-M Status Bar Menu'
     scenario: 'Clicking the status bar item opens the R-M menu'
-    preconditions:
-      - 'Any workspace is open'
-    steps:
-      - 'Click the $(link) RangeLink item in the status bar'
     expected_result: "A QuickPick menu opens titled 'RangeLink Menu'. Menu items are visible."
     automated: true
 
@@ -1114,13 +1110,6 @@ test_cases:
   - id: dirty-buffer-warning-004
     feature: 'Dirty Buffer Warning'
     scenario: 'Generate Anyway: generates the link without saving'
-    preconditions:
-      - 'Terminal bound, file has unsaved change'
-    steps:
-      - 'Make unsaved change'
-      - 'Select 2-3 lines, press Cmd+R Cmd+L'
-      - 'Click Generate Anyway'
-      - 'Observe file state and terminal'
     expected_result: 'File still dirty (modified indicator remains). RangeLink generated from current unsaved state and sent.'
     automated: true
 
