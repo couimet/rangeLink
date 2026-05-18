@@ -305,7 +305,6 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
   });
 
   test('[assisted] clipboard-preservation-010: focus command failure preserves link in clipboard for manual paste', async () => {
-
     const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
     const fileUri = createWorkspaceFile('cbp-010', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
