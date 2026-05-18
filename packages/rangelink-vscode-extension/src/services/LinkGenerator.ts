@@ -112,8 +112,8 @@ export class LinkGenerator {
       return undefined;
     }
 
-    const { editor, selections } = validated;
-    const document = editor.document;
+    let { editor, selections } = validated;
+    let document = editor.document;
 
     const warningResult = await handleDirtyBufferWarning(
       document,
@@ -127,6 +127,28 @@ export class LinkGenerator {
       warningResult === DirtyBufferWarningResult.SaveFailed
     ) {
       return undefined;
+    }
+
+    if (warningResult === DirtyBufferWarningResult.SaveAndContinue) {
+      const preSaveSelections = selections;
+      const revalidated = this.selectionValidator.validateSelectionsAndShowError();
+      if (!revalidated) {
+        this.logger.debug(
+          { fn: 'generateLinkFromSelection' },
+          'Post-save re-validation returned no selections, aborting',
+        );
+        return undefined;
+      }
+      ({ editor, selections } = revalidated);
+      document = editor.document;
+      this.logger.debug(
+        {
+          fn: 'generateLinkFromSelection',
+          preSaveSelections: this.selectionValidator.mapSelectionsForLogging(preSaveSelections),
+          postSaveSelections: this.selectionValidator.mapSelectionsForLogging(selections),
+        },
+        'Re-read selections after Save & Continue to account for possible format-on-save shifts',
+      );
     }
 
     const referencePath = getReferencePath(this.ideAdapter, document.uri, pathFormat);

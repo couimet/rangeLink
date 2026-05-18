@@ -7,3 +7,4 @@ coverage/
 .claude-work/
 **/*.map
 pnpm-lock.yaml
+packages/rangelink-vscode-extension/qa/fixtures/workspace/format-on-save/unformatted.ts
