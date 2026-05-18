@@ -13,7 +13,7 @@ const getReleaseNotifier = () => {
   return ext.exports.releaseNotifier;
 };
 
-standardSuite('Release Notifier', (log) => {
+standardSuite('Release Notifier', (ss) => {
   test('release-notifier-001: first install stores version silently without notification', async () => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion(undefined);
@@ -37,7 +37,7 @@ standardSuite('Release Notifier', (log) => {
       undefined,
       'Expected version to be stored in globalState after first install',
     );
-    log('✓ First install: version stored silently, no notification shown');
+    ss.log('✓ First install: version stored silently, no notification shown');
   });
 
   test('release-notifier-002: same version stored — skips silently', async () => {
@@ -66,7 +66,7 @@ standardSuite('Release Notifier', (log) => {
       versionAfterFirstInstall,
       'Expected stored version to remain unchanged after same-version skip',
     );
-    log('✓ Same version: notification skipped, globalState unchanged');
+    ss.log('✓ Same version: notification skipped, globalState unchanged');
   });
 
   test('[assisted] release-notifier-003: upgrade detected — dismiss is temporary, version not stored', async () => {
@@ -109,7 +109,7 @@ standardSuite('Release Notifier', (log) => {
       '0.0.0',
       'Expected globalState to remain at "0.0.0" — dismiss must not store the new version',
     );
-    log(
+    ss.log(
       '✓ Upgrade notification dismissed; version not stored (still "0.0.0"), will reappear on next activation',
     );
   });
@@ -161,7 +161,7 @@ standardSuite('Release Notifier', (log) => {
       undefined,
       'Expected no second upgrade notification — version must have been stored',
     );
-    log(
+    ss.log(
       '✓ Upgrade notification: "What\'s New" stored version and opened browser; re-run confirmed no second popup',
     );
   });
@@ -218,7 +218,7 @@ standardSuite('Release Notifier', (log) => {
       undefined,
       'Expected no second upgrade notification — version must have been stored',
     );
-    log(
+    ss.log(
       '✓ Upgrade notification: "Skip for this version" stored version without opening browser; re-run confirmed no second popup',
     );
   });

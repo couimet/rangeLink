@@ -1,37 +1,25 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import {
   assertToastLogged,
-  cleanupFiles,
   clearEditorSelection,
   getLogCapture,
-  getWorkspaceRoot,
   navigateViaHandleLinkClick,
   standardSuite,
 } from '../helpers';
 
-standardSuite('Navigation Precision', (_log) => {
-  let testFilename: string;
-  let testFileUri: vscode.Uri;
-
-  suiteSetup(async () => {
-    const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
-    testFilename = `__rl-test-nav-${Date.now()}.ts`;
-    const testFilePath = path.join(getWorkspaceRoot(), testFilename);
-    fs.writeFileSync(testFilePath, lines.join('\n') + '\n', 'utf8');
-    testFileUri = vscode.Uri.file(testFilePath);
-  });
-
-  suiteTeardown(async () => {
-    cleanupFiles([testFileUri]);
-  });
+standardSuite('Navigation Precision', (ss) => {
+  const NAV_TEST_LINE_COUNT = 25;
 
   test('full-line-navigation-001: #L10 navigates to full line 10 — selection spans col 0 to end of line', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'nav-001',
+      NAV_TEST_LINE_COUNT,
+      (i) => `line ${i + 1} content`,
+    );
+
     const linkText = `${testFilename}#L10`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -65,6 +53,12 @@ standardSuite('Navigation Precision', (_log) => {
   });
 
   test('full-line-navigation-002: #L10-L15 navigates to range — anchor (9,0), active at end of line 15', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'nav-002',
+      NAV_TEST_LINE_COUNT,
+      (i) => `line ${i + 1} content`,
+    );
+
     const linkText = `${testFilename}#L10-L15`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -98,6 +92,12 @@ standardSuite('Navigation Precision', (_log) => {
   });
 
   test('char-navigation-001: #L10C5 navigates to cursor position (9,4)', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'nav-003',
+      NAV_TEST_LINE_COUNT,
+      (i) => `line ${i + 1} content`,
+    );
+
     const linkText = `${testFilename}#L10C5`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -126,6 +126,12 @@ standardSuite('Navigation Precision', (_log) => {
   });
 
   test('char-navigation-002: #L10C5-L15C10 navigates to range (9,4)→(14,9)', async () => {
+    const { filename: testFilename } = ss.createContentFile(
+      'nav-004',
+      NAV_TEST_LINE_COUNT,
+      (i) => `line ${i + 1} content`,
+    );
+
     const linkText = `${testFilename}#L10C5-L15C10`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);

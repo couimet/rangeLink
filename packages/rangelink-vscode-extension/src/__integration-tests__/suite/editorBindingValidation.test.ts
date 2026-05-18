@@ -6,26 +6,16 @@ import * as vscode from 'vscode';
 
 import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
-  cleanupFiles,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
   getWorkspaceRoot,
   openAndDismiss,
-  settle,
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Editor Binding Validation', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    await settle();
-  });
-
+standardSuite('Editor Binding Validation', (ss) => {
   test('[assisted] editor-binding-validation-001: search editor content hides link and bind commands', async () => {
     const verdict = await waitForHumanVerdict(
       'editor-binding-validation-001',
@@ -44,7 +34,7 @@ standardSuite('Editor Binding Validation', (log) => {
       'pass',
       'Link or bind commands were visible in the search editor content area context menu',
     );
-    log('✓ Search editor content hides link/bind commands (human verdict)');
+    ss.log('✓ Search editor content hides link/bind commands (human verdict)');
   });
 
   test('[assisted] editor-binding-validation-002: output panel hides file path and bind commands', async () => {
@@ -66,7 +56,7 @@ standardSuite('Editor Binding Validation', (log) => {
       'pass',
       'File path or bind commands were visible in the output panel context menu',
     );
-    log('✓ Output panel hides file path/bind commands (human verdict)');
+    ss.log('✓ Output panel hides file path/bind commands (human verdict)');
   });
 
   test('[assisted] editor-binding-validation-003: Settings UI hides file path and bind commands', async () => {
@@ -86,7 +76,7 @@ standardSuite('Editor Binding Validation', (log) => {
     );
 
     assert.strictEqual(verdict, 'pass', 'File path or bind commands appeared for the Settings UI');
-    log('✓ Settings UI hides file path/bind commands (human verdict)');
+    ss.log('✓ Settings UI hides file path/bind commands (human verdict)');
   });
 
   test('editor-binding-validation-004: binary .png file is excluded from R-D destination picker', async () => {
@@ -95,10 +85,9 @@ standardSuite('Editor Binding Validation', (log) => {
     const pngPath = path.join(getWorkspaceRoot(), `__rl-test-ebv-004-${Date.now()}.png`);
     fs.writeFileSync(pngPath, PNG_MAGIC);
     const pngUri = vscode.Uri.file(pngPath);
-    tmpFileUris.push(pngUri);
+    ss.trackFileUri(pngUri);
 
-    const txtUri = createWorkspaceFile('ebv-004-txt', 'control file\n');
-    tmpFileUris.push(txtUri);
+    const txtUri = ss.createWorkspaceFile('ebv-004-txt', 'control file\n');
 
     const txtDoc = await vscode.workspace.openTextDocument(txtUri);
     await vscode.window.showTextDocument(txtDoc, vscode.ViewColumn.One);
@@ -108,7 +97,7 @@ standardSuite('Editor Binding Validation', (log) => {
     const pngDoc = await vscode.workspace.openTextDocument(pngUri);
     await vscode.window.showTextDocument(pngDoc, vscode.ViewColumn.Two);
 
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ebv-004');
@@ -119,7 +108,7 @@ standardSuite('Editor Binding Validation', (log) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry from R-D picker');
 
-    const pngFileName = path.basename(pngPath);
+    const pngFileName = path.basename(pngUri.fsPath);
     const txtFileName = path.basename(txtUri.fsPath);
 
     const pngItems = findTestItemsByPrefix(items!, pngFileName);
@@ -135,7 +124,7 @@ standardSuite('Editor Binding Validation', (log) => {
       `Plain .txt file "${txtFileName}" must appear in R-D picker as positive control`,
     );
 
-    log('✓ Binary .png excluded from R-D picker; .txt control file present (log verified)');
+    ss.log('✓ Binary .png excluded from R-D picker; .txt control file present (log verified)');
   });
 
   test('[assisted] editor-binding-validation-005: search editor TAB hides file path commands', async () => {
@@ -156,6 +145,6 @@ standardSuite('Editor Binding Validation', (log) => {
       'pass',
       'File path commands were visible in the search editor tab context menu',
     );
-    log('✓ Search editor tab hides file path commands (human verdict)');
+    ss.log('✓ Search editor tab hides file path commands (human verdict)');
   });
 });

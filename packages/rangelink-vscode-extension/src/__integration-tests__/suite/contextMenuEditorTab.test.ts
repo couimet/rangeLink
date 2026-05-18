@@ -10,11 +10,7 @@ import {
   assertSetContextLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferEquals,
-  cleanupFiles,
-  createAndOpenFile,
-  createCapturingTerminal,
   getLogCapture,
-  settle,
   standardSuite,
   waitForHuman,
 } from '../helpers';
@@ -22,23 +18,15 @@ import {
 const FILE_CONTENT = 'editor-tab context-menu test file\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-standardSuite('Context Menus — Editor Tab', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('Context Menus — Editor Tab', (ss) => {
   test('[assisted] context-menus-editor-tab-001: Editor tab "Send File Path" sends absolute path to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-tab-001', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-001', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-tab-001';
-    const capturing = await createCapturingTerminal(terminalName);
+    const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-001');
@@ -64,20 +52,20 @@ standardSuite('Context Menus — Editor Tab', (log) => {
     assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
 
-    log(
+    ss.log(
       '✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)',
     );
   });
 
   test('[assisted] context-menus-editor-tab-002: Editor tab "Send Relative File Path" sends relative path to bound terminal', async () => {
-    const uri = await createAndOpenFile('ctxmenu-tab-002', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-002', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-tab-002';
-    const capturing = await createCapturingTerminal(terminalName);
+    const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-002');
@@ -103,13 +91,13 @@ standardSuite('Context Menus — Editor Tab', (log) => {
     assertClipboardWriteLogged(lines, { textLength: relativePath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-    log(
+    ss.log(
       '✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)',
     );
   });
 
   test('[assisted] context-menus-editor-tab-003: Editor tab "Bind Here" binds that editor as text editor destination', async () => {
-    const uri = await createAndOpenFile('ctxmenu-tab-003', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
@@ -135,20 +123,17 @@ standardSuite('Context Menus — Editor Tab', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
-    log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
+    ss.log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
   });
 
   test('[assisted] context-menus-editor-tab-004: Editor tab "Unbind" is visible when bound and unbinds on click', async () => {
-    const uri = await createAndOpenFile('ctxmenu-tab-004', FILE_CONTENT, undefined, tmpFileUris);
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-004', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-tab-004';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-
-    terminal.show(true);
-    await settle();
+    await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-004');
@@ -172,6 +157,6 @@ standardSuite('Context Menus — Editor Tab', (log) => {
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
-    log('✓ Editor-tab "Unbind" fired the unbind path; context key flipped to false');
+    ss.log('✓ Editor-tab "Unbind" fired the unbind path; context key flipped to false');
   });
 });

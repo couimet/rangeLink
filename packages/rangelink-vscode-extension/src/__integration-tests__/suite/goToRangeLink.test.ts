@@ -7,12 +7,9 @@ import { CMD_GO_TO_RANGELINK } from '../../constants/commandIds';
 import {
   assertInputBoxLogged,
   assertToastLogged,
-  cleanupFiles,
-  createAndOpenFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
-  settle,
   standardSuite,
   waitForHuman,
 } from '../helpers';
@@ -37,15 +34,7 @@ const assertUserCancelledInputLogged = (lines: string[]): void => {
   assert.ok(found, 'Expected GoToRangeLinkCommand.execute "User cancelled input" debug log');
 };
 
-standardSuite('R-G Go to Link', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('R-G Go to Link', (ss) => {
   test('go-to-link-001: Cmd+R Cmd+G opens the Go to Link input box', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-001');
@@ -57,16 +46,11 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertUserCancelledInputLogged(lines);
 
-    log('✓ Input box opened with correct prompt/placeholder; cancellation logged');
+    ss.log('✓ Input box opened with correct prompt/placeholder; cancellation logged');
   });
 
   test('[assisted] go-to-link-003: valid link navigates to file and selects the range', async () => {
-    const uri = await createAndOpenFile(
-      'gtl-003',
-      buildFileContent(TEST_FILE_LINE_COUNT),
-      undefined,
-      tmpFileUris,
-    );
+    const uri = await ss.createAndOpenFile('gtl-003', buildFileContent(TEST_FILE_LINE_COUNT));
     const fn = path.basename(uri.fsPath);
     const linkText = `${fn}#L3-L7`;
 
@@ -107,16 +91,11 @@ standardSuite('R-G Go to Link', (log) => {
       { anchorLine: 2, anchorChar: 0, activeLine: 6, activeChar: endLineLength },
     );
 
-    log('✓ Navigation toast logged; editor selection spans lines 3-7 of the target file');
+    ss.log('✓ Navigation toast logged; editor selection spans lines 3-7 of the target file');
   });
 
   test('[assisted] go-to-link-004: character-level precision link selects the exact column range', async () => {
-    const uri = await createAndOpenFile(
-      'gtl-004',
-      buildFileContent(TEST_FILE_LINE_COUNT),
-      undefined,
-      tmpFileUris,
-    );
+    const uri = await ss.createAndOpenFile('gtl-004', buildFileContent(TEST_FILE_LINE_COUNT));
     const fn = path.basename(uri.fsPath);
     const linkText = `${fn}#L3C5-L3C20`;
 
@@ -156,7 +135,7 @@ standardSuite('R-G Go to Link', (log) => {
       { anchorLine: 2, anchorChar: 4, activeLine: 2, activeChar: 19 },
     );
 
-    log('✓ Character-precision navigation logged; selection spans col 5 to col 20 on line 3');
+    ss.log('✓ Character-precision navigation logged; selection spans col 5 to col 20 on line 3');
   });
 
   test('[assisted] go-to-link-005: invalid link format shows error toast', async () => {
@@ -195,7 +174,7 @@ standardSuite('R-G Go to Link', (log) => {
       'Expected active editor URI to be unchanged (no navigation occurred)',
     );
 
-    log('✓ Invalid input produced error toast with exact message; no navigation occurred');
+    ss.log('✓ Invalid input produced error toast with exact message; no navigation occurred');
   });
 
   test('[assisted] go-to-link-006: empty input shows error toast', async () => {
@@ -233,7 +212,7 @@ standardSuite('R-G Go to Link', (log) => {
       'Expected active editor URI to be unchanged (no navigation occurred)',
     );
 
-    log('✓ Empty input produced the empty-input error toast; no parse attempted');
+    ss.log('✓ Empty input produced the empty-input error toast; no parse attempted');
   });
 
   test('[assisted] go-to-link-007: nonexistent file path shows warning toast', async () => {
@@ -264,7 +243,7 @@ standardSuite('R-G Go to Link', (log) => {
       'Expected active editor URI to be unchanged (no navigation occurred)',
     );
 
-    log('✓ Nonexistent file produced the file-not-found warning toast with exact path');
+    ss.log('✓ Nonexistent file produced the file-not-found warning toast with exact path');
   });
 
   test('[assisted] go-to-link-008: Command Palette "RangeLink: Go to Link" opens the same input box', async () => {
@@ -287,7 +266,7 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertUserCancelledInputLogged(lines);
 
-    log('✓ Command Palette entry opened the same Go to Link input box');
+    ss.log('✓ Command Palette entry opened the same Go to Link input box');
   });
 
   test('[assisted] go-to-link-009: R-M menu "Go to Link" item opens the same input box', async () => {
@@ -316,6 +295,6 @@ standardSuite('R-G Go to Link', (log) => {
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
     assertUserCancelledInputLogged(lines);
 
-    log('✓ R-M menu item routed to the Go to Link input box (same prompt/placeholder as R-G)');
+    ss.log('✓ R-M menu item routed to the Go to Link input box (same prompt/placeholder as R-G)');
   });
 });

@@ -2,30 +2,17 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  cleanupFiles,
-  createWorkspaceFile,
-  settle,
-  standardSuite,
-  waitForHumanVerdict,
-} from '../helpers';
+import { standardSuite, waitForHumanVerdict } from '../helpers';
 
-standardSuite('Platform Keybindings', (_log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  suiteTeardown(async () => {
-    cleanupFiles(tmpFileUris);
-  });
-
+standardSuite('Platform Keybindings', (ss) => {
   test('[assisted] ubuntu-ctrl-keybindings-001: Ctrl+R chords work on Ubuntu/Linux', async () => {
-    const testFileUri = createWorkspaceFile(
+    const testFileUri = ss.createWorkspaceFile(
       'ubuntu-ctrl-test',
       'line 1\nline 2\nline 3\nline 4\nline 5\n',
     );
-    tmpFileUris.push(testFileUri);
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
-    await settle();
+    await ss.settle();
 
     const verdict = await waitForHumanVerdict(
       'ubuntu-ctrl-keybindings-001',

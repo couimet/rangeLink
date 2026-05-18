@@ -24,15 +24,10 @@ import {
   assertClipboardChanged,
   assertClipboardRestored,
   assertStatusBarMsgLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
-  openEditor,
-  settle,
   standardSuite,
-  waitForExtensionActive,
   waitForHuman,
   waitForHumanVerdict,
   writeClipboardSentinel,
@@ -44,26 +39,17 @@ const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Claude Code
 const GEMINI_CODE_ASSIST_DISPLAY_NAME = 'Gemini Code Assist';
 const GEMINI_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Gemini Code Assist';
 
-standardSuite('Built-in AI Assistants', (log) => {
-  const tmpFileUris: vscode.Uri[] = [];
-
-  teardown(async () => {
-    cleanupFiles(tmpFileUris);
-    tmpFileUris.length = 0;
-    await settle();
-  });
-
+standardSuite('Built-in AI Assistants', (ss) => {
   test('[assisted] claude-code-002: binding to Claude Code Chat and sending a link delivers content to chat', async () => {
-    const fileUri = createWorkspaceFile('cc-002', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cc-002', 'line 1\nline 2\nline 3\n');
+    await ss.openEditor(fileUri);
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cc-002-bind');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     const bindLines = logCapture.getLinesSince('before-cc-002-bind');
     assertStatusBarMsgLogged(bindLines, {
@@ -73,7 +59,7 @@ standardSuite('Built-in AI Assistants', (log) => {
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     logCapture.mark('before-cc-002-send');
 
@@ -82,7 +68,7 @@ standardSuite('Built-in AI Assistants', (log) => {
     // claude-code-004/005 cover). Programmatic invocation removes the focus-fragility
     // that bites when the editor hasn't received a real user click.
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const sendLines = logCapture.getLinesSince('before-cc-002-send');
 
@@ -117,25 +103,24 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the RangeLink did not appear in Claude Code chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
     );
 
-    log('✓ Bind status confirmed + content delivered to Claude Code chat');
+    ss.log('✓ Bind status confirmed + content delivered to Claude Code chat');
   });
 
   test('[assisted] claude-code-004: cold panel paste — content arrives in Claude Code chat after first R-L since bind', async () => {
-    const fileUri = createWorkspaceFile('cc-004', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('cc-004', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cc-004');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-cc-004');
 
@@ -168,23 +153,22 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the RangeLink did not appear in Claude Code chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
     );
 
-    log('✓ Cold paste: content delivered to Claude Code (verdict PASS)');
+    ss.log('✓ Cold paste: content delivered to Claude Code (verdict PASS)');
   });
 
   test('[assisted] claude-code-005: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
-    const fileUri = createWorkspaceFile('cc-005', 'line 1\nline 2\nline 3\nline 4\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('cc-005', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     // First send (cold) — warms the panel
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const coldVerdict = await waitForHumanVerdict(
       'claude-code-005-cold',
@@ -206,13 +190,13 @@ standardSuite('Built-in AI Assistants', (log) => {
     // command to see the selection.
     await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cc-005-warm');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-cc-005-warm');
 
@@ -244,22 +228,21 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the warm-send RangeLink did not appear cleanly in Claude Code chat',
     );
 
-    log('✓ Warm paste: content delivered to Claude Code (cold + warm both PASS)');
+    ss.log('✓ Warm paste: content delivered to Claude Code (cold + warm both PASS)');
   });
 
   test('[assisted] gemini-code-assist-002: binding to Gemini Code Assist and sending a link delivers content to chat', async () => {
-    const fileUri = createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
+    await ss.openEditor(fileUri);
+    await ss.settle();
 
-    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+    await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-002-bind');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
-    await settle();
+    await ss.settle();
 
     const bindLines = logCapture.getLinesSince('before-gc-002-bind');
     assertStatusBarMsgLogged(bindLines, {
@@ -277,12 +260,12 @@ standardSuite('Built-in AI Assistants', (log) => {
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     logCapture.mark('before-gc-002-send');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const sendLines = logCapture.getLinesSince('before-gc-002-send');
 
@@ -317,27 +300,26 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the RangeLink did not appear in Gemini Code Assist chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
     );
 
-    log('✓ Bind status confirmed + content delivered to Gemini Code Assist chat');
+    ss.log('✓ Bind status confirmed + content delivered to Gemini Code Assist chat');
   });
 
   test('[assisted] gemini-code-assist-003: cold panel paste — content arrives in Gemini Code Assist chat after first R-L since bind', async () => {
-    const fileUri = createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
-    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+    await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-003');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-gc-003');
 
@@ -370,25 +352,24 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the RangeLink did not appear in Gemini Code Assist chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
     );
 
-    log('✓ Cold paste: content delivered to Gemini Code Assist (verdict PASS)');
+    ss.log('✓ Cold paste: content delivered to Gemini Code Assist (verdict PASS)');
   });
 
   test('[assisted] gemini-code-assist-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
-    const fileUri = createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
-    tmpFileUris.push(fileUri);
+    const fileUri = ss.createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
-    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+    await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
-    await settle();
+    await ss.settle();
 
     // First send (cold) — warms the panel
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const coldVerdict = await waitForHumanVerdict(
       'gemini-code-assist-004-cold',
@@ -408,13 +389,13 @@ standardSuite('Built-in AI Assistants', (log) => {
     // Select lines 3-4 for warm send
     await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-004-warm');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-gc-004-warm');
 
@@ -446,158 +427,151 @@ standardSuite('Built-in AI Assistants', (log) => {
       'Human reported the warm-send RangeLink did not appear cleanly in Gemini Code Assist chat',
     );
 
-    log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
+    ss.log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
   });
 
   test('clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-011: always + Claude Code cold paste');
-    log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
+    ss.log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
   });
 
   test('clipboard-preservation-012: warm paste to Claude Code — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     // Warmup: lines 1-2 pre-selected
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     // Pre-select lines 3-4 for the warm send
     editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-012: always + Claude Code warm paste');
-    log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
+    ss.log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
   });
 
   test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-013: always + Cursor AI cold paste');
-    log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
+    ss.log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
   });
 
   test('clipboard-preservation-014: warm paste to Cursor AI — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CURSOR_AI);
-    await settle();
+    await ss.settle();
 
     // Warmup: lines 1-2 pre-selected
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     // Pre-select lines 3-4 for the warm send
     editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-014: always + Cursor AI warm paste');
-    log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
+    ss.log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
   });
 
   test('clipboard-preservation-015: cold paste to Copilot Chat — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-015: always + Copilot Chat cold paste');
-    log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
+    ss.log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
   });
 
   test('clipboard-preservation-016: warm paste to Copilot Chat — prior clipboard restored', async () => {
-    const fileUri = createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
-    await settle();
+    await ss.settle();
 
     // Warmup: lines 1-2 pre-selected
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     // Pre-select lines 3-4 for the warm send
     editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     await assertClipboardRestored('clipboard-preservation-016: always + Copilot Chat warm paste');
-    log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
+    ss.log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
   });
 
   test('[assisted] clipboard-preservation-017: failed paste — RangeLink stays on clipboard for manual paste', async () => {
-    const fileUri = createWorkspaceFile('cp-017', 'line 1\nline 2\nline 3\n');
-    tmpFileUris.push(fileUri);
-    const editor = await openEditor(fileUri);
-    await settle();
+    const fileUri = ss.createWorkspaceFile('cp-017', 'line 1\nline 2\nline 3\n');
+    const editor = await ss.openEditor(fileUri);
+    await ss.settle();
 
     await waitForHuman(
       'clipboard-preservation-017',
@@ -607,22 +581,22 @@ standardSuite('Built-in AI Assistants', (log) => {
         '2. Press Cancel to continue (assertions happen automatically)',
       ],
     );
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
 
     await writeClipboardSentinel();
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
     const clipboard017 = await assertClipboardChanged('clipboard-preservation-017: failed paste');
     assert.ok(clipboard017.includes('#L'), `Expected RangeLink on clipboard, got: ${clipboard017}`);
-    log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
+    ss.log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
 });
 
-standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
+standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
   test('claude-code-001: Claude Code Chat appears first in destination picker AI Assistants group', async function (this: MochaContext) {
     // Skip when the Claude Code marketplace extension isn't installed. The test asserts
     // on Claude Code's position in the AI Assistants group, which requires the extension
@@ -631,7 +605,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     // config does not. Without this guard, the test runs in both configs and fails in the
     // standard one because "GitHub Copilot Chat" takes the top slot when Claude Code is absent.
     if (!vscode.extensions.getExtension(EXTENSION_ID_CLAUDE_CODE)) {
-      log(
+      ss.log(
         `Skipping claude-code-001 — "${EXTENSION_ID_CLAUDE_CODE}" extension is not installed in this test config (expected in test:release:automated; runs only under test:release:with-extensions).`,
       );
       this.skip();
@@ -674,7 +648,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     );
     assert.strictEqual(aiSectionItems[0].itemKind, 'bindable');
 
-    log('✓ Claude Code Chat appears first in the AI Assistants group');
+    ss.log('✓ Claude Code Chat appears first in the AI Assistants group');
   });
 
   test('github-copilot-chat-001: GitHub Copilot Chat appears in destination picker when available', async () => {
@@ -691,7 +665,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     assert.ok(copilotItem, 'Expected "GitHub Copilot Chat" in the destination picker items');
     assert.strictEqual(copilotItem!.itemKind, 'bindable');
 
-    log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
+    ss.log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
   });
 
   test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', async function (this: MochaContext) {
@@ -706,12 +680,12 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
     );
 
-    log('✓ Default cold-start config produces valid ColdRefocusConfig');
+    ss.log('✓ Default cold-start config produces valid ColdRefocusConfig');
   });
 
   test('claude-code-007: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension(EXTENSION_ID_CLAUDE_CODE)) {
-      log('Skipping claude-code-007 — Claude Code extension not installed in this test config');
+      ss.log('Skipping claude-code-007 — Claude Code extension not installed in this test config');
       this.skip();
     }
 
@@ -720,16 +694,16 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     // Set invalid config: delay (100) <= interval (400)
     await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
     await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
-    await settle();
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cc-007');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-cc-007');
     const warningLog = lines.find((line) =>
@@ -740,18 +714,18 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
     );
 
-    log('✓ claude-code-007 — invalid config triggers fallback to defaults');
+    ss.log('✓ claude-code-007 — invalid config triggers fallback to defaults');
   });
 
   test('gemini-code-assist-001: Gemini Code Assist appears in destination picker when available', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
-      log(
+      ss.log(
         `Skipping gemini-code-assist-001 — "${EXTENSION_ID_GEMINI_CODE_ASSIST}" extension is not installed in this test config.`,
       );
       this.skip();
     }
 
-    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+    await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-001');
@@ -769,7 +743,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     );
     assert.strictEqual(geminiItem!.itemKind, 'bindable');
 
-    log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
+    ss.log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
   });
 
   test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', async () => {
@@ -798,12 +772,12 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
     );
 
-    log('✓ Default Gemini cold-start config produces valid ColdRefocusConfig');
+    ss.log('✓ Default Gemini cold-start config produces valid ColdRefocusConfig');
   });
 
   test('gemini-code-assist-006: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
-      log(
+      ss.log(
         'Skipping gemini-code-assist-006 — Gemini Code Assist extension not installed in this test config',
       );
       this.skip();
@@ -822,9 +796,9 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       INVALID_INTERVAL_MS,
       vscode.ConfigurationTarget.Workspace,
     );
-    await settle();
+    await ss.settle();
 
-    await waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST, log);
+    await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-006');
@@ -833,10 +807,10 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
     // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
     // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
     await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-gc-006');
     const warningLog = lines.find(
@@ -849,6 +823,6 @@ standardSuite('Built-in AI Assistants — Destination Picker', (log) => {
       'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
     );
 
-    log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
+    ss.log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
   });
 });

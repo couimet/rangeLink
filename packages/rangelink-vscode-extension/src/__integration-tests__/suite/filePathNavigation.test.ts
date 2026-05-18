@@ -5,32 +5,18 @@ import * as vscode from 'vscode';
 
 import {
   assertToastLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   getLogCapture,
   getWorkspaceRoot,
   openEditor,
-  settle,
   standardSuite,
 } from '../helpers';
 
 const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 
-standardSuite('File Path Navigation', (_log) => {
-  let testFileUri: vscode.Uri;
-  let anchorFileUri: vscode.Uri;
-
-  suiteSetup(async () => {
-    testFileUri = createWorkspaceFile('filepath', '// rangelink file path nav test\n');
-    anchorFileUri = createWorkspaceFile('filepath-anchor', '// anchor\n');
-    await openEditor(anchorFileUri);
-  });
-
-  suiteTeardown(async () => {
-    cleanupFiles([testFileUri, anchorFileUri]);
-  });
-
+standardSuite('File Path Navigation', (ss) => {
   test('clickable-file-paths-010: handleFilePathClick opens the file in the active editor', async () => {
+    const testFileUri = ss.createWorkspaceFile('filepath', '// rangelink file path nav test\n');
+
     await vscode.commands.executeCommand('rangelink.handleFilePathClick', {
       filePath: testFileUri.fsPath,
     });
@@ -44,6 +30,7 @@ standardSuite('File Path Navigation', (_log) => {
   });
 
   test('clickable-file-paths-011: handleFilePathClick with non-existent path does not change active editor', async () => {
+    const anchorFileUri = ss.createWorkspaceFile('filepath-anchor', '// anchor\n');
     await openEditor(anchorFileUri);
     const editorBefore = vscode.window.activeTextEditor?.document.uri.fsPath;
 
@@ -56,7 +43,7 @@ standardSuite('File Path Navigation', (_log) => {
       filePath: nonExistentPath,
     });
 
-    await settle(NON_EXISTENT_PATH_SETTLE_MS);
+    await ss.settle(NON_EXISTENT_PATH_SETTLE_MS);
 
     const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
     assert.strictEqual(

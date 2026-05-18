@@ -8,12 +8,14 @@ import { closeAllEditors } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { createLogger } from './logHelpers';
 import { resetRangelinkSettings } from './settingsHelpers';
+import { SsContextImpl, type SsContext } from './ssContext';
 import { disposeAllTerminals } from './terminalHelpers';
 import { activateExtension, settle } from './testEnv';
 
-export const standardSuite = (name: string, fn: (log: (msg: string) => void) => void): void => {
+export const standardSuite = (name: string, fn: (ss: SsContext) => void): void => {
   suite(name, () => {
     const log = createLogger(name);
+    const ss = new SsContextImpl(log);
 
     suiteSetup(async () => {
       await activateExtension();
@@ -37,6 +39,6 @@ export const standardSuite = (name: string, fn: (log: (msg: string) => void) => 
       await closeAllEditors();
     });
 
-    fn(log);
+    fn(ss);
   });
 };

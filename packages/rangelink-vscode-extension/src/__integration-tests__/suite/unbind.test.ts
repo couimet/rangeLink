@@ -3,36 +3,21 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import {
-  TERMINAL_READY_MS,
   assertNoSetContextLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
-  cleanupFiles,
-  createWorkspaceFile,
   getLogCapture,
-  settle,
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
 
-standardSuite('Unbind Destination', (_log) => {
-  let testFileUri: vscode.Uri;
-
-  suiteSetup(async () => {
-    testFileUri = createWorkspaceFile('unbind', 'line 1 content\nline 2 content\n');
-  });
-
-  suiteTeardown(async () => {
-    cleanupFiles([testFileUri]);
-  });
-
+standardSuite('Unbind Destination', (ss) => {
   test('unbind-001: unbindDestination unbinds a currently bound terminal destination', async () => {
-    const doc = await vscode.workspace.openTextDocument(testFileUri);
+    const fileUri = ss.createWorkspaceFile('unbind-001', 'line 1 content\nline 2 content\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
 
-    const terminal = vscode.window.createTerminal({ name: 'rl-unbind-test' });
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    await ss.createTerminal('rl-unbind-test');
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
@@ -65,9 +50,7 @@ standardSuite('Unbind Destination', (_log) => {
   });
 
   test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
-    const terminal = vscode.window.createTerminal({ name: 'rl-unbind-004-test' });
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    await ss.createTerminal('rl-unbind-004-test');
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
@@ -112,9 +95,7 @@ standardSuite('Unbind Destination', (_log) => {
   test('[assisted] unbind-006: "RangeLink: Unbind" visible in command palette when a destination is bound', async () => {
     const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-    const terminal = vscode.window.createTerminal({ name: 'rl-unbind-006-test' });
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    await ss.createTerminal('rl-unbind-006-test');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-unbind-006');
@@ -149,7 +130,7 @@ standardSuite('Unbind Destination', (_log) => {
     logCapture.mark('before-unbind-003-noop');
 
     await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-unbind-003-noop');
     assertStatusBarMsgLogged(lines, {

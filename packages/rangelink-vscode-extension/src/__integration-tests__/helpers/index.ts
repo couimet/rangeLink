@@ -8,6 +8,7 @@ export * from './logBasedUiAssertions';
 export * from './logHelpers';
 export * from './navigationHelpers';
 export * from './settingsHelpers';
+export * from './ssContext';
 export * from './standardSuite';
 export * from './terminalHelpers';
 export * from './testEnv';

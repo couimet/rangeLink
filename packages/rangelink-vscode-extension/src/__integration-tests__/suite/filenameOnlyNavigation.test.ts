@@ -12,13 +12,12 @@ import {
   getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
-  settle,
   standardSuite,
 } from '../helpers';
 
 const DUPLICATE_FILE_CONTENT = 'duplicate file content\n';
 
-standardSuite('Filename-Only Navigation Fallback', (_log) => {
+standardSuite('Filename-Only Navigation Fallback', (ss) => {
   let uniqueFilename: string;
   let uniqueFilePath: string;
   let relativeFilePath: string;
@@ -115,7 +114,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
       linkText,
       parsed: parseResult.value,
     });
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-fallback-002');
     assertToastLogged(lines, {
@@ -139,7 +138,7 @@ standardSuite('Filename-Only Navigation Fallback', (_log) => {
       linkText,
       parsed: parseResult.value,
     });
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-fallback-003');
     assertToastLogged(lines, {
