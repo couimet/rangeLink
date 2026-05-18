@@ -265,6 +265,10 @@ Each test case has an `automated` field with three possible values:
 
 When you implement an integration test for a TC, update its `automated` field to `true` or `assisted` in the YAML.
 
+#### `preconditions:` and `steps:` are only on manual TCs
+
+`preconditions:` and `steps:` appear only on `automated: false` entries. For `automated: true` and `automated: assisted` TCs the integration test in `src/__integration-tests__/suite/` is the canonical source — setup code, `waitForHuman()`/`waitForHumanVerdict()` action prompts, and assertions all live there. Duplicating them in YAML invites drift, so they are omitted. When flipping a TC from `false` to `true` or `assisted`, delete the `preconditions:` and `steps:` blocks at the same time.
+
 ### When to add new test cases
 
 Add at least one TC to the QA YAML for every:
