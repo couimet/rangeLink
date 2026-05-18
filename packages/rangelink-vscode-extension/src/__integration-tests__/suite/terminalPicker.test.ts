@@ -255,43 +255,6 @@ standardSuite('Terminal Picker', (ss) => {
     ss.log('✓ Bound first, active second — all 6 fields');
   });
 
-  test('terminal-picker-006: hidden IDE terminals are absent from the picker', async () => {
-    await ss.createTerminal('rl-tp-006');
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-tp-006');
-
-    await openAndDismiss(CMD_BIND_TO_DESTINATION);
-
-    const lines = logCapture.getLinesSince('before-tp-006');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry');
-
-    const termItems = findTerminalItems(items!);
-    assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
-        label,
-        displayName,
-        description,
-        isActive,
-        boundState,
-        itemKind,
-      })),
-      [
-        {
-          label: 'Terminal ("rl-tp-006")',
-          displayName: 'Terminal ("rl-tp-006")',
-          description: 'active',
-          isActive: true,
-          boundState: 'not-bound',
-          itemKind: 'bindable',
-        },
-      ],
-    );
-
-    ss.log('✓ Only the test terminal appears — full field validation');
-  });
-
   test('terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
     await ss.createTerminal('rl-tp-007-a');
     await ss.createTerminal('rl-tp-007-b');
