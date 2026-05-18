@@ -129,6 +129,9 @@ standardSuite('File Picker', (ss) => {
     const uriA = vscode.Uri.file(fileA);
     const uriB = vscode.Uri.file(fileB);
 
+    ss.trackFileUri(uriA);
+    ss.trackFileUri(uriB);
+
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), {
       viewColumn: vscode.ViewColumn.One,
       preview: false,
@@ -451,6 +454,9 @@ standardSuite('File Picker', (ss) => {
     const uriA = vscode.Uri.file(fileA);
     const uriB = vscode.Uri.file(fileB);
 
+    ss.trackFileUri(uriA);
+    ss.trackFileUri(uriB);
+
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), {
       viewColumn: vscode.ViewColumn.One,
       preview: false,
@@ -519,7 +525,9 @@ standardSuite('File Picker', (ss) => {
     ];
     const uris = files.map((f) => {
       fs.writeFileSync(f, 'content\n', 'utf8');
-      return vscode.Uri.file(f);
+      const uri = vscode.Uri.file(f);
+      ss.trackFileUri(uri);
+      return uri;
     });
 
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[0]), {

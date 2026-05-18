@@ -4,7 +4,7 @@ import { NoOpLogger } from 'barebone-logger';
 import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { openEditor, settle, standardSuite, waitForHumanVerdict } from '../helpers';
+import { standardSuite, waitForHumanVerdict } from '../helpers';
 
 const LOGGER = new NoOpLogger();
 
@@ -12,7 +12,7 @@ standardSuite('Link Generation', (ss) => {
   test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const { uri } = ss.createContentFile('tc132', 25, (i) => `line ${i + 1} content`);
 
-    const editor = await openEditor(uri);
+    const editor = await ss.openEditor(uri);
 
     editor.selection = new vscode.Selection(new vscode.Position(19, 0), new vscode.Position(20, 0));
 
@@ -146,7 +146,7 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (ss) => {
       '__rl-test-url-exclusion',
       'Some text\nhttps://example.com/path/file.ts#L10\nMore text\n',
     );
-    await settle();
+    await ss.settle();
 
     const verdict = await waitForHumanVerdict(
       'url-exclusion-002',
@@ -172,7 +172,7 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (ss) => {
       '__rl-test-doc-link-tooltip',
       'See code at src/utils/helper.ts#L5 for details\n',
     );
-    await settle();
+    await ss.settle();
 
     const verdict = await waitForHumanVerdict(
       'document-link-tooltip-001',

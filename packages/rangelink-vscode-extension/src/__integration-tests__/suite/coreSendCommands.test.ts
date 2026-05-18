@@ -85,9 +85,10 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('[assisted] core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
+    const CSC_R_L_003_LINE_COUNT = 10;
     const { uri: fileUri } = ss.createContentFile(
       'csc-r-l-003',
-      10,
+      CSC_R_L_003_LINE_COUNT,
       (i) => `line ${i + 1} content`,
     );
 

@@ -18,7 +18,6 @@ import {
   getWorkspaceRoot,
   openEditor,
   openUntitledDoc,
-  settle,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -56,11 +55,11 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
-    await settle();
+    await ss.settle();
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
-    await settle();
+    await ss.settle();
 
     const lastLine = sourceEditor.document.lineCount - 1;
     const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
@@ -70,7 +69,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
     );
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const destContent = destDoc.getText();
     assert.ok(
@@ -108,14 +107,14 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     const originalLanguage = destDoc.languageId;
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
-    await settle();
+    await ss.settle();
 
     const updatedDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
-    await settle();
+    await ss.settle();
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri001);
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
-    await settle();
+    await ss.settle();
 
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
@@ -123,7 +122,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     );
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const destContent = updatedDestDoc.getText();
     assert.ok(
@@ -141,23 +140,23 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
-    await settle();
+    await ss.settle();
 
     const mdContent = '```typescript\nconst x = 1;\n```\n';
     const edit = new vscode.WorkspaceEdit();
     edit.insert(destDoc.uri, new vscode.Position(0, 0), mdContent);
     await vscode.workspace.applyEdit(edit);
-    await settle();
+    await ss.settle();
 
     let currentDestDoc = destDoc;
     if (destDoc.languageId === 'plaintext') {
       currentDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
-      await settle();
+      await ss.settle();
     }
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri002);
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
-    await settle();
+    await ss.settle();
 
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
@@ -165,7 +164,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     );
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const destContent = currentDestDoc.getText();
     assert.ok(
@@ -186,7 +185,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-001', whitespaceContent);
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-001-dest');
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
     const lastLine = sourceEditor.document.lineCount - 1;
@@ -195,11 +194,11 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
       new vscode.Position(0, 0),
       new vscode.Position(lastLine, lastChar),
     );
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const captured = capturing.getCapturedText();
     assert.ok(
@@ -221,17 +220,17 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri, vscode.ViewColumn.Beside);
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
       new vscode.Position(2, 6),
     );
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     const destContent = destDoc.getText();
     assert.strictEqual(
@@ -250,15 +249,15 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-005', 'hello\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-005-dest');
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
     sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), ' hello');
     ss.log('✓ smart-padding-005: leading space applied');
@@ -272,15 +271,15 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-006', 'hello\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-006-dest');
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
     sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), 'hello ');
     ss.log('✓ smart-padding-006: trailing space applied');
@@ -294,15 +293,15 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-007', 'hello world\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-007-dest');
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
     sourceEditor.selection = new vscode.Selection(0, 0, 0, 11);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), ' hello world ');
     ss.log('✓ smart-padding-007: padded text selection sent to destination');
@@ -316,14 +315,14 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const fileUri = ss.createWorkspaceFile('pad-008', 'content\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-008-dest');
-    await settle();
+    await ss.settle();
 
     await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
@@ -333,15 +332,15 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   test('[assisted] smart-padding-009: pasteLink=both — RangeLink sent to AI assistant has leading and trailing space', async () => {
     const fileUri = ss.createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
     const editor = await openEditor(fileUri);
-    await settle();
+    await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
-    await settle();
+    await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
-    await settle();
+    await ss.settle();
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await settle();
+    await ss.settle();
 
     const verdict = await waitForHumanVerdict(
       'smart-padding-009',
@@ -368,11 +367,11 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destUri);
-    await settle();
+    await ss.settle();
 
     const terminal = await ss.createTerminal('pad-010-src');
     echoToTerminal(terminal, 'hello');
-    await settle();
+    await ss.settle();
 
     await waitForHuman(
       'smart-padding-010',
@@ -401,15 +400,15 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-011', 'hello\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-011-dest');
-    await settle();
+    await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
     sourceEditor.selection = new vscode.Selection(0, 0, 0, 5);
-    await settle();
+    await ss.settle();
 
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await settle();
+    await ss.settle();
 
     assertTerminalBufferEquals(capturing.getCapturedText(), 'hello');
     ss.log('✓ smart-padding-011: no padding when disabled');

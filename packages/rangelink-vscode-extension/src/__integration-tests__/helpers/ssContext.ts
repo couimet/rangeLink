@@ -8,8 +8,7 @@ import type { CapturingTerminal } from './capturingPtyHelpers';
 import { createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
 import { cleanupFiles, createAndOpenFile, createWorkspaceFile, openEditor } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
-import { loadSettingsProfile } from './settingsHelpers';
-import { settle, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
+import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
 
 export interface SsContext {
   log: (msg: string) => void;
@@ -31,7 +30,7 @@ export interface SsContext {
   getLogCapture: () => LogCapture;
   openEditor: (uri: vscode.Uri, viewColumn?: vscode.ViewColumn) => Promise<vscode.TextEditor>;
   waitForExtensionActive: (extensionId: string, timeoutMs?: number) => Promise<void>;
-  loadSettingsProfile: (profileName: string) => Promise<void>;
+  trackFileUri: (uri: vscode.Uri) => void;
 }
 
 export class SsContextImpl implements SsContext {
@@ -47,7 +46,7 @@ export class SsContextImpl implements SsContext {
       }
       cleanupFiles(this.tmpFileUris);
       this.tmpFileUris.splice(0);
-      await settle();
+      await this.settle();
     });
   }
 
@@ -59,7 +58,7 @@ export class SsContextImpl implements SsContext {
     const t = vscode.window.createTerminal({ name });
     this.tmpTerminals.push(t);
     t.show(true);
-    await settle(TERMINAL_READY_MS);
+    await this.settle(TERMINAL_READY_MS);
     return t;
   }
 
@@ -100,7 +99,7 @@ export class SsContextImpl implements SsContext {
   }
 
   async settle(ms?: number): Promise<void> {
-    await settle(ms);
+    await new Promise<void>((resolve) => setTimeout(resolve, ms ?? SETTLE_MS));
   }
 
   getLogCapture(): LogCapture {
@@ -115,7 +114,7 @@ export class SsContextImpl implements SsContext {
     await waitForExtensionActive(extensionId, this.suiteLog, timeoutMs);
   }
 
-  async loadSettingsProfile(profileName: string): Promise<void> {
-    await loadSettingsProfile(profileName, this.suiteLog);
+  trackFileUri(uri: vscode.Uri): void {
+    this.tmpFileUris.push(uri);
   }
 }

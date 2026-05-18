@@ -11,7 +11,6 @@ import {
   clearEditorSelection,
   getLogCapture,
   openUntitledDoc,
-  settle,
   standardSuite,
 } from '../helpers';
 
@@ -76,7 +75,7 @@ const UNTITLED_CONTENT = Array.from(
   (_, i) => `untitled line ${i + 1} content here`,
 ).join('\n');
 
-standardSuite('Untitled File Navigation', (_ss) => {
+standardSuite('Untitled File Navigation', (ss) => {
   let untitledDoc: vscode.TextDocument;
   let untitledDisplayName: string;
 
@@ -84,7 +83,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
     untitledDoc = await openUntitledDoc({ content: UNTITLED_CONTENT });
     assert.strictEqual(untitledDoc.uri.scheme, 'untitled', 'Expected untitled document');
     untitledDisplayName = getUntitledDisplayName(untitledDoc.uri);
-    await settle();
+    await ss.settle();
   });
 
   // untitled-navigation-001: Navigate to single line in untitled file
@@ -98,7 +97,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lineLength = doc.lineAt(4).text.length;
@@ -138,7 +137,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const endLineLength = doc.lineAt(6).text.length;
@@ -179,7 +178,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
       linkText,
       parsed: parseResult.value,
     });
-    await settle();
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-untitled-nav-003');
     assertToastLogged(lines, {
@@ -203,7 +202,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     assert.deepStrictEqual(
@@ -238,7 +237,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lastLine = doc.lineCount - 1;
@@ -276,7 +275,7 @@ standardSuite('Untitled File Navigation', (_ss) => {
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lineLength = doc.lineAt(4).text.length;

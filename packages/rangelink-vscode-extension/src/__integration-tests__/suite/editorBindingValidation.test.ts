@@ -9,7 +9,6 @@ import {
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
-  getWorkspaceRoot,
   openAndDismiss,
   standardSuite,
   waitForHumanVerdict,
@@ -82,9 +81,8 @@ standardSuite('Editor Binding Validation', (ss) => {
   test('editor-binding-validation-004: binary .png file is excluded from R-D destination picker', async () => {
     // Minimal PNG magic bytes — enough for VSCode to detect as binary
     const PNG_MAGIC = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-    const pngPath = path.join(getWorkspaceRoot(), `__rl-test-ebv-004-${Date.now()}.png`);
-    fs.writeFileSync(pngPath, PNG_MAGIC);
-    const pngUri = vscode.Uri.file(pngPath);
+    const pngUri = ss.createWorkspaceFile('ebv-004-png', '');
+    fs.writeFileSync(pngUri.fsPath, PNG_MAGIC);
 
     const txtUri = ss.createWorkspaceFile('ebv-004-txt', 'control file\n');
 
@@ -107,7 +105,7 @@ standardSuite('Editor Binding Validation', (ss) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry from R-D picker');
 
-    const pngFileName = path.basename(pngPath);
+    const pngFileName = path.basename(pngUri.fsPath);
     const txtFileName = path.basename(txtUri.fsPath);
 
     const pngItems = findTestItemsByPrefix(items!, pngFileName);

@@ -9,7 +9,6 @@ import {
   assertToastLogged,
   getLogCapture,
   navigateViaHandleLinkClick,
-  settle,
   standardSuite,
 } from '../helpers';
 
@@ -47,7 +46,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
     logCapture.mark('before-toast-settings-001');
 
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
 
@@ -85,7 +84,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
       parseResult.value,
       testFilename,
     );
-    await settle();
+    await ss.settle();
 
     const lastLine = doc.lineCount - 1;
     assert.strictEqual(sel.anchor.line, lastLine, `Expected clamped to last line ${lastLine}`);
@@ -116,7 +115,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
     logCapture.mark('before-toast-settings-003');
 
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
-    await settle();
+    await ss.settle();
 
     assert.strictEqual(sel.anchor.line, 2, `Expected anchor line 2 but got ${sel.anchor.line}`);
 
