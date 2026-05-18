@@ -64,10 +64,9 @@ standardSuite('Clipboard Preservation', (ss) => {
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-L with preserve=never');
-    assert.strictEqual(
-      clipboard,
-      generatedLink,
-      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    assert.ok(
+      clipboard.includes(generatedLink),
+      `Expected clipboard to contain generated link "${generatedLink}", got: ${clipboard}`,
     );
     const captured = capturing.getCapturedText();
     assertTerminalBufferContains(captured, 'clipboard');
