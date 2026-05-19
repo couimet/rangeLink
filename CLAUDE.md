@@ -553,9 +553,12 @@
 </integration-test-convention>
 
 <release-test-requirement>
-  <rule>Any change to files in `packages/rangelink-vscode-extension/qa/` or `packages/rangelink-vscode-extension/src/__integration-tests__/` MUST be validated by running `pnpm test:release`</rule>
-  <reason>The QA validator script only checks ID matching — it does not execute the tests. Only `test:release` compiles the extension and runs integration tests in a real VS Code host, which is the only way to verify that log-based assertions and command behavior actually work.</reason>
-  <command>`pnpm test:release` (compiles the extension, launches VS Code host, runs integration tests, then runs QA validator — all in one command)</command>
+  <rule>Any change to files in `packages/rangelink-vscode-extension/qa/` or `packages/rangelink-vscode-extension/src/__integration-tests__/` MUST be validated by running an integration-test command.</rule>
+  <reason>The QA validator script only checks ID matching — it does not execute the tests. Only the integration-test runner compiles the extension and runs tests in a real VS Code host, which is the only way to verify that log-based assertions and command behavior actually work.</reason>
+  <default-command>`pnpm test:release:automated` — runs only `automated: true` TCs. This is the default Claude should use. Skips `[assisted]` tests, so it does not block on human-in-the-loop prompts.</default-command>
+  <targeted-command>`pnpm test:release:grep -- "<TC-ID-or-pattern>"` — runs a focused subset by TC ID or regex. Use this when iterating on a specific feature or test. Pass multiple IDs as a regex alternation, e.g. `"terminal-picker-014|bind-to-destination-013"`.</targeted-command>
+  <full-command>`pnpm test:release` — runs everything including `[assisted]` tests. Only use when the user explicitly asks for the full suite, or when validating a release. Will block waiting for human input on assisted tests.</full-command>
+  <rule>Default to `:automated` for routine validation. When iterating on specific TC IDs, switch to `:grep` with the relevant IDs to keep the feedback loop tight. Do not run the bare `pnpm test:release` unless explicitly asked.</rule>
 </release-test-requirement>
 
 </testing>
