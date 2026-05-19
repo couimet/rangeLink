@@ -2,7 +2,12 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_TERMINAL_HERE, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_TERMINAL_HERE,
+  CMD_OPEN_STATUS_BAR_MENU,
+  CMD_SHOW_VERSION,
+  CMD_UNBIND_DESTINATION,
+} from '../../constants/commandIds';
 import {
   assertQuickPickItemsLogged,
   extractQuickPickItemsLogged,
@@ -14,6 +19,25 @@ import {
 } from '../helpers';
 
 const SEPARATOR_KIND = -1;
+
+const APPEARANCE_FN = 'RangeLinkStatusBar.updateStatusBarAppearance';
+
+const findAppearanceLog = (lines: string[]): Record<string, unknown> | undefined => {
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const jsonStart = lines[i].indexOf('{');
+    const jsonEnd = lines[i].lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) continue;
+    try {
+      const ctx = JSON.parse(lines[i].slice(jsonStart, jsonEnd + 1));
+      if (typeof ctx === 'object' && ctx !== null && ctx.fn === APPEARANCE_FN) {
+        return ctx as Record<string, unknown>;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
+};
 
 standardSuite('R-M Status Bar Menu', (ss) => {
   test('status-bar-menu-002: invoking openStatusBarMenu command opens the R-M menu', async () => {
@@ -92,7 +116,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
     await ss.createTerminal('rl-menu-test');
 
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -119,11 +143,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   test('[assisted] status-bar-menu-001: status bar item visible with correct text and tooltip', async () => {
     const verdict = await waitForHumanVerdict(
       'status-bar-menu-001',
-      'Look at the VS Code status bar (bottom right). Does it show "$(link) RangeLink" with tooltip "RangeLink Menu" on hover?',
+      'Look at the VS Code status bar (bottom right). Does it show "$(link) RangeLink" with tooltip "RangeLink — no destination bound" on hover? (No destination should be bound at this point.)',
       [
         '1. Locate the RangeLink item in the bottom-right status bar',
         '2. Hover over it to reveal the tooltip',
-        '3. Click PASS if it shows "$(link) RangeLink" with tooltip "RangeLink Menu"',
+        '3. Click PASS if it shows "$(link) RangeLink" with tooltip "RangeLink — no destination bound"',
         '   Click FAIL if the text or tooltip is wrong, or the item is missing',
       ],
     );
@@ -268,7 +292,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     // "Executing command" is logged by VscodeAdapter before awaiting ShowVersionCommand.execute(),
     // so it lands in the capture regardless of when the human dismisses the version notification.
     const commandDispatchLog = lines.find(
-      (l) => l.includes('Executing command') && l.includes('rangelink.showVersion'),
+      (l) => l.includes('Executing command') && l.includes(CMD_SHOW_VERSION),
     );
     assert.ok(commandDispatchLog, 'Expected command dispatch log for Show Version Info');
 
@@ -280,5 +304,108 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     ss.log(
       '✓ Show Version Info dispatched and notification displayed all required fields (human verified)',
     );
+  });
+
+  // Status bar appearance tests (bind/unbind → tooltip + color)
+
+  test('status-bar-appearance-001: status bar appearance updates to bound state after bind', async () => {
+    await ss.createTerminal('rl-sba-001');
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-sba-001');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+
+    const lines = logCapture.getLinesSince('before-sba-001');
+    const entry = findAppearanceLog(lines);
+    assert.ok(entry, 'Expected updateStatusBarAppearance log entry after bind');
+    assert.deepStrictEqual(entry, {
+      fn: 'RangeLinkStatusBar.updateStatusBarAppearance',
+      isBound: true,
+      destinationName: 'Terminal ("rl-sba-001")',
+    });
+
+    ss.log('✓ Status bar appearance log shows isBound:true after bind');
+  });
+
+  test('status-bar-appearance-002: status bar appearance updates to unbound state after unbind', async () => {
+    await ss.createTerminal('rl-sba-002');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-sba-002');
+
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-sba-002');
+    const entry = findAppearanceLog(lines);
+    assert.ok(entry, 'Expected updateStatusBarAppearance log entry after unbind');
+    assert.deepStrictEqual(entry, {
+      fn: 'RangeLinkStatusBar.updateStatusBarAppearance',
+      isBound: false,
+    });
+
+    ss.log('✓ Status bar appearance log shows isBound:false after unbind');
+  });
+
+  test('[assisted] status-bar-appearance-003: status bar tooltip and color reflect bind state', async () => {
+    const terminalName = 'rl-sba-003';
+    await ss.createTerminal(terminalName);
+
+    const verdictUnbound = await waitForHumanVerdict(
+      'status-bar-appearance-003',
+      'Hover over the R-M status bar item (bottom-right). Does it show "$(link) RangeLink" with tooltip "RangeLink — no destination bound" and no prominent color?',
+      [
+        '1. Locate the RangeLink item in the bottom-right status bar',
+        '2. Hover over it to reveal the tooltip',
+        '3. Verify the icon does NOT have a prominent/bright color (it should look default/neutral)',
+        '4. Click PASS if tooltip is "RangeLink — no destination bound" and color is default',
+        '   Click FAIL if the tooltip or color is wrong',
+      ],
+    );
+    assert.strictEqual(
+      verdictUnbound,
+      'pass',
+      'Human reported unbound tooltip or color was incorrect',
+    );
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await ss.settle();
+
+    const verdictBound = await waitForHumanVerdict(
+      'status-bar-appearance-003',
+      `Hover over the R-M status bar item again. Does the tooltip now show "RangeLink — Terminal (\\"${terminalName}\\")" and does the icon have a prominent/bright color?`,
+      [
+        '1. Hover over the RangeLink status bar item again',
+        `2. Verify the tooltip shows "RangeLink — Terminal (\\"${terminalName}\\")"`,
+        '3. Verify the icon now has a prominent/bright color (different from the default)',
+        '4. Click PASS if both tooltip and color changed correctly',
+        '   Click FAIL if the tooltip or color is wrong',
+      ],
+    );
+    assert.strictEqual(verdictBound, 'pass', 'Human reported bound tooltip or color was incorrect');
+
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+    await ss.settle();
+
+    const verdictAfterUnbind = await waitForHumanVerdict(
+      'status-bar-appearance-003',
+      'Hover over the R-M status bar item one more time. Has the tooltip reverted to "RangeLink — no destination bound" and the color returned to default?',
+      [
+        '1. Hover over the RangeLink status bar item again',
+        '2. Verify the tooltip is back to "RangeLink — no destination bound"',
+        '3. Verify the icon color is back to default (no prominent color)',
+        '4. Click PASS if both tooltip and color reverted correctly',
+        '   Click FAIL if the tooltip or color is wrong',
+      ],
+    );
+    assert.strictEqual(
+      verdictAfterUnbind,
+      'pass',
+      'Human reported tooltip or color was incorrect after unbind',
+    );
+
+    ss.log('✓ Status bar tooltip and color correctly reflect bind/unbind state (human verified)');
   });
 });

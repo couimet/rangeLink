@@ -122,6 +122,32 @@ const mockLanguages = {
   registerDocumentLinkProvider: jest.fn(),
 };
 
+class MockEventEmitter<T> implements vscode.EventEmitter<T> {
+  private handlers: Array<(e: T) => void> = [];
+
+  readonly event: vscode.Event<T> = (
+    listener: (e: T) => any,
+    _thisArgs?: any,
+    _disposables?: any,
+  ) => {
+    this.handlers.push(listener);
+    return {
+      dispose: () => {
+        const idx = this.handlers.indexOf(listener);
+        if (idx !== -1) this.handlers.splice(idx, 1);
+      },
+    };
+  };
+
+  fire(data: T): void {
+    this.handlers.forEach((h) => h(data));
+  }
+
+  dispose(): void {
+    this.handlers = [];
+  }
+}
+
 // Mock constructor functions for VSCode types
 const mockUri = {
   parse: jest.fn((str) => ({
@@ -178,6 +204,10 @@ class MockThemeIcon {
     public readonly color?: any,
   ) {}
 }
+
+class MockThemeColor {
+  constructor(public readonly id: string) {}
+}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Mocking enums values to match the real vscode enums -- END
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,4 +233,6 @@ module.exports = {
   StatusBarAlignment: mockStatusBarAlignment,
   QuickPickItemKind: mockQuickPickItemKind,
   ThemeIcon: MockThemeIcon,
+  ThemeColor: MockThemeColor,
+  EventEmitter: MockEventEmitter,
 };

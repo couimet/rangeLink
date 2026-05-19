@@ -1,76 +1,37 @@
-export { ActiveSelections } from './ActiveSelections';
-export { AutoPasteResult } from './AutoPasteResult';
-export type { BoundState } from './BoundState';
-export type { ClipboardPreservationMode } from './ClipboardPreservationMode';
-export type { CopyAndSendOptions } from './CopyAndSendOptions';
-export { DestinationBehavior } from './DestinationBehavior';
-export type { EligibleFile } from './EligibleFile';
-export type { EligibleTerminal } from './EligibleTerminal';
-export type { FilePathClickArgs } from './FilePathClickArgs';
-export type { FilePathTerminalLink } from './FilePathTerminalLink';
-export { BehaviourAfterPaste } from './BehaviourAfterPaste';
-export type {
-  BindOptions,
-  ClaudeCodeBindOptions,
-  CopilotChatBindOptions,
-  CursorAIBindOptions,
-  TerminalBindOptions,
-  TextEditorBindOptions,
-} from './BindOptions';
-export { BindFailureReason } from './BindFailureReason';
-export { DirtyBufferWarningResult } from './DirtyBufferWarningResult';
-export type { DestinationPickerOutcome, DestinationPickerResult } from './DestinationPickerResult';
-export {
-  AI_ASSISTANT_KINDS,
-  DESTINATION_KINDS,
-  isAnyAiAssistantKind,
-  isCustomAiAssistantKind,
-  type AIAssistantDestinationKind,
-  type BuiltInDestinationKind,
-  type CustomAiAssistantKind,
-  type DestinationKind,
-  type NonTerminalDestinationKind,
-} from './DestinationKind';
-export { ExtensionResult } from './ExtensionResult';
-export type { JumpToDestinationOutcome, JumpToDestinationResult } from './JumpToDestinationResult';
-export type { WithDestinationKind } from './WithDestinationKind';
-export type { WithDisplayName } from './WithDisplayName';
-export { MessageCode } from './MessageCode';
-export { PasteContentType } from './PasteContentType';
-export { PathFormat } from './PathFormat';
-export { RelativePathFormat } from './RelativePathFormat';
-export type {
-  GetAvailableDestinationItemsOptions,
-  GroupedDestinationItems,
-} from './GroupedDestinationKinds';
-export { PICKER_ITEM_KINDS } from './QuickPickTypes';
-export type {
-  BindableQuickPickItem,
-  BookmarkQuickPickItem,
-  CommandQuickPickItem,
-  ConfirmationQuickPickItem,
-  DestinationQuickPickItem,
-  FileBindableQuickPickItem,
-  FileMoreQuickPickItem,
-  InfoQuickPickItem,
-  PickerItemKind,
-  StatusBarMenuQuickPickItem,
-  TerminalBindableQuickPickItem,
-  TerminalMoreQuickPickItem,
-  WithBindOptions,
-  WithRemainingCount,
-} from './QuickPickTypes';
-export type { QuickPickBindOutcome, QuickPickBindResult } from './QuickPickBindResult';
-export type { RangeLinkClickArgs } from './RangeLinkClickArgs';
-export { FILENAME_AMBIGUOUS } from './ResolvedPath';
-export type {
-  ResolvedPath,
-  PathResolutionStrategy,
-  ResolveWorkspacePathResult,
-} from './ResolvedPath';
-export type { RangeLinkExtensionApi } from './RangeLinkExtensionApi';
-export type { RangeLinkTerminalLink } from './RangeLinkTerminalLink';
-export type { SendTextToTerminalOptions } from './SendTextToTerminalOptions';
-export { TerminalFocusType } from './TerminalFocusType';
-export type { TerminalPasteOutcome, TerminalPasteResult } from './TerminalPasteOutcome';
-export type { VersionInfo } from './VersionInfo';
+export * from './ActiveSelections';
+export * from './AutoPasteResult';
+export * from './BehaviourAfterPaste';
+export * from './BindFailureReason';
+export * from './DestinationBehavior';
+export * from './DestinationKind';
+export * from './DirtyBufferWarningResult';
+export * from './ExtensionResult';
+export * from './MessageCode';
+export * from './PasteContentType';
+export * from './PathFormat';
+export * from './QuickPickTypes';
+export * from './RelativePathFormat';
+export * from './ResolvedPath';
+export * from './TerminalFocusType';
+
+export type * from './BindOptions';
+export type * from './BoundDestinationInfo';
+export type * from './BoundState';
+export type * from './ClipboardPreservationMode';
+export type * from './CopyAndSendOptions';
+export type * from './DestinationPickerResult';
+export type * from './EligibleFile';
+export type * from './EligibleTerminal';
+export type * from './FilePathClickArgs';
+export type * from './FilePathTerminalLink';
+export type * from './GroupedDestinationKinds';
+export type * from './JumpToDestinationResult';
+export type * from './QuickPickBindResult';
+export type * from './RangeLinkClickArgs';
+export type * from './RangeLinkExtensionApi';
+export type * from './RangeLinkTerminalLink';
+export type * from './SendTextToTerminalOptions';
+export type * from './TerminalPasteOutcome';
+export type * from './VersionInfo';
+export type * from './WithDestinationKind';
+export type * from './WithDisplayName';

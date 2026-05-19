@@ -11,6 +11,8 @@ export const createMockStatusBarItem = () => {
   return {
     text: '',
     tooltip: undefined as string | undefined,
+    color: undefined as unknown,
+    backgroundColor: undefined as unknown,
     command: undefined as string | undefined,
     show: jest.fn(),
     hide: jest.fn(),

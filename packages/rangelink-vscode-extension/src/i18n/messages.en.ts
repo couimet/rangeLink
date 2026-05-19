@@ -174,6 +174,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'Unbound {previousDestination}, now bound to {newDestination}',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: 'Unbound from {destinationName}',
   [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
+  [MessageCode.STATUS_BAR_ITEM_TOOLTIP_BOUND]: 'RangeLink — {destinationName}',
+  [MessageCode.STATUS_BAR_ITEM_TOOLTIP_UNBOUND]: 'RangeLink — no destination bound',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: 'Focused Claude Code Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: 'Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: 'Focused {extensionName}',
@@ -194,7 +196,6 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
   [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',
   [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',
-  [MessageCode.STATUS_BAR_MENU_TOOLTIP]: 'RangeLink Menu',
 
   [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
   [MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select terminal to bind to',

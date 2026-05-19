@@ -4,11 +4,14 @@
  * Provides factory function to create mock destination managers with sensible defaults.
  */
 
+import * as vscode from 'vscode';
+
 import type {
   BindSuccessInfo,
   PasteDestination,
   PasteDestinationManager,
 } from '../../destinations';
+import type { BoundDestinationInfo } from '../../types';
 import type { ExtensionResult } from '../../types';
 
 /**
@@ -74,18 +77,39 @@ export const createMockDestinationManager = (
 
   const getBoundDestinationMock = jest.fn().mockReturnValue(boundDestination);
 
+  const getBoundDestinationInfoMock = jest
+    .fn()
+    .mockReturnValue(
+      boundDestination !== undefined
+        ? { id: boundDestination.id, displayName: boundDestination.displayName }
+        : undefined,
+    );
+
   const bindMock = bindResult !== undefined ? jest.fn().mockResolvedValue(bindResult) : jest.fn();
+
+  const emitter = new vscode.EventEmitter<BoundDestinationInfo | undefined>();
 
   return {
     isBound: isBoundMock,
     sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
     sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
     getBoundDestination: getBoundDestinationMock,
+    getBoundDestinationInfo: getBoundDestinationInfoMock,
+    subscribeToBoundDestination: jest
+      .fn()
+      .mockImplementation((listener: (info: BoundDestinationInfo | undefined) => void) => {
+        listener(getBoundDestinationInfoMock());
+        return emitter.event(listener);
+      }),
     isClipboardRestorationApplicable: jest.fn().mockReturnValue(true),
     bind: bindMock,
     unbind: jest.fn(),
     focusBoundDestination: jest.fn(),
     bindAndFocus: jest.fn(),
     dispose: jest.fn(),
-  } as unknown as jest.Mocked<PasteDestinationManager>;
+    onDidChangeBoundDestination: emitter.event,
+    _onDidChangeBoundDestinationEmitter: emitter,
+  } as unknown as jest.Mocked<PasteDestinationManager> & {
+    _onDidChangeBoundDestinationEmitter: vscode.EventEmitter<BoundDestinationInfo | undefined>;
+  };
 };

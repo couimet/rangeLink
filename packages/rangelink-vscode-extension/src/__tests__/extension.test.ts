@@ -111,6 +111,22 @@ jest.mock('vscode', () => ({
       public color?: any,
     ) {}
   },
+  ThemeColor: class {
+    constructor(public id: string) {}
+  },
+  EventEmitter: class {
+    private handlers: Array<(e: any) => void> = [];
+    readonly event = (listener: (e: any) => any, _thisArgs?: any, _disposables?: any) => {
+      this.handlers.push(listener);
+      return { dispose: () => {} };
+    };
+    fire(data: any) {
+      this.handlers.forEach((h) => h(data));
+    }
+    dispose() {
+      this.handlers = [];
+    }
+  },
   DocumentLink: class {
     range: any;
     tooltip: string | undefined = undefined;

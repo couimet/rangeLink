@@ -101,13 +101,85 @@ describe('RangeLinkStatusBar', () => {
       expect(createStatusBarItemMock).toHaveBeenCalledTimes(1);
       expect(createStatusBarItemMock).toHaveBeenCalledWith(vscode.StatusBarAlignment.Right, 100);
       expect(mockStatusBarItem.text).toBe('$(link) RangeLink');
-      expect(mockStatusBarItem.tooltip).toBe('RangeLink Menu');
+      expect(mockStatusBarItem.tooltip).toBe('RangeLink — no destination bound');
       expect(mockStatusBarItem.command).toBe('rangelink.openStatusBarMenu');
       expect(mockStatusBarItem.show).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.updateStatusBarAppearance', isBound: false },
+        'Status bar appearance updated for unbound state',
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.constructor' },
         'Status bar item created',
       );
+    });
+
+    it('uses bound destination tooltip and color when destination is bound at construction', () => {
+      const mockBoundDest = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("bash")',
+      });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDest,
+      });
+
+      new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      expect(mockStatusBarItem.tooltip).toBe('RangeLink — Terminal ("bash")');
+      expect(mockStatusBarItem.color).toStrictEqual(
+        new vscode.ThemeColor('statusBarItem.prominentForeground'),
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.updateStatusBarAppearance',
+          isBound: true,
+          destinationName: 'Terminal ("bash")',
+        },
+        'Status bar appearance updated for bound destination "Terminal ("bash")"',
+      );
+    });
+  });
+
+  describe('updateStatusBarAppearance', () => {
+    it('updates tooltip and color when bound event fires', () => {
+      new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      (mockDestinationManager as any)._onDidChangeBoundDestinationEmitter.fire({
+        id: 'terminal',
+        displayName: 'Terminal ("zsh")',
+      });
+
+      expect(mockStatusBarItem.tooltip).toBe('RangeLink — Terminal ("zsh")');
+      expect(mockStatusBarItem.color).toStrictEqual(
+        new vscode.ThemeColor('statusBarItem.prominentForeground'),
+      );
+    });
+
+    it('resets tooltip and color when unbound event fires', () => {
+      new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      (mockDestinationManager as any)._onDidChangeBoundDestinationEmitter.fire(undefined);
+
+      expect(mockStatusBarItem.tooltip).toBe('RangeLink — no destination bound');
+      expect(mockStatusBarItem.color).toBeUndefined();
     });
   });
 
@@ -990,7 +1062,10 @@ describe('RangeLinkStatusBar', () => {
       expect(showErrorMessageMock).toHaveBeenCalledWith(
         'Cannot send bookmark — no destination is currently bound',
       );
-      expect(mockLogger.debug).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.updateStatusBarAppearance', isBound: false },
+        'Status bar appearance updated for unbound state',
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.constructor' },
         'Status bar item created',
