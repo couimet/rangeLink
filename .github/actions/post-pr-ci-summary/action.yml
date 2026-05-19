@@ -60,21 +60,59 @@ runs:
         fi
         TC_IDS=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js "${RESOLVE_ARGS[@]}")
 
-        # Build table
-        TABLE="### ${{ inputs.title }}"
-        TABLE="${TABLE}"$'\n'"| | |"
+        # Determine pass/fail
+        PASS=true
+        MISSING_INT_REPORT=false
+        if [ -n "${{ inputs.unit-total }}" ] && [ "${{ inputs.unit-passed }}" != "${{ inputs.unit-total }}" ]; then
+          PASS=false
+        fi
+        if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
+          PASS=false
+        fi
+        JOB_KEY=$(echo "${{ inputs.title }}" | sed 's/ — run summary$//')
+
+        # Build table body (title with icon is prepended after pass/fail is finalized)
+        TABLE="| | |"
         TABLE="${TABLE}"$'\n'"|---|---|"
         TABLE="${TABLE}"$'\n'"| Duration | ${DURATION_STR} |"
 
         if [ -n "${{ inputs.unit-total }}" ]; then
           TABLE="${TABLE}"$'\n'"| Unit tests passed | ${{ inputs.unit-passed }} / ${{ inputs.unit-total }} |"
         fi
+
+        if [ "$LABEL_FILTER" = "requires-extensions" ]; then
+          TABLE="${TABLE}"$'\n'"| Unit tests | Ran in Test &amp; Validate job |"
+        fi
+
         if [ -n "${{ inputs.int-passing }}" ]; then
           TABLE="${TABLE}"$'\n'"| Integration tests passing | ${{ inputs.int-passing }} |"
         fi
         if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
           TABLE="${TABLE}"$'\n'"| Integration tests failed | ${{ inputs.int-failed }} |"
         fi
+
+        # Detect missing test report (runner crash before producing stats)
+        INT_PASSING="${{ inputs.int-passing }}"
+        INT_FAILED="${{ inputs.int-failed }}"
+        if { [ -z "$INT_PASSING" ] || [ "$INT_PASSING" = "0" ]; } && { [ -z "$INT_FAILED" ] || [ "$INT_FAILED" = "0" ]; }; then
+          if [ -n "${{ inputs.report-file }}" ] && { [ ! -f "${{ inputs.report-file }}" ] || ! grep -qE '[0-9]+ (passing|failing)' "${{ inputs.report-file }}" 2>/dev/null; }; then
+            MISSING_INT_REPORT=true
+            TABLE="${TABLE}"$'\n'"| ⚠️ Integration test report missing | Runner may have crashed |"
+          fi
+        fi
+
+        # Finalize pass/fail and icon after report check
+        if [ "$MISSING_INT_REPORT" = "true" ]; then
+          PASS=false
+        fi
+        if [ "$PASS" = "true" ]; then
+          ICON="✅"
+        else
+          ICON="❌"
+        fi
+
+        # Prepend title with icon
+        TABLE="### ${ICON} ${{ inputs.title }}"$'\n'"${TABLE}"
 
         TABLE="${TABLE}"$'\n'"| QA TC IDs exercised | ${TC_IDS} |"
         TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
@@ -84,9 +122,28 @@ runs:
         if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
           RE_RUN=$(sed -n '/^Re-run failed tests:/,$p' "${{ inputs.report-file }}" | tail -n +2 | sed 's/^  //')
           if [ -n "$RE_RUN" ]; then
-            BODY="${BODY}"$'\n\n'"To re-run failed tests:"$'\n'"\`\`\`"$'\n'"${RE_RUN}"$'\n'"\`\`\`"
+            # Suppress re-run block when failures dominate passing
+            INT_FAILED_NUM="${INT_FAILED:-0}"
+            INT_PASSING_NUM="${INT_PASSING:-0}"
+            if [ "$INT_FAILED_NUM" -gt "$INT_PASSING_NUM" ] 2>/dev/null; then
+              BODY="${BODY}"$'\n\n'"${INT_FAILED_NUM} tests failed — re-run the full suite with \`pnpm test:release:automated\`"
+            else
+              BODY="${BODY}"$'\n\n'"To re-run failed tests:"$'\n'"\`\`\`"$'\n'"${RE_RUN}"$'\n'"\`\`\`"
+            fi
           fi
         fi
 
-        gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-          -f body="$BODY"
+        # Post the comment
+        RESPONSE=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+          -f body="$BODY")
+        NEW_COMMENT_ID=$(echo "$RESPONSE" | jq -r '.id')
+
+        # Minimize previous successful comments from this job
+        if [ "$PASS" = "true" ] && [ -n "$NEW_COMMENT_ID" ] && [ "$NEW_COMMENT_ID" != "null" ]; then
+          PREV_NODES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq ".[] | select(.id != ${NEW_COMMENT_ID}) | select(.body | startswith(\"### ✅ ${JOB_KEY}\")) | .node_id" 2>/dev/null || true)
+          for NID in $PREV_NODES; do
+            gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:OUTDATED}){clientMutationId}}' \
+              -f id="$NID" 2>/dev/null || true
+          done
+        fi
