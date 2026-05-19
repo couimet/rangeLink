@@ -11,6 +11,7 @@ import {
 } from '../../destinations';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
+import type { BoundDestinationInfo } from '../../types';
 import {
   AutoPasteResult,
   type BindOptions,
@@ -3082,6 +3083,71 @@ describe('PasteDestinationManager', () => {
       expect(bindSpy).toHaveBeenCalledWith(options);
       expect(focusSpy).toHaveBeenCalledWith({ silent: true });
       expect(result).toBe(mockFocusErr);
+    });
+  });
+
+  describe('onDidChangeBoundDestination', () => {
+    it('fires event with bound destination on successful bind', async () => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      const events: (BoundDestinationInfo | undefined)[] = [];
+      manager.onDidChangeBoundDestination((dest) => {
+        events.push(dest);
+      });
+
+      await manager.bind({ kind: 'terminal', terminal: mockTerminal });
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toStrictEqual({ id: 'terminal', displayName: 'Terminal ("bash")' });
+    });
+
+    it('fires event with undefined on explicit unbind', async () => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind({ kind: 'terminal', terminal: mockTerminal });
+
+      const events: (BoundDestinationInfo | undefined)[] = [];
+      manager.onDidChangeBoundDestination((dest) => {
+        events.push(dest);
+      });
+
+      manager.unbind();
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBeUndefined();
+    });
+
+    it('fires event when binding after already bound (replace clears then sets)', async () => {
+      const mockTerminal1 = createMockTerminal({
+        processId: Promise.resolve(11111),
+        name: 'terminal-1',
+      });
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
+      await manager.bind({ kind: 'terminal', terminal: mockTerminal1 });
+
+      const mockTerminal2 = createMockTerminal({
+        processId: Promise.resolve(22222),
+        name: 'terminal-2',
+      });
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
+
+      // Override showQuickPick to confirm replacement
+      (mockAdapter.__getVscodeInstance().window.showQuickPick as jest.Mock).mockResolvedValueOnce({
+        confirmed: true,
+      });
+
+      const events: (BoundDestinationInfo | undefined)[] = [];
+      manager.onDidChangeBoundDestination((dest) => {
+        events.push(dest);
+      });
+
+      await manager.bind({ kind: 'terminal', terminal: mockTerminal2 });
+
+      // clearBoundDestination fires undefined, setBoundDestination fires new dest
+      expect(events).toHaveLength(2);
+      expect(events[0]).toBeUndefined();
+      expect(events[1]).toStrictEqual({ id: 'terminal', displayName: 'Terminal ("terminal-2")' });
     });
   });
 });

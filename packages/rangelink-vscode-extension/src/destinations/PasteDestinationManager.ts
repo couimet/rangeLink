@@ -11,6 +11,7 @@ import {
   AutoPasteResult,
   BindFailureReason,
   type BindOptions,
+  type BoundDestinationInfo,
   type ConfirmationQuickPickItem,
   type TextEditorBindOptions,
   type DestinationKind,
@@ -78,6 +79,13 @@ export class PasteDestinationManager implements vscode.Disposable {
   private boundDestination: PasteDestination | undefined;
   private disposables: vscode.Disposable[] = [];
   private isInDuplicateTabState = false;
+
+  private readonly _onDidChangeBoundDestinationEmitter = new vscode.EventEmitter<
+    BoundDestinationInfo | undefined
+  >();
+
+  readonly onDidChangeBoundDestination: vscode.Event<BoundDestinationInfo | undefined> =
+    this._onDidChangeBoundDestinationEmitter.event;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -184,6 +192,32 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   getBoundDestination(): PasteDestination | undefined {
     return this.boundDestination;
+  }
+
+  /**
+   * Get narrowed bound-destination info for event consumers.
+   *
+   * Returns only the fields needed by read-only consumers (status bar, etc.)
+   * rather than the full PasteDestination API surface.
+   */
+  getBoundDestinationInfo(): BoundDestinationInfo | undefined {
+    return this.boundDestination !== undefined
+      ? { id: this.boundDestination.id, displayName: this.boundDestination.displayName }
+      : undefined;
+  }
+
+  /**
+   * Subscribe to bound-destination changes, receiving the current value
+   * immediately on subscription, then all subsequent changes.
+   *
+   * Eliminates the need for callers to separately pull initial state via
+   * {@link getBoundDestinationInfo}.
+   */
+  subscribeToBoundDestination(
+    listener: (info: BoundDestinationInfo | undefined) => void,
+  ): vscode.Disposable {
+    listener(this.getBoundDestinationInfo());
+    return this.onDidChangeBoundDestination(listener);
   }
 
   /**
@@ -326,6 +360,8 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Dispose of resources (cleanup event listeners)
    */
   dispose(): void {
+    this.clearBoundDestination();
+    this._onDidChangeBoundDestinationEmitter.dispose();
     this.disposables.forEach((d) => d?.dispose());
     this.disposables = [];
   }
@@ -582,6 +618,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   private async setBoundDestination(destination: PasteDestination): Promise<void> {
     this.boundDestination = destination;
     await this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, true);
+    this._onDidChangeBoundDestinationEmitter.fire(this.getBoundDestinationInfo()!);
   }
 
   /**
@@ -592,6 +629,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundDestination = undefined;
     this.isInDuplicateTabState = false;
     void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
+    this._onDidChangeBoundDestinationEmitter.fire(undefined);
   }
 
   /**

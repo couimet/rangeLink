@@ -23,6 +23,7 @@ import {
 } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { BoundDestinationInfo } from '../types';
 import {
   type BookmarkQuickPickItem,
   type CommandQuickPickItem,
@@ -52,6 +53,7 @@ const MENU_ITEM_INDENT = '    ';
  */
 export class RangeLinkStatusBar implements vscode.Disposable {
   private readonly statusBarItem: vscode.StatusBarItem;
+  private disposables: vscode.Disposable[] = [];
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
@@ -66,11 +68,47 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     );
 
     this.statusBarItem.text = formatMessage(MessageCode.STATUS_BAR_ITEM_TEXT);
-    this.statusBarItem.tooltip = formatMessage(MessageCode.STATUS_BAR_MENU_TOOLTIP);
     this.statusBarItem.command = CMD_OPEN_STATUS_BAR_MENU;
     this.statusBarItem.show();
 
+    this.disposables.push(
+      this.destinationManager.subscribeToBoundDestination((boundDest) => {
+        this.updateStatusBarAppearance(boundDest);
+      }),
+    );
+
     this.logger.debug({ fn: 'RangeLinkStatusBar.constructor' }, 'Status bar item created');
+  }
+
+  /**
+   * Update status bar item appearance based on bound destination state.
+   *
+   * Sets tooltip to show destination name when bound, or "no destination bound" when unbound.
+   * Applies prominent theme color when bound to visually differentiate state.
+   */
+  private updateStatusBarAppearance(boundDest: BoundDestinationInfo | undefined): void {
+    const isBound = boundDest !== undefined;
+
+    if (isBound) {
+      this.statusBarItem.color = new vscode.ThemeColor('statusBarItem.prominentForeground');
+      this.statusBarItem.tooltip = formatMessage(MessageCode.STATUS_BAR_ITEM_TOOLTIP_BOUND, {
+        destinationName: boundDest.displayName,
+      });
+    } else {
+      this.statusBarItem.color = undefined;
+      this.statusBarItem.tooltip = formatMessage(MessageCode.STATUS_BAR_ITEM_TOOLTIP_UNBOUND);
+    }
+
+    this.logger.debug(
+      {
+        fn: 'RangeLinkStatusBar.updateStatusBarAppearance',
+        isBound,
+        ...(isBound && { destinationName: boundDest.displayName }),
+      },
+      isBound
+        ? `Status bar appearance updated for bound destination "${boundDest.displayName}"`
+        : 'Status bar appearance updated for unbound state',
+    );
   }
 
   /**
@@ -365,6 +403,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   }
 
   dispose(): void {
+    this.disposables.forEach((d) => d?.dispose());
+    this.disposables = [];
     this.statusBarItem.dispose();
     this.logger.debug({ fn: 'RangeLinkStatusBar.dispose' }, 'Status bar disposed');
   }

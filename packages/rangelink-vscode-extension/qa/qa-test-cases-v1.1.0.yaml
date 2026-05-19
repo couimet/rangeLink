@@ -2125,3 +2125,21 @@ test_cases:
     scenario: 'Ctrl+R chord keybindings work on Ubuntu/Linux (R-M menu, R-D picker, R-L send, R-G goto, R-U unbind)'
     expected_result: 'All Ctrl+R chords behave identically to Cmd+R on macOS — menu, picker, send, goto, and unbind work correctly'
     automated: assisted
+
+  - id: status-bar-appearance-001
+    feature: 'Status Bar Appearance'
+    scenario: 'Status bar appearance log shows bound state after binding a destination'
+    expected_result: 'Log entry shows isBound:true with destination name in the message'
+    automated: true
+
+  - id: status-bar-appearance-002
+    feature: 'Status Bar Appearance'
+    scenario: 'Status bar appearance log shows unbound state after unbind'
+    expected_result: 'Log entry shows isBound:false with unbound state message'
+    automated: true
+
+  - id: status-bar-appearance-003
+    feature: 'Status Bar Appearance'
+    scenario: 'Hovering the R-M icon shows bound destination name and prominent color when bound, "no destination bound" when unbound'
+    expected_result: 'Tooltip and color update correctly on bind and unbind'
+    automated: assisted
