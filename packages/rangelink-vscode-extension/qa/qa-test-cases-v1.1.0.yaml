@@ -261,6 +261,12 @@ test_cases:
     expected_result: 'Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M.'
     automated: true
 
+  - id: terminal-picker-014
+    feature: 'Terminal Picker'
+    scenario: 'Extension-managed pty terminal (Jest task runner, etc.) appears in R-D picker as not-bindable'
+    expected_result: "The pty terminal entry has a 'not bindable' description badge and carries `nonBindableReason: 'extension-managed'`. The item is rendered but selecting it does not bind."
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
   # ---------------------------------------------------------------------------

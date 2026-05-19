@@ -614,6 +614,72 @@ standardSuite('Terminal Picker', (ss) => {
     ss.log('✓ Terminal inline in R-D picker — full fields');
   });
 
+  test('terminal-picker-014: extension-managed pty terminal appears as not bindable in R-D picker', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal('rl-tp-014-pty', { pty });
+    await ss.createTerminal('rl-tp-014-shell');
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-014');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-tp-014');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry');
+
+    const termItems = findTerminalItems(items!);
+    assert.deepStrictEqual(
+      termItems.map(
+        ({
+          label,
+          displayName,
+          description,
+          isActive,
+          boundState,
+          itemKind,
+          nonBindableReason,
+        }) => ({
+          label,
+          displayName,
+          description,
+          isActive,
+          boundState,
+          itemKind,
+          nonBindableReason,
+        }),
+      ),
+      [
+        {
+          label: 'Terminal ("rl-tp-014-shell")',
+          displayName: 'Terminal ("rl-tp-014-shell")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+          nonBindableReason: undefined,
+        },
+        {
+          label: 'Terminal ("rl-tp-014-pty")',
+          displayName: 'Terminal ("rl-tp-014-pty")',
+          description: 'not bindable',
+          isActive: false,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+          nonBindableReason: 'extension-managed',
+        },
+      ],
+    );
+
+    ss.log('✓ Pty terminal marked not-bindable; shell terminal stays bindable');
+  });
+
   test('bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-btd-013-${i}`);
