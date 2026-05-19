@@ -48,7 +48,7 @@ Read both YAML files in parallel.
 Read these in parallel:
 
 1. `packages/rangelink-vscode-extension/CHANGELOG.md` — extract only the `## [Unreleased]` section (stop at the next `## [` header)
-2. `packages/rangelink-vscode-extension/src/__integration-tests__/suite/` — Glob for `*.test.ts` files and scan their `suite()`/`test()` names to understand what is already automated
+2. `packages/rangelink-vscode-extension/src/__integration-tests__/suite/` — Glob for `*.test.ts` files and scan two things: (a) `suite()`/`test()` names to map scenarios to TC IDs, and (b) which tests call `waitForHuman` or `waitForHumanVerdict` — those are the assisted ones (see "Choosing the automated value" in Step 6 for why this is the canonical signal)
 
 ## Step 4: Diff TCs Between Versions
 
@@ -59,6 +59,8 @@ Compare the current YAML against the previous YAML:
 - **Changed**: TCs whose `automated:` field flipped between versions, or whose `scenario:` text was updated
 
 Record these for the change summary output.
+
+**Schema-migration noise to ignore.** Starting in v1.1.0 the YAML schema dropped `preconditions:` and `steps:` from every `automated: true` and `automated: assisted` entry — the integration test is canonical for those. When diffing against a pre-v1.1.0 YAML, do NOT treat the removal of `preconditions:`/`steps:` as a "Changed" event, whether it appears alone or alongside an `automated: false → true|assisted` flip. Only flag genuine semantic changes (the automated flip itself, or scenario text edits).
 
 ## Step 5: Cross-Reference CHANGELOG Against TC Coverage
 
@@ -77,7 +79,21 @@ For each entry under `## [Unreleased]` in the CHANGELOG:
 
 ## Step 6: Draft New TC Entries
 
-For each uncovered CHANGELOG entry, draft one or more TC entries following the YAML schema:
+For each uncovered CHANGELOG entry, draft one or more TC entries following the YAML schema. The shape of the entry depends on whether an integration test already covers the scenario — see [Choosing the automated value](#choosing-the-automated-value) below to pick first, then use the matching template from [YAML templates](#yaml-templates).
+
+### Choosing the `automated` value
+
+Look at the integration tests loaded in Step 3 and find any test whose scenario matches the CHANGELOG entry. Then:
+
+- A test exists and it calls `waitForHuman` or `waitForHumanVerdict` (it pauses for a human action at runtime) → set `automated: assisted`
+- A test exists and it does NOT call either of those (fully programmatic, no human in the loop) → set `automated: true`
+- No test covers the scenario → set `automated: false`
+
+The presence of `waitForHuman` / `waitForHumanVerdict` is the canonical signal because it is the actual runtime mechanism that pauses the test for a human. Naming conventions like an `[assisted]` prefix in the test title are a secondary signal layered on top of the functional behaviour; treat the prefix as a hint, but always confirm by looking for the `waitForHuman*` call.
+
+### YAML templates
+
+**Full template (`automated: false`)** — used when no integration test covers the scenario. `preconditions:` and `steps:` are required because the YAML is the only source of instructions:
 
 <!-- prettier-ignore -->
 ```yaml
@@ -90,6 +106,17 @@ For each uncovered CHANGELOG entry, draft one or more TC entries following the Y
       - '<test action>'
     expected_result: '<what passing looks like>'
     automated: false
+```
+
+**Compact template (`automated: true` or `automated: assisted`)** — used when an integration test in `src/__integration-tests__/suite/` already covers the scenario. Omit `preconditions:` and `steps:` because the integration test is canonical and duplicating instructions invites drift:
+
+<!-- prettier-ignore -->
+```yaml
+  - id: <feature-slug>-NNN
+    feature: '<CHANGELOG section name>'
+    scenario: '<one-line description of the specific scenario>'
+    expected_result: '<what passing looks like>'
+    automated: true   # or: assisted
 ```
 
 ### TC ID scheme: feature-slug IDs
@@ -107,9 +134,9 @@ IDs are derived from the `feature:` field value using this algorithm:
 
 **To find the next available number**: scan the current YAML for all `id:` values that start with the derived slug prefix, extract the highest NNN, and use `max + 1`.
 
-**`automated` field**: set to `true` only if you confirmed an integration test already covers this exact scenario in Step 3. Otherwise set `false`.
+### Section placement
 
-**Section placement**: new TCs go at the end of their feature's section in the YAML. If no section exists for the feature yet, create a new section comment block following the existing pattern.
+New TCs go at the end of their feature's section in the YAML. If no section exists for the feature yet, create a new section comment block following the existing pattern.
 
 ## Step 7: Write Scratchpad Report
 

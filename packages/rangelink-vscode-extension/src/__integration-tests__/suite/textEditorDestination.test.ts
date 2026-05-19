@@ -57,7 +57,7 @@ standardSuite('Text Editor Destination', (ss) => {
     ss.log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
   });
 
-  test('[assisted] hidden-tab-paste-001: R-L with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
+  test('hidden-tab-paste-001: R-L with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const SOURCE_CONTENT = 'source-for-rangelink';
@@ -115,7 +115,7 @@ standardSuite('Text Editor Destination', (ss) => {
     ss.log('✓ Bound editor brought to foreground and received RangeLink');
   });
 
-  test('[assisted] hidden-tab-paste-002: R-V with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
+  test('hidden-tab-paste-002: R-V with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const SELECTED_TEXT = 'text-to-paste';
