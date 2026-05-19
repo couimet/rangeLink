@@ -6,6 +6,7 @@ import {
   assertNoSetContextLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
+  extractGeneratedLink,
   getLogCapture,
   standardSuite,
   waitForHumanVerdict,
@@ -34,8 +35,13 @@ standardSuite('Unbind Destination', (ss) => {
     await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
 
+    logCapture.mark('before-unbind-001-r-c');
     await vscode.env.clipboard.writeText('unbind-test-sentinel');
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    await ss.settle();
+    const linesRc = logCapture.getLinesSince('before-unbind-001-r-c');
+    const generatedLink = extractGeneratedLink(linesRc);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.notStrictEqual(
@@ -43,9 +49,10 @@ standardSuite('Unbind Destination', (ss) => {
       'unbind-test-sentinel',
       'Expected clipboard to contain the generated link after unbind + R-C, not the sentinel',
     );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
   });
 

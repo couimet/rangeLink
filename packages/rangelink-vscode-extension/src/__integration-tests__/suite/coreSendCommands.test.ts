@@ -22,6 +22,7 @@ import {
   type CapturingTerminal,
   clearSelection,
   echoToTerminal,
+  extractGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
@@ -147,9 +148,13 @@ standardSuite('Core Send Commands', (ss) => {
     await ss.settle();
 
     const clipboard = await assertClipboardChanged('R-C should write link to clipboard');
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected line-range link in clipboard, got: ${JSON.stringify(clipboard)}`,
+    const lines = logCapture.getLinesSince('before-r-c-001');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${JSON.stringify(clipboard)}`,
     );
 
     assert.strictEqual(
@@ -158,7 +163,7 @@ standardSuite('Core Send Commands', (ss) => {
       'Terminal should not have received anything from R-C',
     );
 
-    assertStatusBarMsgLogged(logCapture.getLinesSince('before-r-c-001'), {
+    assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink: RangeLink copied to clipboard',
     });
     ss.log('✓ R-C wrote link to clipboard; terminal received nothing');

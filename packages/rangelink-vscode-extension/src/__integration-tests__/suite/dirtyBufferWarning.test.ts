@@ -9,6 +9,9 @@ import {
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
+  createFileAt,
+  extractGeneratedLink,
+  extractSentLink,
   getLogCapture,
   standardSuite,
   waitForHuman,
@@ -32,9 +35,15 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       .getConfiguration('rangelink')
       .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-004');
     await vscode.env.clipboard.writeText('rangelink-dirty-test-sentinel');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await ss.settle();
+    const lines004 = logCapture.getLinesSince('before-004');
+    const generatedLink = extractGeneratedLink(lines004);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.notStrictEqual(
@@ -42,9 +51,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       'rangelink-dirty-test-sentinel',
       'Expected clipboard to contain a generated link, not the sentinel — warnOnDirtyBuffer=false should bypass dialog',
     );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    assert.strictEqual(
+      clipboard,
+      generatedLink,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
     assert.ok(
       editor.document.isDirty,
@@ -267,7 +277,9 @@ standardSuite('Dirty Buffer Warning', (ss) => {
         'Expected no dialog log — setting should bypass dialog',
       );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+      const generatedLink = extractGeneratedLink(lines);
+      assert.ok(generatedLink, 'Expected "Generated link:" log line');
+      assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
 
       assert.ok(
         editor.document.isDirty,
@@ -296,6 +308,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     logCapture.mark('before-019');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-019');
+    const generatedLink019 = extractGeneratedLink(lines);
+    assert.ok(generatedLink019, 'Expected "Generated link:" log line');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.notStrictEqual(
@@ -303,13 +319,13 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       'rangelink-rc-clean-sentinel',
       'Expected clipboard to contain a generated link, not the sentinel',
     );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    assert.strictEqual(
+      clipboard,
+      generatedLink019,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
     assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
 
-    const lines = logCapture.getLinesSince('before-019');
     const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
     assert.strictEqual(
       warningLog,
@@ -642,7 +658,13 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       'rc-save-sentinel',
       'Expected clipboard to change from sentinel',
     );
-    assert.ok(clipboard.includes('#L'), `Expected a RangeLink on clipboard but got: ${clipboard}`);
+    const generatedLink010 = extractGeneratedLink(lines);
+    assert.ok(generatedLink010, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboard,
+      generatedLink010,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
     assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
 
     ss.log('✓ R-C Save & Generate: file saved, link generated');
@@ -685,7 +707,13 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     );
 
     assert.notStrictEqual(clipboard, 'rc-anyway-sentinel', 'Expected clipboard to change');
-    assert.ok(clipboard.includes('#L'), `Expected a RangeLink on clipboard but got: ${clipboard}`);
+    const generatedLink011 = extractGeneratedLink(lines);
+    assert.ok(generatedLink011, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboard,
+      generatedLink011,
+      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    );
     assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
     ss.log('✓ R-C Generate Anyway: link generated, file still dirty');
@@ -1117,6 +1145,138 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       ss.log('✓ R-L dismiss: terminal buffer empty (no send occurred)');
     } finally {
       capturing.terminal.dispose();
+    }
+  });
+
+  test('[assisted] dirty-buffer-warning-023: R-L Save & Generate re-reads selections after save mutates document', async () => {
+    const TRAILING_SPACES = 5;
+    const TARGET_LINE_BASE = "export const targetLine = 'shift me';";
+    const REFERENCE_LINE_BASE = "export const referenceLine = 'no trim';";
+    const TARGET_LINE = `${TARGET_LINE_BASE}${' '.repeat(TRAILING_SPACES)}`;
+    const REFERENCE_LINE = `${REFERENCE_LINE_BASE}${' '.repeat(TRAILING_SPACES)}`;
+    const FIXTURE_CONTENT = `${TARGET_LINE}\n${REFERENCE_LINE}\n`;
+
+    const TARGET_LINE_BASE_LEN = TARGET_LINE_BASE.length;
+    const PRE_TRIM_LINE_LEN = TARGET_LINE.length;
+    const SELECTION_START_COL = 3;
+    const SELECTION_END_COL_PRE_TRIM = PRE_TRIM_LINE_LEN - 1;
+
+    const testFileUri = createFileAt('__rl-test-dirty-fmt-023.ts', FIXTURE_CONTENT);
+    const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
+
+    const filesConfig = vscode.workspace.getConfiguration('files');
+    const originalTrimTrailingWhitespace =
+      filesConfig.inspect('trimTrailingWhitespace')?.workspaceValue;
+    await filesConfig.update('trimTrailingWhitespace', true, vscode.ConfigurationTarget.Workspace);
+
+    try {
+      const editor = await ss.openEditor(testFileUri);
+
+      await editor.edit((editBuilder) => {
+        editBuilder.insert(new vscode.Position(0, 0), '// 023\n');
+      });
+      assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
+
+      const targetLineIdx = 1;
+      editor.selection = new vscode.Selection(
+        new vscode.Position(targetLineIdx, SELECTION_START_COL),
+        new vscode.Position(targetLineIdx, SELECTION_END_COL_PRE_TRIM),
+      );
+
+      await writeClipboardSentinel();
+
+      const logCapture = getLogCapture();
+      logCapture.mark('before-023');
+      capturing.clearCaptured();
+
+      await waitForHuman(
+        'dirty-buffer-warning-023-dialog',
+        'R-L on dirty file with trim-on-save → click "Save & Generate"',
+        [
+          'The editor is focused with a precise column range selected on line 2 (not the full line).',
+          'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
+          'Click "Save & Generate".',
+        ],
+      );
+
+      await ss.settle();
+
+      const lines = logCapture.getLinesSince('before-023');
+
+      const reReadLog = lines.find((l) =>
+        l.includes(
+          'Re-read selections after Save & Continue to account for possible format-on-save shifts',
+        ),
+      );
+      assert.ok(
+        reReadLog,
+        'Expected LinkGenerator to log the post-save re-read — the fix path was not taken',
+      );
+
+      const preMatch = reReadLog.match(/"preSaveSelections":(\[[^\]]*\])/);
+      const postMatch = reReadLog.match(/"postSaveSelections":(\[[^\]]*\])/);
+      assert.ok(preMatch && postMatch, `Expected pre/post selections in log, got: ${reReadLog}`);
+
+      const preSelections = JSON.parse(preMatch[1]) as Array<{
+        end: { line: number; char: number };
+      }>;
+      const postSelections = JSON.parse(postMatch[1]) as Array<{
+        end: { line: number; char: number };
+      }>;
+
+      assert.strictEqual(
+        preSelections[0].end.char,
+        SELECTION_END_COL_PRE_TRIM,
+        `Pre-save end column should be ${SELECTION_END_COL_PRE_TRIM} (within trailing whitespace)`,
+      );
+      assert.strictEqual(
+        preSelections[0].end.line,
+        targetLineIdx,
+        'Pre-save end line should match source line',
+      );
+
+      const postEndChar = postSelections[0].end.char;
+      const postEndLine = postSelections[0].end.line;
+      assert.ok(
+        postEndChar < SELECTION_END_COL_PRE_TRIM,
+        `Post-save end column (${postEndChar}) should be less than pre-save (${SELECTION_END_COL_PRE_TRIM}) after ${TRAILING_SPACES} spaces trimmed`,
+      );
+      assert.strictEqual(postEndLine, targetLineIdx, 'Post-save end line should be unchanged');
+      assert.ok(
+        postEndChar >= TARGET_LINE_BASE_LEN,
+        `Post-save end column (${postEndChar}) should be >= text-only line length (${TARGET_LINE_BASE_LEN})`,
+      );
+
+      assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
+
+      const generatedLink = extractSentLink(lines);
+      assert.ok(
+        generatedLink,
+        'Expected "Sending link to destination" log with formattedLink.link',
+      );
+
+      const L = targetLineIdx + 1;
+      const rangeRefPattern = new RegExp(`#L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}\\b`);
+      assert.ok(
+        rangeRefPattern.test(generatedLink),
+        `Expected link to contain #L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}, got: ${generatedLink}`,
+      );
+
+      await assertClipboardRestored(
+        'R-L Save & Generate (trim-on-save): clipboard should be restored to sentinel after send',
+      );
+
+      ss.log(
+        '✓ R-L Save & Generate with trim-on-save: selections re-read, link coordinates correct',
+      );
+    } finally {
+      await vscode.workspace
+        .getConfiguration('files')
+        .update(
+          'trimTrailingWhitespace',
+          originalTrimTrailingWhitespace,
+          vscode.ConfigurationTarget.Workspace,
+        );
     }
   });
 });

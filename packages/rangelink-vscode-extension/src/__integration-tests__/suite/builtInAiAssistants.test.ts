@@ -24,6 +24,7 @@ import {
   assertClipboardChanged,
   assertClipboardRestored,
   assertStatusBarMsgLogged,
+  extractGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
@@ -588,10 +589,20 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-017');
+
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    const lines017 = logCapture.getLinesSince('before-017');
+    const generatedLink017 = extractGeneratedLink(lines017);
+    assert.ok(generatedLink017, 'Expected "Generated link:" log line');
     const clipboard017 = await assertClipboardChanged('clipboard-preservation-017: failed paste');
-    assert.ok(clipboard017.includes('#L'), `Expected RangeLink on clipboard, got: ${clipboard017}`);
+    assert.strictEqual(
+      clipboard017,
+      generatedLink017,
+      `Expected clipboard to equal generated link, got: ${clipboard017}`,
+    );
     ss.log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
 });
