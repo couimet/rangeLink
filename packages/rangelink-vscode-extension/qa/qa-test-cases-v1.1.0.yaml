@@ -933,16 +933,6 @@ test_cases:
   - id: dirty-buffer-warning-023
     feature: 'Dirty Buffer Warning — R-L Dialog'
     scenario: 'R-L Save & Generate re-reads selections after save mutates the document'
-    preconditions:
-      - 'rangelink.warnOnDirtyBuffer = true (default)'
-      - 'files.trimTrailingWhitespace = true'
-      - 'A terminal is bound as destination'
-      - 'Fixture qa/fixtures/workspace/format-on-save/unformatted.ts opened — each `const` line has 5 trailing spaces before the newline'
-      - 'File made dirty by adding then removing a character'
-    steps:
-      - 'Place a multi-line selection that starts at the beginning of the `const targetLine = ...` line and extends to the END of the trailing whitespace on that same line (column ~36)'
-      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
-      - 'Click Save & Generate'
     expected_result: |
       File saved and trailing whitespace trimmed on the selected line (line length shrinks by 5 characters).
       LinkGenerator logs "Re-read selections after Save & Continue to account for possible format-on-save shifts" with both preSaveSelections and postSaveSelections fields. The end character of postSaveSelections is smaller than preSaveSelections by ~5 (the trimmed whitespace).
