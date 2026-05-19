@@ -23,22 +23,20 @@ const SEPARATOR_KIND = -1;
 const APPEARANCE_FN = 'RangeLinkStatusBar.updateStatusBarAppearance';
 
 const findAppearanceLog = (lines: string[]): Record<string, unknown> | undefined => {
-  return lines
-    .map((line) => {
-      const jsonStart = line.indexOf('{');
-      const jsonEnd = line.lastIndexOf('}');
-      if (jsonStart === -1 || jsonEnd === -1) return undefined;
-      try {
-        const ctx = JSON.parse(line.slice(jsonStart, jsonEnd + 1));
-        if (typeof ctx === 'object' && ctx !== null && ctx.fn === APPEARANCE_FN) {
-          return ctx as Record<string, unknown>;
-        }
-      } catch {
-        return undefined;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const jsonStart = lines[i].indexOf('{');
+    const jsonEnd = lines[i].lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) continue;
+    try {
+      const ctx = JSON.parse(lines[i].slice(jsonStart, jsonEnd + 1));
+      if (typeof ctx === 'object' && ctx !== null && ctx.fn === APPEARANCE_FN) {
+        return ctx as Record<string, unknown>;
       }
-      return undefined;
-    })
-    .find((ctx): ctx is Record<string, unknown> => ctx !== undefined);
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
 };
 
 standardSuite('R-M Status Bar Menu', (ss) => {

@@ -131,7 +131,12 @@ class MockEventEmitter<T> implements vscode.EventEmitter<T> {
     _disposables?: any,
   ) => {
     this.handlers.push(listener);
-    return { dispose: () => {} };
+    return {
+      dispose: () => {
+        const idx = this.handlers.indexOf(listener);
+        if (idx !== -1) this.handlers.splice(idx, 1);
+      },
+    };
   };
 
   fire(data: T): void {

@@ -2141,5 +2141,5 @@ test_cases:
   - id: status-bar-appearance-003
     feature: 'Status Bar Appearance'
     scenario: 'Hovering the R-M icon shows bound destination name and prominent color when bound, "no destination bound" when unbound'
-    expected_result: 'Tooltip and color update correctly on bind and unbind'
+    expected_result: 'Bound: tooltip shows destination name (e.g., "RangeLink — Terminal (bash)") and icon uses prominent theme color. Unbound: tooltip shows "RangeLink — no destination bound" and icon uses default color.'
     automated: assisted
