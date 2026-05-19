@@ -327,7 +327,7 @@ describe('LinkGenerator', () => {
 
       expect(mockSelectionValidator.validateSelectionsAndShowError).toHaveBeenCalledTimes(2);
       expect(mockGenLink).toHaveBeenCalledWith({
-        referencePath: expect.any(String),
+        referencePath: '/workspace/src/file.ts',
         document: mockDoc,
         selections: [postSaveSel],
         delimiters: DELIMITERS,
