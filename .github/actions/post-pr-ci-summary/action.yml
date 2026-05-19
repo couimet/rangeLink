@@ -62,23 +62,17 @@ runs:
 
         # Determine pass/fail
         PASS=true
+        MISSING_INT_REPORT=false
         if [ -n "${{ inputs.unit-total }}" ] && [ "${{ inputs.unit-passed }}" != "${{ inputs.unit-total }}" ]; then
           PASS=false
         fi
         if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
           PASS=false
         fi
-
-        if [ "$PASS" = "true" ]; then
-          ICON="✅"
-        else
-          ICON="❌"
-        fi
         JOB_KEY=$(echo "${{ inputs.title }}" | sed 's/ — run summary$//')
 
-        # Build table
-        TABLE="### ${ICON} ${{ inputs.title }}"
-        TABLE="${TABLE}"$'\n'"| | |"
+        # Build table body (title with icon is prepended after pass/fail is finalized)
+        TABLE="| | |"
         TABLE="${TABLE}"$'\n'"|---|---|"
         TABLE="${TABLE}"$'\n'"| Duration | ${DURATION_STR} |"
 
@@ -101,12 +95,24 @@ runs:
         INT_PASSING="${{ inputs.int-passing }}"
         INT_FAILED="${{ inputs.int-failed }}"
         if { [ -z "$INT_PASSING" ] || [ "$INT_PASSING" = "0" ]; } && { [ -z "$INT_FAILED" ] || [ "$INT_FAILED" = "0" ]; }; then
-          if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
-            if ! grep -qE '[0-9]+ (passing|failing)' "${{ inputs.report-file }}" 2>/dev/null; then
-              TABLE="${TABLE}"$'\n'"| ⚠️ Integration test report missing | Runner may have crashed |"
-            fi
+          if [ -n "${{ inputs.report-file }}" ] && { [ ! -f "${{ inputs.report-file }}" ] || ! grep -qE '[0-9]+ (passing|failing)' "${{ inputs.report-file }}" 2>/dev/null; }; then
+            MISSING_INT_REPORT=true
+            TABLE="${TABLE}"$'\n'"| ⚠️ Integration test report missing | Runner may have crashed |"
           fi
         fi
+
+        # Finalize pass/fail and icon after report check
+        if [ "$MISSING_INT_REPORT" = "true" ]; then
+          PASS=false
+        fi
+        if [ "$PASS" = "true" ]; then
+          ICON="✅"
+        else
+          ICON="❌"
+        fi
+
+        # Prepend title with icon
+        TABLE="### ${ICON} ${{ inputs.title }}"$'\n'"${TABLE}"
 
         TABLE="${TABLE}"$'\n'"| QA TC IDs exercised | ${TC_IDS} |"
         TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
@@ -134,7 +140,7 @@ runs:
 
         # Minimize previous successful comments from this job
         if [ "$PASS" = "true" ] && [ -n "$NEW_COMMENT_ID" ] && [ "$NEW_COMMENT_ID" != "null" ]; then
-          PREV_NODES=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+          PREV_NODES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
             --jq ".[] | select(.id != ${NEW_COMMENT_ID}) | select(.body | startswith(\"### ✅ ${JOB_KEY}\")) | .node_id" 2>/dev/null || true)
           for NID in $PREV_NODES; do
             gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:OUTDATED}){clientMutationId}}' \
