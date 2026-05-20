@@ -2,8 +2,9 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_TERMINAL, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
+  assertToastLogged,
   extractQuickPickItemsLogged,
   findTerminalItems,
   getLogCapture,
@@ -749,5 +750,30 @@ standardSuite('Terminal Picker', (ss) => {
     assert.strictEqual(activeTerminal!.boundState, 'not-bound');
 
     ss.log('✓ Both overflow items + active inline terminal validated');
+  });
+
+  test('terminal-picker-015: context-menu "Bind Here" on pty terminal shows error notification', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    const ptyTerminal = await ss.createTerminal('rl-tp-015-pty', { pty });
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-015');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, ptyTerminal);
+    await ss.settle();
+
+    assertToastLogged(logCapture.getLinesSince('before-tp-015'), {
+      type: 'error',
+      message:
+        'Cannot bind to "rl-tp-015-pty": it is managed by an extension and does not accept input.',
+    });
+
+    ss.log('✓ Direct bind to pty terminal rejected with error notification');
   });
 });

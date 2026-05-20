@@ -267,6 +267,12 @@ test_cases:
     expected_result: "The pty terminal entry has a 'not bindable' description badge and carries `nonBindableReason: 'extension-managed'`. The item is rendered but selecting it does not bind."
     automated: true
 
+  - id: terminal-picker-015
+    feature: 'Terminal Picker'
+    scenario: 'Context-menu "Bind Here" on a pty terminal shows error notification'
+    expected_result: "An error notification appears: 'Cannot bind to \"<name>\": it is managed by an extension and does not accept input.' The terminal is not bound."
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
   # ---------------------------------------------------------------------------
