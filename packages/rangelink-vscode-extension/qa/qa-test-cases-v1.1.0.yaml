@@ -812,6 +812,30 @@ test_cases:
     expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
     automated: assisted
 
+  - id: context-menus-terminal-006
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal TAB right-click does NOT show "RangeLink: Bind Here"'
+    expected_result: 'The terminal tab context menu has no "RangeLink: Bind Here" entry on an extension-managed pty terminal (e.g., Jest task runner).'
+    automated: assisted
+
+  - id: context-menus-terminal-007
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal CONTENT AREA right-click does NOT show "RangeLink: Bind Here"'
+    expected_result: 'The terminal content-area context menu has no "RangeLink: Bind Here" entry on an extension-managed pty terminal.'
+    automated: assisted
+
+  - id: context-menus-terminal-008
+    feature: 'Context Menus — Terminal'
+    scenario: 'Shell terminal TAB still shows "RangeLink: Bind Here" when a pty terminal is also open'
+    expected_result: 'Right-clicking the shell terminal tab still shows "RangeLink: Bind Here". The `when` clause does not over-hide entries on bindable terminals.'
+    automated: assisted
+
+  - id: context-menus-terminal-009
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal content-area menu shows "RangeLink: Unbind" (when something is bound) and hides "RangeLink: Bind Here"'
+    expected_result: 'With a different terminal already bound, the pty terminal content-area menu shows "RangeLink: Unbind" but does NOT show "RangeLink: Bind Here". Proves Unbind rides on `rangelink.isBound` (not bindability).'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 8 — Dirty Buffer Warning
   # ---------------------------------------------------------------------------

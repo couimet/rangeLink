@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
+  CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_CONTEXT_EDITOR_CONTENT_BIND,
 } from '../../constants/commandIds';
@@ -192,6 +193,146 @@ standardSuite('Context Menus — Terminal', (ss) => {
     );
 
     ss.log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TCs 006-009: non-bindable (pty) terminal context-menu coverage.
+  // The `when: rangelink.isActiveTerminalBindable` clauses on `terminal/title/context`
+  // and `terminal/context` are visually verifiable only — VS Code has no API to
+  // query rendered context-menu items, so these all use waitForHumanVerdict.
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-006: Pty terminal TAB does NOT show "RangeLink: Bind Here"', async () => {
+    const terminalName = 'rl-ctxmenu-term-006-pty';
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    const ptyTerminal = await ss.createTerminal(terminalName, { pty });
+    ptyTerminal.show(true);
+    await ss.settle();
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-006',
+      `Right-click the "${terminalName}" pty terminal TAB. Is "RangeLink: Bind Here" ABSENT from the menu?`,
+      [
+        `1. Locate the "${terminalName}" tab in the terminal panel's tab bar`,
+        '2. Right-click the tab (NOT the content area)',
+        '3. PASS if "RangeLink: Bind Here" is NOT in the menu',
+        '4. FAIL if "RangeLink: Bind Here" appears in the menu',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "RangeLink: Bind Here" to be absent from the pty terminal tab menu',
+    );
+
+    ss.log('✓ "Bind Here" absent from pty terminal tab menu');
+  });
+
+  test('[assisted] context-menus-terminal-007: Pty terminal CONTENT AREA does NOT show "RangeLink: Bind Here"', async () => {
+    const terminalName = 'rl-ctxmenu-term-007-pty';
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    const ptyTerminal = await ss.createTerminal(terminalName, { pty });
+    ptyTerminal.show(true);
+    await ss.settle();
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-007',
+      `Right-click INSIDE the "${terminalName}" pty terminal content area. Is "RangeLink: Bind Here" ABSENT from the menu?`,
+      [
+        `1. Focus the "${terminalName}" pty terminal`,
+        '2. Right-click INSIDE the terminal output area (NOT the tab)',
+        '3. PASS if "RangeLink: Bind Here" is NOT in the menu',
+        '4. FAIL if "RangeLink: Bind Here" appears in the menu',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "RangeLink: Bind Here" to be absent from the pty terminal content-area menu',
+    );
+
+    ss.log('✓ "Bind Here" absent from pty terminal content-area menu');
+  });
+
+  test('[assisted] context-menus-terminal-008: Shell terminal TAB still shows "Bind Here" when a pty terminal is also open', async () => {
+    const ptyName = 'rl-ctxmenu-term-008-pty';
+    const shellName = 'rl-ctxmenu-term-008-shell';
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal(ptyName, { pty });
+    const shellTerminal = await ss.createTerminal(shellName);
+    shellTerminal.show(true);
+    await ss.settle();
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-008',
+      `With a pty + a shell terminal open, right-click the shell's tab. Is "RangeLink: Bind Here" PRESENT?`,
+      [
+        `1. Confirm both "${ptyName}" (pty) and "${shellName}" (shell) tabs exist`,
+        `2. Click the "${shellName}" tab to focus it`,
+        `3. Right-click the "${shellName}" tab`,
+        '4. PASS if "RangeLink: Bind Here" IS in the menu',
+        '5. FAIL if "RangeLink: Bind Here" is missing',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "RangeLink: Bind Here" to remain present on the shell tab menu when a pty terminal is also open',
+    );
+
+    ss.log('✓ Shell tab still shows "Bind Here" when pty also exists');
+  });
+
+  test('[assisted] context-menus-terminal-009: Pty content menu shows "Unbind" when bound elsewhere, and hides "Bind Here"', async () => {
+    const ptyName = 'rl-ctxmenu-term-009-pty';
+    const shellName = 'rl-ctxmenu-term-009-shell';
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal(ptyName, { pty });
+    const shellTerminal = await ss.createTerminal(shellName);
+    shellTerminal.show(true);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, shellTerminal);
+    await ss.settle();
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-009',
+      `The shell is bound. Right-click inside the pty terminal content area. Is "RangeLink: Unbind" PRESENT and "RangeLink: Bind Here" ABSENT?`,
+      [
+        `1. The "${shellName}" shell is now bound as the destination`,
+        `2. Click the "${ptyName}" pty terminal to focus it`,
+        '3. Right-click INSIDE the pty content area',
+        '4. PASS if "RangeLink: Unbind" IS in the menu AND "RangeLink: Bind Here" is NOT',
+        '5. FAIL if either condition is violated',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "Unbind" present and "Bind Here" absent on the pty content-area menu when bound to a different terminal',
+    );
+
+    ss.log('✓ Pty content menu: Unbind present, Bind Here absent (when bound to shell)');
   });
 
   // ---------------------------------------------------------------------------
