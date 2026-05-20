@@ -39,4 +39,26 @@ describe('buildTerminalDescription', () => {
     );
     expect(result).toBeUndefined();
   });
+
+  it('returns "not bindable" when nonBindableReason is set and terminal is not active', () => {
+    const result = buildTerminalDescription(
+      createMockEligibleTerminal({
+        boundState: 'not-bound',
+        isActive: false,
+        nonBindableReason: 'extension-managed',
+      }),
+    );
+    expect(result).toBe('not bindable');
+  });
+
+  it('returns "active · not bindable" when active AND nonBindableReason is set', () => {
+    const result = buildTerminalDescription(
+      createMockEligibleTerminal({
+        boundState: 'not-bound',
+        isActive: true,
+        nonBindableReason: 'extension-managed',
+      }),
+    );
+    expect(result).toBe('active · not bindable');
+  });
 });

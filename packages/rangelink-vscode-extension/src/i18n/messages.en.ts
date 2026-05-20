@@ -202,6 +202,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.TERMINAL_PICKER_BOUND_DESCRIPTION]: 'bound',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
   [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
+  [MessageCode.TERMINAL_PICKER_NOT_BINDABLE_DESCRIPTION]: 'not bindable',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',
   [MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT]: 'Terminal "{name}"',
   [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',
