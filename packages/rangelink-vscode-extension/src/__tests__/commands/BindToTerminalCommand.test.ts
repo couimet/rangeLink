@@ -403,7 +403,7 @@ describe('BindToTerminalCommand', () => {
         expect(mockDestinationManager.bind).not.toHaveBeenCalled();
         expect(mockAvailabilityService.getTerminalItems).not.toHaveBeenCalled();
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-          'Cannot bind to "Jest (rangeLink-002)": it is managed by an extension and does not accept input.',
+          'Cannot bind to "Jest (rangeLink-002)": this terminal is not bindable.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -434,7 +434,16 @@ describe('BindToTerminalCommand', () => {
         expect(result).toStrictEqual({ outcome: 'cancelled' });
         expect(mockDestinationManager.bind).not.toHaveBeenCalled();
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-          'Cannot bind to "dead-shell": it is managed by an extension and does not accept input.',
+          'Cannot bind to "dead-shell": this terminal is not bindable.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'BindToTerminalCommand.execute',
+            terminalName: 'dead-shell',
+            source: 'context-menu',
+            nonBindableReason: 'not-visible',
+          },
+          'Rejected bind to non-bindable terminal from context menu',
         );
       });
     });

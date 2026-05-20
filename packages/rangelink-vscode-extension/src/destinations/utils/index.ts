@@ -22,3 +22,4 @@ export { showFilePicker } from './showFilePicker';
 export { showTerminalPicker } from './showTerminalPicker';
 export { sortEligibleFiles } from './sortEligibleFiles';
 export { sortEligibleTerminals } from './sortEligibleTerminals';
+export { isRangeLinkTestFixture, markRangeLinkTestFixture } from './testFixtureRegistry';

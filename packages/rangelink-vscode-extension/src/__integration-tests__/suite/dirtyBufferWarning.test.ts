@@ -758,6 +758,14 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
+    const rfSaveLines = logCapture.getLinesSince('before-rf-save');
+    const rfSaveWarningLog = rfSaveLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(rfSaveWarningLog, 'Expected handleDirtyBufferWarning log for R-F Save & Send dialog');
+
     ss.log('✓ R-F Save & Send: file saved, path sent (pty capture verified content)');
   });
 
@@ -792,6 +800,17 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+
+    const rfAnywayLines = logCapture.getLinesSince('before-rf-anyway');
+    const rfAnywayWarningLog = rfAnywayLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rfAnywayWarningLog,
+      'Expected handleDirtyBufferWarning log for R-F Send Anyway dialog',
+    );
 
     ss.log('✓ R-F Send Anyway: path sent, file still dirty (pty capture verified content)');
   });
@@ -864,6 +883,17 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
+    const rlClipboardLines = logCapture.getLinesSince('before-rl-clipboard-preserve');
+    const rlClipboardWarningLog = rlClipboardLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rlClipboardWarningLog,
+      'Expected handleDirtyBufferWarning log for R-L Generate Anyway dialog',
+    );
+
     ss.log(
       '✓ R-L dirty + bound destination: link landed in terminal; clipboard preserved after Generate Anyway',
     );
@@ -882,6 +912,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-rf-clipboard-preserve');
     capturing.clearCaptured();
 
     await waitForHuman(
@@ -900,6 +932,17 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
     assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
+
+    const rfClipboardLines = logCapture.getLinesSince('before-rf-clipboard-preserve');
+    const rfClipboardWarningLog = rfClipboardLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rfClipboardWarningLog,
+      'Expected handleDirtyBufferWarning log for R-F Send Anyway dialog',
+    );
 
     ss.log(
       '✓ R-F dirty + bound destination: path landed in terminal; clipboard preserved after Send Anyway',

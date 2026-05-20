@@ -1,6 +1,7 @@
 import type * as vscode from 'vscode';
 
 import { classifyTerminalForBinding } from '../../../destinations/utils';
+import { markRangeLinkTestFixture } from '../../../destinations/utils/testFixtureRegistry';
 import { createMockTerminal } from '../../helpers';
 
 const minimalPty: vscode.Pseudoterminal = {
@@ -103,6 +104,46 @@ describe('classifyTerminalForBinding', () => {
         creationOptions: { name: 'finished-pty', pty: minimalPty },
       });
       expect(classifyTerminalForBinding(terminal)).toStrictEqual({ visible: false });
+    });
+  });
+
+  describe('rangeLinkTestFixture short-circuit', () => {
+    const originalEnv = process.env.RANGELINK_TEST_FIXTURES_ENABLED;
+
+    afterEach(() => {
+      if (originalEnv === undefined) {
+        delete process.env.RANGELINK_TEST_FIXTURES_ENABLED;
+      } else {
+        process.env.RANGELINK_TEST_FIXTURES_ENABLED = originalEnv;
+      }
+    });
+
+    describe('with RANGELINK_TEST_FIXTURES_ENABLED=true', () => {
+      beforeEach(() => {
+        process.env.RANGELINK_TEST_FIXTURES_ENABLED = 'true';
+      });
+
+      it('pty terminal registered as fixture is classified visible: true (no nonBindableReason)', () => {
+        const terminal = createMockTerminal({
+          name: 'test-pty',
+          exitStatus: undefined,
+          creationOptions: { name: 'test-pty', pty: minimalPty },
+        });
+        markRangeLinkTestFixture(terminal);
+        expect(classifyTerminalForBinding(terminal)).toStrictEqual({ visible: true });
+      });
+
+      it('pty terminal NOT registered as fixture still gets extension-managed', () => {
+        const terminal = createMockTerminal({
+          name: 'test-pty',
+          exitStatus: undefined,
+          creationOptions: { name: 'test-pty', pty: minimalPty },
+        });
+        expect(classifyTerminalForBinding(terminal)).toStrictEqual({
+          visible: true,
+          nonBindableReason: 'extension-managed',
+        });
+      });
     });
   });
 });

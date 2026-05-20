@@ -51,6 +51,7 @@ import {
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from '../constants';
+import * as wireActiveTerminalBindabilityContextModule from '../destinations/wireActiveTerminalBindabilityContext';
 import { wireSubscriptions } from '../wireSubscriptions';
 
 import {
@@ -118,10 +119,15 @@ const DOCUMENT_SELECTOR = [{ scheme: 'file' }, { scheme: 'untitled' }];
 describe('wireSubscriptions', () => {
   let registrar: ReturnType<typeof createMockSubscriptionRegistrar>;
   let services: ReturnType<typeof createMockWiringServices>;
+  let wireActiveTerminalBindabilityContextSpy: jest.SpyInstance;
 
   beforeEach(() => {
     registrar = createMockSubscriptionRegistrar();
     services = createMockWiringServices();
+    wireActiveTerminalBindabilityContextSpy = jest.spyOn(
+      wireActiveTerminalBindabilityContextModule,
+      'wireActiveTerminalBindabilityContext',
+    );
     wireSubscriptions(registrar, services);
   });
 
@@ -154,6 +160,12 @@ describe('wireSubscriptions', () => {
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(2, services.statusBar);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.destinationManager);
     expect(registrar.pushDisposable).toHaveBeenCalledTimes(4);
+
+    const fourthDisposable = registrar.pushDisposable.mock.calls[3][0];
+    expect(fourthDisposable).toHaveProperty('dispose');
+    expect(typeof fourthDisposable.dispose).toBe('function');
+    expect(wireActiveTerminalBindabilityContextSpy).toHaveBeenCalledTimes(1);
+    expect(wireActiveTerminalBindabilityContextSpy.mock.results[0].value).toBe(fourthDisposable);
   });
 
   describe('closure delegation', () => {

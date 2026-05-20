@@ -2,6 +2,8 @@ import type * as vscode from 'vscode';
 
 import type { NonBindableReason } from '../../types';
 
+import { isRangeLinkTestFixture } from './testFixtureRegistry';
+
 /**
  * Result of classifying a terminal for the destination picker.
  *
@@ -44,6 +46,7 @@ export const classifyTerminalForBinding = (
 ): TerminalBindingClassification => {
   if (terminal == null) return { visible: false };
   if (terminal.exitStatus !== undefined) return { visible: false };
+  if (isRangeLinkTestFixture(terminal)) return { visible: true };
   if (isHiddenFromUser(terminal)) return { visible: false };
   if (isExtensionManaged(terminal)) {
     return { visible: true, nonBindableReason: 'extension-managed' };

@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
+import { markRangeLinkTestFixture } from '../../destinations/utils/testFixtureRegistry';
 
 import { settle, TERMINAL_READY_MS } from './testEnv';
 
@@ -49,6 +50,7 @@ export const createCapturingTerminal = async (
   };
 
   const terminal = vscode.window.createTerminal({ name, pty });
+  markRangeLinkTestFixture(terminal);
   trackingArray?.push(terminal);
   terminal.show(true);
   await settle(TERMINAL_READY_MS);

@@ -12,7 +12,7 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'Already bound to {destinationName}',
   [MessageCode.BIND_TO_TERMINAL_NOT_BINDABLE_REJECT]:
-    'Cannot bind to "{name}": it is managed by an extension and does not accept input.',
+    'Cannot bind to "{name}": this terminal is not bindable.',
   [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
   [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER]: 'Enter a label for this bookmark',

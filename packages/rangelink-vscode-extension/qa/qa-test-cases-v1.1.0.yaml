@@ -270,7 +270,7 @@ test_cases:
   - id: terminal-picker-015
     feature: 'Terminal Picker'
     scenario: 'Context-menu "Bind Here" on a pty terminal shows error notification'
-    expected_result: 'An error notification appears: ''Cannot bind to "<name>": it is managed by an extension and does not accept input.'' The terminal is not bound.'
+    expected_result: 'An error notification appears: ''Cannot bind to "<name>": this terminal is not bindable.'' The terminal is not bound.'
     automated: true
 
   - id: terminal-picker-016

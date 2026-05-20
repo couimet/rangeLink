@@ -785,8 +785,7 @@ standardSuite('Terminal Picker', (ss) => {
 
     assertToastLogged(logCapture.getLinesSince('before-tp-015'), {
       type: 'error',
-      message:
-        'Cannot bind to "rl-tp-015-pty": it is managed by an extension and does not accept input.',
+      message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.',
     });
 
     ss.log('✓ Direct bind to pty terminal rejected with error notification');
