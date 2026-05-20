@@ -50,8 +50,13 @@ export const createCapturingTerminal = async (
   };
 
   const terminal = vscode.window.createTerminal({ name, pty });
-  markRangeLinkTestFixture(terminal);
-  trackingArray?.push(terminal);
+  try {
+    markRangeLinkTestFixture(terminal);
+    trackingArray?.push(terminal);
+  } catch (error) {
+    terminal.dispose();
+    throw error;
+  }
   terminal.show(true);
   await settle(TERMINAL_READY_MS);
 

@@ -120,14 +120,15 @@ describe('wireSubscriptions', () => {
   let registrar: ReturnType<typeof createMockSubscriptionRegistrar>;
   let services: ReturnType<typeof createMockWiringServices>;
   let wireActiveTerminalBindabilityContextSpy: jest.SpyInstance;
+  let activeTerminalBindabilityDisposable: { dispose: jest.Mock };
 
   beforeEach(() => {
     registrar = createMockSubscriptionRegistrar();
     services = createMockWiringServices();
-    wireActiveTerminalBindabilityContextSpy = jest.spyOn(
-      wireActiveTerminalBindabilityContextModule,
-      'wireActiveTerminalBindabilityContext',
-    );
+    activeTerminalBindabilityDisposable = { dispose: jest.fn() };
+    wireActiveTerminalBindabilityContextSpy = jest
+      .spyOn(wireActiveTerminalBindabilityContextModule, 'wireActiveTerminalBindabilityContext')
+      .mockReturnValue(activeTerminalBindabilityDisposable);
     wireSubscriptions(registrar, services);
   });
 
@@ -160,12 +161,14 @@ describe('wireSubscriptions', () => {
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(2, services.statusBar);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.destinationManager);
     expect(registrar.pushDisposable).toHaveBeenCalledTimes(4);
-
-    const fourthDisposable = registrar.pushDisposable.mock.calls[3][0];
-    expect(fourthDisposable).toHaveProperty('dispose');
-    expect(typeof fourthDisposable.dispose).toBe('function');
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(
+      4,
+      activeTerminalBindabilityDisposable,
+    );
     expect(wireActiveTerminalBindabilityContextSpy).toHaveBeenCalledTimes(1);
-    expect(wireActiveTerminalBindabilityContextSpy.mock.results[0].value).toBe(fourthDisposable);
+    expect(wireActiveTerminalBindabilityContextSpy).toHaveReturnedWith(
+      activeTerminalBindabilityDisposable,
+    );
   });
 
   describe('closure delegation', () => {
