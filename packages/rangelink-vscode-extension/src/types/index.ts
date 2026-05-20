@@ -26,6 +26,7 @@ export type * from './FilePathClickArgs';
 export type * from './FilePathTerminalLink';
 export type * from './GroupedDestinationKinds';
 export type * from './JumpToDestinationResult';
+export type * from './NonBindableReason';
 export type * from './QuickPickBindResult';
 export type * from './RangeLinkClickArgs';
 export type * from './RangeLinkExtensionApi';

@@ -509,7 +509,7 @@ describe('VscodeAdapter', () => {
       );
     });
 
-    it('should log semantic fields: displayName, isActive, boundState, remainingCount', async () => {
+    it('should log semantic fields: displayName, isActive, boundState, nonBindableReason, remainingCount', async () => {
       const items = [
         {
           label: 'Terminal ("bash")',
@@ -518,6 +518,15 @@ describe('VscodeAdapter', () => {
           displayName: 'Terminal ("bash")',
           isActive: true,
           boundState: 'bound' as const,
+        },
+        {
+          label: 'Terminal ("Jest")',
+          description: 'not bindable',
+          itemKind: 'bindable' as const,
+          displayName: 'Terminal ("Jest")',
+          isActive: false,
+          boundState: 'not-bound' as const,
+          nonBindableReason: 'extension-managed' as const,
         },
         {
           label: 'More terminals...',
@@ -534,7 +543,7 @@ describe('VscodeAdapter', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'VscodeAdapter.showQuickPick',
-          itemCount: 3,
+          itemCount: 4,
           options: undefined,
           items: [
             {
@@ -544,6 +553,15 @@ describe('VscodeAdapter', () => {
               displayName: 'Terminal ("bash")',
               isActive: true,
               boundState: 'bound',
+            },
+            {
+              label: 'Terminal ("Jest")',
+              description: 'not bindable',
+              itemKind: 'bindable',
+              displayName: 'Terminal ("Jest")',
+              isActive: false,
+              boundState: 'not-bound',
+              nonBindableReason: 'extension-managed',
             },
             {
               label: 'More terminals...',

@@ -4,6 +4,7 @@ import type { BindOptions, TerminalBindOptions, TextEditorBindOptions } from './
 import type { BoundState } from './BoundState';
 import type { EligibleFile } from './EligibleFile';
 import type { EligibleTerminal } from './EligibleTerminal';
+import type { NonBindableReason } from './NonBindableReason';
 import type { WithDisplayName } from './WithDisplayName';
 
 /**
@@ -114,9 +115,15 @@ export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
  * Extends BindableQuickPickItem<TerminalBindOptions> with terminal metadata,
  * so callers get both UI item and domain object from a single source.
  */
+// TODO(#594): top-level isActive (inherited), boundState, and nonBindableReason
+// duplicate fields already present on terminalInfo. Same pattern applies to
+// FileBindableQuickPickItem.boundState below. The duplication is preserved for
+// now to keep VscodeAdapter.showQuickPick's log projection simple; #594 removes
+// it by teaching the projection to dig into terminalInfo / fileInfo.
 export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<TerminalBindOptions> {
   readonly terminalInfo: EligibleTerminal;
   readonly boundState?: BoundState;
+  readonly nonBindableReason?: NonBindableReason;
 }
 
 // ============================================================================
