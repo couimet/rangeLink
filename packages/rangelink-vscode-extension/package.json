@@ -914,6 +914,7 @@
       ],
       "terminal/title/context": [
         {
+          "when": "rangelink.isActiveTerminalBindable",
           "command": "rangelink.terminal.bind",
           "group": "rangelink@1"
         },
@@ -930,6 +931,7 @@
           "group": "2_edit@10"
         },
         {
+          "when": "rangelink.isActiveTerminalBindable",
           "command": "rangelink.terminal.bind",
           "group": "rangelink@1"
         },

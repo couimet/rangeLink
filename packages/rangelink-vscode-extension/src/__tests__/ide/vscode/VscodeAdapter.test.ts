@@ -520,6 +520,14 @@ describe('VscodeAdapter', () => {
           boundState: 'bound' as const,
         },
         {
+          label: 'Terminal ("zsh")',
+          description: 'active',
+          itemKind: 'bindable' as const,
+          displayName: 'Terminal ("zsh")',
+          isActive: true,
+          boundState: 'not-bound' as const,
+        },
+        {
           label: 'More terminals...',
           itemKind: 'terminal-more' as const,
           displayName: 'More terminals...',
@@ -534,7 +542,7 @@ describe('VscodeAdapter', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'VscodeAdapter.showQuickPick',
-          itemCount: 3,
+          itemCount: 4,
           options: undefined,
           items: [
             {
@@ -544,6 +552,14 @@ describe('VscodeAdapter', () => {
               displayName: 'Terminal ("bash")',
               isActive: true,
               boundState: 'bound',
+            },
+            {
+              label: 'Terminal ("zsh")',
+              description: 'active',
+              itemKind: 'bindable',
+              displayName: 'Terminal ("zsh")',
+              isActive: true,
+              boundState: 'not-bound',
             },
             {
               label: 'More terminals...',

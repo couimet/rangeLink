@@ -261,6 +261,24 @@ test_cases:
     expected_result: 'Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M.'
     automated: true
 
+  - id: terminal-picker-014
+    feature: 'Terminal Picker'
+    scenario: 'Extension-managed pty terminal (Jest task runner, etc.) is filtered out of the R-D picker'
+    expected_result: 'The pty terminal does not appear in the R-D picker. Only regular shell terminals are listed.'
+    automated: true
+
+  - id: terminal-picker-015
+    feature: 'Terminal Picker'
+    scenario: 'Context-menu "Bind Here" on a pty terminal shows error notification'
+    expected_result: 'An error notification appears: ''Cannot bind to "<name>": this terminal is not bindable.'' The terminal is not bound.'
+    automated: true
+
+  - id: terminal-picker-016
+    feature: 'Terminal Picker'
+    scenario: 'R-D picker omits the terminal section entirely when the only open terminal is extension-managed (pty)'
+    expected_result: 'The R-D picker shows no terminal entries at all (no inline items, no "More terminals..." overflow). Other sections (text editors, AI assistants) render normally.'
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
   # ---------------------------------------------------------------------------
@@ -792,6 +810,30 @@ test_cases:
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content-area right-click binds THAT specific terminal (multi-terminal disambiguation)'
     expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
+    automated: assisted
+
+  - id: context-menus-terminal-006
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal TAB right-click does NOT show "RangeLink: Bind Here"'
+    expected_result: 'The terminal tab context menu has no "RangeLink: Bind Here" entry on an extension-managed pty terminal (e.g., Jest task runner).'
+    automated: assisted
+
+  - id: context-menus-terminal-007
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal CONTENT AREA right-click does NOT show "RangeLink: Bind Here"'
+    expected_result: 'The terminal content-area context menu has no "RangeLink: Bind Here" entry on an extension-managed pty terminal.'
+    automated: assisted
+
+  - id: context-menus-terminal-008
+    feature: 'Context Menus — Terminal'
+    scenario: 'Shell terminal TAB "Bind Here" still works when a pty terminal is also open'
+    expected_result: 'With a pty + shell both open, clicking "RangeLink: Bind Here" on the shell terminal TAB binds the shell (status bar confirms the shell name). Proves the `when` clause does not over-hide entries on bindable terminals.'
+    automated: assisted
+
+  - id: context-menus-terminal-009
+    feature: 'Context Menus — Terminal'
+    scenario: 'Pty terminal content-area menu shows "RangeLink: Unbind" (when something is bound) and hides "RangeLink: Bind Here"'
+    expected_result: 'With a different terminal already bound, the pty terminal content-area menu shows "RangeLink: Unbind" but does NOT show "RangeLink: Bind Here". Proves Unbind rides on `rangelink.isBound` (not bindability).'
     automated: assisted
 
   # ---------------------------------------------------------------------------

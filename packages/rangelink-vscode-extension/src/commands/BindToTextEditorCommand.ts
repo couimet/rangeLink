@@ -117,7 +117,7 @@ export class BindToTextEditorCommand {
 
     if (fileItems.length === 0) {
       this.logger.debug(logCtx, 'No files available');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR));
       return { outcome: 'no-resource' };
     }
 

@@ -34,7 +34,12 @@ export const createMockTerminalQuickPickItem = (
   itemKind: 'bindable',
   isActive,
   ...(boundState !== undefined && { boundState }),
-  terminalInfo: createMockEligibleTerminal({ terminal, name: terminal.name, isActive, boundState }),
+  terminalInfo: createMockEligibleTerminal({
+    terminal,
+    name: terminal.name,
+    isActive,
+    boundState,
+  }),
 });
 
 /**

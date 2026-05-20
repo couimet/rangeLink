@@ -1,5 +1,13 @@
+import type * as vscode from 'vscode';
+
 import { getEligibleTerminals } from '../../../destinations/utils';
 import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
+
+const minimalPty: vscode.Pseudoterminal = {
+  onDidWrite: jest.fn(),
+  open: jest.fn(),
+  close: jest.fn(),
+};
 
 describe('getEligibleTerminals', () => {
   describe('live terminals', () => {
@@ -163,6 +171,80 @@ describe('getEligibleTerminals', () => {
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
         { terminal: liveTerminal, name: 'live', isActive: false, processId: 100 },
+      ]);
+    });
+  });
+
+  describe('extension-managed pty terminals', () => {
+    it('excludes pty terminal entirely so only bindable shell terminals remain', async () => {
+      const shellTerminal = createMockTerminal({
+        name: 'zsh',
+        exitStatus: undefined,
+        processId: Promise.resolve(10),
+        creationOptions: {},
+      });
+      const ptyTerminal = createMockTerminal({
+        name: 'Jest (rangeLink-002)',
+        exitStatus: undefined,
+        processId: Promise.resolve(20),
+        creationOptions: { name: 'Jest (rangeLink-002)', pty: minimalPty },
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [shellTerminal, ptyTerminal],
+          activeTerminal: shellTerminal,
+        },
+      });
+
+      expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
+        { terminal: shellTerminal, name: 'zsh', isActive: true, processId: 10 },
+      ]);
+    });
+
+    it('returns empty array when every terminal is an extension-managed pty', async () => {
+      const ptyTerminal1 = createMockTerminal({
+        name: 'Jest',
+        exitStatus: undefined,
+        processId: Promise.resolve(20),
+        creationOptions: { name: 'Jest', pty: minimalPty },
+      });
+      const ptyTerminal2 = createMockTerminal({
+        name: 'Tasks',
+        exitStatus: undefined,
+        processId: Promise.resolve(21),
+        creationOptions: { name: 'Tasks', pty: minimalPty },
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [ptyTerminal1, ptyTerminal2],
+          activeTerminal: ptyTerminal1,
+        },
+      });
+
+      expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([]);
+    });
+
+    it('excludes pty terminal entirely when hideFromUser is true', async () => {
+      const shellTerminal = createMockTerminal({
+        name: 'zsh',
+        exitStatus: undefined,
+        processId: Promise.resolve(10),
+      });
+      const hiddenPty = createMockTerminal({
+        name: 'capturing',
+        exitStatus: undefined,
+        processId: Promise.resolve(99),
+        creationOptions: { name: 'capturing', pty: minimalPty, hideFromUser: true },
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [shellTerminal, hiddenPty],
+          activeTerminal: shellTerminal,
+        },
+      });
+
+      expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
+        { terminal: shellTerminal, name: 'zsh', isActive: true, processId: 10 },
       ]);
     });
   });

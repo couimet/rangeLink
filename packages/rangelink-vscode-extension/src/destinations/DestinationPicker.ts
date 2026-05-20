@@ -113,7 +113,7 @@ export class DestinationPicker {
     const logCtx = { fn: 'DestinationPicker.handleQuickPickSelection' };
 
     switch (selected.itemKind) {
-      case 'bindable':
+      case 'bindable': {
         this.logger.debug(
           { ...logCtx, bindOptions: selected.bindOptions },
           `User selected destination with bind options`,
@@ -122,6 +122,7 @@ export class DestinationPicker {
           outcome: 'selected',
           bindOptions: selected.bindOptions,
         };
+      }
 
       case 'file-more':
         this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');

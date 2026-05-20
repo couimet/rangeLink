@@ -10,9 +10,13 @@ import { cleanupFiles, createAndOpenFile, createWorkspaceFile, openEditor } from
 import { getLogCapture } from './getLogCapture';
 import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
 
+export type CreateTerminalOptions =
+  | Omit<vscode.TerminalOptions, 'name'>
+  | Omit<vscode.ExtensionTerminalOptions, 'name'>;
+
 export interface SsContext {
   log: (msg: string) => void;
-  createTerminal: (name: string) => Promise<vscode.Terminal>;
+  createTerminal: (name: string, options?: CreateTerminalOptions) => Promise<vscode.Terminal>;
   createCapturingTerminal: (name: string) => Promise<CapturingTerminal>;
   createAndBindCapturingTerminal: (name: string) => Promise<CapturingTerminal>;
   createContentFile: (
@@ -54,8 +58,13 @@ export class SsContextImpl implements SsContext {
     this.suiteLog(msg);
   }
 
-  async createTerminal(name: string): Promise<vscode.Terminal> {
-    const t = vscode.window.createTerminal({ name });
+  async createTerminal(
+    name: string,
+    options: CreateTerminalOptions = {},
+  ): Promise<vscode.Terminal> {
+    const t = vscode.window.createTerminal({ ...options, name } as
+      | vscode.TerminalOptions
+      | vscode.ExtensionTerminalOptions);
     this.tmpTerminals.push(t);
     t.show(true);
     await this.settle(TERMINAL_READY_MS);

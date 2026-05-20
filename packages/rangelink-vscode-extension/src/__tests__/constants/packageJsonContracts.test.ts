@@ -1412,8 +1412,9 @@ describe('package.json contributions', () => {
         expect(terminalTitleContextMenu).toHaveLength(2);
       });
 
-      it('terminal.bind is always visible', () => {
+      it('terminal.bind shows only when active terminal is bindable', () => {
         expect(terminalTitleContextMenu[0]).toStrictEqual({
+          when: 'rangelink.isActiveTerminalBindable',
           command: 'rangelink.terminal.bind',
           group: 'rangelink@1',
         });
@@ -1445,8 +1446,9 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('terminal.bind is always visible', () => {
+      it('terminal.bind shows only when active terminal is bindable', () => {
         expect(terminalContextMenu[1]).toStrictEqual({
+          when: 'rangelink.isActiveTerminalBindable',
           command: 'rangelink.terminal.bind',
           group: 'rangelink@1',
         });

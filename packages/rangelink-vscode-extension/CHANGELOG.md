@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Active terminal marked with "active" badge, bound terminal marked with "bound" badge (dual badge "bound · active" when same terminal)
   - Terminals sorted: bound first, active second, rest in natural order — bound terminal never hidden behind "More terminals..."
   - Hidden IDE terminals (e.g., Cursor's background terminal) are automatically filtered out
+  - Extension-managed pty terminals (Jest test runners, task runners, debug consoles, etc.) are filtered out across every entry point — picker, context-menu "Bind Here", and the "Bind to Terminal" command — so you can only target shell terminals that actually accept input (#592)
   - Configurable inline threshold: `rangelink.terminalPicker.maxInline` (default: `5`)
   - When more terminals than the threshold exist, extras collapse into "More terminals..." which opens a secondary picker
   - Escaping the secondary picker returns to the destination picker

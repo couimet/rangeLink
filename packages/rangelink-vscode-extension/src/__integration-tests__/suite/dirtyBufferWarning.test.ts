@@ -66,64 +66,60 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     const testFileUri = ss.createWorkspaceFile('dirty', 'const x = 1;\n');
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// rf-dirty\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// rf-dirty\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
 
-      await vscode.workspace
-        .getConfiguration('rangelink')
-        .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-008');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-008');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-008',
-        'R-F on dirty file with warnOnDirtyBuffer=false → NO dialog, then pick terminal',
-        [
-          'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
-          'When the destination picker appears, select "dirty-buffer-test" terminal.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-008',
+      'R-F on dirty file with warnOnDirtyBuffer=false → NO dialog, then pick terminal',
+      [
+        'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
+        'When the destination picker appears, select "dirty-buffer-test" terminal.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      assert.ok(
-        editor.document.isDirty,
-        'Expected document to remain dirty — setting disabled should not trigger a save',
-      );
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty — setting disabled should not trigger a save',
+    );
 
-      const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
-      assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-      const lines = logCapture.getLinesSince('before-008');
-      const disabledLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes but warning is disabled by setting'),
-      );
-      assert.ok(
-        disabledLog,
-        'Expected "disabled by setting" log — setting should short-circuit the dialog',
-      );
-      const dialogLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.strictEqual(
-        dialogLog,
-        undefined,
-        'Expected no dialog log — setting should bypass the dialog',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const lines = logCapture.getLinesSince('before-008');
+    const disabledLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes but warning is disabled by setting'),
+    );
+    assert.ok(
+      disabledLog,
+      'Expected "disabled by setting" log — setting should short-circuit the dialog',
+    );
+    const dialogLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.strictEqual(
+      dialogLog,
+      undefined,
+      'Expected no dialog log — setting should bypass the dialog',
+    );
   });
 
   test('[assisted] dirty-buffer-warning-009: R-F on clean file sends path without warning', async () => {
@@ -131,167 +127,155 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 
     const cleanUri = ss.createWorkspaceFile('clean-rf', 'clean content\n');
 
-    try {
-      const editor = await ss.openEditor(cleanUri);
-      assert.ok(!editor.document.isDirty, 'Expected document to be clean');
+    const editor = await ss.openEditor(cleanUri);
+    assert.ok(!editor.document.isDirty, 'Expected document to be clean');
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-clean-rf');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clean-rf');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-009',
-        'R-F on clean file → NO dialog, then pick terminal',
-        [
-          'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
-          'When the destination picker appears, select "dirty-buffer-test" terminal.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-009',
+      'R-F on clean file → NO dialog, then pick terminal',
+      [
+        'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
+        'When the destination picker appears, select "dirty-buffer-test" terminal.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
+    assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
 
-      const relativePath = vscode.workspace.asRelativePath(cleanUri, false);
-      assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const relativePath = vscode.workspace.asRelativePath(cleanUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-      const lines = logCapture.getLinesSince('before-clean-rf');
-      const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
-      assert.strictEqual(
-        warningLog,
-        undefined,
-        'Expected no dirty buffer warning log for clean file',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const lines = logCapture.getLinesSince('before-clean-rf');
+    const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
+    assert.strictEqual(
+      warningLog,
+      undefined,
+      'Expected no dirty buffer warning log for clean file',
+    );
   });
 
   test('[assisted] dirty-buffer-warning-018: warnOnDirtyBuffer=false — R-L sends link to bound destination without warning dialog', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty', 'const x = 1;\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// rl-bypass\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// rl-bypass\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
 
-      editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
-      await vscode.workspace
-        .getConfiguration('rangelink')
-        .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-018');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-018');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-018-dispatch',
-        'R-L on dirty file with warnOnDirtyBuffer=false → confirm NO dialog appears',
-        [
-          'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L (Send RangeLink) — confirm the dirty buffer dialog does NOT appear.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-018-dispatch',
+      'R-L on dirty file with warnOnDirtyBuffer=false → confirm NO dialog appears',
+      [
+        'Click in the editor and select some text (the first word is fine).',
+        'Press Cmd+R Cmd+L (Send RangeLink) — confirm the dirty buffer dialog does NOT appear.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-018');
-      const disabledLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes but warning is disabled by setting'),
-      );
-      assert.ok(
-        disabledLog,
-        'Expected "disabled by setting" log — R-L path should short-circuit through handleDirtyBufferWarning',
-      );
+    const lines = logCapture.getLinesSince('before-018');
+    const disabledLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes but warning is disabled by setting'),
+    );
+    assert.ok(
+      disabledLog,
+      'Expected "disabled by setting" log — R-L path should short-circuit through handleDirtyBufferWarning',
+    );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
-      await assertClipboardRestored(
-        'R-L with bound destination + warnOnDirtyBuffer=false: clipboard should be restored to sentinel after send',
-      );
+    await assertClipboardRestored(
+      'R-L with bound destination + warnOnDirtyBuffer=false: clipboard should be restored to sentinel after send',
+    );
 
-      assert.ok(
-        editor.document.isDirty,
-        'Expected document to remain dirty — setting disabled should not trigger a save',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty — setting disabled should not trigger a save',
+    );
   });
 
   test('dirty-buffer-warning-006: warnOnDirtyBuffer=false — R-L sends link to bound destination without dialog', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty', 'const x = 1;\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// dirty-006\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// dirty-006\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty after edit');
 
-      editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
-      await vscode.workspace
-        .getConfiguration('rangelink')
-        .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-006');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-006');
+    capturing.clearCaptured();
 
-      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-      await ss.settle();
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-006');
-      const disabledLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes but warning is disabled by setting'),
-      );
-      assert.ok(
-        disabledLog,
-        'Expected "disabled by setting" log — warnOnDirtyBuffer=false must short-circuit the dialog',
-      );
+    const lines = logCapture.getLinesSince('before-006');
+    const disabledLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes but warning is disabled by setting'),
+    );
+    assert.ok(
+      disabledLog,
+      'Expected "disabled by setting" log — warnOnDirtyBuffer=false must short-circuit the dialog',
+    );
 
-      const dialogLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.strictEqual(
-        dialogLog,
-        undefined,
-        'Expected no dialog log — setting should bypass dialog',
-      );
+    const dialogLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.strictEqual(
+      dialogLog,
+      undefined,
+      'Expected no dialog log — setting should bypass dialog',
+    );
 
-      const generatedLink = extractGeneratedLink(lines);
-      assert.ok(generatedLink, 'Expected "Generated link:" log line');
-      assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
 
-      assert.ok(
-        editor.document.isDirty,
-        'Expected document to remain dirty — bypass must not trigger save',
-      );
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty — bypass must not trigger save',
+    );
 
-      await assertClipboardRestored(
-        'R-L warnOnDirtyBuffer=false: clipboard should be restored after send',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    await assertClipboardRestored(
+      'R-L warnOnDirtyBuffer=false: clipboard should be restored after send',
+    );
   });
 
   test('dirty-buffer-warning-019: R-C on clean file generates link without warning dialog', async () => {
@@ -339,37 +323,33 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 
     const cleanUri = ss.createWorkspaceFile('clean-rl-007', 'line 1\nline 2\nline 3\nline 4\n');
 
-    try {
-      const editor = await ss.openEditor(cleanUri);
-      editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(3, 0));
-      await editor.document.save();
-      await ss.settle();
-      capturing.clearCaptured();
+    const editor = await ss.openEditor(cleanUri);
+    editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(3, 0));
+    await editor.document.save();
+    await ss.settle();
+    capturing.clearCaptured();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-007');
+    const logCapture = getLogCapture();
+    logCapture.mark('before-007');
 
-      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-      await ss.settle();
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-007');
-      assertStatusBarMsgLogged(lines, {
-        message:
-          '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("dirty-buffer-test")',
-      });
-      assertNoToastLogged(lines, {
-        type: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
-      });
-      const captured = capturing.getCapturedText();
-      assertTerminalBufferContains(captured, 'clean-rl-007');
-      assert.ok(
-        captured.startsWith(' ') && captured.endsWith(' '),
-        `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const lines = logCapture.getLinesSince('before-007');
+    assertStatusBarMsgLogged(lines, {
+      message:
+        '✓ RangeLink: RangeLink copied to clipboard & sent to Terminal ("dirty-buffer-test")',
+    });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: 'File has unsaved changes. Link may point to wrong position after save.',
+    });
+    const captured = capturing.getCapturedText();
+    assertTerminalBufferContains(captured, 'clean-rl-007');
+    assert.ok(
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
+    );
   });
 });
 
@@ -378,243 +358,220 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// dirty-001\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// dirty-001\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-001');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-001');
+    capturing.clearCaptured();
 
-      const verdict = await waitForHumanVerdict(
-        'dirty-buffer-warning-001',
-        'Select text, press Cmd+R Cmd+L → PASS if warning dialog appears (then dismiss it), FAIL if not',
-        [
-          'Click in the editor and ensure text is selected.',
-          'Press Cmd+R Cmd+L.',
-          'If the dirty buffer warning dialog appears → click PASS, then dismiss it (Escape or X).',
-          'If no dialog appears → click FAIL.',
-        ],
-      );
-      assert.strictEqual(
-        verdict,
-        'pass',
-        'Human confirmed: warning dialog did NOT appear when R-L on dirty file',
-      );
+    const verdict = await waitForHumanVerdict(
+      'dirty-buffer-warning-001',
+      'Select text, press Cmd+R Cmd+L → PASS if warning dialog appears (then dismiss it), FAIL if not',
+      [
+        'Click in the editor and ensure text is selected.',
+        'Press Cmd+R Cmd+L.',
+        'If the dirty buffer warning dialog appears → click PASS, then dismiss it (Escape or X).',
+        'If no dialog appears → click FAIL.',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human confirmed: warning dialog did NOT appear when R-L on dirty file',
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-001');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(
-        showingWarningLog,
-        'Expected "showing warning" log — dialog must fire when file is dirty',
-      );
+    const lines = logCapture.getLinesSince('before-001');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      showingWarningLog,
+      'Expected "showing warning" log — dialog must fire when file is dirty',
+    );
 
-      assertTerminalBufferEquals(capturing.getCapturedText(), '');
+    assertTerminalBufferEquals(capturing.getCapturedText(), '');
 
-      ss.log('✓ Warning dialog appeared when R-L on dirty file (default warnOnDirtyBuffer=true)');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ Warning dialog appeared when R-L on dirty file (default warnOnDirtyBuffer=true)');
   });
 
   test('[assisted] dirty-buffer-warning-002: dirty buffer dialog shows Save & Generate, Generate Anyway, and dismiss options', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// dirty-002\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// dirty-002\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-002');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-002');
+    capturing.clearCaptured();
 
-      const verdict = await waitForHumanVerdict(
-        'dirty-buffer-warning-002',
-        'Press Cmd+R Cmd+L → PASS if dialog shows "Save & Generate" + "Generate Anyway" + X, FAIL if not',
-        [
-          'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
-          'Confirm the dialog shows exactly 3 choices: "Save & Generate", "Generate Anyway", and an X/dismiss button.',
-          'If all 3 options are present → click PASS, then dismiss the dialog (Escape or X).',
-          'If any option is missing or the dialog did not appear → click FAIL.',
-        ],
-      );
-      assert.strictEqual(
-        verdict,
-        'pass',
-        'Human confirmed: dialog options did not match expected (Save & Generate / Generate Anyway / dismiss)',
-      );
+    const verdict = await waitForHumanVerdict(
+      'dirty-buffer-warning-002',
+      'Press Cmd+R Cmd+L → PASS if dialog shows "Save & Generate" + "Generate Anyway" + X, FAIL if not',
+      [
+        'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
+        'Confirm the dialog shows exactly 3 choices: "Save & Generate", "Generate Anyway", and an X/dismiss button.',
+        'If all 3 options are present → click PASS, then dismiss the dialog (Escape or X).',
+        'If any option is missing or the dialog did not appear → click FAIL.',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human confirmed: dialog options did not match expected (Save & Generate / Generate Anyway / dismiss)',
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-002');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(
-        showingWarningLog,
-        'Expected "showing warning" log — dialog must fire for option verification',
-      );
+    const lines = logCapture.getLinesSince('before-002');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      showingWarningLog,
+      'Expected "showing warning" log — dialog must fire for option verification',
+    );
 
-      const dismissLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') && l.includes('User dismissed warning, aborting'),
-      );
-      assert.ok(
-        dismissLog,
-        'Expected "User dismissed warning, aborting" log — confirms dialog was dismissed after verdict',
-      );
+    const dismissLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') && l.includes('User dismissed warning, aborting'),
+    );
+    assert.ok(
+      dismissLog,
+      'Expected "User dismissed warning, aborting" log — confirms dialog was dismissed after verdict',
+    );
 
-      assertTerminalBufferEquals(capturing.getCapturedText(), '');
+    assertTerminalBufferEquals(capturing.getCapturedText(), '');
 
-      ss.log('✓ Dialog showed 3 options: Save & Generate, Generate Anyway, and dismiss');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ Dialog showed 3 options: Save & Generate, Generate Anyway, and dismiss');
   });
 
   test('[assisted] dirty-buffer-warning-003: R-L Save & Generate saves file and sends link to bound destination', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// dirty-003\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// dirty-003\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(
-        new vscode.Position(0, 0),
-        new vscode.Position(0, 10),
-      );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-003');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-003');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-003',
-        'R-L on dirty file → click "Save & Generate"',
-        [
-          'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
-          'Click "Save & Generate".',
-        ],
-      );
+    await waitForHuman('dirty-buffer-warning-003', 'R-L on dirty file → click "Save & Generate"', [
+      'Click in the editor and select some text (the first word is fine).',
+      'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
+      'Click "Save & Generate".',
+    ]);
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-003');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(showingWarningLog, 'Expected "showing warning" log — dialog must fire');
+    const lines = logCapture.getLinesSince('before-003');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(showingWarningLog, 'Expected "showing warning" log — dialog must fire');
 
-      const saveLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') && l.includes('User chose to save and continue'),
-      );
-      assert.ok(saveLog, 'Expected "User chose to save and continue" log');
+    const saveLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') && l.includes('User chose to save and continue'),
+    );
+    assert.ok(saveLog, 'Expected "User chose to save and continue" log');
 
-      assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
+    assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
 
-      assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
-      await assertClipboardRestored('R-L Save & Generate: clipboard should be restored after send');
+    await assertClipboardRestored('R-L Save & Generate: clipboard should be restored after send');
 
-      ss.log('✓ R-L Save & Generate: file saved, link sent to terminal');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ R-L Save & Generate: file saved, link sent to terminal');
   });
 
   test('[assisted] dirty-buffer-warning-005: R-L dismiss aborts link generation, terminal unchanged', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// dirty-005\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// dirty-005\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-005');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-005');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-005',
-        'R-L on dirty file → dismiss the dialog (press Escape or click X)',
-        [
-          'Click in the editor and ensure some text is selected.',
-          'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
-          'Press Escape or click the X to dismiss.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-005',
+      'R-L on dirty file → dismiss the dialog (press Escape or click X)',
+      [
+        'Click in the editor and ensure some text is selected.',
+        'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
+        'Press Escape or click the X to dismiss.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-005');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(showingWarningLog, 'Expected "showing warning" log — dialog must fire');
+    const lines = logCapture.getLinesSince('before-005');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(showingWarningLog, 'Expected "showing warning" log — dialog must fire');
 
-      const dismissLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') && l.includes('User dismissed warning, aborting'),
-      );
-      assert.ok(dismissLog, 'Expected "User dismissed warning, aborting" log');
+    const dismissLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') && l.includes('User dismissed warning, aborting'),
+    );
+    assert.ok(dismissLog, 'Expected "User dismissed warning, aborting" log');
 
-      assertTerminalBufferEquals(capturing.getCapturedText(), '');
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty after dismiss');
+    assertTerminalBufferEquals(capturing.getCapturedText(), '');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after dismiss');
 
-      await assertClipboardRestored(
-        'R-L dismiss: clipboard should still have sentinel (no send occurred)',
-      );
+    await assertClipboardRestored(
+      'R-L dismiss: clipboard should still have sentinel (no send occurred)',
+    );
 
-      ss.log('✓ R-L dismiss: terminal unchanged, file still dirty');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ R-L dismiss: terminal unchanged, file still dirty');
   });
 
   test('[assisted] dirty-buffer-warning-010: R-C Save & Generate saves file and generates link', async () => {
@@ -773,78 +730,89 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// assisted-rf-save\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// assisted-rf-save\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-rf-save');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-rf-save');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-013',
-        'R-F on dirty file → click "Save & Send" → pick the terminal',
-        [
-          'Press Cmd+R Cmd+F — the dirty buffer dialog should appear.',
-          'Click "Save & Send".',
-          'A destination picker will appear — select "dirty-buffer-test" terminal.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-013',
+      'R-F on dirty file → click "Save & Send" → pick the terminal',
+      [
+        'Press Cmd+R Cmd+F — the dirty buffer dialog should appear.',
+        'Click "Save & Send".',
+        'A destination picker will appear — select "dirty-buffer-test" terminal.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Send');
+    assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Send');
 
-      const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
-      assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-      ss.log('✓ R-F Save & Send: file saved, path sent (pty capture verified content)');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const rfSaveLines = logCapture.getLinesSince('before-rf-save');
+    const rfSaveWarningLog = rfSaveLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(rfSaveWarningLog, 'Expected handleDirtyBufferWarning log for R-F Save & Send dialog');
+
+    ss.log('✓ R-F Save & Send: file saved, path sent (pty capture verified content)');
   });
 
   test('[assisted] dirty-buffer-warning-014: R-F Send Anyway sends path without saving', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// assisted-rf-anyway\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// assisted-rf-anyway\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-rf-anyway');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-rf-anyway');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-014',
-        'R-F on dirty file → click "Send Anyway" → pick the terminal',
-        [
-          'Press Cmd+R Cmd+F — the dirty buffer dialog should appear.',
-          'Click "Send Anyway".',
-          'A destination picker will appear — select "dirty-buffer-test" terminal.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-014',
+      'R-F on dirty file → click "Send Anyway" → pick the terminal',
+      [
+        'Press Cmd+R Cmd+F — the dirty buffer dialog should appear.',
+        'Click "Send Anyway".',
+        'A destination picker will appear — select "dirty-buffer-test" terminal.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
 
-      const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
-      assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-      ss.log('✓ R-F Send Anyway: path sent, file still dirty (pty capture verified content)');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const rfAnywayLines = logCapture.getLinesSince('before-rf-anyway');
+    const rfAnywayWarningLog = rfAnywayLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rfAnywayWarningLog,
+      'Expected handleDirtyBufferWarning log for R-F Send Anyway dialog',
+    );
+
+    ss.log('✓ R-F Send Anyway: path sent, file still dirty (pty capture verified content)');
   });
 
   test('[assisted] dirty-buffer-warning-015: R-F dismiss aborts file path send', async () => {
@@ -884,268 +852,260 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// clipboard-preserve-rl\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// clipboard-preserve-rl\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(
-        new vscode.Position(0, 0),
-        new vscode.Position(0, 10),
-      );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-rl-clipboard-preserve');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-rl-clipboard-preserve');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-016-dialog',
-        'R-L on dirty file → click "Generate Anyway"',
-        ['Press Cmd+R Cmd+L — the dirty buffer dialog should appear.', 'Click "Generate Anyway".'],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-016-dialog',
+      'R-L on dirty file → click "Generate Anyway"',
+      ['Press Cmd+R Cmd+L — the dirty buffer dialog should appear.', 'Click "Generate Anyway".'],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      await assertClipboardRestored(
-        'R-L with bound destination + dirty buffer dialog: clipboard should be restored after send',
-      );
+    await assertClipboardRestored(
+      'R-L with bound destination + dirty buffer dialog: clipboard should be restored after send',
+    );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
-      ss.log(
-        '✓ R-L dirty + bound destination: link landed in terminal; clipboard preserved after Generate Anyway',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const rlClipboardLines = logCapture.getLinesSince('before-rl-clipboard-preserve');
+    const rlClipboardWarningLog = rlClipboardLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rlClipboardWarningLog,
+      'Expected handleDirtyBufferWarning log for R-L Generate Anyway dialog',
+    );
+
+    ss.log(
+      '✓ R-L dirty + bound destination: link landed in terminal; clipboard preserved after Generate Anyway',
+    );
   });
 
   test('[assisted] dirty-buffer-warning-017: R-F clipboard preserved after dirty buffer dialog with bound destination', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// clipboard-preserve-rf\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// clipboard-preserve-rf\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-rf-clipboard-preserve');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-017-dialog',
-        'R-F on dirty file → click "Send Anyway"',
-        ['Press Cmd+R Cmd+F — the dirty buffer dialog should appear.', 'Click "Send Anyway".'],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-017-dialog',
+      'R-F on dirty file → click "Send Anyway"',
+      ['Press Cmd+R Cmd+F — the dirty buffer dialog should appear.', 'Click "Send Anyway".'],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      await assertClipboardRestored(
-        'R-F with bound destination + dirty buffer dialog: clipboard should be restored after send',
-      );
+    await assertClipboardRestored(
+      'R-F with bound destination + dirty buffer dialog: clipboard should be restored after send',
+    );
 
-      const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
-      assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
 
-      ss.log(
-        '✓ R-F dirty + bound destination: path landed in terminal; clipboard preserved after Send Anyway',
-      );
-    } finally {
-      capturing.terminal.dispose();
-    }
+    const rfClipboardLines = logCapture.getLinesSince('before-rf-clipboard-preserve');
+    const rfClipboardWarningLog = rfClipboardLines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      rfClipboardWarningLog,
+      'Expected handleDirtyBufferWarning log for R-F Send Anyway dialog',
+    );
+
+    ss.log(
+      '✓ R-F dirty + bound destination: path landed in terminal; clipboard preserved after Send Anyway',
+    );
   });
 
   test('[assisted] dirty-buffer-warning-020: R-L Save & Generate saves file and sends link to bound destination', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-save\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-save\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(
-        new vscode.Position(0, 0),
-        new vscode.Position(0, 10),
-      );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-020');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-020');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-020-dialog',
-        'R-L on dirty file → click "Save & Generate"',
-        [
-          'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
-          'Click "Save & Generate".',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-020-dialog',
+      'R-L on dirty file → click "Save & Generate"',
+      [
+        'Click in the editor and select some text (the first word is fine).',
+        'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
+        'Click "Save & Generate".',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-020');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(
-        showingWarningLog,
-        'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
-      );
+    const lines = logCapture.getLinesSince('before-020');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      showingWarningLog,
+      'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
+    );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
-      await assertClipboardRestored(
-        'R-L Save & Generate with bound destination: clipboard should be restored to sentinel after send',
-      );
+    await assertClipboardRestored(
+      'R-L Save & Generate with bound destination: clipboard should be restored to sentinel after send',
+    );
 
-      assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
+    assert.ok(!editor.document.isDirty, 'Expected document to be saved after Save & Generate');
 
-      ss.log('✓ R-L Save & Generate: file saved, link landed in terminal');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ R-L Save & Generate: file saved, link landed in terminal');
   });
 
   test('[assisted] dirty-buffer-warning-021: R-L Generate Anyway sends link without saving', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-anyway\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-anyway\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(
-        new vscode.Position(0, 0),
-        new vscode.Position(0, 10),
-      );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-021');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-021');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-021-dialog',
-        'R-L on dirty file → click "Generate Anyway"',
-        [
-          'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
-          'Click "Generate Anyway".',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-021-dialog',
+      'R-L on dirty file → click "Generate Anyway"',
+      [
+        'Click in the editor and select some text (the first word is fine).',
+        'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
+        'Click "Generate Anyway".',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-021');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(
-        showingWarningLog,
-        'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
-      );
+    const lines = logCapture.getLinesSince('before-021');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      showingWarningLog,
+      'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
+    );
 
-      assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
-      await assertClipboardRestored(
-        'R-L Generate Anyway with bound destination: clipboard should be restored to sentinel after send',
-      );
+    await assertClipboardRestored(
+      'R-L Generate Anyway with bound destination: clipboard should be restored to sentinel after send',
+    );
 
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
-      ss.log('✓ R-L Generate Anyway: link landed in terminal, file still dirty');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ R-L Generate Anyway: link landed in terminal, file still dirty');
   });
 
   test('[assisted] dirty-buffer-warning-022: R-L dismiss aborts link generation', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
-    try {
-      const editor = await ss.openEditor(testFileUri);
+    const editor = await ss.openEditor(testFileUri);
 
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-dismiss\n');
-      });
-      assert.ok(editor.document.isDirty, 'Expected document to be dirty');
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), '// assisted-rl-dismiss\n');
+    });
+    assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-      editor.selection = new vscode.Selection(
-        new vscode.Position(0, 0),
-        new vscode.Position(0, 10),
-      );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
-      await writeClipboardSentinel();
+    await writeClipboardSentinel();
 
-      const logCapture = getLogCapture();
-      logCapture.mark('before-022');
-      capturing.clearCaptured();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-022');
+    capturing.clearCaptured();
 
-      await waitForHuman(
-        'dirty-buffer-warning-022-dialog',
-        'R-L on dirty file → dismiss the dialog (press Escape or click X)',
-        [
-          'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
-          'Press Escape or click the X to dismiss.',
-        ],
-      );
+    await waitForHuman(
+      'dirty-buffer-warning-022-dialog',
+      'R-L on dirty file → dismiss the dialog (press Escape or click X)',
+      [
+        'Click in the editor and select some text (the first word is fine).',
+        'Press Cmd+R Cmd+L (Send RangeLink) — the dirty buffer dialog should appear.',
+        'Press Escape or click the X to dismiss.',
+      ],
+    );
 
-      await ss.settle();
+    await ss.settle();
 
-      const lines = logCapture.getLinesSince('before-022');
-      const showingWarningLog = lines.find(
-        (l) =>
-          l.includes('handleDirtyBufferWarning') &&
-          l.includes('Document has unsaved changes, showing warning'),
-      );
-      assert.ok(
-        showingWarningLog,
-        'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
-      );
+    const lines = logCapture.getLinesSince('before-022');
+    const showingWarningLog = lines.find(
+      (l) =>
+        l.includes('handleDirtyBufferWarning') &&
+        l.includes('Document has unsaved changes, showing warning'),
+    );
+    assert.ok(
+      showingWarningLog,
+      'Expected handleDirtyBufferWarning to log "showing warning" — dialog must actually fire',
+    );
 
-      assertTerminalBufferEquals(capturing.getCapturedText(), '');
+    assertTerminalBufferEquals(capturing.getCapturedText(), '');
 
-      await assertClipboardRestored(
-        'R-L dismiss: clipboard should still have sentinel (no send occurred)',
-      );
+    await assertClipboardRestored(
+      'R-L dismiss: clipboard should still have sentinel (no send occurred)',
+    );
 
-      assert.ok(editor.document.isDirty, 'Expected document to remain dirty');
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty');
 
-      ss.log('✓ R-L dismiss: terminal buffer empty (no send occurred)');
-    } finally {
-      capturing.terminal.dispose();
-    }
+    ss.log('✓ R-L dismiss: terminal buffer empty (no send occurred)');
   });
 
   test('[assisted] dirty-buffer-warning-023: R-L Save & Generate re-reads selections after save mutates document', async () => {

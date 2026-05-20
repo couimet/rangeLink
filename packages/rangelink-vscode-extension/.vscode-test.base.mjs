@@ -24,6 +24,6 @@ export const BASE_CONFIG = {
   workspaceFolder: './',
   version: 'stable',
   launchArgs: userDataDir(),
-  env: { RANGELINK_CAPTURE_LOGS: 'true' },
+  env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true' },
   mocha: envMocha(),
 };

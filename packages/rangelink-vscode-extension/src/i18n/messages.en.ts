@@ -11,6 +11,8 @@ export const messagesEn: Record<MessageCode, string> = {
   // Keep the keys in alphabetical order.
 
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'Already bound to {destinationName}',
+  [MessageCode.BIND_TO_TERMINAL_NOT_BINDABLE_REJECT]:
+    'Cannot bind to "{name}": this terminal is not bindable.',
   [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
   [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER]: 'Enter a label for this bookmark',
@@ -79,7 +81,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'No active editor',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]: 'No active terminal. Open a terminal and try again.',
-  [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]: 'No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_BINDABLE_TERMINAL]:
+    'No bindable terminal. Open a new terminal and try again.',
+  [MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR]:
+    'No bindable text editor. Open a file and try again.',
   [MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED]:
     'No text selected in the terminal. Select text and try again.',
   [MessageCode.ERROR_NO_TEXT_SELECTED]:

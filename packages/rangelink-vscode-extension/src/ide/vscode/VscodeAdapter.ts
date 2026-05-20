@@ -242,6 +242,11 @@ export class VscodeAdapter
             ...(item.kind !== undefined ? { kind: item.kind } : {}),
             ...('itemKind' in item ? { itemKind: record.itemKind } : {}),
             ...('displayName' in item ? { displayName: record.displayName } : {}),
+            // TODO(#594): once TerminalBindableQuickPickItem and
+            // FileBindableQuickPickItem stop duplicating these fields at the
+            // top level, dig into record.terminalInfo / record.fileInfo here.
+            // Keep emitting them flat in the log so integration tests that
+            // destructure { isActive, boundState } need no changes.
             ...('isActive' in item ? { isActive: record.isActive } : {}),
             ...('boundState' in item ? { boundState: record.boundState } : {}),
             ...('remainingCount' in item ? { remainingCount: record.remainingCount } : {}),
@@ -761,6 +766,16 @@ export class VscodeAdapter
   // ============================================================================
 
   /**
+   * Register event listener for terminal opening.
+   *
+   * @param listener - Callback invoked when a terminal is opened
+   * @returns Disposable to unregister the listener
+   */
+  onDidOpenTerminal(listener: (terminal: vscode.Terminal) => void): vscode.Disposable {
+    return this.ideInstance.window.onDidOpenTerminal(listener);
+  }
+
+  /**
    * Register event listener for terminal closure.
    *
    * @param listener - Callback invoked when a terminal is closed
@@ -768,6 +783,18 @@ export class VscodeAdapter
    */
   onDidCloseTerminal(listener: (terminal: vscode.Terminal) => void): vscode.Disposable {
     return this.ideInstance.window.onDidCloseTerminal(listener);
+  }
+
+  /**
+   * Register event listener for active-terminal changes.
+   *
+   * @param listener - Callback invoked when the active terminal changes
+   * @returns Disposable to unregister the listener
+   */
+  onDidChangeActiveTerminal(
+    listener: (terminal: vscode.Terminal | undefined) => void,
+  ): vscode.Disposable {
+    return this.ideInstance.window.onDidChangeActiveTerminal(listener);
   }
 
   /**

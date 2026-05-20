@@ -2,8 +2,13 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_TERMINAL,
+  CMD_OPEN_STATUS_BAR_MENU,
+} from '../../constants/commandIds';
+import {
+  assertToastLogged,
   extractQuickPickItemsLogged,
   findTerminalItems,
   getLogCapture,
@@ -614,6 +619,51 @@ standardSuite('Terminal Picker', (ss) => {
     ss.log('✓ Terminal inline in R-D picker — full fields');
   });
 
+  test('terminal-picker-014: extension-managed pty terminal is filtered out of R-D picker', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal('rl-tp-014-pty', { pty });
+    await ss.createTerminal('rl-tp-014-shell');
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-014');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-tp-014');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry');
+
+    const termItems = findTerminalItems(items!);
+    assert.deepStrictEqual(
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: 'Terminal ("rl-tp-014-shell")',
+          displayName: 'Terminal ("rl-tp-014-shell")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
+    );
+
+    ss.log('✓ Pty terminal absent from picker; only shell terminal remains');
+  });
+
   test('bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-btd-013-${i}`);
@@ -683,5 +733,61 @@ standardSuite('Terminal Picker', (ss) => {
     assert.strictEqual(activeTerminal!.boundState, 'not-bound');
 
     ss.log('✓ Both overflow items + active inline terminal validated');
+  });
+
+  test('terminal-picker-016: R-D picker omits terminal section when the only open terminal is a pty', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal('rl-tp-016-pty', { pty });
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-016');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-tp-016');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry');
+
+    const termItems = findTerminalItems(items!);
+    assert.deepStrictEqual(termItems, [], 'Expected no terminal items when only a pty exists');
+
+    const moreTerminals = items!.find((i) => i.label === 'More terminals...');
+    assert.strictEqual(
+      moreTerminals,
+      undefined,
+      'Expected no "More terminals..." overflow when there are no bindable terminals',
+    );
+
+    ss.log('✓ Terminal section absent from R-D picker when only pty terminal is open');
+  });
+
+  test('terminal-picker-015: context-menu "Bind Here" on pty terminal shows error notification', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    const ptyTerminal = await ss.createTerminal('rl-tp-015-pty', { pty });
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-015');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, ptyTerminal);
+    await ss.settle();
+
+    assertToastLogged(logCapture.getLinesSince('before-tp-015'), {
+      type: 'error',
+      message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.',
+    });
+
+    ss.log('✓ Direct bind to pty terminal rejected with error notification');
   });
 });
