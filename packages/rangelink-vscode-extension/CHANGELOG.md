@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Active terminal marked with "active" badge, bound terminal marked with "bound" badge (dual badge "bound · active" when same terminal)
   - Terminals sorted: bound first, active second, rest in natural order — bound terminal never hidden behind "More terminals..."
   - Hidden IDE terminals (e.g., Cursor's background terminal) are automatically filtered out
+  - Extension-managed pty terminals (Jest test runners, task runners, debug consoles, etc.) are filtered out across every entry point — picker, context-menu "Bind Here", and the "Bind to Terminal" command — so you can only target shell terminals that actually accept input (#592)
   - Configurable inline threshold: `rangelink.terminalPicker.maxInline` (default: `5`)
   - When more terminals than the threshold exist, extras collapse into "More terminals..." which opens a secondary picker
   - Escaping the secondary picker returns to the destination picker
@@ -212,7 +213,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Whitespace-only content no longer silently dropped** - Selecting whitespace (spaces, tabs, newlines) from terminal output or code indentation now reaches the bound destination. Previously the eligibility check rejected it, showing "copied to clipboard" while nothing arrived. (#362)
 - **Unbind active when no destination bound** — The Unbind command (`R-U`) and its context menu entries were active even with no destination bound. Unlike send/paste commands that show a destination picker when unbound, unbind has no useful unbound flow — binding just to immediately unbind is pointless. Now disabled via `rangelink.isBound` context key. (#114)
 - **Binding survives language-mode changes** — Changing a bound file's language mode (manually or via auto-detection) no longer silently breaks the binding. Previously the binding was lost with no notification, requiring a re-bind. (#472)
-- **Extension-managed terminals (pty) excluded from binding** — Terminals created by extensions (Jest test runners, task runners) are now detected and filtered out of the terminal picker entirely. Context-menu "Bind Here" entries are hidden on their tab/body menus, and any direct attempt to bind one shows a clear error message. (#592)
 
 ## [1.0.0]
 
