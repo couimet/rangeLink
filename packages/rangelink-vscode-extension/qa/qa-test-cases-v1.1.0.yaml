@@ -263,14 +263,20 @@ test_cases:
 
   - id: terminal-picker-014
     feature: 'Terminal Picker'
-    scenario: 'Extension-managed pty terminal (Jest task runner, etc.) appears in R-D picker as not-bindable'
-    expected_result: "The pty terminal entry has a 'not bindable' description badge and carries `nonBindableReason: 'extension-managed'`. The item is rendered but selecting it does not bind."
+    scenario: 'Extension-managed pty terminal (Jest task runner, etc.) is filtered out of the R-D picker'
+    expected_result: 'The pty terminal does not appear in the R-D picker. Only regular shell terminals are listed.'
     automated: true
 
   - id: terminal-picker-015
     feature: 'Terminal Picker'
     scenario: 'Context-menu "Bind Here" on a pty terminal shows error notification'
     expected_result: "An error notification appears: 'Cannot bind to \"<name>\": it is managed by an extension and does not accept input.' The terminal is not bound."
+    automated: true
+
+  - id: terminal-picker-016
+    feature: 'Terminal Picker'
+    scenario: 'R-D picker omits the terminal section entirely when the only open terminal is extension-managed (pty)'
+    expected_result: 'The R-D picker shows no terminal entries at all (no inline items, no "More terminals..." overflow). Other sections (text editors, AI assistants) render normally.'
     automated: true
 
   # ---------------------------------------------------------------------------

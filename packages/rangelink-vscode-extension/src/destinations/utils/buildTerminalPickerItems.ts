@@ -13,18 +13,13 @@ export const buildTerminalPickerItems = (
   terminalItems: readonly TerminalBindableQuickPickItem[],
   buildLabel: TerminalLabelBuilder,
 ): TerminalBindableQuickPickItem[] =>
-  terminalItems.map((item) => {
-    const built: TerminalBindableQuickPickItem = {
-      label: buildLabel(item.terminalInfo),
-      description: buildTerminalDescription(item.terminalInfo),
-      displayName: item.terminalInfo.name,
-      bindOptions: item.bindOptions,
-      itemKind: 'bindable' as const,
-      isActive: item.isActive,
-      boundState: item.boundState,
-      terminalInfo: item.terminalInfo,
-    };
-    return item.nonBindableReason === undefined
-      ? built
-      : { ...built, nonBindableReason: item.nonBindableReason };
-  });
+  terminalItems.map((item) => ({
+    label: buildLabel(item.terminalInfo),
+    description: buildTerminalDescription(item.terminalInfo),
+    displayName: item.terminalInfo.name,
+    bindOptions: item.bindOptions,
+    itemKind: 'bindable' as const,
+    isActive: item.isActive,
+    boundState: item.boundState,
+    terminalInfo: item.terminalInfo,
+  }));

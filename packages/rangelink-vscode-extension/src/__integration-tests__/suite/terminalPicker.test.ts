@@ -615,7 +615,7 @@ standardSuite('Terminal Picker', (ss) => {
     ss.log('✓ Terminal inline in R-D picker — full fields');
   });
 
-  test('terminal-picker-014: extension-managed pty terminal appears as not bindable in R-D picker', async () => {
+  test('terminal-picker-014: extension-managed pty terminal is filtered out of R-D picker', async () => {
     const writeEmitter = new vscode.EventEmitter<string>();
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,
@@ -637,25 +637,14 @@ standardSuite('Terminal Picker', (ss) => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(
-        ({
-          label,
-          displayName,
-          description,
-          isActive,
-          boundState,
-          itemKind,
-          nonBindableReason,
-        }) => ({
-          label,
-          displayName,
-          description,
-          isActive,
-          boundState,
-          itemKind,
-          nonBindableReason,
-        }),
-      ),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
         {
           label: 'Terminal ("rl-tp-014-shell")',
@@ -664,21 +653,11 @@ standardSuite('Terminal Picker', (ss) => {
           isActive: true,
           boundState: 'not-bound',
           itemKind: 'bindable',
-          nonBindableReason: undefined,
-        },
-        {
-          label: 'Terminal ("rl-tp-014-pty")',
-          displayName: 'Terminal ("rl-tp-014-pty")',
-          description: 'not bindable',
-          isActive: false,
-          boundState: 'not-bound',
-          itemKind: 'bindable',
-          nonBindableReason: 'extension-managed',
         },
       ],
     );
 
-    ss.log('✓ Pty terminal marked not-bindable; shell terminal stays bindable');
+    ss.log('✓ Pty terminal absent from picker; only shell terminal remains');
   });
 
   test('bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
@@ -750,6 +729,38 @@ standardSuite('Terminal Picker', (ss) => {
     assert.strictEqual(activeTerminal!.boundState, 'not-bound');
 
     ss.log('✓ Both overflow items + active inline terminal validated');
+  });
+
+  test('terminal-picker-016: R-D picker omits terminal section when the only open terminal is a pty', async () => {
+    const writeEmitter = new vscode.EventEmitter<string>();
+    const pty: vscode.Pseudoterminal = {
+      onDidWrite: writeEmitter.event,
+      open: () => {},
+      close: () => writeEmitter.dispose(),
+    };
+    await ss.createTerminal('rl-tp-016-pty', { pty });
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-tp-016');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-tp-016');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry');
+
+    const termItems = findTerminalItems(items!);
+    assert.deepStrictEqual(termItems, [], 'Expected no terminal items when only a pty exists');
+
+    const moreTerminals = items!.find((i) => i.label === 'More terminals...');
+    assert.strictEqual(
+      moreTerminals,
+      undefined,
+      'Expected no "More terminals..." overflow when there are no bindable terminals',
+    );
+
+    ss.log('✓ Terminal section absent from R-D picker when only pty terminal is open');
   });
 
   test('terminal-picker-015: context-menu "Bind Here" on pty terminal shows error notification', async () => {

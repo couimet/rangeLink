@@ -509,7 +509,7 @@ describe('VscodeAdapter', () => {
       );
     });
 
-    it('should log semantic fields: displayName, isActive, boundState, nonBindableReason, remainingCount', async () => {
+    it('should log semantic fields: displayName, isActive, boundState, remainingCount', async () => {
       const items = [
         {
           label: 'Terminal ("bash")',
@@ -520,13 +520,12 @@ describe('VscodeAdapter', () => {
           boundState: 'bound' as const,
         },
         {
-          label: 'Terminal ("Jest")',
-          description: 'not bindable',
+          label: 'Terminal ("zsh")',
+          description: 'active',
           itemKind: 'bindable' as const,
-          displayName: 'Terminal ("Jest")',
-          isActive: false,
+          displayName: 'Terminal ("zsh")',
+          isActive: true,
           boundState: 'not-bound' as const,
-          nonBindableReason: 'extension-managed' as const,
         },
         {
           label: 'More terminals...',
@@ -555,13 +554,12 @@ describe('VscodeAdapter', () => {
               boundState: 'bound',
             },
             {
-              label: 'Terminal ("Jest")',
-              description: 'not bindable',
+              label: 'Terminal ("zsh")',
+              description: 'active',
               itemKind: 'bindable',
-              displayName: 'Terminal ("Jest")',
-              isActive: false,
+              displayName: 'Terminal ("zsh")',
+              isActive: true,
               boundState: 'not-bound',
-              nonBindableReason: 'extension-managed',
             },
             {
               label: 'More terminals...',

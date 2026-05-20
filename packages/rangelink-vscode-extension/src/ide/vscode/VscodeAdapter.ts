@@ -246,13 +246,9 @@ export class VscodeAdapter
             // FileBindableQuickPickItem stop duplicating these fields at the
             // top level, dig into record.terminalInfo / record.fileInfo here.
             // Keep emitting them flat in the log so integration tests that
-            // destructure { isActive, boundState, nonBindableReason } need no
-            // changes.
+            // destructure { isActive, boundState } need no changes.
             ...('isActive' in item ? { isActive: record.isActive } : {}),
             ...('boundState' in item ? { boundState: record.boundState } : {}),
-            ...('nonBindableReason' in item
-              ? { nonBindableReason: record.nonBindableReason }
-              : {}),
             ...('remainingCount' in item ? { remainingCount: record.remainingCount } : {}),
           };
         }),

@@ -56,17 +56,6 @@ export const showTerminalPicker = async <T>(
     return undefined;
   }
 
-  if (selected.terminalInfo.nonBindableReason !== undefined) {
-    logger.debug(
-      { ...logCtx, nonBindableReason: selected.terminalInfo.nonBindableReason },
-      'User selected non-bindable terminal; treating as dismissal',
-    );
-    if (handlers.onDismissed) {
-      return handlers.onDismissed();
-    }
-    return undefined;
-  }
-
   logger.debug({ fn: 'showTerminalPicker', selected }, 'Terminal selected');
   return handlers.onSelected(selected.terminalInfo);
 };

@@ -1,12 +1,12 @@
 import type * as vscode from 'vscode';
 
 import type { BoundState } from './BoundState';
-import type { NonBindableReason } from './NonBindableReason';
 
 /**
- * Information about a terminal in the destination list. Eligibility now means
- * "visible to the user in the picker" — a terminal can be visible AND
- * not-bindable when its `nonBindableReason` is set.
+ * Information about a terminal eligible to bind to in the destination list.
+ *
+ * Non-bindable terminals (extension-managed pty, hidden, exited) are filtered
+ * out upstream in `getEligibleTerminals` and never reach this shape.
  */
 export interface EligibleTerminal {
   readonly terminal: vscode.Terminal;
@@ -14,5 +14,4 @@ export interface EligibleTerminal {
   readonly isActive: boolean;
   readonly processId?: number;
   readonly boundState?: BoundState;
-  readonly nonBindableReason?: NonBindableReason;
 }

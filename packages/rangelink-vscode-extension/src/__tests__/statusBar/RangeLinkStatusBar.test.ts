@@ -951,7 +951,7 @@ describe('RangeLinkStatusBar', () => {
         'No files available in secondary picker',
       );
       expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'No active text editor. Open a file and try again.',
+        'No bindable text editor. Open a file and try again.',
       );
     });
 

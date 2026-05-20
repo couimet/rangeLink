@@ -176,7 +176,7 @@ describe('getEligibleTerminals', () => {
   });
 
   describe('extension-managed pty terminals', () => {
-    it('includes pty terminal with nonBindableReason set', async () => {
+    it('excludes pty terminal entirely so only bindable shell terminals remain', async () => {
       const shellTerminal = createMockTerminal({
         name: 'zsh',
         exitStatus: undefined,
@@ -198,14 +198,30 @@ describe('getEligibleTerminals', () => {
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
         { terminal: shellTerminal, name: 'zsh', isActive: true, processId: 10 },
-        {
-          terminal: ptyTerminal,
-          name: 'Jest (rangeLink-002)',
-          isActive: false,
-          processId: 20,
-          nonBindableReason: 'extension-managed',
-        },
       ]);
+    });
+
+    it('returns empty array when every terminal is an extension-managed pty', async () => {
+      const ptyTerminal1 = createMockTerminal({
+        name: 'Jest',
+        exitStatus: undefined,
+        processId: Promise.resolve(20),
+        creationOptions: { name: 'Jest', pty: minimalPty },
+      });
+      const ptyTerminal2 = createMockTerminal({
+        name: 'Tasks',
+        exitStatus: undefined,
+        processId: Promise.resolve(21),
+        creationOptions: { name: 'Tasks', pty: minimalPty },
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [ptyTerminal1, ptyTerminal2],
+          activeTerminal: ptyTerminal1,
+        },
+      });
+
+      expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([]);
     });
 
     it('excludes pty terminal entirely when hideFromUser is true', async () => {

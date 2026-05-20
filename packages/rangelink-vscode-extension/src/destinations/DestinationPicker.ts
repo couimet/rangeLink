@@ -114,15 +114,6 @@ export class DestinationPicker {
 
     switch (selected.itemKind) {
       case 'bindable': {
-        const nonBindableReason =
-          'nonBindableReason' in selected ? selected.nonBindableReason : undefined;
-        if (nonBindableReason !== undefined) {
-          this.logger.debug(
-            { ...logCtx, nonBindableReason },
-            'User selected non-bindable destination; treating as cancellation',
-          );
-          return { outcome: 'cancelled' };
-        }
         this.logger.debug(
           { ...logCtx, bindOptions: selected.bindOptions },
           `User selected destination with bind options`,

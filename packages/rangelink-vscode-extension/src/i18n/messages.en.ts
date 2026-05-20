@@ -81,7 +81,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'No active editor',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]: 'No active terminal. Open a terminal and try again.',
-  [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]: 'No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_BINDABLE_TERMINAL]:
+    'No bindable terminal. Open a new terminal and try again.',
+  [MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR]:
+    'No bindable text editor. Open a file and try again.',
   [MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED]:
     'No text selected in the terminal. Select text and try again.',
   [MessageCode.ERROR_NO_TEXT_SELECTED]:
@@ -204,7 +207,6 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.TERMINAL_PICKER_BOUND_DESCRIPTION]: 'bound',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
   [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
-  [MessageCode.TERMINAL_PICKER_NOT_BINDABLE_DESCRIPTION]: 'not bindable',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',
   [MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT]: 'Terminal "{name}"',
   [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',

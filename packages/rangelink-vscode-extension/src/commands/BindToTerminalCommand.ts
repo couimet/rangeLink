@@ -87,22 +87,12 @@ export class BindToTerminalCommand {
 
     if (terminalItems.length === 0) {
       this.logger.debug(logCtx, 'No terminals available');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_BINDABLE_TERMINAL));
       return { outcome: 'no-resource' };
     }
 
     if (terminalItems.length === 1) {
-      const { terminal, nonBindableReason } = terminalItems[0].terminalInfo;
-      if (nonBindableReason !== undefined) {
-        this.logger.debug(
-          { ...logCtx, terminalName: terminal.name, nonBindableReason },
-          'Sole terminal is non-bindable; rejecting auto-bind',
-        );
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.BIND_TO_TERMINAL_NOT_BINDABLE_REJECT, { name: terminal.name }),
-        );
-        return { outcome: 'cancelled' };
-      }
+      const { terminal } = terminalItems[0].terminalInfo;
       this.logger.debug(
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',

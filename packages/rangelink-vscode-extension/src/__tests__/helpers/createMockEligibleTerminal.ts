@@ -8,20 +8,17 @@ export interface MockEligibleTerminalOptions {
   readonly processId?: number;
   readonly boundState?: EligibleTerminal['boundState'];
   readonly terminal?: EligibleTerminal['terminal'];
-  readonly nonBindableReason?: EligibleTerminal['nonBindableReason'];
 }
 
 export const createMockEligibleTerminal = (
   options: MockEligibleTerminalOptions = {},
 ): EligibleTerminal => {
-  const { name = 'bash', isActive = false, processId, boundState, terminal, nonBindableReason } =
-    options;
+  const { name = 'bash', isActive = false, processId, boundState, terminal } = options;
   return {
     terminal: terminal ?? createMockTerminal({ name }),
     name,
     isActive,
     ...(processId !== undefined && { processId }),
     ...(boundState !== undefined && { boundState }),
-    ...(nonBindableReason !== undefined && { nonBindableReason }),
   };
 };

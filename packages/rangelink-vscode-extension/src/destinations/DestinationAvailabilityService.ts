@@ -376,7 +376,7 @@ export class DestinationAvailabilityService {
       name: eligibleTerminal.terminal.name,
     });
 
-    const base: TerminalBindableQuickPickItem = {
+    return {
       label: displayName,
       displayName,
       bindOptions: { kind: 'terminal', terminal: eligibleTerminal.terminal },
@@ -385,9 +385,6 @@ export class DestinationAvailabilityService {
       boundState: eligibleTerminal.boundState,
       terminalInfo: eligibleTerminal,
     };
-    return eligibleTerminal.nonBindableReason === undefined
-      ? base
-      : { ...base, nonBindableReason: eligibleTerminal.nonBindableReason };
   }
 
   /**

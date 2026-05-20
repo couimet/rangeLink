@@ -65,7 +65,7 @@ describe('BindToTerminalCommand', () => {
         expect(result).toStrictEqual({ outcome: 'no-resource' });
         expect(mockAvailabilityService.getTerminalItems).toHaveBeenCalledWith(Infinity, undefined);
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-          'No active terminal. Open a terminal and try again.',
+          'No bindable terminal. Open a new terminal and try again.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'BindToTerminalCommand.execute', terminalCount: 0 },
@@ -439,37 +439,5 @@ describe('BindToTerminalCommand', () => {
       });
     });
 
-    describe('1 non-bindable terminal (palette path)', () => {
-      it('rejects auto-bind when the sole terminal carries nonBindableReason', async () => {
-        const ptyTerminal = createMockTerminal({ name: 'Jest' });
-        mockAdapter = createMockVscodeAdapter();
-        mockAvailabilityService.getTerminalItems.mockResolvedValue([
-          createMockTerminalQuickPickItem(ptyTerminal, false, undefined, 'extension-managed'),
-        ]);
-        command = new BindToTerminalCommand(
-          mockAdapter,
-          mockAvailabilityService,
-          mockDestinationManager,
-          mockLogger,
-        );
-
-        const result = await command.execute();
-
-        expect(result).toStrictEqual({ outcome: 'cancelled' });
-        expect(mockDestinationManager.bind).not.toHaveBeenCalled();
-        expect(showTerminalPickerSpy).not.toHaveBeenCalled();
-        expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-          'Cannot bind to "Jest": it is managed by an extension and does not accept input.',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'BindToTerminalCommand.execute',
-            terminalName: 'Jest',
-            nonBindableReason: 'extension-managed',
-          },
-          'Sole terminal is non-bindable; rejecting auto-bind',
-        );
-      });
-    });
   });
 });

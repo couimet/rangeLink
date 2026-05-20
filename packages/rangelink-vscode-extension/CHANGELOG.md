@@ -212,7 +212,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Whitespace-only content no longer silently dropped** - Selecting whitespace (spaces, tabs, newlines) from terminal output or code indentation now reaches the bound destination. Previously the eligibility check rejected it, showing "copied to clipboard" while nothing arrived. (#362)
 - **Unbind active when no destination bound** — The Unbind command (`R-U`) and its context menu entries were active even with no destination bound. Unlike send/paste commands that show a destination picker when unbound, unbind has no useful unbound flow — binding just to immediately unbind is pointless. Now disabled via `rangelink.isBound` context key. (#114)
 - **Binding survives language-mode changes** — Changing a bound file's language mode (manually or via auto-detection) no longer silently breaks the binding. Previously the binding was lost with no notification, requiring a re-bind. (#472)
-- **Extension-managed terminals (pty) excluded from binding** — Terminals created by extensions (Jest test runners, task runners) are now detected and excluded from binding. They appear in the picker with a "not bindable" badge, context-menu "Bind Here" entries are hidden on their tab/body menus, and any attempt to bind them shows a clear error message. (#592)
+- **Extension-managed terminals (pty) excluded from binding** — Terminals created by extensions (Jest test runners, task runners) are now detected and filtered out of the terminal picker entirely. Context-menu "Bind Here" entries are hidden on their tab/body menus, and any direct attempt to bind one shows a clear error message. (#592)
 
 ## [1.0.0]
 
