@@ -438,6 +438,5 @@ describe('BindToTerminalCommand', () => {
         );
       });
     });
-
   });
 });

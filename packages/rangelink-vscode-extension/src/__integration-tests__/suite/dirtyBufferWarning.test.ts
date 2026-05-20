@@ -480,10 +480,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     });
     assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 10),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
     await writeClipboardSentinel();
 
@@ -491,15 +488,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     logCapture.mark('before-003');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'dirty-buffer-warning-003',
-      'R-L on dirty file → click "Save & Generate"',
-      [
-        'Click in the editor and select some text (the first word is fine).',
-        'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
-        'Click "Save & Generate".',
-      ],
-    );
+    await waitForHuman('dirty-buffer-warning-003', 'R-L on dirty file → click "Save & Generate"', [
+      'Click in the editor and select some text (the first word is fine).',
+      'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
+      'Click "Save & Generate".',
+    ]);
 
     await ss.settle();
 
@@ -847,10 +840,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     });
     assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 10),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
     await writeClipboardSentinel();
 
@@ -927,10 +917,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     });
     assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 10),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
     await writeClipboardSentinel();
 
@@ -983,10 +970,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     });
     assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 10),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
     await writeClipboardSentinel();
 
@@ -1039,10 +1023,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     });
     assert.ok(editor.document.isDirty, 'Expected document to be dirty');
 
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 10),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
 
     await writeClipboardSentinel();
 

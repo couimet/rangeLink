@@ -2,7 +2,11 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_TERMINAL, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_TERMINAL,
+  CMD_OPEN_STATUS_BAR_MENU,
+} from '../../constants/commandIds';
 import {
   assertToastLogged,
   extractQuickPickItemsLogged,

@@ -217,5 +217,4 @@ describe('showTerminalPicker', () => {
       expect(result).toBe('async-dismissed');
     });
   });
-
 });

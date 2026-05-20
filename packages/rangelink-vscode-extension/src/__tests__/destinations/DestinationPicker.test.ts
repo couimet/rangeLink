@@ -153,7 +153,6 @@ describe('DestinationPicker', () => {
           bindOptions: editorItem.bindOptions,
         });
       });
-
     });
 
     describe('file-more item selection', () => {

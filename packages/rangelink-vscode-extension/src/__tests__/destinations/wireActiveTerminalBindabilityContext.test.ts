@@ -129,7 +129,9 @@ describe('wireActiveTerminalBindabilityContext', () => {
     const changeDisposable = { dispose: jest.fn() };
     (vscodeMock.window.onDidOpenTerminal as jest.Mock).mockReturnValueOnce(openDisposable);
     (vscodeMock.window.onDidCloseTerminal as jest.Mock).mockReturnValueOnce(closeDisposable);
-    (vscodeMock.window.onDidChangeActiveTerminal as jest.Mock).mockReturnValueOnce(changeDisposable);
+    (vscodeMock.window.onDidChangeActiveTerminal as jest.Mock).mockReturnValueOnce(
+      changeDisposable,
+    );
     const logger = createMockLogger();
 
     const result = wireActiveTerminalBindabilityContext(adapter, logger);

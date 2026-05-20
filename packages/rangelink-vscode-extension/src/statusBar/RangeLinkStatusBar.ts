@@ -240,7 +240,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     if (fileItems.length === 0) {
       this.logger.debug(logCtx, 'No files available in secondary picker');
-      void this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR));
+      void this.ideAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR),
+      );
       return;
     }
 
