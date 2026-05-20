@@ -264,7 +264,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     ss.log('✓ "Bind Here" absent from pty terminal content-area menu');
   });
 
-  test('[assisted] context-menus-terminal-008: Shell terminal TAB still shows "Bind Here" when a pty terminal is also open', async () => {
+  test('[assisted] context-menus-terminal-008: Shell terminal TAB "Bind Here" works when a pty terminal is also open', async () => {
     const ptyName = 'rl-ctxmenu-term-008-pty';
     const shellName = 'rl-ctxmenu-term-008-shell';
     const writeEmitter = new vscode.EventEmitter<string>();
@@ -278,24 +278,40 @@ standardSuite('Context Menus — Terminal', (ss) => {
     shellTerminal.show(true);
     await ss.settle();
 
-    const verdict = await waitForHumanVerdict(
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-term-008');
+
+    await waitForHuman(
       'context-menus-terminal-008',
-      `With a pty + a shell terminal open, right-click the shell's tab. Is "RangeLink: Bind Here" PRESENT?`,
+      `Right-click the "${shellName}" shell terminal TAB → "RangeLink: Bind Here"`,
       [
-        `1. Confirm both "${ptyName}" (pty) and "${shellName}" (shell) tabs exist`,
-        `2. Click the "${shellName}" tab to focus it`,
-        `3. Right-click the "${shellName}" tab`,
-        '4. PASS if "RangeLink: Bind Here" IS in the menu',
-        '5. FAIL if "RangeLink: Bind Here" is missing',
+        `A pty terminal "${ptyName}" and a shell terminal "${shellName}" both exist`,
+        `1. Locate the "${shellName}" tab in the terminal panel's tab bar`,
+        '2. Right-click the tab (NOT the pty tab, NOT the content area)',
+        '3. Select "RangeLink: Bind Here"',
+        `The "${shellName}" terminal should bind — NOT the pty.`,
       ],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Expected "RangeLink: Bind Here" to remain present on the shell tab menu when a pty terminal is also open',
+
+    const lines = logCapture.getLinesSince('before-ctxmenu-term-008');
+
+    assertStatusBarMsgLogged(lines, {
+      message: `✓ RangeLink: Bound to Terminal ("${shellName}")`,
+    });
+    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
+
+    const directBindLogged = lines.some(
+      (line) =>
+        line.includes('"fn":"BindToTerminalCommand.execute"') &&
+        line.includes('"source":"context-menu"') &&
+        line.includes(`"terminalName":"${shellName}"`),
+    );
+    assert.ok(
+      directBindLogged,
+      `Expected direct-bind log for "${shellName}" from context-menu source`,
     );
 
-    ss.log('✓ Shell tab still shows "Bind Here" when pty also exists');
+    ss.log('✓ Shell tab "Bind Here" present and bound the shell (not the pty) when both open');
   });
 
   test('[assisted] context-menus-terminal-009: Pty content menu shows "Unbind" when bound elsewhere, and hides "Bind Here"', async () => {

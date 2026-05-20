@@ -826,8 +826,8 @@ test_cases:
 
   - id: context-menus-terminal-008
     feature: 'Context Menus — Terminal'
-    scenario: 'Shell terminal TAB still shows "RangeLink: Bind Here" when a pty terminal is also open'
-    expected_result: 'Right-clicking the shell terminal tab still shows "RangeLink: Bind Here". The `when` clause does not over-hide entries on bindable terminals.'
+    scenario: 'Shell terminal TAB "Bind Here" still works when a pty terminal is also open'
+    expected_result: 'With a pty + shell both open, clicking "RangeLink: Bind Here" on the shell terminal TAB binds the shell (status bar confirms the shell name). Proves the `when` clause does not over-hide entries on bindable terminals.'
     automated: assisted
 
   - id: context-menus-terminal-009
