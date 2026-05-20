@@ -153,6 +153,26 @@ describe('DestinationPicker', () => {
           bindOptions: editorItem.bindOptions,
         });
       });
+
+      it('returns cancelled when user clicks a non-bindable terminal entry', async () => {
+        const terminal = createMockTerminal({ name: 'jest' });
+        const ptyItem = createMockTerminalQuickPickItem(terminal, false, undefined, 'extension-managed');
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [ptyItem],
+        });
+        showQuickPickMock.mockResolvedValue(ptyItem);
+
+        const result = await picker.pick(defaultOptions);
+
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationPicker.handleQuickPickSelection',
+            nonBindableReason: 'extension-managed',
+          },
+          'User selected non-bindable destination; treating as cancellation',
+        );
+      });
     });
 
     describe('file-more item selection', () => {

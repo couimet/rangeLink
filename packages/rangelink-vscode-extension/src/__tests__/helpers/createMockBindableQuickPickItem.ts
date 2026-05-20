@@ -27,6 +27,7 @@ export const createMockTerminalQuickPickItem = (
   terminal: vscode.Terminal,
   isActive = false,
   boundState?: EligibleTerminal['boundState'],
+  nonBindableReason?: EligibleTerminal['nonBindableReason'],
 ): TerminalBindableQuickPickItem => ({
   label: `Terminal ("${terminal.name}")`,
   displayName: `Terminal ("${terminal.name}")`,
@@ -34,7 +35,14 @@ export const createMockTerminalQuickPickItem = (
   itemKind: 'bindable',
   isActive,
   ...(boundState !== undefined && { boundState }),
-  terminalInfo: createMockEligibleTerminal({ terminal, name: terminal.name, isActive, boundState }),
+  ...(nonBindableReason !== undefined && { nonBindableReason }),
+  terminalInfo: createMockEligibleTerminal({
+    terminal,
+    name: terminal.name,
+    isActive,
+    boundState,
+    nonBindableReason,
+  }),
 });
 
 /**
