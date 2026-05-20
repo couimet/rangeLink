@@ -770,6 +770,16 @@ export class VscodeAdapter
   // ============================================================================
 
   /**
+   * Register event listener for terminal opening.
+   *
+   * @param listener - Callback invoked when a terminal is opened
+   * @returns Disposable to unregister the listener
+   */
+  onDidOpenTerminal(listener: (terminal: vscode.Terminal) => void): vscode.Disposable {
+    return this.ideInstance.window.onDidOpenTerminal(listener);
+  }
+
+  /**
    * Register event listener for terminal closure.
    *
    * @param listener - Callback invoked when a terminal is closed
@@ -777,6 +787,18 @@ export class VscodeAdapter
    */
   onDidCloseTerminal(listener: (terminal: vscode.Terminal) => void): vscode.Disposable {
     return this.ideInstance.window.onDidCloseTerminal(listener);
+  }
+
+  /**
+   * Register event listener for active-terminal changes.
+   *
+   * @param listener - Callback invoked when the active terminal changes
+   * @returns Disposable to unregister the listener
+   */
+  onDidChangeActiveTerminal(
+    listener: (terminal: vscode.Terminal | undefined) => void,
+  ): vscode.Disposable {
+    return this.ideInstance.window.onDidChangeActiveTerminal(listener);
   }
 
   /**

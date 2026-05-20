@@ -6,7 +6,11 @@ import type {
   DestinationAvailabilityService,
   PasteDestinationManager,
 } from '../destinations';
-import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
+import {
+  classifyTerminalForBinding,
+  resolveBoundTerminalProcessId,
+  showTerminalPicker,
+} from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
@@ -41,6 +45,26 @@ export class BindToTerminalCommand {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
     if (preferredTerminal) {
+      const classification = classifyTerminalForBinding(preferredTerminal);
+      const nonBindableReason =
+        classification.visible === true ? classification.nonBindableReason : undefined;
+      if (!classification.visible || nonBindableReason !== undefined) {
+        this.logger.debug(
+          {
+            ...logCtx,
+            terminalName: preferredTerminal.name,
+            source: 'context-menu',
+            nonBindableReason: nonBindableReason ?? 'not-visible',
+          },
+          'Rejected bind to non-bindable terminal from context menu',
+        );
+        this.ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.BIND_TO_TERMINAL_NOT_BINDABLE_REJECT, {
+            name: preferredTerminal.name,
+          }),
+        );
+        return { outcome: 'cancelled' };
+      }
       this.logger.debug(
         { ...logCtx, terminalName: preferredTerminal.name, source: 'context-menu' },
         `Direct bind to terminal "${preferredTerminal.name}" from context menu`,
@@ -68,7 +92,17 @@ export class BindToTerminalCommand {
     }
 
     if (terminalItems.length === 1) {
-      const { terminal } = terminalItems[0].terminalInfo;
+      const { terminal, nonBindableReason } = terminalItems[0].terminalInfo;
+      if (nonBindableReason !== undefined) {
+        this.logger.debug(
+          { ...logCtx, terminalName: terminal.name, nonBindableReason },
+          'Sole terminal is non-bindable; rejecting auto-bind',
+        );
+        this.ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.BIND_TO_TERMINAL_NOT_BINDABLE_REJECT, { name: terminal.name }),
+        );
+        return { outcome: 'cancelled' };
+      }
       this.logger.debug(
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',

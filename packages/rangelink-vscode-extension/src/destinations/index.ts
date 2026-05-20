@@ -11,3 +11,4 @@ export * from './DestinationAvailabilityService';
 export * from './DestinationPicker';
 export * from './destinationBuilders';
 export * from './PasteDestinationManager';
+export * from './wireActiveTerminalBindabilityContext';

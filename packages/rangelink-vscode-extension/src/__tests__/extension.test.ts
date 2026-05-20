@@ -43,7 +43,9 @@ jest.mock('vscode', () => ({
     showInformationMessage: jest.fn(),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
     setStatusBarMessage: jest.fn(),
+    onDidOpenTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeActiveTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
     registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
     tabGroups: {
@@ -637,7 +639,7 @@ describe('Extension lifecycle', () => {
 
     extension.activate(mockContext as any);
 
-    const INFRASTRUCTURE_COUNT = 3;
+    const INFRASTRUCTURE_COUNT = 4;
     const PROVIDER_COUNT = 4;
     const DESTINATION_MANAGER_LISTENERS = 3;
     const EXPECTED_SUBSCRIPTION_COUNT =

@@ -55,6 +55,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import type { WiringServices } from './createWiringServices';
+import { wireActiveTerminalBindabilityContext } from './destinations';
 import type { SubscriptionRegistrar } from './SubscriptionRegistrar';
 import {
   type AIAssistantDestinationKind,
@@ -108,6 +109,7 @@ export const wireSubscriptions = (
   registrar.pushDisposable(delimiterCache);
   registrar.pushDisposable(statusBar);
   registrar.pushDisposable(destinationManager);
+  registrar.pushDisposable(wireActiveTerminalBindabilityContext(ideAdapter, logger));
 
   // Link providers
   registrar.registerTerminalLinkProvider(

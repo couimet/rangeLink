@@ -149,8 +149,11 @@ describe('wireSubscriptions', () => {
     expect(calls[1][0]).toStrictEqual(DOCUMENT_SELECTOR);
   });
 
-  it('pushes 3 disposables (delimiterCache, statusBar, destinationManager)', () => {
-    expect(registrar.pushDisposable).toHaveBeenCalledTimes(3);
+  it('pushes disposables: delimiterCache, statusBar, destinationManager, and active terminal bindability context', () => {
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(1, services.delimiterCache);
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(2, services.statusBar);
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.destinationManager);
+    expect(registrar.pushDisposable).toHaveBeenCalledTimes(4);
   });
 
   describe('closure delegation', () => {

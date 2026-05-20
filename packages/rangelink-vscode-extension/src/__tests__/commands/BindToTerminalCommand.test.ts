@@ -379,6 +379,97 @@ describe('BindToTerminalCommand', () => {
           'Single terminal, auto-binding',
         );
       });
+
+      it('rejects context-menu bind on an extension-managed pty terminal', async () => {
+        const ptyTerminal = createMockTerminal({
+          name: 'Jest (rangeLink-002)',
+          exitStatus: undefined,
+          creationOptions: {
+            name: 'Jest (rangeLink-002)',
+            pty: { onDidWrite: jest.fn(), open: jest.fn(), close: jest.fn() },
+          },
+        });
+        mockAdapter = createMockVscodeAdapter();
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        const result = await command.execute(ptyTerminal);
+
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockDestinationManager.bind).not.toHaveBeenCalled();
+        expect(mockAvailabilityService.getTerminalItems).not.toHaveBeenCalled();
+        expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+          'Cannot bind to "Jest (rangeLink-002)": it is managed by an extension and does not accept input.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'BindToTerminalCommand.execute',
+            terminalName: 'Jest (rangeLink-002)',
+            source: 'context-menu',
+            nonBindableReason: 'extension-managed',
+          },
+          'Rejected bind to non-bindable terminal from context menu',
+        );
+      });
+
+      it('rejects context-menu bind on an exited terminal', async () => {
+        const exitedTerminal = createMockTerminal({
+          name: 'dead-shell',
+          exitStatus: { code: 0, reason: 1 },
+        });
+        mockAdapter = createMockVscodeAdapter();
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        const result = await command.execute(exitedTerminal);
+
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockDestinationManager.bind).not.toHaveBeenCalled();
+        expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+          'Cannot bind to "dead-shell": it is managed by an extension and does not accept input.',
+        );
+      });
+    });
+
+    describe('1 non-bindable terminal (palette path)', () => {
+      it('rejects auto-bind when the sole terminal carries nonBindableReason', async () => {
+        const ptyTerminal = createMockTerminal({ name: 'Jest' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getTerminalItems.mockResolvedValue([
+          createMockTerminalQuickPickItem(ptyTerminal, false, undefined, 'extension-managed'),
+        ]);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        const result = await command.execute();
+
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockDestinationManager.bind).not.toHaveBeenCalled();
+        expect(showTerminalPickerSpy).not.toHaveBeenCalled();
+        expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+          'Cannot bind to "Jest": it is managed by an extension and does not accept input.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'BindToTerminalCommand.execute',
+            terminalName: 'Jest',
+            nonBindableReason: 'extension-managed',
+          },
+          'Sole terminal is non-bindable; rejecting auto-bind',
+        );
+      });
     });
   });
 });
