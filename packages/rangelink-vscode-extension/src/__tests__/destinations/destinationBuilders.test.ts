@@ -1,6 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
+import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import {
   buildTerminalDestination,
   buildTextEditorDestination,
@@ -8,6 +9,7 @@ import {
   type DestinationBuilderContext,
   type DestinationBuilder,
   registerAllDestinationBuilders,
+  resolveKindByExtensionId,
 } from '../../destinations';
 import { AutoPasteResult, type DestinationKind } from '../../types';
 import {
@@ -931,6 +933,52 @@ describe('destinationBuilders', () => {
         { fn: 'gemini.getColdRefocus', totalMs: 100, intervalMs: 500 },
         'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
       );
+    });
+  });
+
+  describe('resolveKindByExtensionId', () => {
+    it('returns built-in kind when extensionId matches a BUILTIN_AI_ASSISTANTS key', () => {
+      expect(resolveKindByExtensionId('anthropic.claude-code', [])).toBe('claude-code');
+      expect(resolveKindByExtensionId('google.geminicodeassist', [])).toBe('gemini-code-assist');
+      expect(resolveKindByExtensionId('github.copilot-chat', [])).toBe('github-copilot-chat');
+    });
+
+    it('returns custom kind when extensionId matches a custom assistant', () => {
+      const customAssistants: CustomAiAssistantConfig[] = [
+        {
+          kind: 'custom-ai:my-extension',
+          extensionId: 'my-extension',
+          extensionName: 'My Extension',
+          focusCommands: ['my-extension.focus'],
+        },
+      ];
+
+      expect(resolveKindByExtensionId('my-extension', customAssistants)).toBe(
+        'custom-ai:my-extension',
+      );
+    });
+
+    it('prioritises built-in over custom when both match', () => {
+      const customAssistants: CustomAiAssistantConfig[] = [
+        {
+          kind: 'custom-ai:anthropic.claude-code',
+          extensionId: 'anthropic.claude-code',
+          extensionName: 'Custom Override',
+          focusCommands: ['custom.focus'],
+        },
+      ];
+
+      expect(resolveKindByExtensionId('anthropic.claude-code', customAssistants)).toBe(
+        'claude-code',
+      );
+    });
+
+    it('returns undefined when extensionId matches neither built-in nor custom', () => {
+      expect(resolveKindByExtensionId('unknown.assistant', [])).toBeUndefined();
+    });
+
+    it('returns undefined when customAssistants is empty and extensionId is not built-in', () => {
+      expect(resolveKindByExtensionId('some.random.id', [])).toBeUndefined();
     });
   });
 });

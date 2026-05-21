@@ -1,6 +1,7 @@
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -51,6 +52,7 @@ import {
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from '../constants';
+import * as destinationBuildersModule from '../destinations/destinationBuilders';
 import * as wireActiveTerminalBindabilityContextModule from '../destinations/wireActiveTerminalBindabilityContext';
 import { wireSubscriptions } from '../wireSubscriptions';
 
@@ -76,6 +78,7 @@ const EXPECTED_COMMANDS = [
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_UNBIND_DESTINATION,
@@ -141,7 +144,7 @@ describe('wireSubscriptions', () => {
       expect(registeredCommands).toContain(cmd);
     }
 
-    expect(registeredCommands).toHaveLength(51);
+    expect(registeredCommands).toHaveLength(52);
   });
 
   it('registers 2 terminal link providers', () => {
@@ -352,6 +355,19 @@ describe('wireSubscriptions', () => {
     it('CMD_BIND_TO_DESTINATION delegates to bindToDestinationCommand.execute', async () => {
       await registrar.getHandler(CMD_BIND_TO_DESTINATION)();
       expect(services.bindToDestinationCommand.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_BIND_TO_CUSTOM_AI_BY_ID resolves extensionId and delegates to destinationManager.bind', async () => {
+      const resolveSpy = jest
+        .spyOn(destinationBuildersModule, 'resolveKindByExtensionId')
+        .mockReturnValue('custom-ai:dummy-ai-extension');
+      await registrar.getHandler(CMD_BIND_TO_CUSTOM_AI_BY_ID)({
+        extensionId: 'dummy-ai-extension',
+      });
+      expect(services.destinationManager.bind).toHaveBeenCalledWith({
+        kind: 'custom-ai:dummy-ai-extension',
+      });
+      expect(resolveSpy).toHaveBeenCalledWith('dummy-ai-extension', []);
     });
 
     it('CMD_JUMP_TO_DESTINATION delegates to jumpToDestinationCommand.execute', async () => {

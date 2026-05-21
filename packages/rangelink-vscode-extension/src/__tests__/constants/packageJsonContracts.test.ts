@@ -186,6 +186,15 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.bindToCustomAiById', () => {
+        expect(findCommand('rangelink.bindToCustomAiById')).toStrictEqual({
+          command: 'rangelink.bindToCustomAiById',
+          title: 'Bind to Custom AI by ID',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToGeminiCodeAssist', () => {
         expect(findCommand('rangelink.bindToGeminiCodeAssist')).toStrictEqual({
           command: 'rangelink.bindToGeminiCodeAssist',
@@ -505,7 +514,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(48);
+      expect(commands).toHaveLength(49);
     });
   });
 
@@ -1203,12 +1212,19 @@ describe('package.json contributions', () => {
         commandPalette.find((entry) => entry.command === commandId);
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(28);
+        expect(commandPalette).toHaveLength(29);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
         expect(findEntry('rangelink.bindToTerminalHere')).toStrictEqual({
           command: 'rangelink.bindToTerminalHere',
+          when: 'false',
+        });
+      });
+
+      it('bindToCustomAiById is hidden from command palette', () => {
+        expect(findEntry('rangelink.bindToCustomAiById')).toStrictEqual({
+          command: 'rangelink.bindToCustomAiById',
           when: 'false',
         });
       });

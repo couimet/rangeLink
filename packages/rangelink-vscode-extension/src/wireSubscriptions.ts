@@ -1,9 +1,11 @@
 import type * as vscode from 'vscode';
 
 import { createBindAIAssistantCommand } from './commands/createBindAIAssistantCommand';
+import { createBindToCustomAiByIdCommand } from './commands/createBindToCustomAiByIdCommand';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -96,6 +98,7 @@ export const wireSubscriptions = (
     terminalLinkProvider,
     documentLinkProvider,
     delimiterCache,
+    customAssistants,
   } = services;
 
   const bindToTerminalHandler = async (terminal?: unknown) => {
@@ -174,6 +177,11 @@ export const wireSubscriptions = (
       ),
     );
   }
+
+  registrar.registerCommand(
+    CMD_BIND_TO_CUSTOM_AI_BY_ID,
+    createBindToCustomAiByIdCommand(customAssistants, destinationManager, logger),
+  );
 
   registrar.registerCommand(CMD_UNBIND_DESTINATION, () => {
     destinationManager.unbind();

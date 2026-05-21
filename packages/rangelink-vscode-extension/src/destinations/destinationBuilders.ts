@@ -24,6 +24,7 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import {
   AutoPasteResult,
   type AIAssistantDestinationKind,
+  type CustomAiAssistantKind,
   type DestinationKind,
   MessageCode,
   RelativePathFormat,
@@ -403,6 +404,27 @@ const createOverriddenBuiltinBuilder =
       },
     });
   };
+
+// ============================================================================
+// Lookup
+// ============================================================================
+
+/**
+ * Resolve an extension ID to a destination kind.
+ * Searches built-in assistants by extensionId map key first, then custom configs by extensionId field.
+ */
+export const resolveKindByExtensionId = (
+  extensionId: string,
+  customAssistants: CustomAiAssistantConfig[],
+): AIAssistantDestinationKind | CustomAiAssistantKind | undefined => {
+  const builtin = BUILTIN_AI_ASSISTANTS[extensionId];
+  if (builtin) return builtin.kind;
+
+  const custom = customAssistants.find((c) => c.extensionId === extensionId);
+  if (custom) return custom.kind;
+
+  return undefined;
+};
 
 // ============================================================================
 // Registration

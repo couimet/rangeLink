@@ -526,6 +526,7 @@ describe('Extension lifecycle', () => {
   const expectedCommands = [
     'rangelink.bindToClaudeCode',
     'rangelink.bindToCursorAI',
+    'rangelink.bindToCustomAiById',
     'rangelink.bindToDestination',
     'rangelink.bindToGeminiCodeAssist',
     'rangelink.bindToGitHubCopilotChat',

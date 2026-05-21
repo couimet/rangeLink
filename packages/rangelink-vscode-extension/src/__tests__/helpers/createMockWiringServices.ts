@@ -55,4 +55,5 @@ export const createMockWiringServices = (): jest.Mocked<WiringServices> =>
     terminalLinkProvider: {},
     documentLinkProvider: { handleLinkClick: jest.fn() },
     delimiterCache: { dispose: jest.fn() },
+    customAssistants: [],
   }) as unknown as jest.Mocked<WiringServices>;

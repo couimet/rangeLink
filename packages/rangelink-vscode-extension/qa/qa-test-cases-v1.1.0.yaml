@@ -1830,7 +1830,7 @@ test_cases:
     feature: 'Custom AI Assistants — Tier 1 Paste Flow'
     scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
     expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-011
     labels:
@@ -1838,7 +1838,7 @@ test_cases:
     feature: 'Custom AI Assistants — Tier 1 Clipboard'
     scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
     expected_result: 'Clipboard contains the sentinel (outer preserve restores it; DirectInsertFactory never touches clipboard)'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-012
     labels:
@@ -1846,7 +1846,7 @@ test_cases:
     feature: 'Custom AI Assistants — Tier 3 Toast'
     scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
     expected_result: 'Info toast "Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use." logged; ManualPasteInsertFactory success logged'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-013
     labels:
@@ -1854,7 +1854,7 @@ test_cases:
     feature: 'Custom AI Assistants — Tier 2→3 Fallback'
     scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
     expected_result: 'Tier 2 skip log (nonexistent.paste not registered), Tier 3 resolution log (dummyAi.focusPanel), manual-paste toast shown'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-014
     labels:
@@ -1862,7 +1862,7 @@ test_cases:
     feature: 'Custom AI Assistants — ${content} Template'
     scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
     expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
-    automated: assisted
+    automated: true
 
   - id: custom-ai-assistant-015
     labels:
@@ -1886,7 +1886,7 @@ test_cases:
     feature: 'Custom AI Assistants — Cold Start'
     scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
     expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Built-in AI Assistants
