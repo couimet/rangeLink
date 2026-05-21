@@ -39,7 +39,7 @@ export const getEligibleTerminals = async (
         () => undefined,
       );
       return {
-        terminal,
+        bindOptions: { kind: 'terminal', terminal },
         name: terminal.name,
         isActive: terminal === activeTerminal,
         processId,

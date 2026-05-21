@@ -51,7 +51,7 @@
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:fast": "jest --coverage --testPathIgnorePatterns '<rootDir>/src/__integration-tests__/' '\\.integration\\.test\\.ts$'",
     "test:release": "./scripts/run-integration-tests.sh",
-    "test:release:automated": "./scripts/run-integration-tests.sh --automated",
+    "test:release:automated": "./scripts/run-integration-tests.sh --automated --exclude-label requires-extensions --exclude-label cursor",
     "test:release:grep": "./scripts/run-integration-tests.sh --grep",
     "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && node scripts/setup-integration-test-settings.js",
     "test:release:with-extensions": "./scripts/run-integration-tests.sh --with-extensions",

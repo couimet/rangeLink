@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
+import { projectTestStatusFields, VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
@@ -509,23 +509,14 @@ describe('VscodeAdapter', () => {
       );
     });
 
-    it('should log semantic fields: displayName, isActive, boundState, remainingCount', async () => {
+    it('should log base semantic fields without flat status fields when RANGELINK_CAPTURE_LOGS is unset', async () => {
       const items = [
         {
           label: 'Terminal ("bash")',
           description: 'bound · active',
           itemKind: 'bindable' as const,
           displayName: 'Terminal ("bash")',
-          isActive: true,
-          boundState: 'bound' as const,
-        },
-        {
-          label: 'Terminal ("zsh")',
-          description: 'active',
-          itemKind: 'bindable' as const,
-          displayName: 'Terminal ("zsh")',
-          isActive: true,
-          boundState: 'not-bound' as const,
+          terminalInfo: { name: 'bash', isActive: true, boundState: 'bound' as const },
         },
         {
           label: 'More terminals...',
@@ -542,7 +533,7 @@ describe('VscodeAdapter', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'VscodeAdapter.showQuickPick',
-          itemCount: 4,
+          itemCount: 3,
           options: undefined,
           items: [
             {
@@ -550,16 +541,6 @@ describe('VscodeAdapter', () => {
               description: 'bound · active',
               itemKind: 'bindable',
               displayName: 'Terminal ("bash")',
-              isActive: true,
-              boundState: 'bound',
-            },
-            {
-              label: 'Terminal ("zsh")',
-              description: 'active',
-              itemKind: 'bindable',
-              displayName: 'Terminal ("zsh")',
-              isActive: true,
-              boundState: 'not-bound',
             },
             {
               label: 'More terminals...',
@@ -574,14 +555,77 @@ describe('VscodeAdapter', () => {
       );
     });
 
+    it('should project flat isActive/boundState from terminalInfo/fileInfo when RANGELINK_CAPTURE_LOGS=true', async () => {
+      const originalEnv = process.env.RANGELINK_CAPTURE_LOGS;
+      process.env.RANGELINK_CAPTURE_LOGS = 'true';
+      try {
+        jest.resetModules();
+        const { VscodeAdapter: CapturingAdapter } = await import(
+          '../../../ide/vscode/VscodeAdapter'
+        );
+        const capturingAdapter = new CapturingAdapter(mockVSCode, mockLogger);
+
+        const items = [
+          {
+            label: 'Terminal ("bash")',
+            description: 'bound · active',
+            itemKind: 'bindable' as const,
+            displayName: 'Terminal ("bash")',
+            terminalInfo: { name: 'bash', isActive: true, boundState: 'bound' as const },
+          },
+          {
+            label: 'app.ts',
+            itemKind: 'bindable' as const,
+            displayName: 'app.ts',
+            fileInfo: { filename: 'app.ts', boundState: 'not-bound' as const },
+          },
+          { label: 'No destinations available', itemKind: 'info' as const },
+        ];
+        (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+        await capturingAdapter.showQuickPick(items);
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'VscodeAdapter.showQuickPick',
+            itemCount: 3,
+            options: undefined,
+            items: [
+              {
+                label: 'Terminal ("bash")',
+                description: 'bound · active',
+                itemKind: 'bindable',
+                displayName: 'Terminal ("bash")',
+                isActive: true,
+                boundState: 'bound',
+              },
+              {
+                label: 'app.ts',
+                itemKind: 'bindable',
+                displayName: 'app.ts',
+                boundState: 'not-bound',
+              },
+              { label: 'No destinations available', itemKind: 'info' },
+            ],
+          },
+          'Showing quick pick',
+        );
+      } finally {
+        if (originalEnv === undefined) {
+          delete process.env.RANGELINK_CAPTURE_LOGS;
+        } else {
+          process.env.RANGELINK_CAPTURE_LOGS = originalEnv;
+        }
+      }
+    });
+
     it('should omit absent semantic fields from logged items (not set to undefined)', async () => {
       const items = [
         { label: 'Plain item' },
         { label: 'With displayName only', displayName: 'raw name' },
         {
-          label: 'With boundState only',
-          boundState: 'not-bound' as const,
-          itemKind: 'bindable' as const,
+          label: 'With itemKind only',
+          itemKind: 'info' as const,
         },
       ];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
@@ -594,7 +638,7 @@ describe('VscodeAdapter', () => {
 
       expect(Object.keys(loggedItems[0])).toStrictEqual(['label']);
       expect(Object.keys(loggedItems[1]).sort()).toStrictEqual(['displayName', 'label']);
-      expect(Object.keys(loggedItems[2]).sort()).toStrictEqual(['boundState', 'itemKind', 'label']);
+      expect(Object.keys(loggedItems[2]).sort()).toStrictEqual(['itemKind', 'label']);
     });
 
     it('should log only description when detail, kind, and itemKind are absent', async () => {
@@ -612,6 +656,53 @@ describe('VscodeAdapter', () => {
         },
         'Showing quick pick',
       );
+    });
+
+    describe('projectTestStatusFields', () => {
+      it('extracts isActive and boundState from terminalInfo', () => {
+        const record = {
+          terminalInfo: { name: 'bash', isActive: true, boundState: 'bound' },
+        };
+
+        expect(projectTestStatusFields(record)).toStrictEqual({
+          isActive: true,
+          boundState: 'bound',
+        });
+      });
+
+      it('extracts only boundState from fileInfo (no isActive)', () => {
+        const record = {
+          fileInfo: { filename: 'app.ts', boundState: 'not-bound' },
+        };
+
+        expect(projectTestStatusFields(record)).toStrictEqual({
+          boundState: 'not-bound',
+        });
+      });
+
+      it('omits absent fields rather than emitting undefined', () => {
+        const record = {
+          terminalInfo: { name: 'bash', isActive: true },
+        };
+
+        expect(projectTestStatusFields(record)).toStrictEqual({ isActive: true });
+      });
+
+      it('returns empty object when neither terminalInfo nor fileInfo is present', () => {
+        expect(projectTestStatusFields({ label: 'foo' })).toStrictEqual({});
+      });
+
+      it('prefers terminalInfo when both terminalInfo and fileInfo are present', () => {
+        const record = {
+          terminalInfo: { name: 'bash', isActive: true, boundState: 'bound' },
+          fileInfo: { filename: 'app.ts', boundState: 'not-bound' },
+        };
+
+        expect(projectTestStatusFields(record)).toStrictEqual({
+          isActive: true,
+          boundState: 'bound',
+        });
+      });
     });
 
     it('should log only detail when description, kind, and itemKind are absent', async () => {

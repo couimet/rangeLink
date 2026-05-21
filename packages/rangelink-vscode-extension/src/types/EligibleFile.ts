@@ -1,5 +1,4 @@
-import type * as vscode from 'vscode';
-
+import type { TextEditorBindOptions } from './BindOptions';
 import type { BoundState } from './BoundState';
 
 /**
@@ -9,7 +8,7 @@ import type { BoundState } from './BoundState';
  * `ideAdapter.findVisibleEditorsByUri()`.
  */
 export interface EligibleFile {
-  readonly uri: vscode.Uri;
+  readonly bindOptions: TextEditorBindOptions;
   readonly filename: string;
   readonly displayPath: string;
   readonly viewColumn: number;

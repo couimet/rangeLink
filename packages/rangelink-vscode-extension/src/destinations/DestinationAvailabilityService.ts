@@ -328,14 +328,9 @@ export class DestinationAvailabilityService {
       label: eligibleFile.filename,
       displayName: eligibleFile.filename,
       description: buildFileDescription(eligibleFile, disambiguator),
-      bindOptions: {
-        kind: 'text-editor',
-        uri: eligibleFile.uri,
-        viewColumn: eligibleFile.viewColumn,
-      },
+      bindOptions: eligibleFile.bindOptions,
       itemKind: 'bindable',
       fileInfo: eligibleFile,
-      boundState: eligibleFile.boundState,
     };
   }
 
@@ -373,16 +368,14 @@ export class DestinationAvailabilityService {
 
   private buildTerminalItem(eligibleTerminal: EligibleTerminal): TerminalBindableQuickPickItem {
     const displayName = formatMessage(MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT, {
-      name: eligibleTerminal.terminal.name,
+      name: eligibleTerminal.name,
     });
 
     return {
       label: displayName,
       displayName,
-      bindOptions: { kind: 'terminal', terminal: eligibleTerminal.terminal },
+      bindOptions: eligibleTerminal.bindOptions,
       itemKind: 'bindable',
-      isActive: eligibleTerminal.isActive,
-      boundState: eligibleTerminal.boundState,
       terminalInfo: eligibleTerminal,
     };
   }

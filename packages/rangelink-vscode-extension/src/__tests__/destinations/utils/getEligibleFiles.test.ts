@@ -30,7 +30,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -52,7 +52,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -60,7 +60,7 @@ describe('getEligibleFiles', () => {
         isActiveEditor: false,
       },
       {
-        uri: uri2,
+        bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 2 },
         filename: 'utils.ts',
         displayPath: 'src/utils.ts',
         viewColumn: 2,
@@ -81,7 +81,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -103,7 +103,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -125,7 +125,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -147,7 +147,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -155,7 +155,7 @@ describe('getEligibleFiles', () => {
         isActiveEditor: false,
       },
       {
-        uri: uri2,
+        bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
         filename: 'utils.ts',
         displayPath: 'src/utils.ts',
         viewColumn: 1,
@@ -178,7 +178,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -202,7 +202,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -221,7 +221,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,
@@ -267,7 +267,7 @@ describe('getEligibleFiles', () => {
 
     expect(result).toStrictEqual([
       {
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
         filename: 'app.ts',
         displayPath: 'src/app.ts',
         viewColumn: 1,

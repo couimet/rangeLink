@@ -26,8 +26,8 @@ export const markBoundFile = (
     ...f,
     boundState:
       boundFileUriString !== undefined &&
-      f.uri.toString() === boundFileUriString &&
+      f.bindOptions.uri.toString() === boundFileUriString &&
       (boundFileViewColumn === undefined || f.viewColumn === boundFileViewColumn)
-        ? ('bound' as const)
-        : ('not-bound' as const),
+        ? 'bound'
+        : 'not-bound',
   }));

@@ -1,5 +1,4 @@
-import type * as vscode from 'vscode';
-
+import type { TerminalBindOptions } from './BindOptions';
 import type { BoundState } from './BoundState';
 
 /**
@@ -9,7 +8,7 @@ import type { BoundState } from './BoundState';
  * out upstream in `getEligibleTerminals` and never reach this shape.
  */
 export interface EligibleTerminal {
-  readonly terminal: vscode.Terminal;
+  readonly bindOptions: TerminalBindOptions;
   readonly name: string;
   readonly isActive: boolean;
   readonly processId?: number;

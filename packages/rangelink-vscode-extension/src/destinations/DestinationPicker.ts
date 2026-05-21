@@ -170,12 +170,12 @@ export class DestinationPicker {
       {
         getPlaceholder: () => formatMessage(placeholderMessageCode),
         onSelected: (file) => ({
-          outcome: 'selected' as const,
-          bindOptions: { kind: 'text-editor' as const, uri: file.uri, viewColumn: file.viewColumn },
+          outcome: 'selected',
+          bindOptions: file.bindOptions,
         }),
         onDismissed: () => {
           this.logger.debug(logCtx, 'User returned from secondary file picker');
-          return { outcome: 'returned-to-main-picker' as const };
+          return { outcome: 'returned-to-main-picker' };
         },
       },
       this.logger,
@@ -200,12 +200,12 @@ export class DestinationPicker {
       {
         getPlaceholder: () => formatMessage(placeholderMessageCode),
         onSelected: (eligible) => ({
-          outcome: 'selected' as const,
-          bindOptions: { kind: 'terminal' as const, terminal: eligible.terminal },
+          outcome: 'selected',
+          bindOptions: eligible.bindOptions,
         }),
         onDismissed: () => {
           this.logger.debug(logCtx, 'User returned from secondary terminal picker');
-          return { outcome: 'returned-to-main-picker' as const };
+          return { outcome: 'returned-to-main-picker' };
         },
       },
       this.logger,

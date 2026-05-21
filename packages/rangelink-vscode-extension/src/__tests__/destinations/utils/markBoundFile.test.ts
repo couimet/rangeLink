@@ -8,8 +8,11 @@ describe('markBoundFile', () => {
   let fileC: EligibleFile;
 
   beforeEach(() => {
+    const uriA = createMockUri('/workspace/src/app.ts');
+    const uriB = createMockUri('/workspace/src/utils.ts');
+    const uriC = createMockUri('/workspace/src/index.ts');
     fileA = {
-      uri: createMockUri('/workspace/src/app.ts'),
+      bindOptions: { kind: 'text-editor', uri: uriA, viewColumn: 1 },
       filename: 'app.ts',
       displayPath: 'src/app.ts',
       viewColumn: 1,
@@ -17,7 +20,7 @@ describe('markBoundFile', () => {
       isActiveEditor: true,
     };
     fileB = {
-      uri: createMockUri('/workspace/src/utils.ts'),
+      bindOptions: { kind: 'text-editor', uri: uriB, viewColumn: 1 },
       filename: 'utils.ts',
       displayPath: 'src/utils.ts',
       viewColumn: 1,
@@ -25,7 +28,7 @@ describe('markBoundFile', () => {
       isActiveEditor: false,
     };
     fileC = {
-      uri: createMockUri('/workspace/src/index.ts'),
+      bindOptions: { kind: 'text-editor', uri: uriC, viewColumn: 2 },
       filename: 'index.ts',
       displayPath: 'src/index.ts',
       viewColumn: 2,
@@ -35,7 +38,7 @@ describe('markBoundFile', () => {
   });
 
   it('marks matching file as bound and others as not-bound', () => {
-    const result = markBoundFile([fileA, fileB, fileC], fileB.uri.toString());
+    const result = markBoundFile([fileA, fileB, fileC], fileB.bindOptions.uri.toString());
 
     expect(result).toStrictEqual([
       { ...fileA, boundState: 'not-bound' },
@@ -63,10 +66,10 @@ describe('markBoundFile', () => {
   });
 
   it('preserves all original EligibleFile properties', () => {
-    const result = markBoundFile([fileA], fileA.uri.toString());
+    const result = markBoundFile([fileA], fileA.bindOptions.uri.toString());
 
     expect(result[0]).toStrictEqual({
-      uri: fileA.uri,
+      bindOptions: fileA.bindOptions,
       filename: 'app.ts',
       displayPath: 'src/app.ts',
       viewColumn: 1,
@@ -77,7 +80,7 @@ describe('markBoundFile', () => {
   });
 
   it('does not mutate the input array', () => {
-    markBoundFile([fileA], fileA.uri.toString());
+    markBoundFile([fileA], fileA.bindOptions.uri.toString());
 
     expect(fileA.boundState).toBeUndefined();
   });
@@ -87,9 +90,13 @@ describe('markBoundFile', () => {
   });
 
   it('marks file as bound when URI and viewColumn both match', () => {
-    const fileAInColumn2: EligibleFile = { ...fileA, viewColumn: 2 };
+    const fileAInColumn2: EligibleFile = {
+      ...fileA,
+      viewColumn: 2,
+      bindOptions: { ...fileA.bindOptions, viewColumn: 2 },
+    };
 
-    const result = markBoundFile([fileA, fileAInColumn2], fileA.uri.toString(), 1);
+    const result = markBoundFile([fileA, fileAInColumn2], fileA.bindOptions.uri.toString(), 1);
 
     expect(result).toStrictEqual([
       { ...fileA, boundState: 'bound' },
@@ -98,9 +105,13 @@ describe('markBoundFile', () => {
   });
 
   it('does not mark file as bound when URI matches but viewColumn differs', () => {
-    const fileAInColumn2: EligibleFile = { ...fileA, viewColumn: 2 };
+    const fileAInColumn2: EligibleFile = {
+      ...fileA,
+      viewColumn: 2,
+      bindOptions: { ...fileA.bindOptions, viewColumn: 2 },
+    };
 
-    const result = markBoundFile([fileA, fileAInColumn2], fileA.uri.toString(), 2);
+    const result = markBoundFile([fileA, fileAInColumn2], fileA.bindOptions.uri.toString(), 2);
 
     expect(result).toStrictEqual([
       { ...fileA, boundState: 'not-bound' },

@@ -33,8 +33,6 @@ describe('showTerminalPicker', () => {
     displayName: item.terminalInfo.name,
     bindOptions: item.bindOptions,
     itemKind: 'bindable',
-    isActive: item.isActive,
-    boundState: item.boundState,
     terminalInfo: item.terminalInfo,
   });
 
@@ -137,7 +135,7 @@ describe('showTerminalPicker', () => {
 
     it('marks active terminal with active description', async () => {
       const items = createTerminalItems(3);
-      const activeTerminal = items[1].terminalInfo.terminal;
+      const activeTerminal = items[1].terminalInfo.bindOptions.terminal;
       items[1] = createMockTerminalQuickPickItem(activeTerminal, true);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(reformattedItem(items[1]));

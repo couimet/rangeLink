@@ -124,13 +124,7 @@ export class BindToTextEditorCommand {
     if (fileItems.length === 1) {
       const { fileInfo } = fileItems[0];
       this.logger.debug({ ...logCtx, filename: fileInfo.filename }, 'Single file, auto-binding');
-      return this.mapBindResult(
-        await this.destinationManager.bind({
-          kind: 'text-editor',
-          uri: fileInfo.uri,
-          viewColumn: fileInfo.viewColumn,
-        }),
-      );
+      return this.mapBindResult(await this.destinationManager.bind(fileInfo.bindOptions));
     }
 
     const result = await showFilePicker(
@@ -139,13 +133,7 @@ export class BindToTextEditorCommand {
       {
         getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (file) =>
-          this.mapBindResult(
-            await this.destinationManager.bind({
-              kind: 'text-editor',
-              uri: file.uri,
-              viewColumn: file.viewColumn,
-            }),
-          ),
+          this.mapBindResult(await this.destinationManager.bind(file.bindOptions)),
       },
       this.logger,
     );

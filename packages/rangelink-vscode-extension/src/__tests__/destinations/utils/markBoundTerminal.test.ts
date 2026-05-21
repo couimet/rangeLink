@@ -69,7 +69,7 @@ describe('markBoundTerminal', () => {
     const result = markBoundTerminal(terminals, 42);
 
     expect(result[0]).toStrictEqual({
-      terminal,
+      bindOptions: { kind: 'terminal', terminal },
       name: 'bash',
       isActive: true,
       processId: 42,

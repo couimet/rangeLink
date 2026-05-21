@@ -21,6 +21,6 @@ export const markBoundTerminal = (
       boundTerminalProcessId !== undefined &&
       t.processId !== undefined &&
       t.processId === boundTerminalProcessId
-        ? ('bound' as const)
-        : ('not-bound' as const),
+        ? 'bound'
+        : 'not-bound',
   }));
