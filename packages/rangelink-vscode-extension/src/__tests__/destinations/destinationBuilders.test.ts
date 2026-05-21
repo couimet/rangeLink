@@ -5,7 +5,6 @@ import {
   buildTerminalDestination,
   buildTextEditorDestination,
   createCustomAiAssistantBuilder,
-  GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
   type DestinationBuilderContext,
   type DestinationBuilder,
   registerAllDestinationBuilders,
@@ -785,13 +784,14 @@ describe('destinationBuilders', () => {
 
       const createCapabilityMock = context.factories.focusCapability
         .createAIAssistantCapability as jest.Mock;
-      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
-      const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
-      expect(capabilities).toStrictEqual([
-        'claude-vscode.focus',
-        'claude-vscode.sidebar.open',
-        'claude-vscode.editor.open',
-      ]);
+      expect(createCapabilityMock).toHaveBeenCalledWith(
+        ['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open'],
+        expect.any(Function),
+      );
+
+      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (
+        ...args: unknown[]
+      ) => unknown;
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();
@@ -808,9 +808,7 @@ describe('destinationBuilders', () => {
 
       const createCapabilityMock = context.factories.focusCapability
         .createAIAssistantCapability as jest.Mock;
-      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
-      const [, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
-      expect(getColdRefocusArg).toBeUndefined();
+      expect(createCapabilityMock).toHaveBeenCalledWith(expect.any(Array), undefined);
     });
 
     it('uses config values from settings when valid', () => {
@@ -870,9 +868,14 @@ describe('destinationBuilders', () => {
 
       const createCapabilityMock = context.factories.focusCapability
         .createAIAssistantCapability as jest.Mock;
-      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
-      const [capabilities, getColdRefocusArg] = createCapabilityMock.mock.calls[0];
-      expect(capabilities).toStrictEqual(GEMINI_CODE_ASSIST_FOCUS_COMMANDS);
+      expect(createCapabilityMock).toHaveBeenCalledWith(
+        ['cloudcode.gemini.chatView.focus'],
+        expect.any(Function),
+      );
+
+      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (
+        ...args: unknown[]
+      ) => unknown;
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();

@@ -632,13 +632,19 @@ describe('VscodeAdapter', () => {
 
       await adapter.showQuickPick(items);
 
-      const loggedItems = (mockLogger.debug as jest.Mock).mock.calls.find(
-        (call) => call[0]?.fn === 'VscodeAdapter.showQuickPick',
-      )?.[0]?.items;
-
-      expect(Object.keys(loggedItems[0])).toStrictEqual(['label']);
-      expect(Object.keys(loggedItems[1]).sort()).toStrictEqual(['displayName', 'label']);
-      expect(Object.keys(loggedItems[2]).sort()).toStrictEqual(['itemKind', 'label']);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 3,
+          options: undefined,
+          items: [
+            { label: 'Plain item' },
+            { label: 'With displayName only', displayName: 'raw name' },
+            { label: 'With itemKind only', itemKind: 'info' },
+          ],
+        },
+        'Showing quick pick',
+      );
     });
 
     it('should log only description when detail, kind, and itemKind are absent', async () => {
