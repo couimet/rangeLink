@@ -31,7 +31,7 @@ runs:
       run: |
         set -o pipefail
         xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" \
-          pnpm test:release:automated --exclude-label requires-extensions --exclude-label cursor 2>&1 | tee /tmp/test-report-automated.txt
+          pnpm test:release:automated 2>&1 | tee /tmp/test-report-automated.txt
 
     - name: Extract integration test stats
       id: stats

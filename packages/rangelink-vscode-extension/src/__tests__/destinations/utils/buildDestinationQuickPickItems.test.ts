@@ -84,9 +84,12 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "bash"',
             displayName: 'Terminal "bash"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: false,
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: 'bash',
+              isActive: false,
+            },
           },
         ],
       };
@@ -149,9 +152,12 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "bash"',
             displayName: 'Terminal "bash"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: true,
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: true },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: 'bash',
+              isActive: true,
+            },
           },
         ],
       };
@@ -172,16 +178,19 @@ describe('buildDestinationQuickPickItems', () => {
           label: 'Terminal "bash"',
           displayName: 'Terminal "bash"',
           bindOptions: { kind: 'terminal', terminal: mockTerminal },
-          isActive: true,
           itemKind: 'bindable',
           description: 'active',
-          terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: true },
+          terminalInfo: {
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            name: 'bash',
+            isActive: true,
+          },
         },
         separator('Files'),
         {
           label: 'app.ts',
           displayName: 'app.ts',
-          bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
+          bindOptions: fileInfo.bindOptions,
           itemKind: 'bindable',
           description: 'Tab Group 1',
           fileInfo,
@@ -241,7 +250,11 @@ describe('buildDestinationQuickPickItems', () => {
             displayName: 'Terminal "bash"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: 'bash',
+              isActive: false,
+            },
           },
         ],
         'terminal-more': {
@@ -263,7 +276,11 @@ describe('buildDestinationQuickPickItems', () => {
           bindOptions: { kind: 'terminal', terminal: mockTerminal },
           itemKind: 'bindable',
           description: undefined,
-          terminalInfo: { terminal: mockTerminal, name: 'bash', isActive: false },
+          terminalInfo: {
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            name: 'bash',
+            isActive: false,
+          },
         },
         {
           label: 'More terminals...',
@@ -276,7 +293,7 @@ describe('buildDestinationQuickPickItems', () => {
         {
           label: 'index.ts',
           displayName: 'index.ts',
-          bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
+          bindOptions: fileInfo.bindOptions,
           itemKind: 'bindable',
           description: 'Tab Group 1',
           fileInfo,
@@ -310,11 +327,9 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "zsh"',
             displayName: 'Terminal "zsh"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: true,
             itemKind: 'bindable',
-            boundState: 'bound',
             terminalInfo: {
-              terminal: mockTerminal,
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
               name: 'zsh',
               isActive: true,
               boundState: 'bound',
@@ -336,11 +351,9 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "zsh"',
             displayName: 'Terminal "zsh"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: false,
             itemKind: 'bindable',
-            boundState: 'bound',
             terminalInfo: {
-              terminal: mockTerminal,
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
               name: 'zsh',
               isActive: false,
               boundState: 'bound',
@@ -362,11 +375,9 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "zsh"',
             displayName: 'Terminal "zsh"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: true,
             itemKind: 'bindable',
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal: mockTerminal,
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
               name: 'zsh',
               isActive: true,
               boundState: 'not-bound',
@@ -388,11 +399,9 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "node"',
             displayName: 'Terminal "node"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: false,
             itemKind: 'bindable',
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal: mockTerminal,
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
               name: 'node',
               isActive: false,
               boundState: 'not-bound',
@@ -438,9 +447,12 @@ describe('buildDestinationQuickPickItems', () => {
             label: 'Terminal "fish"',
             displayName: 'Terminal "fish"',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            isActive: true,
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'fish', isActive: true },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: 'fish',
+              isActive: true,
+            },
           },
         ],
       };
@@ -451,10 +463,13 @@ describe('buildDestinationQuickPickItems', () => {
         label: '    $(arrow-right) Terminal "fish"',
         displayName: 'Terminal "fish"',
         bindOptions: { kind: 'terminal', terminal: mockTerminal },
-        isActive: true,
         itemKind: 'bindable',
         description: 'active',
-        terminalInfo: { terminal: mockTerminal, name: 'fish', isActive: true },
+        terminalInfo: {
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          name: 'fish',
+          isActive: true,
+        },
       });
     });
 
@@ -502,10 +517,9 @@ describe('buildDestinationQuickPickItems', () => {
         label: 'app.ts',
         displayName: 'app.ts',
         description: 'bound · active · Tab Group 1',
-        bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
+        bindOptions: fileInfo.bindOptions,
         itemKind: 'bindable',
         fileInfo,
-        boundState: 'bound',
       });
     });
 
@@ -555,7 +569,7 @@ describe('buildDestinationQuickPickItems', () => {
         {
           label: 'app.ts',
           displayName: 'app.ts',
-          bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
+          bindOptions: fileInfo.bindOptions,
           itemKind: 'bindable',
           description: 'Tab Group 1',
           fileInfo,

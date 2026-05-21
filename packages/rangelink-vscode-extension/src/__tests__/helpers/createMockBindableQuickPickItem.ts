@@ -27,20 +27,21 @@ export const createMockTerminalQuickPickItem = (
   terminal: vscode.Terminal,
   isActive = false,
   boundState?: EligibleTerminal['boundState'],
-): TerminalBindableQuickPickItem => ({
-  label: `Terminal ("${terminal.name}")`,
-  displayName: `Terminal ("${terminal.name}")`,
-  bindOptions: { kind: 'terminal', terminal },
-  itemKind: 'bindable',
-  isActive,
-  ...(boundState !== undefined && { boundState }),
-  terminalInfo: createMockEligibleTerminal({
+): TerminalBindableQuickPickItem => {
+  const terminalInfo = createMockEligibleTerminal({
     terminal,
     name: terminal.name,
     isActive,
     boundState,
-  }),
-});
+  });
+  return {
+    label: `Terminal ("${terminal.name}")`,
+    displayName: `Terminal ("${terminal.name}")`,
+    bindOptions: terminalInfo.bindOptions,
+    itemKind: 'bindable',
+    terminalInfo,
+  };
+};
 
 /**
  * Create a mock BindableQuickPickItem for an AI assistant.
@@ -57,7 +58,6 @@ export const createMockAIAssistantQuickPickItem = (
   displayName,
   bindOptions: { kind },
   itemKind: 'bindable',
-  isActive: false,
 });
 
 /**
@@ -76,14 +76,9 @@ export const createMockTextEditorQuickPickItem = (
     label: resolvedFileInfo.filename,
     displayName: resolvedFileInfo.filename,
     description,
-    bindOptions: {
-      kind: 'text-editor',
-      uri: resolvedFileInfo.uri,
-      viewColumn: resolvedFileInfo.viewColumn,
-    },
+    bindOptions: resolvedFileInfo.bindOptions,
     itemKind: 'bindable',
     fileInfo: resolvedFileInfo,
-    ...(resolvedFileInfo.boundState !== undefined && { boundState: resolvedFileInfo.boundState }),
   };
 };
 

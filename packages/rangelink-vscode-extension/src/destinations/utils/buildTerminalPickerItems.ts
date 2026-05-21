@@ -18,8 +18,6 @@ export const buildTerminalPickerItems = (
     description: buildTerminalDescription(item.terminalInfo),
     displayName: item.terminalInfo.name,
     bindOptions: item.bindOptions,
-    itemKind: 'bindable' as const,
-    isActive: item.isActive,
-    boundState: item.boundState,
+    itemKind: 'bindable',
     terminalInfo: item.terminalInfo,
   }));

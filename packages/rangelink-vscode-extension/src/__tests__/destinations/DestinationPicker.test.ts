@@ -188,7 +188,7 @@ describe('DestinationPicker', () => {
         expect(showFilePickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',
-          bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
+          bindOptions: fileInfo.bindOptions,
         });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'DestinationPicker.handleQuickPickSelection' },
@@ -323,7 +323,7 @@ describe('DestinationPicker', () => {
           ): Promise<T | undefined> => {
             capturedPlaceholder = handlers.getPlaceholder();
             return handlers.onSelected({
-              terminal: terminal2,
+              bindOptions: { kind: 'terminal', terminal: terminal2 },
               name: 'Terminal 2',
               isActive: false,
             });

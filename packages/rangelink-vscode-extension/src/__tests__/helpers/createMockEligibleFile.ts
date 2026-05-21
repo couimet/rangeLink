@@ -1,3 +1,5 @@
+import type * as vscode from 'vscode';
+
 import type { EligibleFile } from '../../types';
 
 import { createMockUri } from './createMockUri';
@@ -9,7 +11,7 @@ export interface MockEligibleFileOptions {
   readonly isCurrentInGroup?: boolean;
   readonly isActiveEditor?: boolean;
   readonly boundState?: EligibleFile['boundState'];
-  readonly uri?: EligibleFile['uri'];
+  readonly uri?: vscode.Uri;
 }
 
 export const createMockEligibleFile = (options: MockEligibleFileOptions = {}): EligibleFile => {
@@ -22,8 +24,9 @@ export const createMockEligibleFile = (options: MockEligibleFileOptions = {}): E
     boundState,
     uri,
   } = options;
+  const resolvedUri = uri ?? createMockUri(`/workspace/${filename}`);
   return {
-    uri: uri ?? createMockUri(`/workspace/${filename}`),
+    bindOptions: { kind: 'text-editor', uri: resolvedUri, viewColumn },
     filename,
     displayPath: displayPath ?? `src/${filename}`,
     viewColumn,

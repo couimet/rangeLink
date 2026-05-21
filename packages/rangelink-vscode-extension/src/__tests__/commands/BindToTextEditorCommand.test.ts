@@ -83,11 +83,7 @@ describe('BindToTextEditorCommand', () => {
         outcome: 'bound',
         bindInfo: { destinationName: 'app.ts', destinationKind: 'text-editor' },
       });
-      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
-        kind: 'text-editor',
-        uri: eligibleFile.uri,
-        viewColumn: 1,
-      });
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile.bindOptions);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BindToTextEditorCommand.executeWithPicker', filename: 'app.ts' },
         'Single file, auto-binding',
@@ -134,11 +130,7 @@ describe('BindToTextEditorCommand', () => {
         outcome: 'bound',
         bindInfo: { destinationName: 'utils.ts', destinationKind: 'text-editor' },
       });
-      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
-        kind: 'text-editor',
-        uri: eligibleFile2.uri,
-        viewColumn: 2,
-      });
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile2.bindOptions);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 2 },
         'Starting bind to text editor command',

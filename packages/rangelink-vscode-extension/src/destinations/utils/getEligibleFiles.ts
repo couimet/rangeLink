@@ -33,7 +33,7 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
       }
 
       eligibleFiles.push({
-        uri,
+        bindOptions: { kind: 'text-editor', uri, viewColumn: group.viewColumn },
         filename: ideAdapter.getFilenameFromUri(uri),
         displayPath: ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly),
         viewColumn: group.viewColumn,

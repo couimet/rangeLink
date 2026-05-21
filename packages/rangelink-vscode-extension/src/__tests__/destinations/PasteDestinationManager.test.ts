@@ -81,23 +81,23 @@ const expectQuickPickConfirmation = (
   showQuickPickMock: jest.Mock,
   expectedStrings: { currentDestination: string; newDestination: string },
 ): void => {
-  expect(showQuickPickMock).toHaveBeenCalledTimes(1);
-
-  const [items, options] = showQuickPickMock.mock.calls[0] as [
-    vscode.QuickPickItem[],
-    vscode.QuickPickOptions,
-  ];
-
-  // Verify items structure
-  expect(items).toHaveLength(2);
-  expect(items[0].label).toContain('replace');
-  expect(items[0].description).toContain(expectedStrings.currentDestination);
-  expect(items[0].description).toContain(expectedStrings.newDestination);
-  expect(items[1].label).toContain('keep');
-
-  // Verify placeholder
-  expect(options.placeHolder).toContain(expectedStrings.currentDestination);
-  expect(options.placeHolder).toContain(expectedStrings.newDestination);
+  expect(showQuickPickMock).toHaveBeenCalledWith(
+    [
+      {
+        label: 'Yes, replace',
+        description: `Switch from ${expectedStrings.currentDestination} to ${expectedStrings.newDestination}`,
+        confirmed: true,
+      },
+      {
+        label: 'No, keep current binding',
+        description: `Stay bound to ${expectedStrings.currentDestination}`,
+        confirmed: false,
+      },
+    ],
+    {
+      placeHolder: `Already bound to ${expectedStrings.currentDestination}. Replace with ${expectedStrings.newDestination}?`,
+    },
+  );
 };
 
 describe('PasteDestinationManager', () => {

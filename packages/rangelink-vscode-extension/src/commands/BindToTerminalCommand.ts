@@ -92,12 +92,12 @@ export class BindToTerminalCommand {
     }
 
     if (terminalItems.length === 1) {
-      const { terminal } = terminalItems[0].terminalInfo;
+      const { terminalInfo } = terminalItems[0];
       this.logger.debug(
-        { ...logCtx, terminalName: terminal.name },
+        { ...logCtx, terminalName: terminalInfo.name },
         'Single terminal, auto-binding',
       );
-      return this.mapBindResult(await this.destinationManager.bind({ kind: 'terminal', terminal }));
+      return this.mapBindResult(await this.destinationManager.bind(terminalInfo.bindOptions));
     }
 
     const bindResult = await showTerminalPicker(
@@ -110,7 +110,7 @@ export class BindToTerminalCommand {
             { ...logCtx, terminalName: eligible.name },
             `Binding to terminal "${eligible.name}"`,
           );
-          return this.destinationManager.bind({ kind: 'terminal', terminal: eligible.terminal });
+          return this.destinationManager.bind(eligible.bindOptions);
         },
       },
       this.logger,

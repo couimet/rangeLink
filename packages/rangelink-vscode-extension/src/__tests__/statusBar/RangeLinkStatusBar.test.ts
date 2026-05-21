@@ -197,7 +197,11 @@ describe('RangeLinkStatusBar', () => {
             displayName: 'Terminal',
             itemKind: 'bindable',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: mockTerminal.name,
+              isActive: false,
+            },
           },
         ],
         'claude-code': [
@@ -238,7 +242,11 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'bindable',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
             description: undefined,
-            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: mockTerminal.name,
+              isActive: false,
+            },
           },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
@@ -450,7 +458,11 @@ describe('RangeLinkStatusBar', () => {
             displayName: 'Terminal',
             itemKind: 'bindable',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
-            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: mockTerminal.name,
+              isActive: false,
+            },
           },
         ],
       });
@@ -475,7 +487,11 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'bindable',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
             description: undefined,
-            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+            terminalInfo: {
+              bindOptions: { kind: 'terminal', terminal: mockTerminal },
+              name: mockTerminal.name,
+              isActive: false,
+            },
           },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
@@ -864,11 +880,7 @@ describe('RangeLinkStatusBar', () => {
 
       expect(capturedPlaceholder).toBe('Select file to bind to');
       expect(showFilePickerSpy).toHaveBeenCalled();
-      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
-        kind: 'text-editor',
-        uri: eligibleFile.uri,
-        viewColumn: eligibleFile.viewColumn,
-      });
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile.bindOptions);
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -914,11 +926,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
-        kind: 'text-editor',
-        uri: eligibleFile.uri,
-        viewColumn: eligibleFile.viewColumn,
-      });
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile.bindOptions);
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',

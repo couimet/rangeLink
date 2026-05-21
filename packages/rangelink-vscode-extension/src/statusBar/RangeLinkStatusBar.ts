@@ -203,10 +203,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (eligible) => {
-          const bindResult = await this.destinationManager.bind({
-            kind: 'terminal',
-            terminal: eligible.terminal,
-          });
+          const bindResult = await this.destinationManager.bind(eligible.bindOptions);
           if (!bindResult.success) {
             this.logger.error(
               { ...logCtx, error: bindResult.error },
@@ -252,11 +249,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (file) => {
-          const bindResult = await this.destinationManager.bind({
-            kind: 'text-editor',
-            uri: file.uri,
-            viewColumn: file.viewColumn,
-          });
+          const bindResult = await this.destinationManager.bind(file.bindOptions);
           if (!bindResult.success) {
             this.logger.error(
               { ...logCtx, error: bindResult.error },
@@ -287,13 +280,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       { label: '', kind: vscode.QuickPickItemKind.Separator },
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
-        itemKind: 'command' as const,
+        itemKind: 'command',
         command: CMD_GO_TO_RANGELINK,
       },
       ...(this.bookmarkService.isVisible() ? this.buildBookmarksQuickPickItems() : []), // TODO: #366 remove isVisible() gate
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
-        itemKind: 'command' as const,
+        itemKind: 'command',
         command: CMD_SHOW_VERSION,
       },
     ];
@@ -314,12 +307,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
           description: jumpDescription,
-          itemKind: 'command' as const,
+          itemKind: 'command',
           command: CMD_JUMP_TO_DESTINATION,
         },
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_UNBIND_LABEL),
-          itemKind: 'command' as const,
+          itemKind: 'command',
           command: CMD_UNBIND_DESTINATION,
         },
       ];
@@ -346,7 +339,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       return [
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
-          itemKind: 'info' as const,
+          itemKind: 'info',
         },
       ];
     }
@@ -354,7 +347,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     return [
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
-        itemKind: 'info' as const,
+        itemKind: 'info',
       },
       ...destinationItems,
     ];
@@ -373,12 +366,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         ? [
             {
               label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
-              itemKind: 'info' as const,
+              itemKind: 'info',
             },
           ]
         : bookmarks.map((bookmark) => ({
             label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
-            itemKind: 'bookmark' as const,
+            itemKind: 'bookmark',
             bookmarkId: bookmark.id,
           }));
 
@@ -386,18 +379,18 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       { label: '', kind: vscode.QuickPickItemKind.Separator },
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
-        itemKind: 'info' as const,
+        itemKind: 'info',
       },
       ...bookmarkItems,
       { label: '', kind: vscode.QuickPickItemKind.Separator },
       {
         label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
-        itemKind: 'command' as const,
+        itemKind: 'command',
         command: CMD_BOOKMARK_ADD,
       },
       {
         label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
-        itemKind: 'command' as const,
+        itemKind: 'command',
         command: CMD_BOOKMARK_MANAGE,
       },
       { label: '', kind: vscode.QuickPickItemKind.Separator },

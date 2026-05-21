@@ -26,7 +26,7 @@ describe('getEligibleTerminals', () => {
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
         {
-          terminal,
+          bindOptions: { kind: 'terminal', terminal },
           name: 'zsh',
           isActive: true,
           processId: 42,
@@ -58,9 +58,24 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: terminal1, name: 'zsh', isActive: false, processId: 10 },
-        { terminal: terminal2, name: 'Node.js Debug Console', isActive: true, processId: 20 },
-        { terminal: terminal3, name: 'bash', isActive: false, processId: 30 },
+        {
+          bindOptions: { kind: 'terminal', terminal: terminal1 },
+          name: 'zsh',
+          isActive: false,
+          processId: 10,
+        },
+        {
+          bindOptions: { kind: 'terminal', terminal: terminal2 },
+          name: 'Node.js Debug Console',
+          isActive: true,
+          processId: 20,
+        },
+        {
+          bindOptions: { kind: 'terminal', terminal: terminal3 },
+          name: 'bash',
+          isActive: false,
+          processId: 30,
+        },
       ]);
     });
 
@@ -83,8 +98,18 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: terminal1, name: 'zsh', isActive: false, processId: 10 },
-        { terminal: terminal2, name: 'bash', isActive: false, processId: 20 },
+        {
+          bindOptions: { kind: 'terminal', terminal: terminal1 },
+          name: 'zsh',
+          isActive: false,
+          processId: 10,
+        },
+        {
+          bindOptions: { kind: 'terminal', terminal: terminal2 },
+          name: 'bash',
+          isActive: false,
+          processId: 20,
+        },
       ]);
     });
   });
@@ -129,7 +154,12 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: liveTerminal, name: 'live', isActive: true, processId: 100 },
+        {
+          bindOptions: { kind: 'terminal', terminal: liveTerminal },
+          name: 'live',
+          isActive: true,
+          processId: 100,
+        },
       ]);
     });
 
@@ -170,7 +200,12 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: liveTerminal, name: 'live', isActive: false, processId: 100 },
+        {
+          bindOptions: { kind: 'terminal', terminal: liveTerminal },
+          name: 'live',
+          isActive: false,
+          processId: 100,
+        },
       ]);
     });
   });
@@ -197,7 +232,12 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: shellTerminal, name: 'zsh', isActive: true, processId: 10 },
+        {
+          bindOptions: { kind: 'terminal', terminal: shellTerminal },
+          name: 'zsh',
+          isActive: true,
+          processId: 10,
+        },
       ]);
     });
 
@@ -244,7 +284,12 @@ describe('getEligibleTerminals', () => {
       });
 
       expect(await getEligibleTerminals(ideAdapter)).toStrictEqual([
-        { terminal: shellTerminal, name: 'zsh', isActive: true, processId: 10 },
+        {
+          bindOptions: { kind: 'terminal', terminal: shellTerminal },
+          name: 'zsh',
+          isActive: true,
+          processId: 10,
+        },
       ]);
     });
   });

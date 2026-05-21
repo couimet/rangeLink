@@ -130,10 +130,8 @@ describe('DestinationAvailabilityService', () => {
           displayName: 'Terminal ("zsh")',
           bindOptions: { kind: 'terminal', terminal: terminal2 },
           itemKind: 'bindable',
-          isActive: true,
-          boundState: 'not-bound',
           terminalInfo: {
-            terminal: terminal2,
+            bindOptions: { kind: 'terminal', terminal: terminal2 },
             name: 'zsh',
             isActive: true,
             processId: undefined,
@@ -145,10 +143,8 @@ describe('DestinationAvailabilityService', () => {
           displayName: 'Terminal ("bash")',
           bindOptions: { kind: 'terminal', terminal: terminal1 },
           itemKind: 'bindable',
-          isActive: false,
-          boundState: 'not-bound',
           terminalInfo: {
-            terminal: terminal1,
+            bindOptions: { kind: 'terminal', terminal: terminal1 },
             name: 'bash',
             isActive: false,
             processId: undefined,
@@ -199,10 +195,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("bash")',
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal,
+              bindOptions: { kind: 'terminal', terminal },
               name: 'bash',
               isActive: true,
               processId: undefined,
@@ -246,10 +240,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("bash")',
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal,
+              bindOptions: { kind: 'terminal', terminal },
               name: 'bash',
               isActive: true,
               processId: undefined,
@@ -293,10 +285,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("bash")',
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal,
+              bindOptions: { kind: 'terminal', terminal },
               name: 'bash',
               isActive: true,
               processId: undefined,
@@ -333,10 +323,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("bash")',
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal,
+              bindOptions: { kind: 'terminal', terminal },
               name: 'bash',
               isActive: true,
               processId: undefined,
@@ -373,10 +361,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("bash")',
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal,
+              bindOptions: { kind: 'terminal', terminal },
               name: 'bash',
               isActive: true,
               processId: undefined,
@@ -415,10 +401,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("Terminal 1")',
             bindOptions: { kind: 'terminal', terminal: terminal1 },
             itemKind: 'bindable',
-            isActive: true,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal: terminal1,
+              bindOptions: { kind: 'terminal', terminal: terminal1 },
               name: 'Terminal 1',
               isActive: true,
               processId: undefined,
@@ -430,10 +414,8 @@ describe('DestinationAvailabilityService', () => {
             displayName: 'Terminal ("Terminal 2")',
             bindOptions: { kind: 'terminal', terminal: terminal2 },
             itemKind: 'bindable',
-            isActive: false,
-            boundState: 'not-bound',
             terminalInfo: {
-              terminal: terminal2,
+              bindOptions: { kind: 'terminal', terminal: terminal2 },
               name: 'Terminal 2',
               isActive: false,
               processId: undefined,
@@ -489,7 +471,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             itemKind: 'bindable',
             fileInfo: {
-              uri,
+              bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
               filename: 'app.ts',
               displayPath: 'src/app.ts',
               viewColumn: 1,
@@ -497,7 +479,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'not-bound',
             },
-            boundState: 'not-bound',
           },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -579,7 +560,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             itemKind: 'bindable',
             fileInfo: {
-              uri,
+              bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
               filename: 'app.ts',
               displayPath: 'src/app.ts',
               viewColumn: 1,
@@ -587,7 +568,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'bound',
             },
-            boundState: 'bound',
           },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -638,7 +618,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
             itemKind: 'bindable',
             fileInfo: {
-              uri: uri1,
+              bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
               filename: 'a.ts',
               displayPath: 'src/a.ts',
               viewColumn: 1,
@@ -646,7 +626,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'not-bound',
             },
-            boundState: 'not-bound',
           },
         ]);
         expect(result['file-more']).toStrictEqual({
@@ -703,7 +682,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             itemKind: 'bindable',
             fileInfo: {
-              uri,
+              bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
               filename: 'app.ts',
               displayPath: 'src/app.ts',
               viewColumn: 1,
@@ -711,7 +690,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'bound',
             },
-            boundState: 'bound',
           },
           {
             label: 'app.ts',
@@ -720,7 +698,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
             itemKind: 'bindable',
             fileInfo: {
-              uri,
+              bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
               filename: 'app.ts',
               displayPath: 'src/app.ts',
               viewColumn: 2,
@@ -728,7 +706,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'not-bound',
             },
-            boundState: 'not-bound',
           },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -778,7 +755,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
             itemKind: 'bindable',
             fileInfo: {
-              uri: uri1,
+              bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
               filename: 'a.ts',
               displayPath: 'src/a.ts',
               viewColumn: 1,
@@ -786,7 +763,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'not-bound',
             },
-            boundState: 'not-bound',
           },
           {
             label: 'b.ts',
@@ -795,7 +771,7 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 2 },
             itemKind: 'bindable',
             fileInfo: {
-              uri: uri2,
+              bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 2 },
               filename: 'b.ts',
               displayPath: 'src/b.ts',
               viewColumn: 2,
@@ -803,7 +779,6 @@ describe('DestinationAvailabilityService', () => {
               isActiveEditor: false,
               boundState: 'not-bound',
             },
-            boundState: 'not-bound',
           },
         ]);
         expect(result['file-more']).toBeUndefined();
@@ -872,7 +847,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri: uri1,
+            bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
             filename: 'a.ts',
             displayPath: 'src/a.ts',
             viewColumn: 1,
@@ -880,7 +855,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'not-bound',
           },
-          boundState: 'not-bound',
         },
         {
           label: 'b.ts',
@@ -889,7 +863,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri: uri2,
+            bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
             filename: 'b.ts',
             displayPath: 'src/b.ts',
             viewColumn: 1,
@@ -897,7 +871,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'not-bound',
           },
-          boundState: 'not-bound',
         },
       ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -932,7 +905,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             filename: 'app.ts',
             displayPath: 'src/app.ts',
             viewColumn: 1,
@@ -940,7 +913,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'bound',
           },
-          boundState: 'bound',
         },
       ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -977,7 +949,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             filename: 'app.ts',
             displayPath: 'src/app.ts',
             viewColumn: 1,
@@ -985,7 +957,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'bound',
           },
-          boundState: 'bound',
         },
         {
           label: 'app.ts',
@@ -994,7 +965,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
           itemKind: 'bindable',
           fileInfo: {
-            uri,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
             filename: 'app.ts',
             displayPath: 'src/app.ts',
             viewColumn: 2,
@@ -1002,7 +973,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'not-bound',
           },
-          boundState: 'not-bound',
         },
       ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1039,7 +1009,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
             filename: 'app.ts',
             displayPath: 'src/app.ts',
             viewColumn: 1,
@@ -1047,7 +1017,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'bound',
           },
-          boundState: 'bound',
         },
         {
           label: 'app.ts',
@@ -1056,7 +1025,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
           itemKind: 'bindable',
           fileInfo: {
-            uri,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
             filename: 'app.ts',
             displayPath: 'src/app.ts',
             viewColumn: 2,
@@ -1064,7 +1033,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'bound',
           },
-          boundState: 'bound',
         },
       ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1101,7 +1069,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri: uri1,
+            bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
             filename: 'util.ts',
             displayPath: 'src/a/util.ts',
             viewColumn: 1,
@@ -1109,7 +1077,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'not-bound',
           },
-          boundState: 'not-bound',
         },
         {
           label: 'util.ts',
@@ -1118,7 +1085,7 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
           itemKind: 'bindable',
           fileInfo: {
-            uri: uri2,
+            bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
             filename: 'util.ts',
             displayPath: 'src/b/util.ts',
             viewColumn: 1,
@@ -1126,7 +1093,6 @@ describe('DestinationAvailabilityService', () => {
             isActiveEditor: false,
             boundState: 'not-bound',
           },
-          boundState: 'not-bound',
         },
       ]);
       expect(mockLogger.debug).toHaveBeenCalledWith(

@@ -72,7 +72,7 @@ describe('buildTerminalPickerItems', () => {
     expect(result[1].label).toBe('prefix-zsh');
   });
 
-  it('propagates boundState to output items', () => {
+  it('propagates boundState to output items via terminalInfo', () => {
     const items = [
       createMockTerminalQuickPickItem(createMockTerminal({ name: 'bash' }), false, 'bound'),
       createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), false, 'not-bound'),
@@ -80,8 +80,8 @@ describe('buildTerminalPickerItems', () => {
 
     const result = buildTerminalPickerItems(items, identityLabel);
 
-    expect(result[0].boundState).toBe('bound');
-    expect(result[1].boundState).toBe('not-bound');
+    expect(result[0].terminalInfo.boundState).toBe('bound');
+    expect(result[1].terminalInfo.boundState).toBe('not-bound');
   });
 
   it('returns complete item structure', () => {
@@ -97,9 +97,12 @@ describe('buildTerminalPickerItems', () => {
         displayName: 'bash',
         bindOptions: { kind: 'terminal', terminal },
         itemKind: 'bindable',
-        isActive: true,
-        boundState: 'bound',
-        terminalInfo: { terminal, name: 'bash', isActive: true, boundState: 'bound' },
+        terminalInfo: {
+          bindOptions: { kind: 'terminal', terminal },
+          name: 'bash',
+          isActive: true,
+          boundState: 'bound',
+        },
       },
     ]);
   });

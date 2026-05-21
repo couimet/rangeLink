@@ -5,6 +5,7 @@ import { displayName } from '../../../package.json';
 import {
   AI_ASSISTANT_PASTE_COMMANDS,
   CLIPBOARD_POST_PASTE_DELAY_MS,
+  ENV_RANGELINK_CAPTURE_LOGS,
   FOCUS_TO_PASTE_DELAY_MS,
   VSCODE_CMD_TERMINAL_PASTE,
 } from '../../constants';
@@ -33,6 +34,42 @@ const STATUS_BAR_PREFIX = `${displayName}: `;
 const STATUS_BAR_SUCCESS_PREFIX = `✓ ${STATUS_BAR_PREFIX}`;
 
 const getUnknownFilename = (): string => formatMessage(MessageCode.UNKNOWN_FILENAME_FALLBACK);
+
+/**
+ * Captured once at module load so the prod path of `showQuickPick`'s items
+ * projection pays a single `process.env` read. Matches `LogCapture`'s
+ * import-time-read pattern; toggling the env var mid-run is not supported
+ * (the integration-test runner sets it before spawning VS Code).
+ */
+const isLogCaptureEnabled = process.env[ENV_RANGELINK_CAPTURE_LOGS] === 'true';
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+/**
+ * Test-only projection: pull the status fields integration tests destructure
+ * out of a picker item, sourced from `terminalInfo` / `fileInfo`. Returns
+ * a partial object so it can be spread into the base log entry.
+ *
+ * Production callers should never need this — gated by
+ * `ENV_RANGELINK_CAPTURE_LOGS` at the call site in `showQuickPick`.
+ *
+ * Exported for direct unit testing; not part of the adapter's public API.
+ */
+export const projectTestStatusFields = (
+  record: Record<string, unknown>,
+): { isActive?: boolean; boundState?: string } => {
+  const fields: { isActive?: boolean; boundState?: string } = {};
+  const terminalInfo = isObject(record.terminalInfo) ? record.terminalInfo : undefined;
+  const fileInfo = isObject(record.fileInfo) ? record.fileInfo : undefined;
+  if (terminalInfo !== undefined) {
+    if (typeof terminalInfo.isActive === 'boolean') fields.isActive = terminalInfo.isActive;
+    if (typeof terminalInfo.boundState === 'string') fields.boundState = terminalInfo.boundState;
+  } else if (fileInfo !== undefined) {
+    if (typeof fileInfo.boundState === 'string') fields.boundState = fileInfo.boundState;
+  }
+  return fields;
+};
 
 /**
  * VSCode adapter for IDE-specific operations.
@@ -235,22 +272,16 @@ export class VscodeAdapter
         options,
         items: items.map((item) => {
           const record = item as Record<string, unknown>;
-          return {
+          const base = {
             label: item.label,
             ...(item.description !== undefined ? { description: item.description } : {}),
             ...(item.detail !== undefined ? { detail: item.detail } : {}),
             ...(item.kind !== undefined ? { kind: item.kind } : {}),
             ...('itemKind' in item ? { itemKind: record.itemKind } : {}),
             ...('displayName' in item ? { displayName: record.displayName } : {}),
-            // TODO(#594): once TerminalBindableQuickPickItem and
-            // FileBindableQuickPickItem stop duplicating these fields at the
-            // top level, dig into record.terminalInfo / record.fileInfo here.
-            // Keep emitting them flat in the log so integration tests that
-            // destructure { isActive, boundState } need no changes.
-            ...('isActive' in item ? { isActive: record.isActive } : {}),
-            ...('boundState' in item ? { boundState: record.boundState } : {}),
             ...('remainingCount' in item ? { remainingCount: record.remainingCount } : {}),
           };
+          return isLogCaptureEnabled ? { ...base, ...projectTestStatusFields(record) } : base;
         }),
       },
       'Showing quick pick',

@@ -1,14 +1,8 @@
 import type * as vscode from 'vscode';
 
+import { ENV_RANGELINK_CAPTURE_LOGS } from './constants';
 import { RangeLinkExtensionError } from './errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from './errors/RangeLinkExtensionErrorCodes';
-
-/**
- * Environment variable that enables in-memory log capture.
- * Set by the integration test runner before launching VS Code.
- * When absent or not 'true', LogCapture is a transparent proxy with zero overhead.
- */
-const ENV_CAPTURE_LOGS = 'RANGELINK_CAPTURE_LOGS';
 
 /**
  * Wraps an OutputChannel to optionally capture log lines in memory.
@@ -27,7 +21,7 @@ export class LogCapture {
   private readonly captureEnabled: boolean;
 
   constructor(private readonly outputChannel: vscode.OutputChannel) {
-    this.captureEnabled = process.env[ENV_CAPTURE_LOGS] === 'true';
+    this.captureEnabled = process.env[ENV_RANGELINK_CAPTURE_LOGS] === 'true';
   }
 
   /**
@@ -91,7 +85,7 @@ export class LogCapture {
     if (!this.captureEnabled) {
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.LOG_CAPTURE_DISABLED,
-        message: `LogCapture.${methodName}() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only`,
+        message: `LogCapture.${methodName}() called without ${ENV_RANGELINK_CAPTURE_LOGS}=true — this method is for integration tests only`,
         functionName: `LogCapture.${methodName}`,
       });
     }
