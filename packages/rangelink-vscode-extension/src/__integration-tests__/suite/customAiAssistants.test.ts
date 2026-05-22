@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_CUSTOM_AI_BY_ID } from '../../constants/commandIds';
 import {
   assertClipboardChanged,
+  assertClipboardPreservationRan,
   assertClipboardRestored,
   assertToastLogged,
   extractQuickPickItemsLogged,
@@ -368,6 +369,8 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand('editor.action.selectAll');
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
     await ss.settle();
+
+    assertClipboardPreservationRan(logCapture, 'before-tier1-clip', 'R-L');
 
     await assertClipboardRestored(
       'Tier 1 should not disturb clipboard — outer preserve restores sentinel',

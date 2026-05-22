@@ -368,6 +368,14 @@ describe('wireSubscriptions', () => {
         kind: 'custom-ai:dummy-ai-extension',
       });
       expect(resolveSpy).toHaveBeenCalledWith('dummy-ai-extension', []);
+      expect(services.logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'createBindToCustomAiByIdCommand',
+          extensionId: 'dummy-ai-extension',
+          kind: 'custom-ai:dummy-ai-extension',
+        },
+        'Binding to custom AI by ID',
+      );
     });
 
     it('CMD_JUMP_TO_DESTINATION delegates to jumpToDestinationCommand.execute', async () => {

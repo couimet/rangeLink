@@ -177,6 +177,7 @@ describe('createBindToCustomAiByIdCommand', () => {
       destinationName: 'Custom my-custom.extension',
       destinationKind: kind,
     });
+
     const mockManager = createMockDestinationManager({ bindResult });
 
     const handler = createBindToCustomAiByIdCommand(customAssistants, mockManager, mockLogger);
@@ -191,6 +192,15 @@ describe('createBindToCustomAiByIdCommand', () => {
         destinationKind: kind,
       });
     });
+
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'createBindToCustomAiByIdCommand',
+        extensionId,
+        kind,
+      },
+      'Binding to custom AI by ID',
+    );
   });
 
   it('passes bind error through when destinationManager.bind returns an error', async () => {
@@ -209,7 +219,10 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 'google.geminicodeassist' });
 
-    expect(result).toBeErr();
+    expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      message: 'Destination not available',
+      functionName: 'PasteDestinationManager.bindGenericDestination',
+    });
     expect(resolveSpy).toHaveBeenCalledWith('google.geminicodeassist', []);
     expect(mockManager.bind).toHaveBeenCalledWith({ kind: 'gemini-code-assist' });
   });

@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import { CMD_COPY_LINK_ONLY_RELATIVE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
+  assertClipboardPreservationRan,
   assertClipboardRestored,
   assertNoToastLogged,
   assertStatusBarMsgLogged,
@@ -206,6 +207,8 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 
     assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
+    assertClipboardPreservationRan(logCapture, 'before-018', 'R-L');
+
     await assertClipboardRestored(
       'R-L with bound destination + warnOnDirtyBuffer=false: clipboard should be restored to sentinel after send',
     );
@@ -272,6 +275,8 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       editor.document.isDirty,
       'Expected document to remain dirty — bypass must not trigger save',
     );
+
+    assertClipboardPreservationRan(logCapture, 'before-006', 'R-L');
 
     await assertClipboardRestored(
       'R-L warnOnDirtyBuffer=false: clipboard should be restored after send',
@@ -514,6 +519,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
+    assertClipboardPreservationRan(logCapture, 'before-003', 'R-L');
+
     await assertClipboardRestored('R-L Save & Generate: clipboard should be restored after send');
 
     ss.log('✓ R-L Save & Generate: file saved, link sent to terminal');
@@ -566,6 +573,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     assertTerminalBufferEquals(capturing.getCapturedText(), '');
     assert.ok(editor.document.isDirty, 'Expected document to remain dirty after dismiss');
+
+    assertClipboardPreservationRan(logCapture, 'before-005', 'R-L');
 
     await assertClipboardRestored(
       'R-L dismiss: clipboard should still have sentinel (no send occurred)',
@@ -875,6 +884,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     await ss.settle();
 
+    assertClipboardPreservationRan(logCapture, 'before-rl-clipboard-preserve', 'R-L');
+
     await assertClipboardRestored(
       'R-L with bound destination + dirty buffer dialog: clipboard should be restored after send',
     );
@@ -923,6 +934,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     );
 
     await ss.settle();
+
+    assertClipboardPreservationRan(logCapture, 'before-rf-clipboard-preserve', 'R-F');
 
     await assertClipboardRestored(
       'R-F with bound destination + dirty buffer dialog: clipboard should be restored after send',
@@ -993,6 +1006,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
+    assertClipboardPreservationRan(logCapture, 'before-020', 'R-L');
+
     await assertClipboardRestored(
       'R-L Save & Generate with bound destination: clipboard should be restored to sentinel after send',
     );
@@ -1046,6 +1061,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     assertTerminalBufferContains(capturing.getCapturedText(), 'dirty');
 
+    assertClipboardPreservationRan(logCapture, 'before-021', 'R-L');
+
     await assertClipboardRestored(
       'R-L Generate Anyway with bound destination: clipboard should be restored to sentinel after send',
     );
@@ -1098,6 +1115,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     );
 
     assertTerminalBufferEquals(capturing.getCapturedText(), '');
+
+    assertClipboardPreservationRan(logCapture, 'before-022', 'R-L');
 
     await assertClipboardRestored(
       'R-L dismiss: clipboard should still have sentinel (no send occurred)',
@@ -1221,6 +1240,8 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
         rangeRefPattern.test(generatedLink),
         `Expected link to contain #L${L}C${SELECTION_START_COL}-L${L}C${postEndChar}, got: ${generatedLink}`,
       );
+
+      assertClipboardPreservationRan(logCapture, 'before-023', 'R-L');
 
       await assertClipboardRestored(
         'R-L Save & Generate (trim-on-save): clipboard should be restored to sentinel after send',
