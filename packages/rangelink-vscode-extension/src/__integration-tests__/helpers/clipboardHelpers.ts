@@ -35,11 +35,14 @@ export const assertClipboardPreservationRan = (
   operationLabel: string,
 ): void => {
   const lines = logCapture.getLinesSince(markName);
-  const savedLine = lines.find((l) => l.includes('Clipboard saved'));
-  const restoredLine = lines.find((l) => l.includes('Clipboard restored'));
-  assert.ok(savedLine, 'Expected "Clipboard saved" log entry — preservation must read clipboard');
+  const savedIdx = lines.findIndex((l) => l.includes('Clipboard saved'));
+  const restoredIdx = lines.findIndex((l) => l.includes('Clipboard restored'));
   assert.ok(
-    restoredLine,
+    savedIdx >= 0,
+    'Expected "Clipboard saved" log entry — preservation must read clipboard',
+  );
+  assert.ok(
+    restoredIdx > savedIdx,
     `Expected "Clipboard restored" log entry after ${operationLabel} operation`,
   );
 };
