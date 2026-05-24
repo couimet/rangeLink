@@ -22,6 +22,7 @@ import {
 } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
   assertClipboardChanged,
+  assertClipboardPreservationRan,
   assertClipboardRestored,
   assertStatusBarMsgLogged,
   extractGeneratedLink,
@@ -443,9 +444,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-011');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-011', 'R-L');
     await assertClipboardRestored('clipboard-preservation-011: always + Claude Code cold paste');
     ss.log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
   });
@@ -465,14 +469,19 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-012');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-012', 'R-L');
     await assertClipboardRestored('clipboard-preservation-012: always + Claude Code warm paste');
     ss.log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
   });
@@ -489,9 +498,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-013');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-013', 'R-L');
     await assertClipboardRestored('clipboard-preservation-013: always + Cursor AI cold paste');
     ss.log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
   });
@@ -511,14 +523,19 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-014');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-014', 'R-L');
     await assertClipboardRestored('clipboard-preservation-014: always + Cursor AI warm paste');
     ss.log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
   });
@@ -535,9 +552,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-015');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-015', 'R-L');
     await assertClipboardRestored('clipboard-preservation-015: always + Copilot Chat cold paste');
     ss.log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
   });
@@ -557,14 +577,19 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
     await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clip-016');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-clip-016', 'R-L');
     await assertClipboardRestored('clipboard-preservation-016: always + Copilot Chat warm paste');
     ss.log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
   });

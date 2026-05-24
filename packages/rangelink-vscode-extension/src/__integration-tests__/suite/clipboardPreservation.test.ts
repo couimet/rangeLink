@@ -11,6 +11,8 @@ import {
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
   assertClipboardChanged,
+  assertClipboardPreservationDidNotRun,
+  assertClipboardPreservationRan,
   assertClipboardRestored,
   assertTerminalBufferContains,
   extractGeneratedLink,
@@ -44,8 +46,12 @@ standardSuite('Clipboard Preservation', (ss) => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-003');
     capturing.clearCaptured();
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-003', 'R-F');
     await assertClipboardRestored('R-F with preserve=always');
     assertTerminalBufferContains(capturing.getCapturedText(), 'clipboard');
   });
@@ -157,6 +163,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
 
+    assertClipboardPreservationRan(logCapture, 'before-001', 'R-L');
     await assertClipboardRestored('clipboard-preservation-001: always + R-L');
     assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
     ss.log('✓ Clipboard restored to sentinel after R-L; terminal received link');
@@ -184,8 +191,11 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     // Sentinel written after selectAll so copyOnSelection cannot overwrite it
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-002');
     await vscode.commands.executeCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT);
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-002', 'R-V');
 
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
     assert.ok(
@@ -208,6 +218,8 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 2, 6);
     await ss.settle();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-004');
     await waitForHuman(
       'clipboard-preservation-004',
       `Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)", click back into the editor, press Cmd+R Cmd+L`,
@@ -220,6 +232,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     );
 
     await ss.settle();
+    assertClipboardPreservationRan(logCapture, 'before-004', 'R-L');
     const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
       tier1: string;
       tier2: string;
@@ -257,6 +270,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
 
+    assertClipboardPreservationRan(logCapture, 'before-005', 'R-L');
     await assertClipboardRestored('clipboard-preservation-005: always + terminal paste');
     assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
     ss.log('✓ Clipboard restored to sentinel after terminal paste (preserve=always)');
@@ -315,8 +329,11 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await ss.settle();
     await writeClipboardSentinel();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-009');
     await openAndDismiss(CMD_COPY_LINK_RELATIVE);
-
+    await ss.settle();
+    assertClipboardPreservationDidNotRun(logCapture, 'before-009');
     await assertClipboardRestored('clipboard-preservation-009: always + picker dismissed');
     ss.log('✓ Clipboard unchanged after picker dismissed (no operation performed)');
   });

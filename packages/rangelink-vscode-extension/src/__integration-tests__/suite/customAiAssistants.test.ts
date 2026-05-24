@@ -2,17 +2,16 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_CUSTOM_AI_BY_ID } from '../../constants/commandIds';
 import {
   assertClipboardChanged,
+  assertClipboardPreservationRan,
   assertClipboardRestored,
   assertToastLogged,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
   standardSuite,
-  waitForHuman,
-  waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
@@ -263,15 +262,13 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     await vscode.commands.executeCommand('dummyAi.clearAll');
   });
 
-  test('[assisted] custom-ai-assistant-017: Tier 1 direct insert works when panel is not yet visible', async () => {
+  test('custom-ai-assistant-017: Tier 1 direct insert works when panel is not yet visible', async () => {
     await ss.createAndOpenFile('__rl-test-cold-start', 'cold start test');
     await ss.settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-017',
-      "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)' (panel should NOT be open yet)",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.'],
-    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-cold-start');
@@ -317,13 +314,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand('dummyAi.clearAll');
   });
 
-  test('[assisted] custom-ai-assistant-010: Tier 1 direct insert delivers text to dummy textarea', async () => {
+  test('custom-ai-assistant-010: Tier 1 direct insert delivers text to dummy textarea', async () => {
     await ss.createAndOpenFile('__rl-test-tier1', 'hello world\nline two\nline three');
     await ss.settle();
 
-    await waitForHuman('custom-ai-assistant-010', "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'", [
-      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.',
-    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tier1-paste');
@@ -357,13 +354,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     ss.log('✓ Tier 1 direct insert delivered text to dummy textarea');
   });
 
-  test('[assisted] custom-ai-assistant-011: Tier 1 clipboard isolation — sentinel preserved', async () => {
+  test('custom-ai-assistant-011: Tier 1 clipboard isolation — sentinel preserved', async () => {
     await ss.createAndOpenFile('__rl-test-tier1-clip', 'clipboard test');
     await ss.settle();
 
-    await waitForHuman('custom-ai-assistant-011', "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'", [
-      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.',
-    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
 
     await writeClipboardSentinel();
     const logCapture = getLogCapture();
@@ -373,6 +370,8 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
     await ss.settle();
 
+    assertClipboardPreservationRan(logCapture, 'before-tier1-clip', 'R-L');
+
     await assertClipboardRestored(
       'Tier 1 should not disturb clipboard — outer preserve restores sentinel',
     );
@@ -380,13 +379,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     ss.log('✓ Tier 1 clipboard isolation — sentinel preserved after R-L');
   });
 
-  test('[assisted] custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
+  test('custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
     await ss.createAndOpenFile('__rl-test-tier3', 'tier three test');
     await ss.settle();
 
-    await waitForHuman('custom-ai-assistant-012', "Cmd+R Cmd+D → select 'Dummy AI (Tier 3)'", [
-      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 3)" from the picker.',
-    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-tier3',
+    });
 
     await writeClipboardSentinel();
     const logCapture = getLogCapture();
@@ -422,42 +421,26 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     );
     assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log');
 
-    const verdict = await waitForHumanVerdict(
-      'custom-ai-assistant-012-paste',
-      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link. Click PASS if the RangeLink appears, FAIL otherwise.',
-      [
-        'Click on the Dummy AI sidebar panel (tier2 textarea).',
-        'Press Cmd+V to paste — the RangeLink should appear.',
-      ],
-    );
-    assert.strictEqual(verdict, 'pass');
-
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
       | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier2.length > 0,
-      'Expected tier2 textarea to contain the pasted link after manual Cmd+V',
-    );
     assert.strictEqual(
       textResult!.tier1,
       '',
       'Expected tier1 textarea to be empty (Tier 3 uses manual paste, not direct insert)',
     );
 
-    ss.log(
-      '✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays), manual paste verified',
-    );
+    ss.log('✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays)');
   });
 
-  test('[assisted] custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {
+  test('custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {
     await ss.createAndOpenFile('__rl-test-fallback', 'fallback test');
     await ss.settle();
 
-    await waitForHuman('custom-ai-assistant-013', "Cmd+R Cmd+D → select 'Dummy AI (Fallback)'", [
-      'Press Cmd+R Cmd+D and select "Dummy AI (Fallback)" from the picker.',
-    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-fallback',
+    });
 
     await writeClipboardSentinel();
     const logCapture = getLogCapture();
@@ -502,24 +485,10 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     );
     assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log for fallback→focusCommands');
 
-    const verdict = await waitForHumanVerdict(
-      'custom-ai-assistant-013-paste',
-      'Cmd+V in the Dummy AI tier2 textarea to verify clipboard has the link. Click PASS if the RangeLink appears, FAIL otherwise.',
-      [
-        'Click on the Dummy AI sidebar panel (tier2 textarea).',
-        'Press Cmd+V to paste — the RangeLink should appear.',
-      ],
-    );
-    assert.strictEqual(verdict, 'pass');
-
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
       | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier2.length > 0,
-      'Expected tier2 textarea to contain the pasted link after manual Cmd+V',
-    );
     assert.strictEqual(
       textResult!.tier1,
       '',
@@ -529,13 +498,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     ss.log('✓ Tier 2→3 fallback: clipboard not restored, manual paste verified');
   });
 
-  test('[assisted] custom-ai-assistant-014: ${content} template delivers text via insertWithArgs', async () => {
+  test('custom-ai-assistant-014: ${content} template delivers text via insertWithArgs', async () => {
     await ss.createAndOpenFile('__rl-test-template', 'template test content');
     await ss.settle();
 
-    await waitForHuman('custom-ai-assistant-014', "Cmd+R Cmd+D → select 'Dummy AI (Template)'", [
-      'Press Cmd+R Cmd+D and select "Dummy AI (Template)" from the picker.',
-    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-template',
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-template-paste');

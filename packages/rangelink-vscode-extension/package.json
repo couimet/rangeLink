@@ -161,6 +161,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToCustomAiById",
+        "title": "Bind to Custom AI by ID",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToGeminiCodeAssist",
         "title": "Bind to Gemini Code Assist",
         "category": "RangeLink",
@@ -711,6 +717,10 @@
         },
         {
           "command": "rangelink.bindToTextEditorHere",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.bindToCustomAiById",
           "when": "false"
         },
         {

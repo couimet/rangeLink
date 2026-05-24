@@ -7,8 +7,8 @@ import { DefaultClipboardPreserver } from './clipboard';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
-  BindToTextEditorCommand,
   BindToTerminalCommand,
+  BindToTextEditorCommand,
   GoToRangeLinkCommand,
   JumpToDestinationCommand,
   ListBookmarksCommand,
@@ -16,6 +16,7 @@ import {
   ShowVersionCommand,
 } from './commands';
 import { ConfigReader, DelimiterCache } from './config';
+import type { CustomAiAssistantConfig } from './config/parseCustomAiAssistants';
 import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
@@ -66,6 +67,7 @@ export interface WiringServices {
   terminalLinkProvider: RangeLinkTerminalProvider;
   documentLinkProvider: RangeLinkDocumentProvider;
   delimiterCache: DelimiterCache;
+  customAssistants: CustomAiAssistantConfig[];
 }
 
 export interface ExtensionDependencies {
@@ -258,5 +260,6 @@ export const createWiringServices = (
     terminalLinkProvider,
     documentLinkProvider,
     delimiterCache,
+    customAssistants,
   };
 };
