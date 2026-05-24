@@ -469,7 +469,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
@@ -521,7 +523,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
@@ -573,7 +577,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    // Pre-select lines 3-4 for the warm send
+    // Pre-select lines 3-4 for the warm send — refocus editor first since
+    // the cold paste moved focus to the AI assistant panel.
+    await vscode.window.showTextDocument(editor.document);
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
