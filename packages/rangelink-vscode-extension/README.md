@@ -581,6 +581,7 @@ Curious about how RangeLink came to be or want to contribute?
 - 🐔 **[About the Logo](https://github.com/couimet/rangelink#about-the-logo)** - Free-range chickens, precision, and Pi (yes, really)
 - 🏗️ **[Architecture & Monorepo](https://github.com/couimet/rangelink#monorepo-structure)** - How it's built and organized
 - 🤝 **[Contributing Guide](https://github.com/couimet/rangelink/blob/main/CONTRIBUTING.md)** - Help make RangeLink even better
+- 🌐 **[Project Page on ouimet.info](https://ouimet.info/projects/rangelink-extension.html)** - Maintainer's project page for RangeLink
 
 ## License
 

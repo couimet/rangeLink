@@ -980,5 +980,6 @@
     "vscode": "^1.49.0"
   },
   "icon": "icon.png",
-  "nextTargetVersion": "1.1.0"
+  "nextTargetVersion": "1.1.0",
+  "pricing": "Free"
 }
