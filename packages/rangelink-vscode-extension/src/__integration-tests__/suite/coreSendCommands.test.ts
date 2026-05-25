@@ -4,6 +4,7 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_ONLY_RELATIVE,
   CMD_COPY_LINK_RELATIVE,
@@ -85,7 +86,7 @@ standardSuite('Core Send Commands', (ss) => {
     ss.log('✓ R-L sent exact RangeLink to bound text editor destination');
   });
 
-  test('[assisted] core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
+  test('core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
     const CSC_R_L_003_LINE_COUNT = 10;
     const { uri: fileUri } = ss.createContentFile(
       'csc-r-l-003',
@@ -96,31 +97,30 @@ standardSuite('Core Send Commands', (ss) => {
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedLink = `${relPath}#L1-L3`;
 
-    await ss.openEditor(fileUri);
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 3, 0);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
     await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-r-l-003');
 
-    await waitForHuman(
-      'core-send-commands-r-l-003',
-      `Bind Dummy AI Tier 1 via Cmd+R Cmd+D, select lines 1-3 in ${relPath}, press Cmd+R Cmd+L.`,
-      [
-        '1. Press Cmd+R Cmd+D → select "Dummy AI (Tier 1)"',
-        `2. Click into ${relPath}, select lines 1-3`,
-        '3. Press Cmd+R Cmd+L',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+
     const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
       tier1: string;
       tier2: string;
     };
     assert.strictEqual(
-      dummyText.tier1.trim(),
-      expectedLink,
-      `Expected Dummy AI tier1="${expectedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
+      dummyText.tier1,
+      ` ${expectedLink} `,
+      `Expected Dummy AI tier1=" ${expectedLink} ", got: ${JSON.stringify(dummyText.tier1)}`,
     );
 
     assert.ok(

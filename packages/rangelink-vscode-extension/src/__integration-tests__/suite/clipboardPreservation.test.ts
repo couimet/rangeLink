@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import {
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
@@ -20,8 +21,6 @@ import {
   openAndDismiss,
   standardSuite,
   TERMINAL_READY_MS,
-  waitForHuman,
-  CLIPBOARD_SENTINEL,
   writeClipboardSentinel,
 } from '../helpers';
 import type { CapturingTerminal } from '../helpers/capturingPtyHelpers';
@@ -206,7 +205,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     ss.log('✓ Clipboard restored to sentinel and phrase landed in destination file after R-V');
   });
 
-  test('[assisted] clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
+  test('clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
     const { uri: fileUri } = ss.createContentFile('cbp-004', 10, (i) => `line ${i + 1} content`);
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
@@ -218,30 +217,26 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 2, 6);
     await ss.settle();
 
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
+    await ss.settle();
+
     const logCapture = getLogCapture();
     logCapture.mark('before-004');
-    await waitForHuman(
-      'clipboard-preservation-004',
-      `Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)", click back into the editor, press Cmd+R Cmd+L`,
-      [
-        '1. Press Cmd+R Cmd+D → select "Dummy AI (Tier 1)" from the picker',
-        '2. Click back into the editor (lines 1-3 are pre-selected)',
-        '3. Press Cmd+R Cmd+L — the link should appear in Dummy AI Tier 1 textarea',
-        '4. Press Cancel to continue (assertions happen automatically)',
-      ],
-    );
 
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+
     assertClipboardPreservationRan(logCapture, 'before-004', 'R-L');
     const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
       tier1: string;
       tier2: string;
     };
-    // trim() strips smart-padding spaces (pasteLink='both' adds leading/trailing space)
     assert.strictEqual(
-      dummyText.tier1.trim(),
-      expectedLink,
-      `Expected Dummy AI tier1="${expectedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
+      dummyText.tier1,
+      ` ${expectedLink} `,
+      `Expected Dummy AI tier1=" ${expectedLink} ", got: ${JSON.stringify(dummyText.tier1)}`,
     );
     await assertClipboardRestored('clipboard-preservation-004: always + AI paste');
     ss.log('✓ Clipboard restored to sentinel and link landed in Dummy AI after R-L');
@@ -338,29 +333,23 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     ss.log('✓ Clipboard unchanged after picker dismissed (no operation performed)');
   });
 
-  test('[assisted] clipboard-preservation-010: focus command failure preserves link in clipboard for manual paste', async () => {
+  test('clipboard-preservation-010: focus command failure preserves link in clipboard for manual paste', async () => {
     const { uri: fileUri } = ss.createContentFile('cbp-010', 5, (i) => `line ${i + 1}`);
 
-    const relPath = vscode.workspace.asRelativePath(fileUri);
-    await ss.openEditor(fileUri);
+    const editor = await ss.openEditor(fileUri);
+    editor.selection = new vscode.Selection(0, 0, 3, 0);
     await ss.settle();
     await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-focus-fail',
+    });
+    await ss.settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-010');
 
-    await waitForHuman(
-      'clipboard-preservation-010',
-      `clipboard.preserve="always". Bind "Dummy AI (Focus-Fail)" via Cmd+R Cmd+D, then select lines 1-3 in the test file and press Cmd+R Cmd+L. The focus command throws — you should see a warning. Sentinel: "${CLIPBOARD_SENTINEL}".`,
-      [
-        '1. Press Cmd+R Cmd+D → select "Dummy AI (Focus-Fail)" from the picker',
-        `2. Click back into the test file (${relPath}) and select lines 1-3`,
-        '3. Press Cmd+R Cmd+L — the focus command will throw an intentional error',
-        '4. Observe the warning message (manual paste instruction)',
-        '5. Press Cancel to continue (test verifies the link stayed in the clipboard)',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
     const lines010 = logCapture.getLinesSince('before-010');
@@ -384,10 +373,11 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     );
     const generatedLink = extractGeneratedLink(lines010);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    const PADDED_GENERATED_LINK = ` ${generatedLink} `;
     assert.strictEqual(
       clipboardContent,
-      generatedLink,
-      `Expected clipboard to equal generated link "${generatedLink}", got: ${clipboardContent}`,
+      PADDED_GENERATED_LINK,
+      `Expected clipboard to equal "${PADDED_GENERATED_LINK}", got: ${JSON.stringify(clipboardContent)}`,
     );
     ss.log(
       '✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste',
