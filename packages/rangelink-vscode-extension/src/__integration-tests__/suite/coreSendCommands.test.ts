@@ -97,7 +97,6 @@ standardSuite('Core Send Commands', (ss) => {
     const relPath = vscode.workspace.asRelativePath(fileUri);
     const expectedLink = `${relPath}#L1-L3`;
 
-    await ss.openEditor(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 3, 0);

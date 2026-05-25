@@ -388,7 +388,7 @@ test_cases:
       - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before AI assistant paste is restored after'
-    expected_result: 'Dummy AI tier1 contains the exact link (relPath#L1-L3). Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after AI delivery.'
+    expected_result: 'Dummy AI tier1 contains the exact padded link ` relPath#L1C1-L3C7 ` (character-precise, with smart-padding spaces). Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after AI delivery.'
     automated: true
 
   - id: clipboard-preservation-005
