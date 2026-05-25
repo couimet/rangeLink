@@ -1,8 +1,17 @@
+---
+title: 'RangeLink v0.3.0: One Keybinding to Rule Them All'
+published: https://dev.to/couimet/rangelink-v030-one-keybinding-to-rule-them-all-2h01
+tags: ai, vscode, rangelink, productivity
+cover_image:
+---
+
 # RangeLink v0.3.0: One Keybinding to Rule Them All
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/couimet/rangeLink/main/assets/icon_large.png" alt="RangeLink Logo" width="256" />
+  <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7vckvmiq54wa61e8u3g9.png" alt="RangeLink Logo" width="256" />
 </div>
+
+> **Update (2026-MM-DD):** RangeLink 2.0.0 has shipped. [Read the v2.0.0 release post.](TBD-DEV-TO-URL)
 
 Hey folks! Just shipped **RangeLink v0.3.0**, and I'm genuinely excited about this one.
 

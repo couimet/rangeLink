@@ -1,8 +1,17 @@
+---
+title: 'RangeLink v1.0.0: Perfected AI Workflows + The R-Keybinding Family'
+published: https://dev.to/couimet/rangelink-v100-perfected-ai-workflows-the-r-keybinding-family-104b
+tags: ai, vscode, rangelink, productivity
+cover_image: https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7vckvmiq54wa61e8u3g9.png
+---
+
 # RangeLink v1.0.0: Perfected AI Workflows + The R-Keybinding Family
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/couimet/rangeLink/main/assets/icon_large.png" alt="RangeLink Logo" width="256" />
+  <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7vckvmiq54wa61e8u3g9.png" alt="RangeLink Logo" width="256" />
 </div>
+
+> **Update (2026-MM-DD):** RangeLink 2.0.0 has shipped. [Read the v2.0.0 release post.](TBD-DEV-TO-URL)
 
 Hey folks! **RangeLink v1.0.0** is here, and this feels like a real milestone.
 
