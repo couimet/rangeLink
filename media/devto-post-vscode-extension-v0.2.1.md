@@ -1,4 +1,13 @@
+---
+title: 'I Built a VS Code Extension to Stop the Copy-Paste Madness'
+published: https://dev.to/couimet/i-built-a-vs-code-extension-to-stop-the-copy-paste-madness-3d7l
+tags: ai, vscode, rangelink, productivity
+cover_image:
+---
+
 # I Built a VS Code Extension to Stop the Copy-Paste Madness
+
+> **Update (2026-MM-DD):** RangeLink 2.0.0 has shipped. [Read the v2.0.0 release post.](TBD-DEV-TO-URL)
 
 Hey devs! I just shipped v0.2.1 of [**RangeLink**](https://github.com/couimet/rangeLink/tree/main/packages/rangelink-vscode-extension), a VS Code/Cursor extension that fixes something that's been driving me (and probably you) crazy.
 
