@@ -389,7 +389,7 @@ test_cases:
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before AI assistant paste is restored after'
     expected_result: 'Dummy AI tier1 contains the exact link (relPath#L1-L3). Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after AI delivery.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-005
     labels:
@@ -437,8 +437,7 @@ test_cases:
     feature: 'Clipboard Preservation'
     scenario: 'AI assistant auto-paste fails (focus command throws): RangeLink stays in clipboard for manual paste'
     expected_result: 'Clipboard contains the generated RangeLink (not CLIPBOARD_SENTINEL). isClipboardRestorationApplicable returns false because getUserInstruction(Failure) is defined. The "Paste manually" warning toast was shown.'
-    command_to_run: 'pnpm test:release:grep "clipboard-preservation-010"'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-011
     labels:
@@ -1372,7 +1371,7 @@ test_cases:
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound AI assistant destination'
     expected_result: 'RangeLink appears in AI chat input. Success toast confirms send.'
-    automated: assisted
+    automated: true
 
   - id: core-send-commands-r-c-001
     labels:

@@ -64,6 +64,12 @@ const VERDICT_FAIL_COMMAND_PREFIX = 'rangelink._test.verdict.fail';
 // patterns would otherwise throw `command '...' already exists`.
 let verdictInvocationCounter = 0;
 
+// Tracks the currently-active verdict state so a new invocation can clean up
+// stale UI from a previous invocation that never settled (e.g., Mocha timed
+// out the test before the human clicked a button).
+let activeVerdictDisposables: vscode.Disposable[] | undefined;
+let activeVerdictReject: ((reason: unknown) => void) | undefined;
+
 /**
  * Pauses the test until the human clicks Pass or Fail in the status bar.
  *
@@ -113,6 +119,19 @@ export const waitForHumanVerdict = async (
   nodeConsole.log('Click the PASS or FAIL button in the status bar (bottom-left) when done.');
   nodeConsole.log(SECTION_LINE);
 
+  // Dispose any stale UI from a previous invocation that never settled
+  // (e.g., Mocha timed out the test before the human clicked a button).
+  if (activeVerdictDisposables !== undefined) {
+    for (const d of activeVerdictDisposables) {
+      d.dispose();
+    }
+    activeVerdictDisposables = undefined;
+  }
+  if (activeVerdictReject !== undefined) {
+    activeVerdictReject(new Error('Superseded by a new waitForHumanVerdict invocation'));
+    activeVerdictReject = undefined;
+  }
+
   const invocationId = ++verdictInvocationCounter;
   const passCommand = `${VERDICT_PASS_COMMAND_PREFIX}.${invocationId}`;
   const failCommand = `${VERDICT_FAIL_COMMAND_PREFIX}.${invocationId}`;
@@ -126,13 +145,16 @@ export const waitForHumanVerdict = async (
     (progress) => {
       progress.report({ message: 'Click PASS or FAIL in the bottom-left status bar' });
 
-      return new Promise<HumanVerdict>((resolve) => {
+      return new Promise<HumanVerdict>((resolve, reject) => {
+        activeVerdictReject = reject;
         const disposables: vscode.Disposable[] = [];
         let settled = false;
 
         const settleWith = (verdict: HumanVerdict): void => {
           if (settled) return;
           settled = true;
+          activeVerdictDisposables = undefined;
+          activeVerdictReject = undefined;
           for (const d of disposables) {
             d.dispose();
           }
@@ -159,6 +181,8 @@ export const waitForHumanVerdict = async (
         failItem.color = new vscode.ThemeColor('testing.iconFailed');
         failItem.show();
         disposables.push(failItem);
+
+        activeVerdictDisposables = disposables;
       });
     },
   );
