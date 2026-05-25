@@ -83,6 +83,10 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 #                      assisted — covered by an [assisted]-tagged integration test
 #                                 that pauses for a human UI action
 #                      false    — fully manual; preconditions and steps are required
+#   non_automatable_reason: Required when \`automated: false\`. Why this TC cannot be
+#                           automated (even assisted):
+#                             platform-specific — requires Win/Linux; CI runs on macOS
+#                             ide-specific      — requires Cursor IDE; not in VS Code host
 #
 # For \`automated: true\` and \`automated: assisted\` entries the integration test in
 # src/__integration-tests__/suite/ is the canonical source of setup and actions —

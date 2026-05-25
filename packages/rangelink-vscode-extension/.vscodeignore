@@ -18,10 +18,30 @@ tsconfig.json
 out/**
 .vscode/**
 .vscode-test/**
+.vscode-test.*.mjs
 node_modules/**
 coverage/**
 jest.config.*
 scripts/**
+**/jest.config.*
+esbuild.config.js
+
+# Documentation (only README ships)
+DEVELOPMENT.md
+TESTING.md
+PUBLISHING.md
+**/*.md
+
+# QA and test fixtures (large, not needed at runtime)
+qa/**
+test-fixtures/**
+
+# Docker
+docker/**
+.docker-image-stamp
+
+# Temp files from integration tests
+__rl-test-*
 
 # Repository files
 .git*
@@ -30,7 +50,13 @@ scripts/**
 
 # Keep these (automatic):
 # - package.json
-# - README.md
+# - README.md (let through despite **/*.md above)
 # - LICENSE
 # - icon.png
 # - dist/extension.js (bundled main entry)
+!readme.md
+!README.md
+!changelog.md
+!CHANGELOG.md
+!LICENSE*
+!icon*.png

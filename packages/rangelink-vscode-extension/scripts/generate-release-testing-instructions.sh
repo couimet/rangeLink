@@ -128,7 +128,7 @@ git commit -m "Add QA test plan for v${NEXT_VERSION}"
 
 ## Phase 2: Create GitHub QA Issues
 
-Generate the GitHub issue tracker (parent issue + per-section sub-issues) from the QA YAML.
+Generate the GitHub issue tracker (a single issue with grouped checkboxes per feature domain) from the QA YAML.
 
 ### Dry run first
 
@@ -144,9 +144,7 @@ Review the output to verify section groupings and TC counts look correct.
 pnpm generate:qa-issue:vscode-extension
 \`\`\`
 
-Verify on GitHub:
-- Parent issue titled "QA Checklist — v${NEXT_VERSION}" exists
-- One sub-issue per feature section is linked to the parent
+The script prints the created issue URL.
 
 ---
 
@@ -181,11 +179,7 @@ pnpm generate:qa-issue:vscode-extension --local
 \`\`\`
 
 The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timestamp>.md\`.
-
-**Suggested order:**
-1. **Ready-now TCs** — no terminal setup needed, test immediately
-2. **Open 1+ terminals** and bind a destination (\`R-D\`)
-3. **Terminal-dependent TCs** — require a bound destination
+Each TC is annotated with its automation status and reason. Cursor and Ubuntu TCs are grouped into their own sections with the required run commands inline.
 
 ---
 

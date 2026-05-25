@@ -1,0 +1,48 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DISPLAY=:1
+
+# XFCE desktop + VNC + noVNC + VS Code prerequisites
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xfce4 xfce4-terminal dbus-x11 \
+    tigervnc-standalone-server tigervnc-tools \
+    novnc websockify \
+    wget curl ca-certificates gnupg git \
+    libnss3 libatk-bridge2.0-0 libdrm2 libgbm1 libasound2t64 \
+    libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 \
+    libxi6 libxtst6 libxrandr2 libxss1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# VS Code from Microsoft apt repo
+RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list \
+    && apt-get update && apt-get install -y --no-install-recommends code \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 22
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Wrapper: VS Code refuses to run as root without --no-sandbox + --user-data-dir.
+# argv.json isn't read early enough to satisfy the root-user guard.
+RUN mv /usr/bin/code /usr/bin/code-real && \
+    echo '#!/bin/sh' > /usr/bin/code && \
+    echo 'exec /usr/bin/code-real --no-sandbox --user-data-dir /root/.vscode-data "$@"' >> /usr/bin/code && \
+    chmod +x /usr/bin/code && \
+    mkdir -p /root/Desktop /root/.vnc && \
+    echo '#!/bin/sh' > /root/.vnc/xstartup && \
+    echo 'startxfce4' >> /root/.vnc/xstartup && \
+    chmod +x /root/.vnc/xstartup
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /workspace
+
+EXPOSE 6080
+
+ENTRYPOINT ["/entrypoint.sh"]

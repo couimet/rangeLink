@@ -154,7 +154,7 @@ for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
 done
 
 # Cursor section — sub-checkboxes for each cursor-labeled TC
-CURSOR_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.cursor_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Cursor — IDE-Specific Tests** — \`pnpm package:vscode-extension:withInstall:both && cursor qa/fixtures/workspace\`:'];for(const x of t){const a=x.automated===false?'manual':x.automated;l.push('  - [ ] '+x.id+' ('+a+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
+CURSOR_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.cursor_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Cursor — IDE-Specific Tests** — \`pnpm test:release:cursor\`:'];for(const x of t){const a=x.automated===false?'manual':x.automated;const r=x.nonAutomatableReason?', '+x.nonAutomatableReason:'';l.push('  - [ ] '+x.id+' ('+a+r+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
 CURSOR_COUNT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).cursor_tcs.length))")
 if [[ "$CURSOR_COUNT" -gt 0 ]]; then
   GROUP_CHECKBOXES+=$'\n'
@@ -162,7 +162,7 @@ if [[ "$CURSOR_COUNT" -gt 0 ]]; then
 fi
 
 # Ubuntu section — sub-checkboxes for each ubuntu-labeled TC
-UBUNTU_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.ubuntu_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Ubuntu — Ctrl+R Keybindings** — \`./scripts/qa-ubuntu-docker.sh\` (Docker):'];for(const x of t){const a=x.automated===false?'manual':x.automated;l.push('  - [ ] '+x.id+' ('+a+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
+UBUNTU_SECTION=$(echo "$GROUPS_JSON" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));const t=d.ubuntu_tcs;if(!t.length)process.exit(0);const l=['- [ ] **Ubuntu — Ctrl+R Keybindings** — \`pnpm test:release:ubuntu\`:'];for(const x of t){const a=x.automated===false?'manual':x.automated;const r=x.nonAutomatableReason?', '+x.nonAutomatableReason:'';l.push('  - [ ] '+x.id+' ('+a+r+'): '+x.scenario);}process.stdout.write(l.join('\n'))")
 UBUNTU_COUNT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).ubuntu_tcs.length))")
 if [[ "$UBUNTU_COUNT" -gt 0 ]]; then
   GROUP_CHECKBOXES+=$'\n'
