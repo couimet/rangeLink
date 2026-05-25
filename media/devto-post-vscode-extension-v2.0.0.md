@@ -103,7 +103,7 @@ VS Code itself shows a "What's New" tab for editor releases, but extensions auto
 | **R-G**    | **G** for **G**o to link  | independent            | Paste a RangeLink and jump straight to it                   |
 | **R-U**    | **U** for **U**nbind      | releases it            | Unbind the current destination                              |
 
-_The same table also lives in the [extension README](https://github.com/couimet/rangeLink/blob/main/packages/rangelink-vscode-extension/README.md#command-palette) for quick reference inside your editor._
+_The same table also lives in the [extension README](https://github.com/couimet/rangeLink/tree/main/packages/rangelink-vscode-extension#command-palette) for quick reference inside your editor._
 
 ---
 
@@ -165,4 +165,4 @@ If RangeLink is useful to you:
 - [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 - [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 - [Project Home](https://ouimet.info/projects/rangelink-extension.html)
-- [CHANGELOG](https://github.com/couimet/rangeLink/blob/main/packages/rangelink-vscode-extension/CHANGELOG.md#200)
+- [CHANGELOG](https://github.com/couimet/rangeLink/tree/main/packages/rangelink-vscode-extension/CHANGELOG.md#200)
