@@ -96,7 +96,7 @@ if (!yamlPath) {
   try {
     files = fs
       .readdirSync(qaDir)
-      .filter((f) => f.startsWith('qa-test-cases-v') && f.endsWith('.yaml'));
+      .filter((f) => f.startsWith('qa-test-cases-') && f.endsWith('.yaml'));
   } catch (err) {
     process.stderr.write(`Error: Cannot read QA directory ${qaDir}: ${err.message}\n`);
     process.exit(1);

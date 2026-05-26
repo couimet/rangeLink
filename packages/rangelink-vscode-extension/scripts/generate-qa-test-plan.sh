@@ -33,13 +33,17 @@ if [[ -z "$PUBLISHED_VERSION" ]]; then
 fi
 
 COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
-OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
-if [[ -f "$OUTPUT_FILE" ]]; then
-  echo "$OUTPUT_FILE already exists — nothing to generate"
-  exit 0
+# Version-aware filename + label. "Unreleased" is the placeholder used during
+# trunk-based development before finalize-release locks in a SemVer.
+if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
+  NEXT_LABEL="Unreleased"
+  BASE_NAME="qa-test-cases-unreleased"
+else
+  NEXT_LABEL="v${NEXT_VERSION}"
+  BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
 fi
+OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
 # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
 # (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
@@ -61,10 +65,10 @@ if [[ -z "$PREVIOUS_YAML" ]]; then
   exit 1
 fi
 
-HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
+HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
-#        main branch tip, targeting v${NEXT_VERSION}. Created at commit ${COMMIT}.
+#        main branch tip, targeting ${NEXT_LABEL}. Created at commit ${COMMIT}.
 #
 # Source of truth for this QA cycle. Run \`pnpm generate:qa-issue -- qa/$(basename "$OUTPUT_FILE")\`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).

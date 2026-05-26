@@ -42,7 +42,21 @@ elif ! gh auth status &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
 fi
 
-echo -e "${GREEN}Generating release testing instructions for v${NEXT_VERSION}${NC}"
+# Version-aware filename + label. "Unreleased" is the placeholder used during
+# trunk-based development before finalize-release locks in a SemVer.
+if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
+  NEXT_LABEL="Unreleased"
+  BASE_NAME="release-testing-instructions-unreleased"
+  QA_YAML_FILENAME="qa-test-cases-unreleased.yaml"
+  QA_CHECKLIST_SLUG="unreleased"
+else
+  NEXT_LABEL="v${NEXT_VERSION}"
+  BASE_NAME="release-testing-instructions-v${NEXT_VERSION}"
+  QA_YAML_FILENAME="qa-test-cases-v${NEXT_VERSION}.yaml"
+  QA_CHECKLIST_SLUG="v${NEXT_VERSION}"
+fi
+
+echo -e "${GREEN}Generating release testing instructions for ${NEXT_LABEL}${NC}"
 
 if [[ -n "$WARNINGS" ]]; then
   echo -e "\n${YELLOW}Prerequisites warnings (non-blocking):${NC}"
@@ -51,7 +65,6 @@ fi
 
 # --- Output file ---
 
-BASE_NAME="release-testing-instructions-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.md"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
@@ -62,10 +75,10 @@ fi
 # --- Generate markdown ---
 
 cat > "$OUTPUT_FILE" <<EOF
-# Release Testing Instructions: RangeLink VS Code Extension v${NEXT_VERSION}
+# Release Testing Instructions: RangeLink VS Code Extension ${NEXT_LABEL}
 
 **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-**Scope:** Changes from v${PUBLISHED_VERSION} → v${NEXT_VERSION}
+**Scope:** Changes from v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 
 This file contains version-specific, copy-paste ready commands for the full release testing lifecycle.
 Work through each phase in order — later phases depend on earlier ones completing successfully.
@@ -101,13 +114,13 @@ gh auth status
 
 ## Phase 1: Generate QA Test Plan
 
-Create or carry forward the QA test plan YAML for v${NEXT_VERSION}.
+Create or carry forward the QA test plan YAML for ${NEXT_LABEL}.
 
 \`\`\`bash
 pnpm generate:qa-test-plan:vscode-extension
 \`\`\`
 
-This creates \`qa/qa-test-cases-v${NEXT_VERSION}.yaml\` by carrying forward all TCs from the previous plan with statuses reset to pending.
+This creates \`qa/${QA_YAML_FILENAME}\` by carrying forward all TCs from the previous plan with statuses reset to pending.
 
 ### AI-powered gap detection
 
@@ -120,8 +133,8 @@ Run the \`/qa-suggest\` skill in Claude Code to identify features in the CHANGEL
 3. Commit the YAML:
 
 \`\`\`bash
-git add packages/rangelink-vscode-extension/qa/qa-test-cases-v${NEXT_VERSION}.yaml
-git commit -m "Add QA test plan for v${NEXT_VERSION}"
+git add packages/rangelink-vscode-extension/qa/${QA_YAML_FILENAME}
+git commit -m "Add QA test plan for ${NEXT_LABEL}"
 \`\`\`
 
 ---
@@ -178,7 +191,7 @@ Generate a local QA checklist:
 pnpm generate:qa-issue:vscode-extension --local
 \`\`\`
 
-The generated checklist is at \`qa/output/qa-checklist-v${NEXT_VERSION}-<timestamp>.md\`.
+The generated checklist is at \`qa/output/qa-checklist-${QA_CHECKLIST_SLUG}-<timestamp>.md\`.
 Each TC is annotated with its automation status and reason. Cursor and Ubuntu TCs are grouped into their own sections with the required run commands inline.
 
 ---
@@ -212,7 +225,7 @@ When all checks pass, generate the publishing instructions:
 pnpm generate:publish-instructions:vscode-extension
 \`\`\`
 
-This validates the release environment and creates a version-specific publishing guide at \`publishing-instructions/publish-vscode-extension-v${NEXT_VERSION}.md\`.
+This validates the release environment and creates a version-specific publishing guide at \`publishing-instructions/publish-vscode-extension-${NEXT_LABEL}.md\`.
 EOF
 
 # Format with prettier

@@ -71,13 +71,13 @@ echo "  Using committed YAML: $(basename "$LATEST_YAML")"
 echo ""
 
 run_check "validate-qa-coverage" ./scripts/validate-qa-coverage.sh "$LATEST_YAML"
-check_artifact "validate-qa-coverage" "output/qa-coverage-report-v*.txt"
+check_artifact "validate-qa-coverage" "output/qa-coverage-report-*.txt"
 
 run_check "generate-release-testing-instructions" ./scripts/generate-release-testing-instructions.sh
-check_artifact "generate-release-testing-instructions" "release-testing-instructions-v*.md"
+check_artifact "generate-release-testing-instructions" "release-testing-instructions-*.md"
 
 run_check "generate-qa-test-plan" ./scripts/generate-qa-test-plan.sh
-check_artifact "generate-qa-test-plan" "qa-test-cases-v*.yaml"
+check_artifact "generate-qa-test-plan" "qa-test-cases-*.yaml"
 
 # dry-run produces no artifact — exit code is sufficient
 run_check "generate-qa-issue (dry-run)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --dry-run'
