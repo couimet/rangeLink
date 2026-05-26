@@ -9,8 +9,8 @@ set -euo pipefail
 # Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
-# Filename: qa-test-cases-v<version>.yaml
-# If the file already exists, exits successfully (no-op).
+# Filename: qa-test-cases-v<version>.yaml, or qa-test-cases-unreleased.yaml when nextTargetVersion is "Unreleased".
+# Always regenerates: header is freshly emitted, body is carried forward from the highest-sorted existing yaml.
 #
 # Requires: jq
 
@@ -73,8 +73,8 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)
-#   feature:         Feature area / CHANGELOG section
-#   scenario:        One-line description of the specific scenario being tested
+#   feature:         Feature area
+#   scenario:        One-line description of what is tested
 #   labels:          Optional tags (e.g., cursor, ubuntu, requires-extensions)
 #   preconditions:   Required setup steps — only on \`automated: false\` entries
 #   steps:           Ordered test actions — only on \`automated: false\` entries
@@ -88,11 +88,7 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #   non_automatable_reason: Required when \`automated: false\`. Why this TC cannot be
 #                           automated (even assisted):
 #                             platform-specific — requires Win/Linux; CI runs on macOS
-#                             ide-specific      — requires Cursor IDE; not in VS Code host
-#
-# For \`automated: true\` and \`automated: assisted\` entries the integration test in
-# src/__integration-tests__/suite/ is the canonical source of setup and actions —
-# \`preconditions:\` and \`steps:\` are omitted to prevent duplication and drift."
+#                             ide-specific      — requires Cursor IDE; not in VS Code host"
 
 BODY=$(sed '1,/^test_cases:/{ /^#/d; }' "$PREVIOUS_YAML")
 
