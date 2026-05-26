@@ -1,15 +1,15 @@
-# RangeLink QA Test Cases — v1.0.0 → v1.1.0
+# RangeLink QA Test Cases — v1.0.0 → Unreleased
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting v1.1.0.
+#        main branch tip, targeting Unreleased.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-003.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-unreleased.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)
 #   feature:         Feature area
-#   scenario:        One-line description of the specific scenario being tested
+#   scenario:        One-line description of what is tested
 #   labels:          Optional tags (e.g., cursor, ubuntu, requires-extensions)
 #   preconditions:   Required setup steps — only on `automated: false` entries
 #   steps:           Ordered test actions — only on `automated: false` entries
@@ -24,10 +24,7 @@
 #                           automated (even assisted):
 #                             platform-specific — requires Win/Linux; CI runs on macOS
 #                             ide-specific      — requires Cursor IDE; not in VS Code host
-#
-# For `automated: true` and `automated: assisted` entries the integration test in
-# src/__integration-tests__/suite/ is the canonical source of setup and actions —
-# `preconditions:` and `steps:` are omitted to prevent duplication and drift.
+
 
 test_cases:
   # ---------------------------------------------------------------------------

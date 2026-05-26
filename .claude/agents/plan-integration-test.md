@@ -26,7 +26,7 @@ A complete test template with:
 
 ### Step 1: Read the QA YAML
 
-Find the TC in `packages/rangelink-vscode-extension/qa/qa-test-cases-v1.1.0*.yaml` (use the latest file). Extract:
+Find the TC in `packages/rangelink-vscode-extension/qa/qa-test-cases-unreleased.yaml` (or `qa-test-cases-v<version>.yaml` for a released version — use the latest file). Extract:
 
 - `scenario` — what the test verifies
 - `preconditions` — what setup is needed
