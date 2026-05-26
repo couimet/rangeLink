@@ -150,7 +150,13 @@ for (const rawLine of lines) {
   const idMatch = line.match(/^\s+- id:\s*(.+)$/);
   if (idMatch) {
     finalizeCurrent();
-    currentCase = { id: idMatch[1].trim(), automated: '', labels: [], feature: '' };
+    currentCase = {
+      id: idMatch[1].trim(),
+      automated: '',
+      labels: [],
+      feature: '',
+      nonAutomatableReason: '',
+    };
     continue;
   }
 
@@ -160,6 +166,18 @@ for (const rawLine of lines) {
   if (autoMatch) {
     const raw = autoMatch[1].trim();
     currentCase.automated =
+      raw.length >= 2 &&
+      ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
+        ? raw.slice(1, -1)
+        : raw;
+    inLabels = false;
+    continue;
+  }
+
+  const reasonMatch = line.match(/^\s+non_automatable_reason:\s*(.+)$/);
+  if (reasonMatch) {
+    const raw = reasonMatch[1].trim();
+    currentCase.nonAutomatableReason =
       raw.length >= 2 &&
       ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
         ? raw.slice(1, -1)
@@ -236,6 +254,7 @@ if (jsonOutput) {
   for (const prefix of sortedPrefixes) {
     const tcList = groups[prefix];
     const featureCounts = {};
+    const reasonCounts = {};
     let assistedCount = 0;
     let manualCount = 0;
     let requiresExtensions = false;
@@ -249,6 +268,7 @@ if (jsonOutput) {
           feature: tc.feature,
           scenario: tc.scenario || '',
           automated: tc.automated === 'false' ? false : tc.automated,
+          nonAutomatableReason: tc.nonAutomatableReason || undefined,
         });
         continue;
       }
@@ -259,6 +279,7 @@ if (jsonOutput) {
           feature: tc.feature,
           scenario: tc.scenario || '',
           automated: tc.automated === 'false' ? false : tc.automated,
+          nonAutomatableReason: tc.nonAutomatableReason || undefined,
         });
         continue;
       }
@@ -273,6 +294,8 @@ if (jsonOutput) {
         assistedCount++;
       } else if (tc.automated === 'false') {
         manualCount++;
+        const reason = tc.nonAutomatableReason || 'unspecified';
+        reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
       }
     }
 
@@ -298,6 +321,7 @@ if (jsonOutput) {
       manual: manualCount,
       total: nonAutomated,
       requires_extensions: requiresExtensions,
+      ...(Object.keys(reasonCounts).length > 0 ? { reasons: reasonCounts } : {}),
     });
   }
 

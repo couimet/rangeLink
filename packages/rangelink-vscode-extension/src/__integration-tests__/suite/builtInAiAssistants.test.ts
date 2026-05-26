@@ -432,6 +432,191 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
   });
 
+  test('[assisted] github-copilot-chat-002: binding to GitHub Copilot Chat and sending a link delivers content to chat', async () => {
+    const fileUri = ss.createWorkspaceFile('ghc-002', 'line 1\nline 2\nline 3\n');
+    await ss.openEditor(fileUri);
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ghc-002-bind');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
+
+    const bindLines = logCapture.getLinesSince('before-ghc-002-bind');
+    assertStatusBarMsgLogged(bindLines, {
+      message: '✓ RangeLink: Bound to GitHub Copilot Chat',
+    });
+
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    logCapture.mark('before-ghc-002-send');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const sendLines = logCapture.getLinesSince('before-ghc-002-send');
+
+    const pasteSuccessLog = sendLines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(
+      pasteSuccessLog,
+      'Expected paste link success log after send (code-side paste fired)',
+    );
+
+    const clipboardPasteLog = sendLines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+
+    const verdict = await waitForHumanVerdict(
+      'github-copilot-chat-002',
+      'Did the RangeLink + selected code appear in GitHub Copilot Chat?',
+      [
+        '1. The RangeLink send was fired automatically',
+        '2. Click PASS if the link + selected code appeared in GitHub Copilot Chat input',
+        '3. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in GitHub Copilot Chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    ss.log('✓ Bind status confirmed + content delivered to GitHub Copilot Chat');
+  });
+
+  test('[assisted] github-copilot-chat-003: cold panel paste — content arrives in GitHub Copilot Chat after first R-L since bind', async () => {
+    const fileUri = ss.createWorkspaceFile('ghc-003', 'line 1\nline 2\nline 3\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ghc-003');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-ghc-003');
+
+    const pasteSuccessLog = lines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(pasteSuccessLog, 'Expected paste link success log after cold paste send');
+
+    const clipboardPasteLog = lines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+
+    const verdict = await waitForHumanVerdict(
+      'github-copilot-chat-003',
+      'Cold paste: did the RangeLink appear in GitHub Copilot Chat?',
+      [
+        '1. Lines 1-2 of ghc-003 are already selected',
+        '2. The send was fired automatically (no keypress needed)',
+        '3. Click PASS if the RangeLink appeared in GitHub Copilot Chat input',
+        '4. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in GitHub Copilot Chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    ss.log('✓ Cold paste: content delivered to GitHub Copilot Chat (verdict PASS)');
+  });
+
+  test('[assisted] github-copilot-chat-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    const fileUri = ss.createWorkspaceFile('ghc-004', 'line 1\nline 2\nline 3\nline 4\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
+
+    // First send (cold) — warms the panel
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const coldVerdict = await waitForHumanVerdict(
+      'github-copilot-chat-004-cold',
+      'Cold send: did the RangeLink appear in GitHub Copilot Chat?',
+      [
+        '1. Lines 1-2 of ghc-004 are selected; cold send was fired automatically',
+        '2. Click PASS if the RangeLink appeared in GitHub Copilot Chat input',
+        '3. Click FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      coldVerdict,
+      'pass',
+      'Human reported the cold-send RangeLink did not appear in GitHub Copilot Chat',
+    );
+
+    // Select lines 3-4 for warm send
+    await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ghc-004-warm');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-ghc-004-warm');
+
+    const pasteSuccessLog = lines.find(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(pasteSuccessLog, 'Expected paste link success log on warm send');
+
+    const clipboardPasteLog = lines.find(
+      (line) =>
+        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
+        line.includes('Clipboard paste succeeded'),
+    );
+    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
+
+    const warmVerdict = await waitForHumanVerdict(
+      'github-copilot-chat-004-warm',
+      'Warm send: did the lines 3-4 RangeLink appear in GitHub Copilot Chat without refocus flicker?',
+      [
+        '1. Lines 3-4 of ghc-004 are selected; warm send was fired automatically',
+        '2. Click PASS if the new RangeLink appeared AND the panel did not flicker/refocus',
+        '3. Click FAIL otherwise (no content, or visible flicker indicating cold-start path)',
+      ],
+    );
+    assert.strictEqual(
+      warmVerdict,
+      'pass',
+      'Human reported the warm-send RangeLink did not appear cleanly in GitHub Copilot Chat',
+    );
+
+    ss.log('✓ Warm paste: content delivered to GitHub Copilot Chat (cold + warm both PASS)');
+  });
+
   test('clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
     const fileUri = ss.createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
@@ -629,6 +814,67 @@ standardSuite('Built-in AI Assistants', (ss) => {
       `Expected clipboard to equal generated link, got: ${clipboard017}`,
     );
     ss.log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
+  });
+
+  test('[assisted] clipboard-preservation-018: two rapid R-L to Claude Code — last write wins, prior content restored once', async () => {
+    const fileUri = ss.createWorkspaceFile('cp-018', 'line 1\nline 2\nline 3\nline 4\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
+    await ss.settle();
+
+    // Snapshot clipboard before rapid sends
+    await writeClipboardSentinel();
+    const logCapture = getLogCapture();
+
+    // First send: lines 1-2
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    logCapture.mark('before-018-rapid');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+
+    // Second send: lines 3-4, fired immediately without waiting for first to complete
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-018-rapid');
+
+    // Both sends should have fired paste commands
+    const pasteLogs = lines.filter(
+      (line) =>
+        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
+    );
+    assert.ok(pasteLogs.length >= 2, `Expected at least 2 paste logs, got ${pasteLogs.length}`);
+
+    // Clipboard preservation should have run (exactly once restoration after last op)
+    assertClipboardPreservationRan(logCapture, 'before-018-rapid', 'R-L');
+
+    await assertClipboardRestored(
+      'clipboard-preservation-018: rapid R-L to Claude Code — prior clipboard restored once',
+    );
+
+    const verdict = await waitForHumanVerdict(
+      'clipboard-preservation-018',
+      'Two rapid R-L: did both RangeLinks appear in Claude Code chat?',
+      [
+        '1. Two rapid sends were fired automatically',
+        '2. Check Claude Code chat for BOTH RangeLinks (lines 1-2 and lines 3-4)',
+        '3. Click PASS if both links were delivered',
+        '4. Click FAIL otherwise (missing link or wrong content)',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported rapid R-L did not deliver both links or clipboard was corrupted',
+    );
+
+    ss.log(
+      '✓ clipboard-preservation-018: rapid R-L — both links delivered, clipboard restored once',
+    );
   });
 });
 

@@ -32,6 +32,9 @@ packages/*/icon_large.png
 # Claude config
 .claude/settings.local.json
 
+# Docker image build stamp (local timestamp for rebuild detection)
+packages/rangelink-vscode-extension/.docker-image-stamp
+
 # Temp files created by integration test suites (cleaned up on normal exit; guard for CI kills)
 packages/rangelink-vscode-extension/__rl-test-*.ts
 packages/rangelink-vscode-extension/__rl-test-*.txt
@@ -39,11 +42,13 @@ packages/rangelink-vscode-extension/.vscode/
 
 # Generated QA output (not committed)
 packages/rangelink-vscode-extension/qa/output/
+packages/rangelink-vscode-extension/qa/fixtures/workspace/cursor-qa-guide.txt
 
 # Folders where Claude Code is told to create and manage working documents
 .breadcrumbs/
 .claude-questions/
 .commit-msgs/
 .scratchpads/
+
 # Claude skill working directories
 .claude-work/

@@ -20,6 +20,10 @@
 #                      assisted — covered by an [assisted]-tagged integration test
 #                                 that pauses for a human UI action
 #                      false    — fully manual; preconditions and steps are required
+#   non_automatable_reason: Required when `automated: false`. Why this TC cannot be
+#                           automated (even assisted):
+#                             platform-specific — requires Win/Linux; CI runs on macOS
+#                             ide-specific      — requires Cursor IDE; not in VS Code host
 #
 # For `automated: true` and `automated: assisted` entries the integration test in
 # src/__integration-tests__/suite/ is the canonical source of setup and actions —
@@ -59,6 +63,7 @@ test_cases:
       - 'Press Ctrl+R Ctrl+M'
     expected_result: 'Same QuickPick menu opens as clicking the status bar item.'
     automated: false
+    non_automatable_reason: platform-specific
 
   - id: status-bar-menu-005
     feature: 'R-M Status Bar Menu'
@@ -218,6 +223,7 @@ test_cases:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
     automated: false
+    non_automatable_reason: ide-specific
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
@@ -504,17 +510,8 @@ test_cases:
       - clipboard
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'Two rapid R-L operations to the same AI assistant — last write wins, prior content restored once'
-    preconditions:
-      - 'Claude Code bound as destination'
-      - 'rangelink.clipboard.preserve = "always" (default)'
-    steps:
-      - 'Copy "prior-content" to clipboard'
-      - 'Select lines 1-2 and press R-L (first send)'
-      - 'Immediately select lines 3-4 and press R-L (second send) without waiting for first to complete'
-      - 'After both pastes, paste (Cmd+V) into a text editor'
-      - 'Verify clipboard state'
     expected_result: 'Both RangeLinks are delivered. Prior clipboard content is restored after the last operation completes. No clipboard corruption from overlapping writes.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
@@ -552,6 +549,7 @@ test_cases:
       - 'Observe terminal'
     expected_result: 'Terminal receives workspace-relative path. Same as send-file-path-001.'
     automated: false
+    non_automatable_reason: platform-specific
 
   - id: send-file-path-004
     labels:
@@ -1008,6 +1006,7 @@ test_cases:
       - 'Observe bound destination'
     expected_result: 'Same as send-terminal-selection-001.'
     automated: false
+    non_automatable_reason: platform-specific
 
   - id: send-terminal-selection-003
     labels:
@@ -1176,6 +1175,7 @@ test_cases:
       - 'Press Ctrl+R Ctrl+U'
     expected_result: 'Destination is unbound. Same confirmation behavior as unbind-001.'
     automated: false
+    non_automatable_reason: platform-specific
 
   - id: unbind-003
     feature: 'R-U Unbind'
@@ -1911,6 +1911,8 @@ test_cases:
     automated: assisted
 
   - id: cursor-ai-001
+    labels:
+      - cursor
     feature: 'Built-in AI Assistants'
     scenario: 'Cursor AI Assistant appears in destination picker when running in Cursor IDE'
     preconditions:
@@ -1921,10 +1923,12 @@ test_cases:
       - 'Confirm "Cursor AI Assistant" item appears in the AI Assistants group'
     expected_result: '"Cursor AI Assistant" is listed in the AI Assistants group of the destination picker'
     automated: false
+    non_automatable_reason: ide-specific
 
   - id: cursor-ai-002
     labels:
       - clipboard
+      - cursor
     feature: 'Built-in AI Assistants'
     scenario: 'Binding to Cursor AI and sending a link delivers content to chat'
     preconditions:
@@ -1937,6 +1941,7 @@ test_cases:
       - 'Confirm Cursor AI chat panel opens and receives the link + selected text'
     expected_result: 'Cursor AI chat opens and contains the RangeLink and selected code snippet'
     automated: false
+    non_automatable_reason: ide-specific
 
   - id: github-copilot-chat-001
     feature: 'Built-in AI Assistants'
@@ -1949,16 +1954,8 @@ test_cases:
       - clipboard
     feature: 'Built-in AI Assistants'
     scenario: 'Binding to GitHub Copilot Chat and sending a link delivers content to chat'
-    preconditions:
-      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
-      - 'A file is open in the editor with a selection'
-    steps:
-      - 'Run Command Palette → "RangeLink: Bind to GitHub Copilot Chat" (or select from R-D picker)'
-      - 'Confirm "✓ RangeLink bound to GitHub Copilot Chat" status bar message appears'
-      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
-      - 'Confirm GitHub Copilot Chat panel opens and receives the link + selected text'
     expected_result: 'GitHub Copilot Chat opens and contains the RangeLink and selected code snippet'
-    automated: false
+    automated: assisted
 
   - id: claude-code-004
     labels:
@@ -2004,6 +2001,7 @@ test_cases:
   - id: cursor-ai-003
     labels:
       - clipboard
+      - cursor
     feature: 'Built-in AI Assistants'
     scenario: 'Cold panel paste verification — content arrives in Cursor AI chat input after a single R-L since bind'
     preconditions:
@@ -2016,10 +2014,12 @@ test_cases:
       - 'Confirm logs show the single paste command (editor.action.clipboardPasteAction) succeeded'
     expected_result: 'Content arrives in Cursor AI chat input. Logs show paste command succeeded. Cursor AI is unaffected by the webview async clipboard read issue (native input).'
     automated: false
+    non_automatable_reason: ide-specific
 
   - id: cursor-ai-004
     labels:
       - clipboard
+      - cursor
     feature: 'Built-in AI Assistants'
     scenario: 'Warm panel paste verification — content arrives in Cursor AI chat input on second R-L without cold-start refocus signals'
     preconditions:
@@ -2032,38 +2032,23 @@ test_cases:
       - 'Confirm logs show NO cold-start refocus signals in the warm send'
     expected_result: 'Content arrives in Cursor AI chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
     automated: false
+    non_automatable_reason: ide-specific
 
   - id: github-copilot-chat-003
     labels:
       - clipboard
     feature: 'Built-in AI Assistants'
     scenario: 'Cold panel paste verification — content arrives in GitHub Copilot Chat input after a single R-L since bind'
-    preconditions:
-      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
-      - 'RangeLink is bound to GitHub Copilot Chat'
-      - 'No send has been performed since binding (cold start)'
-    steps:
-      - 'Select a range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
-      - 'Confirm the GitHub Copilot Chat panel receives the link and selected code'
-      - 'Confirm logs show the single paste command (editor.action.clipboardPasteAction) succeeded'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show paste command succeeded with a post-paste delay. Single clipboard write architecture: no double-write.'
-    automated: false
+    automated: assisted
 
   - id: github-copilot-chat-004
     labels:
       - clipboard
     feature: 'Built-in AI Assistants'
     scenario: 'Warm panel paste verification — content arrives in GitHub Copilot Chat input on second R-L without cold-start refocus signals'
-    preconditions:
-      - 'GitHub Copilot Chat extension (GitHub.copilot-chat) is installed and active'
-      - 'RangeLink is bound to GitHub Copilot Chat'
-      - 'At least one send has been performed since binding (warm path)'
-    steps:
-      - 'Select a different range of code and press Cmd+R Cmd+L (Mac) / Ctrl+R Ctrl+L (Win/Linux)'
-      - 'Confirm the GitHub Copilot Chat panel receives the link and selected code'
-      - 'Confirm logs show NO cold-start refocus signals in the warm send'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
-    automated: false
+    automated: assisted
 
   - id: gemini-code-assist-001
     labels:

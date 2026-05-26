@@ -15,6 +15,8 @@
 | Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
 | Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions   | ✅                   |
 | Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
+| Ubuntu manual QA         | `pnpm test:release:ubuntu`                                    | Manual QA of Ctrl+R keybindings    | —                    |
+| Cursor manual QA         | `pnpm test:release:cursor`                                    | Manual QA of Cursor IDE TCs        | —                    |
 | Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
 | Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
 | Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
@@ -230,6 +232,39 @@ Steps run in this order:
 | Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                              |
 | Run integration tests        | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
 | Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced              |
+
+---
+
+## Manual QA Environments
+
+Some TCs are marked `automated: false` with a `non_automatable_reason` because they require a specific platform or IDE that cannot be tested in the standard extension host. The scripts below launch dedicated environments for these TCs.
+
+### Ubuntu (Ctrl+R keybindings)
+
+`platform-specific` TCs require a Linux environment where `Ctrl` (not `Cmd`) is the primary modifier key. The provided Docker container runs Ubuntu 24.04 with XFCE desktop, VS Code, and the extension's repo mounted at `/workspace`.
+
+**Prerequisites:** Docker Desktop (or Docker Engine) installed and running.
+
+```bash
+# Builds image on first run (or after Dockerfile changes: docker build -t rangelink-qa-ubuntu -f docker/Dockerfile.ubuntu .)
+pnpm test:release:ubuntu
+```
+
+The container opens a noVNC web desktop at http://localhost:6080/vnc.html. Open a terminal inside the desktop, run the extension tests, or manually verify `Ctrl+R` keybinding variants against the fixture workspace at `/workspace/packages/rangelink-vscode-extension/qa/fixtures/workspace`.
+
+The Dockerfile is at `docker/Dockerfile.ubuntu`. VS Code is installed from the Microsoft apt repo.
+
+### Cursor (IDE-specific tests)
+
+`ide-specific` TCs require Cursor IDE. These can only be verified manually — Cursor has no headless extension host mode for third-party extensions.
+
+```bash
+pnpm test:release:cursor
+```
+
+Builds the extension, installs it in Cursor, prints the Cursor-specific TCs to verify, then launches Cursor. Any workspace works — the fixture is just a convenience with a few file types ready.
+
+The `cursor` CLI must be on your PATH. If it's not, install it from Cursor's command palette: `Cmd+Shift+P` → "Install 'cursor' command".
 
 ---
 
