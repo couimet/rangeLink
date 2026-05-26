@@ -90,7 +90,7 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #                             platform-specific — requires Win/Linux; CI runs on macOS
 #                             ide-specific      — requires Cursor IDE; not in VS Code host"
 
-BODY=$(sed '1,/^test_cases:/{ /^#/d; }' "$PREVIOUS_YAML")
+BODY=$(sed -n '/^test_cases:/,$p' "$PREVIOUS_YAML")
 
 {
   echo "$HEADER"

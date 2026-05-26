@@ -25,7 +25,6 @@
 #                             platform-specific — requires Win/Linux; CI runs on macOS
 #                             ide-specific      — requires Cursor IDE; not in VS Code host
 
-
 test_cases:
   # ---------------------------------------------------------------------------
   # Section 1 — R-M Status Bar Menu
