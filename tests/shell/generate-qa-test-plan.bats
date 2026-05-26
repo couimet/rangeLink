@@ -199,6 +199,33 @@ EOF
   ! grep -q "scenario: 'from versioned'" "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
 }
 
+@test "fallback: numeric SemVer sort picks v1.10.0 over v1.9.0 when output file is new" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "1.10.0",
+  "nextTargetVersion": "2.0.0"
+}
+EOF
+  write_yaml "qa-test-cases-v1.9.0.yaml" <<'EOF'
+test_cases:
+  - id: older-001
+    scenario: 'from older version'
+    automated: true
+EOF
+  write_yaml "qa-test-cases-v1.10.0.yaml" <<'EOF'
+test_cases:
+  - id: newer-001
+    scenario: 'from newer version'
+    automated: true
+EOF
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+  grep -q "scenario: 'from newer version'" "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml"
+  ! grep -q "scenario: 'from older version'" "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml"
+}
+
 # ── Error paths ────────────────────────────────────────────────────────────────
 
 @test "missing nextTargetVersion still errors" {

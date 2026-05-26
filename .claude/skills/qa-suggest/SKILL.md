@@ -144,7 +144,9 @@ Create a scratchpad file for the report. Use the `/scratchpad` conventions:
 
 1. Determine the issue context from the current git branch (e.g., `issues/382` → issue ID `382`)
 2. Find the next available sequence number in `.claude-work/issues/<ID>/scratchpads/`
-3. Write the scratchpad to `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest.txt`
+3. Write the scratchpad. Choose the filename based on `nextTargetVersion`:
+   - If `nextTargetVersion` is `"Unreleased"`: `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest.txt`
+   - If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`): `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest-v<nextTargetVersion>.txt`
 
 If no issue context can be determined, use `.claude-work/scratchpads/` instead.
 
@@ -152,15 +154,25 @@ The scratchpad should contain these sections in order:
 
 ### Header
 
+If `nextTargetVersion` is `"Unreleased"`, use this header:
+
 ```text
 # QA Suggest — v<version> → Unreleased
+```
+
+If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`), use this header instead:
+
+```text
+# QA Suggest — v<version> → v<nextTargetVersion>
+```
+
+Then continue with the shared body:
 
 ## What to do next
 
 1. Review the suggested TCs below — edit descriptions, remove irrelevant ones
 2. Copy the YAML block at the bottom into the QA file at the appropriate section
 3. Verify the IDs don't collide with existing entries
-```
 
 ### Change Summary
 

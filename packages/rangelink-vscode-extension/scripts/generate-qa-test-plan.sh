@@ -49,20 +49,24 @@ OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 if [[ -f "$OUTPUT_FILE" ]]; then
   PREVIOUS_YAML="$OUTPUT_FILE"
 else
-  # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
-  # (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
-  # to unsuffixed names for sorting purposes, then pick the highest.
+  # Pick the highest-SemVer versioned YAML (or unreleased as last resort).
+  # Sort by MAJOR, MINOR, PATCH numerically so v1.10.0 > v1.9.0. Unsuffixed
+  # files get -000 for tie-breaking so the primary file sorts before backups.
   PREVIOUS_YAML=$(
     for f in "$QA_DIR"/qa-test-cases-*.yaml; do
       [[ -e "$f" ]] || continue
       name=$(basename "$f")
       base="${name%.yaml}"
-      if [[ "$base" =~ -[0-9]{3}$ ]]; then
-        printf '%s\t%s\n' "$base" "$f"
-      else
-        printf '%s-000\t%s\n' "$base" "$f"
+      if [[ "$base" =~ ^qa-test-cases-v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9]{3})?$ ]]; then
+        major="${BASH_REMATCH[1]}"
+        minor="${BASH_REMATCH[2]}"
+        patch="${BASH_REMATCH[3]}"
+        suff="${BASH_REMATCH[4]:-"-000"}"
+        printf '%d\t%d\t%d\t%s\t%s\n' "$major" "$minor" "$patch" "$suff" "$f"
+      elif [[ "$base" == *unreleased* ]]; then
+        printf '0\t0\t0\t-000\t%s\n' "$f"
       fi
-    done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
+    done | sort -t$'\t' -k1,1n -k2,2n -k3,3n -k4,4 | tail -1 | cut -f5
   )
   if [[ -z "$PREVIOUS_YAML" ]]; then
     echo "Error: no previous QA YAML found in $QA_DIR" >&2
