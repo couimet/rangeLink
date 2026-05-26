@@ -32,8 +32,6 @@ if [[ -z "$PUBLISHED_VERSION" ]]; then
   exit 1
 fi
 
-COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-
 # Version-aware filename + label. "Unreleased" is the placeholder used during
 # trunk-based development before finalize-release locks in a SemVer.
 if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
@@ -68,7 +66,7 @@ fi
 HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
-#        main branch tip, targeting ${NEXT_LABEL}. Created at commit ${COMMIT}.
+#        main branch tip, targeting ${NEXT_LABEL}.
 #
 # Source of truth for this QA cycle. Run \`pnpm generate:qa-issue -- qa/$(basename "$OUTPUT_FILE")\`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
