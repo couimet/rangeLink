@@ -125,16 +125,6 @@ When documenting a feature that hasn't been released yet, add `<sup>Unreleased</
 
 Skip marking cosmetic renames or rewording of existing features — only mark genuinely new functionality.
 
-### Stripping Markers at Release Time
-
-During the **Prepare** phase of a release:
-
-1. Remove the top-of-README banner (the `> [!IMPORTANT]` admonition about unreleased features)
-2. Strip all `<sup>Unreleased</sup>` markers from the README
-3. Verify no markers remain: `grep -r '<sup>Unreleased</sup>' packages/`
-
-The publishing script (`generate-publishing-instructions.sh`) also checks for leftover markers and blocks publishing if any are found. This serves as a safety net in case manual stripping is forgotten.
-
 ---
 
 ## Release Workflow
@@ -143,11 +133,15 @@ The publishing script (`generate-publishing-instructions.sh`) also checks for le
 
 Releasing a package involves these phases:
 
-1. **Prepare** - Bump version, update CHANGELOG, strip unreleased markers, commit changes
+1. **Prepare**
+   1. `pnpm lock-version:vscode-extension X.Y.Z` — soft-lock the version for QA
+   2. Run QA pass (manual + automated TCs)
+   3. `pnpm finalize-release:vscode-extension` — hard-finalize: bumps `.version`, updates CHANGELOG, strips README markers, generates publishing instructions
 2. **Build & Test** - Package and validate locally
 3. **Publish** - Deploy to marketplace(s) and create GitHub release
 4. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
 5. **Verify** - Confirm publication and test installation
+6. **Next cycle** — `pnpm start-release:vscode-extension` to begin the next development cycle
 
 ### Package-Specific Instructions
 
@@ -326,44 +320,41 @@ git push origin vscode-extension-v0.1.0
 ### Example 2: Second Release (v0.1.1)
 
 ```bash
-# 1. Update version in package.json to 0.1.1
-# 2. Update CHANGELOG.md
-git add packages/rangelink-vscode-extension/package.json
-git add packages/rangelink-vscode-extension/CHANGELOG.md
-git commit -m "chore(vscode-ext): bump version to 0.1.1"
+# 1. Prepare: lock version, run QA, then finalize
+pnpm lock-version:vscode-extension 0.1.1
+# ... QA pass ...
+pnpm finalize-release:vscode-extension
 
-# 3. Build, test, package
-pnpm clean && pnpm install && pnpm -r compile && pnpm -r test
-cd packages/rangelink-vscode-extension
-pnpm package
+# 2. Build, test, package locally
+pnpm package:vscode-extension
+pnpm install-local:vscode-extension:both
 
-# 4. Test locally
-pnpm install-local:vscode
+# 3. Publish to marketplace
+pnpm publish:vscode-extension:vsix
 
-# 5. Publish to marketplace
-pnpm publish
-
-# 6. Tag and push
-git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1
-
-Changes:
-- Documentation improvements
-- ESLint configuration fixes
-"
+# 4. Tag and push
+git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1"
 git push origin vscode-extension-v0.1.1
 
-# 7. Create GitHub release with CHANGELOG content
+# 5. Start next development cycle
+pnpm start-release:vscode-extension
+
+# 6. Create GitHub release with CHANGELOG content
 ```
 
 ### Example 3: Major Version Bump (v1.0.0)
 
 ```bash
-# When ready for 1.0.0 (stable API, feature-complete)
-# Same process, but version becomes 1.0.0
-git tag -a vscode-extension-v1.0.0 -m "Release vscode-extension v1.0.0
-
-First stable release with complete feature set and stable API.
-"
+# Same process as Example 2, with the new version number.
+pnpm lock-version:vscode-extension 1.0.0
+# ... QA pass ...
+pnpm finalize-release:vscode-extension
+pnpm package:vscode-extension
+pnpm install-local:vscode-extension:both
+pnpm publish:vscode-extension:vsix
+git tag -a vscode-extension-v1.0.0 -m "Release vscode-extension v1.0.0"
+git push origin vscode-extension-v1.0.0
+pnpm start-release:vscode-extension
 ```
 
 ### Example 4: Multiple Package Release
@@ -427,15 +418,8 @@ These items are planned but not yet implemented:
   - Automated CHANGELOG generation
   - Better monorepo version coordination
 
-- [ ] **Pre-commit hooks**
-  - Enforce clean working tree before tagging
-  - Validate version numbers match across package.json and CHANGELOG
-  - Prevent accidental dirty releases
-
-- [ ] **Release verification scripts**
-  - Automated checks before publishing
-  - Version number validation
-  - CHANGELOG completeness check
+- [x] **Pre-commit hooks** — working tree cleanliness enforced by the release scripts; remaining hook work: prevent commits that introduce version/CHANGELOG mismatches.
+- [x] **Release verification scripts** — `pnpm lock-version:vscode-extension`, `pnpm finalize-release:vscode-extension`, and `pnpm generate:publish-instructions:vscode-extension` validate the working tree, version numbers, CHANGELOG, and unreleased markers before allowing each phase to proceed.
 
 ---
 
@@ -457,36 +441,7 @@ git tag -a vscode-extension-v0.1.0 ff52f9a -m "Release vscode-extension v0.1.0"
 git push origin vscode-extension-v0.1.0
 ```
 
-### Release v0.1.1 (Full Process)
-
-```bash
-# 1. Version bump
-cd packages/rangelink-vscode-extension
-# Edit package.json: "version": "0.1.1"
-# Edit CHANGELOG.md
-git add package.json CHANGELOG.md
-git commit -m "chore(vscode-ext): bump version to 0.1.1"
-
-# 2. Build and test
-cd ../..
-pnpm clean && pnpm install && pnpm -r compile && pnpm -r test
-
-# 3. Package and test locally
-cd packages/rangelink-vscode-extension
-pnpm package
-pnpm install-local:vscode
-
-# 4. Publish
-pnpm publish
-
-# 5. Tag and release
-cd ../..
-git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1"
-git push origin vscode-extension-v0.1.1
-# Then create GitHub release
-```
-
 ---
 
-**Last Updated:** 2025-11-02
-**Status:** Active - Manual release process in use
+**Last Updated:** 2026-05-26
+**Status:** Active — automated via `pnpm lock-version:vscode-extension` → `pnpm finalize-release:vscode-extension` → `pnpm start-release:vscode-extension`
