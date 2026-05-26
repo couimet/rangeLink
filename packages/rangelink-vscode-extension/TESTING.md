@@ -34,6 +34,8 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 ### Release QA Cycle (once per release)
 
+QA happens in Unreleased mode — `finalize-release` runs only after QA passes. This keeps the version unlocked during testing so bugs found during the QA pass can be fixed without re-finalizing.
+
 ```mermaid
 flowchart TD
     Z[generate:release-testing-instructions] -.->|generates guide| A
@@ -49,9 +51,10 @@ flowchart TD
     I1 --> I2[Open terminals + bind]
     I2 --> I3[Terminal-dependent TCs]
     I4 --> J{All TCs pass?}
-    J -- No --> K[Fix + re-run affected TCs]
+    J -- No --> K[Fix bugs + re-run affected TCs]
     K --> J
-    J -- Yes --> L[Tag release + publish]
+    J -- Yes --> L[finalize-release X.Y.Z]
+    L --> M[build VSIX + publish]
 ```
 
 ---

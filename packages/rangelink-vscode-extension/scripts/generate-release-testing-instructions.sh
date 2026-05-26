@@ -8,9 +8,9 @@ set -euo pipefail
 #
 # Usage: ./scripts/generate-release-testing-instructions.sh
 #
-# Filename: qa/release-testing-instructions-v<version>.md
+# Filename: qa/release-testing-instructions-unreleased.md
 #
-# Requires: jq, nextTargetVersion set in package.json
+# Requires: jq
 # Optional: gh CLI (authenticated)
 
 RED='\033[0;31m'
@@ -26,12 +26,6 @@ QA_DIR="$PACKAGE_DIR/qa"
 
 # --- Prerequisites ---
 
-NEXT_VERSION=$(jq -r '.nextTargetVersion // empty' "$PACKAGE_JSON")
-if [[ -z "$NEXT_VERSION" ]]; then
-  echo -e "${RED}Error: nextTargetVersion not set in package.json — update it before running this script${NC}" >&2
-  exit 1
-fi
-
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 
 WARNINGS=""
@@ -42,19 +36,12 @@ elif ! gh auth status &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
 fi
 
-# Version-aware filename + label. "Unreleased" is the placeholder used during
-# trunk-based development before finalize-release locks in a SemVer.
-if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
-  NEXT_LABEL="Unreleased"
-  BASE_NAME="release-testing-instructions-unreleased"
-  QA_YAML_FILENAME="qa-test-cases-unreleased.yaml"
-  QA_CHECKLIST_SLUG="unreleased"
-else
-  NEXT_LABEL="v${NEXT_VERSION}"
-  BASE_NAME="release-testing-instructions-v${NEXT_VERSION}"
-  QA_YAML_FILENAME="qa-test-cases-v${NEXT_VERSION}.yaml"
-  QA_CHECKLIST_SLUG="v${NEXT_VERSION}"
-fi
+# Filename is always release-testing-instructions-unreleased.md during trunk-based
+# development — lock-version.sh renames and fixup-references it when locking a version.
+NEXT_LABEL="Unreleased"
+BASE_NAME="release-testing-instructions-unreleased"
+QA_YAML_FILENAME="qa-test-cases-unreleased.yaml"
+QA_CHECKLIST_SLUG="unreleased"
 
 echo -e "${GREEN}Generating release testing instructions for ${NEXT_LABEL}${NC}"
 
@@ -82,33 +69,6 @@ cat > "$OUTPUT_FILE" <<EOF
 
 This file contains version-specific, copy-paste ready commands for the full release testing lifecycle.
 Work through each phase in order — later phases depend on earlier ones completing successfully.
-
----
-
-## Phase 0: Prerequisites
-
-Ensure your environment is ready before starting the release testing cycle.
-All commands in this guide run from the **monorepo root** (where \`pnpm-workspace.yaml\` lives).
-
-### Node.js / pnpm
-
-\`\`\`bash
-source ~/.zshrc && nvm use && npm run enable-pnpm
-node --version && pnpm --version
-\`\`\`
-
-### Verify nextTargetVersion
-
-\`\`\`bash
-jq -r '.nextTargetVersion' packages/rangelink-vscode-extension/package.json
-# Should print: ${NEXT_VERSION}
-\`\`\`
-
-### gh CLI (required for Phase 2)
-
-\`\`\`bash
-gh auth status
-\`\`\`
 
 ---
 

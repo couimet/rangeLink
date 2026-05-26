@@ -31,14 +31,13 @@ ENDOFSTUB
   }
 }
 
-# ── Output filename: Unreleased vs SemVer ──────────────────────────────────────
+# ── Output filename ─────────────────────────────────────────────────────────────
 
-@test "Unreleased nextTargetVersion produces release-testing-instructions-unreleased.md" {
+@test "produces release-testing-instructions-unreleased.md" {
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.0.0",
-  "nextTargetVersion": "Unreleased"
+  "version": "1.0.0"
 }
 EOF
 
@@ -48,19 +47,6 @@ EOF
   [[ ! -f "$FIXTURE_ROOT/qa/release-testing-instructions-vUnreleased.md" ]]
 }
 
-@test "SemVer nextTargetVersion produces v-prefixed markdown (forward compat with finalize)" {
-  setup_fixture
-  write_package_json <<'EOF'
-{
-  "version": "1.0.0",
-  "nextTargetVersion": "2.0.0"
-}
-EOF
-
-  run "$SCRIPT"
-  [[ "$status" -eq 0 ]]
-  [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md" ]]
-}
 
 # ── Internal yaml reference ────────────────────────────────────────────────────
 
@@ -68,8 +54,7 @@ EOF
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.0.0",
-  "nextTargetVersion": "Unreleased"
+  "version": "1.0.0"
 }
 EOF
 
@@ -81,20 +66,6 @@ EOF
   ! grep -q "qa-test-cases-vUnreleased.yaml" "$out"
 }
 
-@test "SemVer: emitted markdown references qa-test-cases-v<version>.yaml" {
-  setup_fixture
-  write_package_json <<'EOF'
-{
-  "version": "1.0.0",
-  "nextTargetVersion": "2.0.0"
-}
-EOF
-
-  run "$SCRIPT"
-  [[ "$status" -eq 0 ]]
-  local out="$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
-  grep -q "qa/qa-test-cases-v2.0.0.yaml" "$out"
-}
 
 # ── Header rendering ───────────────────────────────────────────────────────────
 
@@ -102,8 +73,7 @@ EOF
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.0.0",
-  "nextTargetVersion": "Unreleased"
+  "version": "1.0.0"
 }
 EOF
 
@@ -117,7 +87,7 @@ EOF
 
 # ── Error paths ────────────────────────────────────────────────────────────────
 
-@test "missing nextTargetVersion still errors" {
+@test "works without nextTargetVersion field (convention is embedded in the script)" {
   setup_fixture
   write_package_json <<'EOF'
 {
@@ -126,8 +96,8 @@ EOF
 EOF
 
   run "$SCRIPT"
-  [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "nextTargetVersion not set" ]]
+  [[ "$status" -eq 0 ]]
+  [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md" ]]
 }
 
 # ── Early-exit (kept for this script per A006 scope) ───────────────────────────
@@ -136,8 +106,7 @@ EOF
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.0.0",
-  "nextTargetVersion": "Unreleased"
+  "version": "1.0.0"
 }
 EOF
   echo "preexisting content" > "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md"

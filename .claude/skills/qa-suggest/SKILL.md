@@ -13,7 +13,7 @@ Suggest new test cases for the current QA cycle by diffing the CHANGELOG against
 
 ## Step 1: Discovery
 
-Read the extension package.json to get the version context:
+Read the extension package.json to get the published version:
 
 ```text
 Read packages/rangelink-vscode-extension/package.json
@@ -21,10 +21,9 @@ Read packages/rangelink-vscode-extension/package.json
 
 Extract:
 
-- `nextTargetVersion` — the upcoming release version (`"Unreleased"` during trunk-based development, or a SemVer like `"1.1.0"` once locked in)
 - `version` — the last published version (e.g., `1.0.0`)
 
-**If `nextTargetVersion` is not set**, STOP: "Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` (e.g., `"Unreleased"`) before running `/qa-suggest`."
+During trunk-based development the QA artifacts use the "Unreleased" placeholder (e.g., `qa-test-cases-unreleased.yaml`) — this convention is embedded in the QA tooling, not read from a config field. The `version` field in package.json always holds the last published SemVer.
 
 ## Step 2: Locate QA YAMLs
 
