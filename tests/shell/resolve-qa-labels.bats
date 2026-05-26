@@ -223,6 +223,27 @@ EOF
   [[ "$output" == "unreleased-001" ]]
 }
 
+@test "resolve-qa-labels: auto-discovery prefers unreleased.yaml when both unreleased and versioned files exist" {
+  setup_fixture
+  write_yaml "qa-test-cases-v1.2.3.yaml" <<'EOF'
+test_cases:
+  - id: versioned-001
+    feature: Versioned
+    scenario: From versioned file
+    automated: true
+EOF
+  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
+test_cases:
+  - id: unreleased-001
+    feature: Unreleased
+    scenario: From unreleased file
+    automated: true
+EOF
+  run node "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" == "unreleased-001" ]]
+}
+
 # ════════════════════════════════════════════════════════════════════
 # YAML parsing
 # ════════════════════════════════════════════════════════════════════

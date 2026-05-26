@@ -172,6 +172,33 @@ EOF
   [[ "$checksum_after_first" == "$checksum_after_second" ]]
 }
 
+@test "re-running prefers existing unreleased.yaml when both unreleased and versioned files exist" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "1.0.0",
+  "nextTargetVersion": "Unreleased"
+}
+EOF
+  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+test_cases:
+  - id: versioned-001
+    scenario: 'from versioned'
+    automated: true
+EOF
+  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
+test_cases:
+  - id: unreleased-001
+    scenario: 'from unreleased'
+    automated: true
+EOF
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+  grep -q "scenario: 'from unreleased'" "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
+  ! grep -q "scenario: 'from versioned'" "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
+}
+
 # ── Error paths ────────────────────────────────────────────────────────────────
 
 @test "missing nextTargetVersion still errors" {
