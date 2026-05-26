@@ -34,11 +34,11 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 ### Release QA Cycle (once per release)
 
-| Script | When | Re-runnable? | What it does |
-|--------|------|-------------|--------------|
-| `pnpm lock-version:vscode-extension X.Y.Z` | Ready to start QA | Yes (idempotent) | Renames QA YAML → versioned, bumps `.version`, regenerates instructions |
-| `pnpm finalize-release:vscode-extension` | QA passed, ready to ship | No (one-way door) | Finalizes CHANGELOG, strips README markers/banner, generates publishing instructions |
-| `pnpm start-release:vscode-extension` | After publish, starting next cycle | Yes (idempotent) | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
+| Script                                     | When                               | Re-runnable?      | What it does                                                                                    |
+| ------------------------------------------ | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm lock-version:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Renames QA YAML → versioned, bumps `.version`, regenerates instructions                         |
+| `pnpm finalize-release:vscode-extension`   | QA passed, ready to ship           | No (one-way door) | Finalizes CHANGELOG, strips README markers/banner, generates publishing instructions            |
+| `pnpm start-release:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
 
 ```mermaid
 flowchart TD
