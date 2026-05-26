@@ -72,7 +72,7 @@ run() {
   echo ""
   docker run \
     --name "${CONTAINER}" \
-    -p 6080:6080 \
+    -p 127.0.0.1:6080:6080 \
     --shm-size=2g \
     --rm \
     -v "${REPO_ROOT}:/workspace" \

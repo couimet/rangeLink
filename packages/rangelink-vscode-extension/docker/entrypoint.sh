@@ -67,7 +67,10 @@ tigervncserver :1 -geometry 1680x1050 -depth 24 -localhost yes -SecurityTypes No
 sleep 2
 if [[ -n "$VSIX" ]]; then
   echo "==> Installing extension: $VSIX"
-  DISPLAY=:1 code --install-extension "$VSIX" 2>&1 || true
+  if ! DISPLAY=:1 code --install-extension "$VSIX" 2>&1; then
+    echo "ERROR: Failed to install extension: $VSIX" >&2
+    exit 1
+  fi
 fi
 
 # Launch VS Code with fixture workspace
