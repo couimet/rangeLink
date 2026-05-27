@@ -452,7 +452,7 @@ This installs the VSIX in both VS Code and Cursor. Restart any running instances
 ### Verify Version Number
 
 1. Open VS Code (\`code\`), then the Command Palette (\`Cmd+Shift+P\` / \`Ctrl+Shift+P\`)
-2. Run: **RangeLink: Show Extension Info**
+2. Run: **RangeLink: Show Version Info**
 3. Confirm the version shown is **${VERSION}**
 4. Confirm \`isDirty\` is **false** — a dirty build should never be published
 

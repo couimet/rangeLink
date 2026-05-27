@@ -81,7 +81,7 @@ fi
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
 
-LAST=$(ls "$COMMIT_MSGS_DIR" | grep -o '^[0-9]\{4\}' || true | sort -n | tail -1)
+LAST=$(ls "$COMMIT_MSGS_DIR" | grep -o '^[0-9]\{4\}' | sort -n | tail -1 || true)
 NEXT_NUM=$(printf "%04d" $((10#${LAST:-0} + 1)))
 COMMIT_MSG_FILE="$COMMIT_MSGS_DIR/${NEXT_NUM}-lock-version-v${VERSION}.txt"
 
