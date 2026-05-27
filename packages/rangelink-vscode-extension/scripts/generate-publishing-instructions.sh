@@ -434,7 +434,45 @@ The following were validated when generating this file:
 
 ---
 
-## Phase 1: Create Git Tag
+## Phase 1: Smoke Test
+
+Install the extension locally and verify it works before publishing. This catches packaging
+errors (missing files, broken builds) before they reach the marketplace.
+
+### Install Locally
+
+Run from **monorepo root**:
+
+\`\`\`bash
+pnpm install-local:vscode-extension:both
+\`\`\`
+
+This installs the VSIX in both VS Code and Cursor. Restart any running instances first.
+
+### Verify Version Number
+
+1. Open VS Code (\`code\`), then the Command Palette (\`Cmd+Shift+P\` / \`Ctrl+Shift+P\`)
+2. Run: **RangeLink: Show Extension Info**
+3. Confirm the version shown is **${VERSION}**
+4. Confirm \`isDirty\` is **false** — a dirty build should never be published
+
+### Spot-Check Core Commands and Content
+
+Verify these commands work and the content is OK:
+
+- [ ] **R-L**
+- [ ] **R-F**
+- [ ] **Status bar menu**
+- [ ] **No README artifacts** — open the extension's README in the Extensions panel. No \`<sup>Unreleased</sup>\` markers, no \`> [!IMPORTANT]\` banner.
+
+### If Anything Fails
+
+- Fix the issue, rebuild (\`pnpm package:vscode-extension\`), and re-run the smoke test.
+- Regenerate these instructions afterward: \`pnpm generate:publish-instructions:vscode-extension\`
+
+---
+
+## Phase 2: Create Git Tag
 
 ### Tag the Release
 
@@ -459,7 +497,7 @@ git show ${GIT_TAG} --stat
 
 ---
 
-## Phase 2: Create GitHub Release
+## Phase 3: Create GitHub Release
 
 ### Navigate to GitHub Releases
 
@@ -479,7 +517,7 @@ Click "Publish release"
 
 ---
 
-## Phase 3: Publish to VS Code Marketplace
+## Phase 4: Publish to VS Code Marketplace
 
 ### Ensure Logged In
 
@@ -506,7 +544,7 @@ Wait 5-10 minutes, then check:
 
 ---
 
-## Phase 4: Publish to Open-VSX Registry
+## Phase 5: Publish to Open-VSX Registry
 
 ### Login (First Time Setup)
 
@@ -541,7 +579,7 @@ Check:
 
 ---
 
-## Phase 5: Post-Publishing Verification
+## Phase 6: Post-Publishing Verification
 
 ### Check All Locations
 
