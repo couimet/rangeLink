@@ -168,8 +168,7 @@ EOF
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.10.0",
-  "nextTargetVersion": "2.0.0"
+  "version": "1.10.0"
 }
 EOF
   write_yaml "qa-test-cases-v1.9.0.yaml" <<'EOF'
@@ -187,8 +186,8 @@ EOF
 
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
-  grep -q "scenario: 'from newer version'" "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml"
-  ! grep -q "scenario: 'from older version'" "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml"
+  grep -q "scenario: 'from newer version'" "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
+  ! grep -q "scenario: 'from older version'" "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
 }
 
 # ── Error paths ────────────────────────────────────────────────────────────────
