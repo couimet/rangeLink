@@ -13,7 +13,7 @@ Suggest new test cases for the current QA cycle by diffing the CHANGELOG against
 
 ## Step 1: Discovery
 
-Read the extension package.json to get the version context:
+Read the extension package.json to get the published version:
 
 ```text
 Read packages/rangelink-vscode-extension/package.json
@@ -21,10 +21,9 @@ Read packages/rangelink-vscode-extension/package.json
 
 Extract:
 
-- `nextTargetVersion` — the upcoming release version (`"Unreleased"` during trunk-based development, or a SemVer like `"1.1.0"` once locked in)
 - `version` — the last published version (e.g., `1.0.0`)
 
-**If `nextTargetVersion` is not set**, STOP: "Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` (e.g., `"Unreleased"`) before running `/qa-suggest`."
+During trunk-based development the QA artifacts use the "Unreleased" placeholder (e.g., `qa-test-cases-unreleased.yaml`) — this convention is embedded in the QA tooling, not read from a config field. The `version` field in package.json always holds the last published SemVer.
 
 ## Step 2: Locate QA YAMLs
 
@@ -144,9 +143,7 @@ Create a scratchpad file for the report. Use the `/scratchpad` conventions:
 
 1. Determine the issue context from the current git branch (e.g., `issues/382` → issue ID `382`)
 2. Find the next available sequence number in `.claude-work/issues/<ID>/scratchpads/`
-3. Write the scratchpad. Choose the filename based on `nextTargetVersion`:
-   - If `nextTargetVersion` is `"Unreleased"`: `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest.txt`
-   - If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`): `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest-v<nextTargetVersion>.txt`
+3. Write the scratchpad to `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest.txt`
 
 If no issue context can be determined, use `.claude-work/scratchpads/` instead.
 
@@ -154,19 +151,9 @@ The scratchpad should contain these sections in order:
 
 ### Header
 
-If `nextTargetVersion` is `"Unreleased"`, use this header:
-
 ```text
 # QA Suggest — v<version> → Unreleased
 ```
-
-If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`), use this header instead:
-
-```text
-# QA Suggest — v<version> → v<nextTargetVersion>
-```
-
-Then continue with the shared body:
 
 ## What to do next
 

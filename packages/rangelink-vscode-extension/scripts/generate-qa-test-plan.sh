@@ -6,10 +6,10 @@ set -euo pipefail
 # Creates a new QA test plan YAML for the next release cycle by carrying forward
 # all test cases from the previous plan with statuses reset to pending.
 #
-# Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
-# Filename: qa-test-cases-v<version>.yaml, or qa-test-cases-unreleased.yaml when nextTargetVersion is "Unreleased".
+# Filename is always qa-test-cases-unreleased.yaml during trunk-based development —
+# the version is deferred until lock-version.sh locks it in at QA time.
 # Always regenerates: header is freshly emitted, body is carried forward from the highest-sorted existing yaml.
 #
 # Requires: jq
@@ -20,27 +20,14 @@ REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 PACKAGE_JSON="$PACKAGE_DIR/package.json"
 QA_DIR="$PACKAGE_DIR/qa"
 
-NEXT_VERSION=$(jq -r '.nextTargetVersion // empty' "$PACKAGE_JSON")
-if [[ -z "$NEXT_VERSION" ]]; then
-  echo "Error: nextTargetVersion not set in $PACKAGE_JSON — update it before running generate:qa-test-plan" >&2
-  exit 1
-fi
-
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 if [[ -z "$PUBLISHED_VERSION" ]]; then
   echo "Error: version not set in $PACKAGE_JSON" >&2
   exit 1
 fi
 
-# Version-aware filename + label. "Unreleased" is the placeholder used during
-# trunk-based development before finalize-release locks in a SemVer.
-if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
-  NEXT_LABEL="Unreleased"
-  BASE_NAME="qa-test-cases-unreleased"
-else
-  NEXT_LABEL="v${NEXT_VERSION}"
-  BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
-fi
+NEXT_LABEL="Unreleased"
+BASE_NAME="qa-test-cases-unreleased"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
 # Prefer the existing target file as the carry-forward source so in-progress

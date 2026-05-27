@@ -34,24 +34,23 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 ### Release QA Cycle (once per release)
 
+| Script                                     | When                               | Re-runnable?      | What it does                                                                                    |
+| ------------------------------------------ | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm lock-version:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Renames QA YAML → versioned, bumps `.version`, regenerates instructions                         |
+| `pnpm finalize-release:vscode-extension`   | QA passed, ready to ship           | No (one-way door) | Finalizes CHANGELOG, strips README markers/banner, generates publishing instructions            |
+| `pnpm start-release:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
+
 ```mermaid
 flowchart TD
-    Z[generate:release-testing-instructions] -.->|generates guide| A
-    A[nextTargetVersion: Unreleased] --> B[generate:qa-test-plan]
-    B --> C[/qa-suggest in Claude Code/]
-    C --> D[Review + append new TCs]
-    D --> E[Commit YAML]
-    E --> F[generate:qa-issue]
-    F --> G[Single GitHub issue with grep commands per section]
-    G --> H[package:vscode-extension:withInstall:both]
-    H --> I[Manual QA pass — launch editor with fixture workspace]
-    I --> I1[Ready-now TCs — no setup needed]
-    I1 --> I2[Open terminals + bind]
-    I2 --> I3[Terminal-dependent TCs]
-    I4 --> J{All TCs pass?}
-    J -- No --> K[Fix + re-run affected TCs]
-    K --> J
-    J -- Yes --> L[Tag release + publish]
+    A[Version: Unreleased (deferred)] --> B[lock-version.sh X.Y.Z]
+    B --> C[QA pass — manual + automated TCs]
+    C --> D{All TCs pass?}
+    D -- No --> E[Fix bugs]
+    E --> C
+    D -- Yes --> F[finalize-release.sh]
+    F --> G[build VSIX + publish]
+    G --> H[start-release.sh]
+    H --> A
 ```
 
 ---
@@ -278,9 +277,9 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 qa/qa-test-cases-unreleased.yaml
 ```
 
-During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `finalize-release` renames it to `qa/qa-test-cases-v<version>.yaml`.
+During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `pnpm lock-version:vscode-extension` renames it to `qa/qa-test-cases-v<version>.yaml`.
 
-The filename mirrors `nextTargetVersion` from `package.json` (`"Unreleased"` during development). It is parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
+The filename is always `qa-test-cases-unreleased.yaml` during trunk-based development — the version is deferred until `pnpm lock-version:vscode-extension` locks it in at QA time. It is parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 
