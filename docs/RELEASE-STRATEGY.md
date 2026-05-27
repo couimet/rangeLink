@@ -129,19 +129,31 @@ Skip marking cosmetic renames or rewording of existing features — only mark ge
 
 ## Release Workflow
 
+### Lifecycle
+
+```mermaid
+flowchart TD
+    A[Unreleased (deferred)] -->|release:lock| B[Version locked]
+    B --> C[QA pass]
+    C -->|release:prepare| D[Docs ready for publish]
+    D --> E[publish]
+    E -->|release:start| A
+```
+
+Three verbs, three phases: **lock** (freeze the version for QA), **prepare** (make documentation publication-ready), **start** (open the next development cycle).
+
 ### High-Level Process
 
 Releasing a package involves these phases:
 
-1. **Prepare**
-   1. `pnpm lock-version:vscode-extension X.Y.Z` — soft-lock the version for QA
-   2. Run QA pass (manual + automated TCs)
-   3. `pnpm finalize-release:vscode-extension` — hard-finalize: updates CHANGELOG, strips README markers, generates publishing instructions
-2. **Build & Test** - Package and validate locally
-3. **Publish** - Deploy to marketplace(s) and create GitHub release
-4. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
-5. **Verify** - Confirm publication and test installation
-6. **Next cycle** — `pnpm start-release:vscode-extension` to begin the next development cycle
+1. **Lock** — `pnpm release:lock:vscode-extension X.Y.Z` — soft-lock the version for QA
+2. **QA Pass** — manual + automated TCs against the versioned YAML
+3. **Prepare** — `pnpm release:prepare:vscode-extension` — date-stamp CHANGELOG, strip `<sup>Unreleased</sup>` markers, remove `[!IMPORTANT]` banner, generate publishing instructions
+4. **Build & Test** - Package and validate locally
+5. **Publish** - Deploy to marketplace(s) and create GitHub release
+6. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
+7. **Verify** - Confirm publication and test installation
+8. **Next cycle** — `pnpm release:start:vscode-extension` to begin the next development cycle
 
 ### Package-Specific Instructions
 
@@ -321,9 +333,9 @@ git push origin vscode-extension-v0.1.0
 
 ```bash
 # 1. Prepare: lock version, run QA, then finalize
-pnpm lock-version:vscode-extension 0.1.1
+pnpm release:lock:vscode-extension 0.1.1
 # ... QA pass ...
-pnpm finalize-release:vscode-extension
+pnpm release:prepare:vscode-extension
 
 # 2. Build, test, package locally
 pnpm package:vscode-extension
@@ -337,7 +349,7 @@ git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1"
 git push origin vscode-extension-v0.1.1
 
 # 5. Start next development cycle
-pnpm start-release:vscode-extension
+pnpm release:start:vscode-extension
 
 # 6. Create GitHub release with CHANGELOG content
 ```
@@ -346,15 +358,15 @@ pnpm start-release:vscode-extension
 
 ```bash
 # Same process as Example 2, with the new version number.
-pnpm lock-version:vscode-extension 1.0.0
+pnpm release:lock:vscode-extension 1.0.0
 # ... QA pass ...
-pnpm finalize-release:vscode-extension
+pnpm release:prepare:vscode-extension
 pnpm package:vscode-extension
 pnpm install-local:vscode-extension:both
 pnpm publish:vscode-extension:vsix
 git tag -a vscode-extension-v1.0.0 -m "Release vscode-extension v1.0.0"
 git push origin vscode-extension-v1.0.0
-pnpm start-release:vscode-extension
+pnpm release:start:vscode-extension
 ```
 
 ### Example 4: Multiple Package Release
@@ -419,7 +431,7 @@ These items are planned but not yet implemented:
   - Better monorepo version coordination
 
 - [x] **Pre-commit hooks** — working tree cleanliness enforced by the release scripts; remaining hook work: prevent commits that introduce version/CHANGELOG mismatches.
-- [x] **Release verification scripts** — `pnpm lock-version:vscode-extension`, `pnpm finalize-release:vscode-extension`, and `pnpm generate:publish-instructions:vscode-extension` validate the working tree, version numbers, CHANGELOG, and unreleased markers before allowing each phase to proceed.
+- [x] **Release verification scripts** — `pnpm release:lock:vscode-extension`, `pnpm release:prepare:vscode-extension`, and `pnpm generate:publish-instructions:vscode-extension` validate the working tree, version numbers, CHANGELOG, and unreleased markers before allowing each phase to proceed.
 
 ---
 
@@ -444,4 +456,4 @@ git push origin vscode-extension-v0.1.0
 ---
 
 **Last Updated:** 2026-05-26
-**Status:** Active — automated via `pnpm lock-version:vscode-extension` → `pnpm finalize-release:vscode-extension` → `pnpm start-release:vscode-extension`
+**Status:** Active — automated via `pnpm release:lock:vscode-extension` → `pnpm release:prepare:vscode-extension` → `pnpm release:start:vscode-extension`

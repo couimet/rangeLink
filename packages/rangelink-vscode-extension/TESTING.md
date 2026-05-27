@@ -34,24 +34,13 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 ### Release QA Cycle (once per release)
 
-| Script                                     | When                               | Re-runnable?      | What it does                                                                                    |
-| ------------------------------------------ | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm lock-version:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Renames QA YAML → versioned, bumps `.version`, regenerates instructions                         |
-| `pnpm finalize-release:vscode-extension`   | QA passed, ready to ship           | No (one-way door) | Finalizes CHANGELOG, strips README markers/banner, generates publishing instructions            |
-| `pnpm start-release:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
+| Script                                      | When                               | Re-runnable?      | What it does                                                                                    |
+| ------------------------------------------- | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm release:lock:vscode-extension X.Y.Z`  | Ready to start QA                  | Yes (idempotent)  | Renames QA YAML → versioned, bumps `.version`, regenerates instructions, generates QA issue    |
+| `pnpm release:prepare:vscode-extension`     | QA passed, ready to ship           | No (one-way door) | Date-stamps CHANGELOG, strips README markers/banner, generates publishing instructions          |
+| `pnpm release:start:vscode-extension`       | After publish, starting next cycle | Yes (idempotent)  | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
 
-```mermaid
-flowchart TD
-    A[Version: Unreleased (deferred)] --> B[lock-version.sh X.Y.Z]
-    B --> C[QA pass — manual + automated TCs]
-    C --> D{All TCs pass?}
-    D -- No --> E[Fix bugs]
-    E --> C
-    D -- Yes --> F[finalize-release.sh]
-    F --> G[build VSIX + publish]
-    G --> H[start-release.sh]
-    H --> A
-```
+The release lifecycle is documented in [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md#release-workflow).
 
 ---
 
@@ -277,9 +266,7 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 qa/qa-test-cases-unreleased.yaml
 ```
 
-During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `pnpm lock-version:vscode-extension` renames it to `qa/qa-test-cases-v<version>.yaml`.
-
-The filename is always `qa-test-cases-unreleased.yaml` during trunk-based development — the version is deferred until `pnpm lock-version:vscode-extension` locks it in at QA time. It is parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
+During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `pnpm release:lock:vscode-extension` renames it to `qa/qa-test-cases-v<version>.yaml` and generates the QA issue automatically. One file per release — Git tracks history across versions.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 

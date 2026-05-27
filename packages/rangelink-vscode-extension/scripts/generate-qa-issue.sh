@@ -62,11 +62,15 @@ if [[ -z "$YAML_FILE" ]]; then
   fi
 
   YAML_FILE="$QA_DIR/$LATEST"
-  printf 'Use %s? [Y/n] ' "qa/$LATEST"
-  read -r REPLY
-  if [[ -n "$REPLY" && ! "$REPLY" =~ ^[Yy]$ ]]; then
-    echo "Aborted." >&2
-    exit 0
+  if [[ -t 0 ]]; then
+    printf 'Use %s? [Y/n] ' "qa/$LATEST"
+    read -r REPLY
+    if [[ -n "$REPLY" && ! "$REPLY" =~ ^[Yy]$ ]]; then
+      echo "Aborted." >&2
+      exit 0
+    fi
+  else
+    echo "Auto-selected latest QA YAML: qa/$LATEST"
   fi
 fi
 
@@ -169,11 +173,12 @@ if [[ "$UBUNTU_COUNT" -gt 0 ]]; then
   GROUP_CHECKBOXES+="${UBUNTU_SECTION}"$'\n'
 fi
 
-ISSUE_BODY="${ISSUE_BODY}${GROUP_CHECKBOXES}"
-
 TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_assisted))")
 TOTAL_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_manual))")
-ISSUE_BODY="${ISSUE_BODY}"$'\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
+
+BODY_FOOTER="${GROUP_CHECKBOXES}"$'\n\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"$'\n\n'"---"$'\n\n'"Once all checkboxes above are checked, the release is ready to prepare for publication:"$'\n\n'"- [ ] **Release Ready** — Run \`pnpm release:prepare:vscode-extension\` to date-stamp the CHANGELOG, strip unreleased markers, and generate publishing instructions."
+
+ISSUE_BODY="${ISSUE_BODY}${BODY_FOOTER}"
 
 # --- Local mode: write to a markdown file ---
 if [[ "$LOCAL_MODE" == true ]]; then
@@ -182,20 +187,12 @@ if [[ "$LOCAL_MODE" == true ]]; then
   TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
   LOCAL_FILE="$OUTPUT_DIR/qa-checklist-${VERSION}-${TIMESTAMP}.md"
 
-  TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_assisted))")
-  TOTAL_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_manual))")
-
   {
     echo "# QA Checklist — ${VERSION}"
     echo ""
     echo "Generated from \`$(basename "$YAML_FILE")\` on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
     echo ""
-    echo "CI runs fully automated tests (\`test:release:automated\`). The checkboxes below cover assisted and manual tests only."
-    echo ""
-    echo "${GROUP_CHECKBOXES}"
-    echo ""
-    echo "**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
-
+    echo "${ISSUE_BODY}"
   } > "$LOCAL_FILE"
 
   REPO_ROOT="$(git rev-parse --show-toplevel)"
