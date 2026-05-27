@@ -23,17 +23,31 @@ EOF
 {"isDirty": false}
 EOF
 
+  # Files the script validates before generating instructions.
+  touch "$FIXTURE_ROOT/rangelink-vscode-extension-2.0.0.vsix"
+  cat > "$FIXTURE_ROOT/CHANGELOG.md" <<'EOF'
+## [2.0.0]
+
+### Added
+- Test entry
+[2.0.0]: https://example.com
+EOF
+  touch "$FIXTURE_ROOT/README.md"
+
   stub_dir
   make_stub "node" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 if [[ "$*" == *"isDirty"* ]]; then
   echo "false"
+elif [[ "$*" == *"publisher"* ]]; then
+  echo "test-publisher"
 elif [[ "$*" == *".version"* ]]; then
   echo "2.0.0"
 else
   exit 1
 fi
 ENDOFSTUB
+  make_passive_stub "npx"
   make_stub "git" <<'ENDOFSTUB'
 case "$*" in
   *rev-parse*) exit 1 ;;
