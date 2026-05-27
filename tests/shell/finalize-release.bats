@@ -16,7 +16,7 @@ setup_fixture() {
   make_stub "git" <<'ENDOFSTUB'
 case "$*" in
   *--show-toplevel*) echo "${FIXTURE_ROOT_FOR_GIT:-$TEST_TEMP_DIR}" ;;
-  *diff-index*) exit 0 ;;
+  *status*) exit 0 ;;
   *) exit 0 ;;
 esac
 ENDOFSTUB
@@ -176,7 +176,7 @@ EOF
 #!/usr/bin/env bash
 case "$*" in
   *--show-toplevel*) echo "${FIXTURE_ROOT_FOR_GIT:-$TEST_TEMP_DIR}" ;;
-  *diff-index*) exit 1 ;;
+  *status*) echo "?? untracked-file.txt"; exit 0 ;;
   *) exit 0 ;;
 esac
 ENDOFSTUB

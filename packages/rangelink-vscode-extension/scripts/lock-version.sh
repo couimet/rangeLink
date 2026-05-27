@@ -41,7 +41,7 @@ QA_DIR="$PACKAGE_DIR/qa"
 
 # --- Validation ---
 
-if ! git -C "$REPO_ROOT" diff-index --quiet HEAD --; then
+if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
   echo -e "${RED}Error: working tree is dirty. Commit or stash changes first.${NC}" >&2
   exit 1
 fi

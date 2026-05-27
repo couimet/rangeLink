@@ -35,7 +35,7 @@ REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 
 # --- Working tree must be clean ---
 
-if ! git -C "$REPO_ROOT" diff-index --quiet HEAD --; then
+if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
   echo -e "${RED}Error: working tree is dirty. Commit or stash changes first.${NC}" >&2
   exit 1
 fi
@@ -81,7 +81,7 @@ fi
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
 
-LAST=$(ls "$COMMIT_MSGS_DIR" | grep -o '^[0-9]\{4\}' | sort -n | tail -1)
+LAST=$(ls "$COMMIT_MSGS_DIR" | grep -o '^[0-9]\{4\}' || true | sort -n | tail -1)
 NEXT_NUM=$(printf "%04d" $((10#${LAST:-0} + 1)))
 COMMIT_MSG_FILE="$COMMIT_MSGS_DIR/${NEXT_NUM}-lock-version-v${VERSION}.txt"
 
