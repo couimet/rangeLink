@@ -277,7 +277,7 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 qa/qa-test-cases-unreleased.yaml
 ```
 
-During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `finalize-release` renames it to `qa/qa-test-cases-v<version>.yaml`.
+During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `pnpm lock-version:vscode-extension` renames it to `qa/qa-test-cases-v<version>.yaml`.
 
 The filename is always `qa-test-cases-unreleased.yaml` during trunk-based development — the version is deferred until `pnpm lock-version:vscode-extension` locks it in at QA time. It is parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
 

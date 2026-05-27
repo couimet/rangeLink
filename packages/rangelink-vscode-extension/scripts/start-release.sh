@@ -67,7 +67,7 @@ if grep -q '^## \[Unreleased\]$' "$CHANGELOG"; then
   echo -e "${YELLOW}Step 2: [Unreleased] section already exists in CHANGELOG — skipped.${NC}"
 else
   INSERT_LINE=$(grep -n '^## \[' "$CHANGELOG" | head -1 | cut -d: -f1)
-  if [[ "$INSERT_LINE" -eq 1 ]]; then
+  if [[ -n "$INSERT_LINE" ]] && [[ "$INSERT_LINE" -eq 1 ]]; then
     cat > "$CHANGELOG.tmp" <<'HEADER'
 ## [Unreleased]
 
@@ -104,7 +104,7 @@ if grep -q '\[!IMPORTANT\]' "$README"; then
   echo -e "${YELLOW}Step 3: [!IMPORTANT] banner already exists in README — skipped.${NC}"
 else
   INSERT_LINE=$(grep -n '^## ' "$README" | head -1 | cut -d: -f1)
-  if [[ "$INSERT_LINE" -eq 1 ]]; then
+  if [[ -n "$INSERT_LINE" ]] && [[ "$INSERT_LINE" -eq 1 ]]; then
     cat > "$README.tmp" <<'BANNER'
 > [!IMPORTANT]
 > This documentation is for the `main` branch and may include unreleased features marked with <sup>Unreleased</sup>.

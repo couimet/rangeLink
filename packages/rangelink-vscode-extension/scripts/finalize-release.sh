@@ -67,17 +67,17 @@ fi
 # --- Step 1: Finalize CHANGELOG ---
 
 TODAY=$(date -u +"%Y-%m-%d")
-sed -i '' "s/^## \[Unreleased\]$/## [${VERSION}] - ${TODAY}/" "$CHANGELOG"
+sed -i.bak "s/^## \[Unreleased\]$/## [${VERSION}] - ${TODAY}/" "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
 echo -e "${GREEN}Step 1: Finalized CHANGELOG — [Unreleased] → [${VERSION}] - ${TODAY}${NC}"
 
 # --- Step 2: Strip README <sup>Unreleased</sup> markers ---
 
-sed -i '' 's/<sup>Unreleased<\/sup>//g' "$README"
+sed -i.bak 's/<sup>Unreleased<\/sup>//g' "$README" && rm -f "${README}.bak"
 echo -e "${GREEN}Step 2: Stripped <sup>Unreleased</sup> markers from README${NC}"
 
 # --- Step 3: Strip README > [!IMPORTANT] banner ---
 
-sed -i '' '/^> \[!IMPORTANT\]/,/^$/d' "$README"
+sed -i.bak '/^> \[!IMPORTANT\]/,/^$/d' "$README" && rm -f "${README}.bak"
 echo -e "${GREEN}Step 3: Removed [!IMPORTANT] banner from README${NC}"
 
 # --- Step 4: Format with prettier ---

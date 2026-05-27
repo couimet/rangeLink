@@ -136,7 +136,7 @@ Releasing a package involves these phases:
 1. **Prepare**
    1. `pnpm lock-version:vscode-extension X.Y.Z` — soft-lock the version for QA
    2. Run QA pass (manual + automated TCs)
-   3. `pnpm finalize-release:vscode-extension` — hard-finalize: bumps `.version`, updates CHANGELOG, strips README markers, generates publishing instructions
+   3. `pnpm finalize-release:vscode-extension` — hard-finalize: updates CHANGELOG, strips README markers, generates publishing instructions
 2. **Build & Test** - Package and validate locally
 3. **Publish** - Deploy to marketplace(s) and create GitHub release
 4. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)

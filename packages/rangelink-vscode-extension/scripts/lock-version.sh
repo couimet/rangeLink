@@ -65,6 +65,10 @@ fi
 # --- Prerequisites ---
 
 if [[ ! -f "$UNRELEASED_YAML" ]]; then
+  if compgen -G "${QA_DIR}/qa-test-cases-v*.yaml" > /dev/null; then
+    echo -e "${GREEN}A versioned YAML already exists — prior run completed.${NC}"
+    exit 0
+  fi
   echo -e "${RED}Error: $UNRELEASED_YAML not found — nothing to lock.${NC}" >&2
   exit 1
 fi
@@ -110,11 +114,11 @@ else
   mv "$UNRELEASED_INSTRUCTIONS" "$VERSIONED_INSTRUCTIONS"
 
   # Fixup internal references from unreleased → versioned.
-  sed -i '' \
+  sed -i.bak \
     -e "s/qa-test-cases-unreleased\.yaml/qa-test-cases-v${VERSION}.yaml/g" \
     -e "s/qa-checklist-unreleased/qa-checklist-v${VERSION}/g" \
     -e "s/ → Unreleased/ → v${VERSION}/g" \
-    "$VERSIONED_INSTRUCTIONS"
+    "$VERSIONED_INSTRUCTIONS" && rm -f "${VERSIONED_INSTRUCTIONS}.bak"
 
   echo -e "${GREEN}Step 3: Generated release-testing-instructions-v${VERSION}.md${NC}"
 fi
