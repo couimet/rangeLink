@@ -24,6 +24,16 @@ EOF
 EOF
 
   stub_dir
+  make_stub "node" <<'ENDOFSTUB'
+#!/usr/bin/env bash
+if [[ "$*" == *"isDirty"* ]]; then
+  echo "false"
+elif [[ "$*" == *".version"* ]]; then
+  echo "2.0.0"
+else
+  exit 1
+fi
+ENDOFSTUB
   make_stub "git" <<'ENDOFSTUB'
 case "$*" in
   *rev-parse*) exit 1 ;;
