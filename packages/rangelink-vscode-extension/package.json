@@ -47,7 +47,7 @@
     "install-local:vscode": "./scripts/install-local.sh vscode",
     "package": "rm -rf *.vsix && ../../scripts/sync-assets.sh && rm -f rangelink-vscode-extension-*.vsix && vsce package --no-dependencies",
     "publish:vsix": "./scripts/publish-from-vsix.sh",
-    "release:lock": "./scripts/lock-version.sh && ./scripts/generate-qa-issue.sh",
+    "release:lock": "./scripts/orchestrate-release-lock.sh",
     "release:prepare": "./scripts/finalize-release.sh",
     "release:start": "./scripts/start-release.sh",
     "test": "jest --coverage",
