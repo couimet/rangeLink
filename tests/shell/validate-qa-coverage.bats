@@ -247,6 +247,29 @@ EOF
   [[ -n "$found" ]]
 }
 
+@test "report filename uses 'unreleased' slug when input is qa-test-cases-unreleased.yaml" {
+  setup_fixture
+  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
+test_cases:
+  - id: foo-001
+    feature: 'Foo'
+    scenario: 'Test'
+    automated: true
+EOF
+  write_test_file "suite.test.ts" <<< "test('foo-001: does things', () => {});"
+  export STUB_AUTOMATED_IDS="foo-001"
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+  local found
+  found=$(find "$FIXTURE_ROOT/qa/output" -name "qa-coverage-report-unreleased-*" -type f 2>/dev/null | head -1)
+  [[ -n "$found" ]]
+  # Negative assertion: no v-prefixed report.
+  local v_prefixed
+  v_prefixed=$(find "$FIXTURE_ROOT/qa/output" -name "qa-coverage-report-vunreleased-*" -type f 2>/dev/null | head -1)
+  [[ -z "$v_prefixed" ]]
+}
+
 @test "report contains header with QA YAML and test paths" {
   setup_fixture
   write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'

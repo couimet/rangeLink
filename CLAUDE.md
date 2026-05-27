@@ -605,11 +605,11 @@
 
 <rule id="QA002" priority="critical">
   <title>QA YAML is a single file per release cycle</title>
-  <do>Edit `qa-test-cases-v<version>.yaml` in place during the current release cycle — add TCs, update automated status, adjust preconditions</do>
-  <do>When moving to a new version (e.g., v1.1.0 → v1.2.0), use `pnpm generate:qa-test-plan:vscode-extension` to create the new file from the previous one</do>
-  <never>Edit a YAML file from a previous release cycle (e.g., don't touch v1.0.0.yaml after v1.1.0 work starts)</never>
+  <do>During trunk-based development, edit `qa-test-cases-unreleased.yaml` — add TCs, update automated status, adjust preconditions. The version is deferred until `finalize-release` locks it in.</do>
+  <do>When starting a new release cycle, use `pnpm generate:qa-test-plan:vscode-extension` to create a fresh `qa-test-cases-unreleased.yaml` carrying forward all TCs from the previous version's YAML</do>
+  <never>Edit a YAML file from a past release (e.g., don't touch v1.0.0.yaml after it has shipped)</never>
   <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in the current file is always allowed</exception>
-  <rationale>Each version has exactly one QA file. Suffix files (v1.1.0-001.yaml, -002.yaml, etc.) were journal snapshots from an older workflow and are no longer created.</rationale>
+  <rationale>Each version has exactly one QA file. The `Unreleased` placeholder defers version naming until release time so the filename need not change mid-cycle.</rationale>
 </rule>
 
 <rule id="QA003" priority="critical">

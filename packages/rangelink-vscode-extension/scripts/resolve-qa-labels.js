@@ -96,7 +96,7 @@ if (!yamlPath) {
   try {
     files = fs
       .readdirSync(qaDir)
-      .filter((f) => f.startsWith('qa-test-cases-v') && f.endsWith('.yaml'));
+      .filter((f) => f.startsWith('qa-test-cases-') && f.endsWith('.yaml'));
   } catch (err) {
     process.stderr.write(`Error: Cannot read QA directory ${qaDir}: ${err.message}\n`);
     process.exit(1);
@@ -107,18 +107,26 @@ if (!yamlPath) {
     process.exit(1);
   }
 
-  files.sort((a, b) => {
-    const va = a.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
-    const vb = b.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
-    if (va !== vb) return va.localeCompare(vb, undefined, { numeric: true });
-    const suffixA = a.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
-    const suffixB = b.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
-    if (!suffixA && suffixB) return 1;
-    if (suffixA && !suffixB) return -1;
-    return suffixA.localeCompare(suffixB);
-  });
+  // Prefer the current development file when it exists; otherwise fall
+  // back to the version sort (which doesn't match 'unreleased', causing
+  // it to lose to any versioned file).
+  const unreleased = files.find((f) => f === 'qa-test-cases-unreleased.yaml');
+  if (unreleased) {
+    yamlPath = path.join(qaDir, unreleased);
+  } else {
+    files.sort((a, b) => {
+      const va = a.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
+      const vb = b.match(/v(\d+\.\d+\.\d+)/)?.[1] ?? '';
+      if (va !== vb) return va.localeCompare(vb, undefined, { numeric: true });
+      const suffixA = a.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
+      const suffixB = b.match(/v\d+\.\d+\.\d+-(.+)\.yaml$/)?.[1] ?? '';
+      if (!suffixA && suffixB) return 1;
+      if (suffixA && !suffixB) return -1;
+      return suffixA.localeCompare(suffixB);
+    });
 
-  yamlPath = path.join(qaDir, files[files.length - 1]);
+    yamlPath = path.join(qaDir, files[files.length - 1]);
+  }
 }
 
 // ── Parse YAML ────────────────────────────────────────────────────────────────

@@ -37,7 +37,7 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 ```mermaid
 flowchart TD
     Z[generate:release-testing-instructions] -.->|generates guide| A
-    A[Set nextTargetVersion] --> B[generate:qa-test-plan]
+    A[nextTargetVersion: Unreleased] --> B[generate:qa-test-plan]
     B --> C[/qa-suggest in Claude Code/]
     C --> D[Review + append new TCs]
     D --> E[Commit YAML]
@@ -275,12 +275,12 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 ### File location and naming
 
 ```text
-qa/qa-test-cases-v<version>.yaml
+qa/qa-test-cases-unreleased.yaml
 ```
 
-Example: `qa/qa-test-cases-v1.1.0.yaml`
+During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `finalize-release` renames it to `qa/qa-test-cases-v<version>.yaml`.
 
-The version is the target release (`nextTargetVersion` from `package.json`). It is embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
+The filename mirrors `nextTargetVersion` from `package.json` (`"Unreleased"` during development). It is parsed automatically by the `generate-qa-issue` script — no extra flags needed. One file per release — Git tracks history across versions.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 

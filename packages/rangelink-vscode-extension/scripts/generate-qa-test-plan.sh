@@ -9,8 +9,8 @@ set -euo pipefail
 # Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
-# Filename: qa-test-cases-v<version>.yaml
-# If the file already exists, exits successfully (no-op).
+# Filename: qa-test-cases-v<version>.yaml, or qa-test-cases-unreleased.yaml when nextTargetVersion is "Unreleased".
+# Always regenerates: header is freshly emitted, body is carried forward from the highest-sorted existing yaml.
 #
 # Requires: jq
 
@@ -32,47 +32,60 @@ if [[ -z "$PUBLISHED_VERSION" ]]; then
   exit 1
 fi
 
-COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
+# Version-aware filename + label. "Unreleased" is the placeholder used during
+# trunk-based development before finalize-release locks in a SemVer.
+if [[ "$NEXT_VERSION" == "Unreleased" ]]; then
+  NEXT_LABEL="Unreleased"
+  BASE_NAME="qa-test-cases-unreleased"
+else
+  NEXT_LABEL="v${NEXT_VERSION}"
+  BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
+fi
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
+# Prefer the existing target file as the carry-forward source so in-progress
+# unreleased edits aren't clobbered by a versioned file that would win the
+# ASCII sort ('u' < 'v').
 if [[ -f "$OUTPUT_FILE" ]]; then
-  echo "$OUTPUT_FILE already exists — nothing to generate"
-  exit 0
+  PREVIOUS_YAML="$OUTPUT_FILE"
+else
+  # Pick the highest-SemVer versioned YAML (or unreleased as last resort).
+  # Sort by MAJOR, MINOR, PATCH numerically so v1.10.0 > v1.9.0. Unsuffixed
+  # files get -000 for tie-breaking so the primary file sorts before backups.
+  PREVIOUS_YAML=$(
+    for f in "$QA_DIR"/qa-test-cases-*.yaml; do
+      [[ -e "$f" ]] || continue
+      name=$(basename "$f")
+      base="${name%.yaml}"
+      if [[ "$base" =~ ^qa-test-cases-v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9]{3})?$ ]]; then
+        major="${BASH_REMATCH[1]}"
+        minor="${BASH_REMATCH[2]}"
+        patch="${BASH_REMATCH[3]}"
+        suff="${BASH_REMATCH[4]:-"-000"}"
+        printf '%d\t%d\t%d\t%s\t%s\n' "$major" "$minor" "$patch" "$suff" "$f"
+      elif [[ "$base" == *unreleased* ]]; then
+        printf '0\t0\t0\t-000\t%s\n' "$f"
+      fi
+    done | sort -t$'\t' -k1,1n -k2,2n -k3,3n -k4,4 | tail -1 | cut -f5
+  )
+  if [[ -z "$PREVIOUS_YAML" ]]; then
+    echo "Error: no previous QA YAML found in $QA_DIR" >&2
+    exit 1
+  fi
 fi
 
-# Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
-# (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
-# to unsuffixed names for sorting purposes, then pick the highest.
-PREVIOUS_YAML=$(
-  for f in "$QA_DIR"/qa-test-cases-*.yaml; do
-    [[ -e "$f" ]] || continue
-    name=$(basename "$f")
-    base="${name%.yaml}"
-    if [[ "$base" =~ -[0-9]{3}$ ]]; then
-      printf '%s\t%s\n' "$base" "$f"
-    else
-      printf '%s-000\t%s\n' "$base" "$f"
-    fi
-  done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
-)
-if [[ -z "$PREVIOUS_YAML" ]]; then
-  echo "Error: no previous QA YAML found in $QA_DIR" >&2
-  exit 1
-fi
-
-HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
+HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → ${NEXT_LABEL}
 #
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
-#        main branch tip, targeting v${NEXT_VERSION}. Created at commit ${COMMIT}.
+#        main branch tip, targeting ${NEXT_LABEL}.
 #
 # Source of truth for this QA cycle. Run \`pnpm generate:qa-issue -- qa/$(basename "$OUTPUT_FILE")\`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)
-#   feature:         Feature area / CHANGELOG section
-#   scenario:        One-line description of the specific scenario being tested
+#   feature:         Feature area
+#   scenario:        One-line description of what is tested
 #   labels:          Optional tags (e.g., cursor, ubuntu, requires-extensions)
 #   preconditions:   Required setup steps — only on \`automated: false\` entries
 #   steps:           Ordered test actions — only on \`automated: false\` entries
@@ -86,13 +99,9 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 #   non_automatable_reason: Required when \`automated: false\`. Why this TC cannot be
 #                           automated (even assisted):
 #                             platform-specific — requires Win/Linux; CI runs on macOS
-#                             ide-specific      — requires Cursor IDE; not in VS Code host
-#
-# For \`automated: true\` and \`automated: assisted\` entries the integration test in
-# src/__integration-tests__/suite/ is the canonical source of setup and actions —
-# \`preconditions:\` and \`steps:\` are omitted to prevent duplication and drift."
+#                             ide-specific      — requires Cursor IDE; not in VS Code host"
 
-BODY=$(sed '1,/^test_cases:/{ /^#/d; }' "$PREVIOUS_YAML")
+BODY=$(sed -n '/^test_cases:/,$p' "$PREVIOUS_YAML")
 
 {
   echo "$HEADER"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Usage: ./scripts/generate-qa-issue.sh [--dry-run] [--local] [yaml-file]
-# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0.yaml
+# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-unreleased.yaml
 #          ./scripts/generate-qa-issue.sh --local
 #
 # Creates a single GitHub issue with checkboxes grouped by TC ID prefix (feature domain).

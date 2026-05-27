@@ -21,10 +21,10 @@ Read packages/rangelink-vscode-extension/package.json
 
 Extract:
 
-- `nextTargetVersion` — the upcoming release version (e.g., `1.1.0`)
+- `nextTargetVersion` — the upcoming release version (`"Unreleased"` during trunk-based development, or a SemVer like `"1.1.0"` once locked in)
 - `version` — the last published version (e.g., `1.0.0`)
 
-**If `nextTargetVersion` is not set**, STOP: "Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` before running `/qa-suggest`."
+**If `nextTargetVersion` is not set**, STOP: "Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` (e.g., `"Unreleased"`) before running `/qa-suggest`."
 
 ## Step 2: Locate QA YAMLs
 
@@ -34,10 +34,10 @@ Find the current cycle's YAML and the previous version's YAML:
 Glob(pattern="packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml")
 ```
 
-- **Current YAML**: the file matching `qa-test-cases-v<nextTargetVersion>.yaml` (e.g., `qa-test-cases-v1.1.0.yaml` — a single file, no suffix)
-- **Previous YAML**: the most recent file that does NOT contain `v<nextTargetVersion>` — this is the baseline for diffing
+- **Current YAML**: `qa-test-cases-unreleased.yaml` during trunk-based development, or `qa-test-cases-v<version>.yaml` once the version is locked in
+- **Previous YAML**: the most recent released version's YAML (e.g., `qa-test-cases-v1.0.0.yaml`) — this is the baseline for diffing
 
-**If the current YAML doesn't exist**, STOP: "No QA YAML found for v`<nextTargetVersion>`. Run `pnpm generate:qa-test-plan` first."
+**If the current YAML doesn't exist**, STOP: "No QA YAML found. Run `pnpm generate:qa-test-plan` first."
 
 Read both YAML files in parallel.
 
@@ -144,7 +144,9 @@ Create a scratchpad file for the report. Use the `/scratchpad` conventions:
 
 1. Determine the issue context from the current git branch (e.g., `issues/382` → issue ID `382`)
 2. Find the next available sequence number in `.claude-work/issues/<ID>/scratchpads/`
-3. Write the scratchpad to `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest-v<nextTargetVersion>.txt`
+3. Write the scratchpad. Choose the filename based on `nextTargetVersion`:
+   - If `nextTargetVersion` is `"Unreleased"`: `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest.txt`
+   - If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`): `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest-v<nextTargetVersion>.txt`
 
 If no issue context can be determined, use `.claude-work/scratchpads/` instead.
 
@@ -152,15 +154,25 @@ The scratchpad should contain these sections in order:
 
 ### Header
 
+If `nextTargetVersion` is `"Unreleased"`, use this header:
+
+```text
+# QA Suggest — v<version> → Unreleased
+```
+
+If `nextTargetVersion` is a locked SemVer (e.g., `"2.0.0"`), use this header instead:
+
 ```text
 # QA Suggest — v<version> → v<nextTargetVersion>
+```
+
+Then continue with the shared body:
 
 ## What to do next
 
 1. Review the suggested TCs below — edit descriptions, remove irrelevant ones
 2. Copy the YAML block at the bottom into the QA file at the appropriate section
 3. Verify the IDs don't collide with existing entries
-```
 
 ### Change Summary
 
