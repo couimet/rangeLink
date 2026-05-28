@@ -4,9 +4,7 @@ import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
-  assertNoToastLogged,
   assertSuppressionLogged,
-  assertToastLogged,
   getLogCapture,
   navigateViaHandleLinkClick,
   standardSuite,
@@ -55,10 +53,6 @@ standardSuite('Navigation Toast Settings', (ss) => {
       fn: 'RangeLinkNavigationHandler.navigateToLink',
       suppressedMessage: `Navigated to ${testFilename} @ 5`,
     });
-    assertNoToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 5`,
-    });
   });
 
   test('navigation-toast-settings-002: showClampingWarning=false suppresses clamping warning but navigation still works', async () => {
@@ -94,10 +88,6 @@ standardSuite('Navigation Toast Settings', (ss) => {
       fn: 'RangeLinkNavigationHandler.navigateToLink',
       suppressedMessage: `Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
     });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
-    });
   });
 
   test('navigation-toast-settings-003: default settings show info toast after successful navigation', async () => {
@@ -111,22 +101,11 @@ standardSuite('Navigation Toast Settings', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-toast-settings-003');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${testFilename} @ 3` }]);
 
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
     await ss.settle();
 
     assert.strictEqual(sel.anchor.line, 2, `Expected anchor line 2 but got ${sel.anchor.line}`);
-
-    const lines = logCapture.getLinesSince('before-toast-settings-003');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 3`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Navigated to ${testFilename} @ 3 (clamped: line exceeded file length)`,
-    });
   });
 });

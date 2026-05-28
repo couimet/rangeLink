@@ -1,1 +1,1 @@
-export { RangeLinkStatusBar } from './RangeLinkStatusBar';
+export * from './RangeLinkStatusBar';

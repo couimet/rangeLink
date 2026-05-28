@@ -275,10 +275,17 @@ fi
 
 FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
 
+# ── Extract test counts from Mocha output ──────────────────────────────────────
+
+PASSING_COUNT=$(grep -oE '[0-9]+ passing' "$REPORT_FILE" | tail -1 | grep -oE '[0-9]+' || true)
+FAILING_COUNT=$(grep -oE '[0-9]+ failing' "$REPORT_FILE" | tail -1 | grep -oE '[0-9]+' || true)
+TOTAL_COUNT=$(( ${PASSING_COUNT:-0} + ${FAILING_COUNT:-0} ))
+
 # ── Re-run command (on failure) ───────────────────────────────────────────────
 
 {
   echo ""
+  echo "Results: ${TOTAL_COUNT} total, ${PASSING_COUNT:-0} passing, ${FAILING_COUNT:-0} failing"
   echo "Report complete: $RELATIVE_REPORT"
 
   if [[ $FINAL_EXIT -ne 0 ]]; then

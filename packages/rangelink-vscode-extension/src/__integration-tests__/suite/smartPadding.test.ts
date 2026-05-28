@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
-  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
@@ -20,7 +20,6 @@ import {
   openUntitledDoc,
   standardSuite,
   waitForHuman,
-  waitForHumanVerdict,
 } from '../helpers';
 
 // ---------------------------------------------------------------------------
@@ -54,6 +53,10 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
+      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
+    ]);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await ss.settle();
 
@@ -106,6 +109,10 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     const originalLanguage = destDoc.languageId;
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
+      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
+    ]);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await ss.settle();
 
@@ -132,6 +139,11 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
   });
 
   test('langswitch-binding-002: binding survives language change after content insertion', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
+      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
+    ]);
+
     const sourceContent = 'hello world';
 
     fs.writeFileSync(sourceFileUri002.fsPath, sourceContent, 'utf8');
@@ -185,6 +197,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-001', whitespaceContent);
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-001-dest');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-001-dest")',
+      '✓ RangeLink: Selected text sent to Terminal ("pad-001-dest")',
+    ]);
     await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri);
@@ -213,6 +229,11 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-003: multiline content preserved through destination', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
+      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
+    ]);
+
     const expected = 'line 1\nline 2\nline 3';
 
     const sourceUri = ss.createWorkspaceFile('pad-003', expected + '\n');
@@ -242,6 +263,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-005: pasteContent=before adds leading space only', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-005-dest")',
+      '✓ RangeLink: Selected text sent to Terminal ("pad-005-dest")',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
@@ -264,6 +289,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-006-dest")',
+      '✓ RangeLink: Selected text sent to Terminal ("pad-006-dest")',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
@@ -290,6 +319,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-007-dest")',
+      '✓ RangeLink: Selected text sent to Terminal ("pad-007-dest")',
+    ]);
     const sourceUri = ss.createWorkspaceFile('pad-007', 'hello world\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-007-dest');
@@ -315,6 +348,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const fileUri = ss.createWorkspaceFile('pad-008', 'content\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-008-dest');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-008-dest")',
+      '✓ RangeLink: File path sent to Terminal ("pad-008-dest")',
+    ]);
     await ss.settle();
 
     await openEditor(fileUri);
@@ -329,12 +366,19 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     ss.log('✓ smart-padding-008: padded file path sent to terminal');
   });
 
-  test('[assisted] smart-padding-009: pasteLink=both — RangeLink sent to AI assistant has leading and trailing space', async () => {
+  test('smart-padding-009: pasteLink=both — RangeLink sent to Dummy AI has leading and trailing space', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
     const editor = await openEditor(fileUri);
     await ss.settle();
 
-    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension',
+    });
     await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
@@ -342,19 +386,21 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const verdict = await waitForHumanVerdict(
-      'smart-padding-009',
-      'Verify padded RangeLink sent to GitHub Copilot Chat',
-      [
-        '1. smartPadding.pasteLink is already set to "both"',
-        '2. Lines 1-2 were selected and R-L sent the link to Copilot Chat',
-        '3. Look at the Copilot Chat input — the link should have leading and trailing spaces',
-        '4. Click PASS if padding was applied, FAIL otherwise',
-      ],
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+      | { tier1: string; tier2: string }
+      | undefined;
+    assert.ok(textResult, 'Expected dummyAi.getText to return a result');
+    assert.ok(
+      textResult!.tier1.startsWith(' ') && textResult!.tier1.endsWith(' '),
+      `Expected padded RangeLink (leading + trailing space), got: "${textResult!.tier1}"`,
+    );
+    assert.strictEqual(
+      textResult!.tier2,
+      '',
+      'Expected tier2 textarea to be empty (no cross-contamination)',
     );
 
-    assert.strictEqual(verdict, 'pass');
-    ss.log('✓ smart-padding-009: RangeLink sent to Copilot with padding (human verified)');
+    ss.log('✓ smart-padding-009: padded RangeLink sent to Dummy AI (programmatic verification)');
   });
 
   test('[assisted] smart-padding-010: terminal selection sent to editor with padding=both', async () => {
@@ -397,6 +443,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'none', vscode.ConfigurationTarget.Global);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("pad-011-dest")',
+      '✓ RangeLink: Selected text sent to Terminal ("pad-011-dest")',
+    ]);
     const sourceUri = ss.createWorkspaceFile('pad-011', 'hello\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-011-dest');

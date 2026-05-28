@@ -3,7 +3,7 @@ import { type DelimiterConfig, type DelimiterConfigGetter, Result } from 'rangel
 
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { LinkGenerator } from '../../services/LinkGenerator';
-import { DestinationBehavior, DirtyBufferWarningResult } from '../../types';
+import { DirtyBufferWarningResult } from '../../types';
 import {
   createMockConfigReader,
   createMockDestinationManager,
@@ -43,9 +43,14 @@ describe('LinkGenerator', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockShowErrorMessage: jest.Mock;
   let formatMessageSpy: jest.SpyInstance;
-  let mockClipboardRouter: {
-    resolveDestinationBehavior: jest.Mock;
-    copyAndSendToDestination: jest.Mock;
+  let mockSendRouter: {
+    resolveDestination: jest.Mock;
+    sendToDestination: jest.Mock;
+  };
+  let mockFeedbackProvider: {
+    provideCopyFeedback: jest.Mock;
+    provideSendFeedback: jest.Mock;
+    showError: jest.Mock;
   };
   let mockSelectionValidator: {
     validateSelectionsAndShowError: jest.Mock;
@@ -61,9 +66,14 @@ describe('LinkGenerator', () => {
       windowOptions: { showErrorMessage: mockShowErrorMessage },
     });
     mockDestinationManager = createMockDestinationManager({ isBound: false });
-    mockClipboardRouter = {
-      resolveDestinationBehavior: jest.fn(),
-      copyAndSendToDestination: jest.fn(),
+    mockSendRouter = {
+      resolveDestination: jest.fn(),
+      sendToDestination: jest.fn(),
+    };
+    mockFeedbackProvider = {
+      provideCopyFeedback: jest.fn(),
+      provideSendFeedback: jest.fn(),
+      showError: jest.fn(),
     };
     mockSelectionValidator = {
       validateSelectionsAndShowError: jest.fn(),
@@ -81,8 +91,9 @@ describe('LinkGenerator', () => {
       mockAdapter,
       mockDestinationManager,
       mockConfigReader,
-      mockClipboardRouter as any,
+      mockSendRouter as any,
       mockSelectionValidator as any,
+      mockFeedbackProvider as any,
       mockLogger,
     );
     formatMessageSpy = spyOnFormatMessage();
@@ -96,14 +107,11 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await generator.createLink();
 
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-      expect(formatMessageSpy).toHaveBeenCalledWith('CONTENT_NAME_RANGELINK');
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
     });
 
     it('aborts when generateLinkFromSelection returns undefined', async () => {
@@ -115,7 +123,7 @@ describe('LinkGenerator', () => {
 
       await generator.createLink();
 
-      expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
         'generateLinkFromSelection returned undefined, aborting',
@@ -132,7 +140,7 @@ describe('LinkGenerator', () => {
 
       await generator.createLink();
 
-      expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
         'Active editor URI unavailable, aborting',
@@ -145,11 +153,11 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await generator.createLink();
 
-      expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'generateLinkFromSelection',
@@ -166,20 +174,36 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
 
       await generator.createLinkOnly();
 
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+      expect(clipboardSpy).toHaveBeenCalledWith('src/file.ts#L1');
+      expect(mockFeedbackProvider.provideCopyFeedback).toHaveBeenCalledWith(
+        'CONTENT_NAME_RANGELINK',
+      );
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
     });
 
     it('does nothing when no link generated', async () => {
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(undefined);
 
       await generator.createLinkOnly();
 
-      expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+      expect(clipboardSpy).not.toHaveBeenCalled();
+      expect(mockFeedbackProvider.provideCopyFeedback).not.toHaveBeenCalled();
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'LinkGenerator.createLinkOnly' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
     });
   });
 
@@ -190,13 +214,11 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await generator.createPortableLink();
 
-      expect(formatMessageSpy).toHaveBeenCalledWith('CONTENT_NAME_PORTABLE_RANGELINK');
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -256,7 +278,7 @@ describe('LinkGenerator', () => {
 
       await generator.createLink();
 
-      expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
+      expect(mockFeedbackProvider.showError).toHaveBeenCalledTimes(1);
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_LINK_GENERATION_FAILED', {
         linkTypeName: 'link',
       });
@@ -286,7 +308,7 @@ describe('LinkGenerator', () => {
       mockGenLink.mockReturnValue(Result.ok(link));
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await generator.createLink();
 
@@ -321,7 +343,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L4C1-L4C11')));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await generator.createLink();
 
@@ -394,7 +416,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await generator.createLink();
 
@@ -411,9 +433,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       const link = createMockFormattedLink('src/file.ts#L1');
       mockGenLink.mockReturnValue(Result.ok(link));
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await generator.createLink();
 
@@ -425,23 +445,25 @@ describe('LinkGenerator', () => {
         },
         'Sending link to destination',
       );
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
         control: {
           contentType: 'Link',
-          destinationBehavior: 'bound-destination',
         },
         content: {
           clipboard: ' src/file.ts#L1 ',
           send: { ...link, link: ' src/file.ts#L1 ' },
           sourceUri: mockDoc.uri,
+          sourceViewColumn: mockAdapter.getActiveEditorViewColumn(),
         },
         strategies: {
           sendFn: expect.any(Function) as unknown,
           isEligibleFn: expect.any(Function) as unknown,
         },
-        contentName: 'RangeLink',
+        contentNameCode: 'CONTENT_NAME_RANGELINK',
         fnName: 'copyToClipboardAndDestination',
+        selfPastePolicy: 'block-on-uri',
+        writeClipboardOnSelfPasteBlock: true,
       });
     });
   });

@@ -8,9 +8,13 @@ const createMockUri = (path: string): vscode.Uri =>
     toString: () => `file://${path}`,
   }) as vscode.Uri;
 
-const createMockDestination = (uri: vscode.Uri | undefined): PasteDestination =>
+const createMockDestination = (
+  uri: vscode.Uri | undefined,
+  viewColumn?: vscode.ViewColumn,
+): PasteDestination =>
   ({
     getDestinationUri: () => uri,
+    getDestinationViewColumn: () => viewColumn,
   }) as PasteDestination;
 
 describe('isSameFileDestination', () => {
@@ -64,6 +68,42 @@ describe('isSameFileDestination', () => {
       const result = isSameFileDestination(sourceUri, destination);
 
       expect(result).toBe(false);
+    });
+
+    describe('view column awareness', () => {
+      const URI = createMockUri('/workspace/src/file.ts');
+
+      it('should return true when URIs match and view columns match', () => {
+        const destination = createMockDestination(URI, 2);
+
+        const result = isSameFileDestination(URI, destination, 2);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return false when URIs match but view columns differ', () => {
+        const destination = createMockDestination(URI, 2);
+
+        const result = isSameFileDestination(URI, destination, 3);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return true when URIs match and sourceViewColumn is not provided (backward compat)', () => {
+        const destination = createMockDestination(URI, 2);
+
+        const result = isSameFileDestination(URI, destination);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return true when URIs match and destination has no view column (backward compat)', () => {
+        const destination = createMockDestination(URI, undefined);
+
+        const result = isSameFileDestination(URI, destination, 2);
+
+        expect(result).toBe(true);
+      });
     });
   });
 });

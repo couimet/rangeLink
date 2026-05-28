@@ -1,7 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { TextSelectionPaster } from '../../services/TextSelectionPaster';
-import { DestinationBehavior } from '../../types';
 import {
   createMockConfigReader,
   createMockDestinationManager,
@@ -10,7 +9,6 @@ import {
   createMockSelection,
   createMockText,
   createMockUri,
-  spyOnFormatMessage,
 } from '../helpers';
 
 describe('TextSelectionPaster', () => {
@@ -18,10 +16,9 @@ describe('TextSelectionPaster', () => {
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockConfigReader: ReturnType<typeof createMockConfigReader>;
   let mockLogger: ReturnType<typeof createMockLogger>;
-  let formatMessageSpy: jest.SpyInstance;
-  let mockClipboardRouter: {
-    resolveDestinationBehavior: jest.Mock;
-    copyAndSendToDestination: jest.Mock;
+  let mockSendRouter: {
+    resolveDestination: jest.Mock;
+    sendToDestination: jest.Mock;
   };
   let mockSelectionValidator: {
     validateSelectionsAndShowError: jest.Mock;
@@ -31,9 +28,9 @@ describe('TextSelectionPaster', () => {
     mockLogger = createMockLogger();
     mockConfigReader = createMockConfigReader();
     mockDestinationManager = createMockDestinationManager({ isBound: false });
-    mockClipboardRouter = {
-      resolveDestinationBehavior: jest.fn(),
-      copyAndSendToDestination: jest.fn(),
+    mockSendRouter = {
+      resolveDestination: jest.fn(),
+      sendToDestination: jest.fn(),
     };
     mockSelectionValidator = {
       validateSelectionsAndShowError: jest.fn(),
@@ -41,11 +38,10 @@ describe('TextSelectionPaster', () => {
     paster = new TextSelectionPaster(
       mockDestinationManager,
       mockConfigReader,
-      mockClipboardRouter as any,
+      mockSendRouter as any,
       mockSelectionValidator as any,
       mockLogger,
     );
-    formatMessageSpy = spyOnFormatMessage();
   });
 
   it('returns early when validation fails', async () => {
@@ -53,7 +49,7 @@ describe('TextSelectionPaster', () => {
 
     await paster.pasteSelectedTextToDestination();
 
-    expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+    expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
   });
 
   it('extracts text from single selection and sends to destination', async () => {
@@ -67,30 +63,29 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-      DestinationBehavior.BoundDestination,
-    );
+    mockSendRouter.resolveDestination.mockResolvedValue(true);
     mockConfigReader.getPaddingMode.mockReturnValue('both');
 
     await paster.pasteSelectedTextToDestination();
 
-    expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-    expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
       control: {
         contentType: 'Text',
-        destinationBehavior: 'bound-destination',
       },
       content: {
         clipboard: ' selected text ',
         send: ' selected text ',
         sourceUri: mockDoc.uri,
+        sourceViewColumn: mockEditor.viewColumn,
       },
       strategies: {
         sendFn: expect.any(Function) as unknown,
         isEligibleFn: expect.any(Function) as unknown,
       },
-      contentName: 'Selected text',
+      contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
       fnName: 'pasteSelectedTextToDestination',
+      selfPastePolicy: 'block-on-editor-selection',
     });
     expect(mockLogger.debug).toHaveBeenCalledWith(
       {
@@ -115,9 +110,7 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel1, sel2],
     });
-    mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-      DestinationBehavior.BoundDestination,
-    );
+    mockSendRouter.resolveDestination.mockResolvedValue(true);
 
     await paster.pasteSelectedTextToDestination();
 
@@ -142,11 +135,11 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+    mockSendRouter.resolveDestination.mockResolvedValue(false);
 
     await paster.pasteSelectedTextToDestination();
 
-    expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+    expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
   });
 
   it('uses CONTENT_NAME_SELECTED_TEXT as content name', async () => {
@@ -160,12 +153,10 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-      DestinationBehavior.BoundDestination,
-    );
+    mockSendRouter.resolveDestination.mockResolvedValue(true);
 
     await paster.pasteSelectedTextToDestination();
 
-    expect(formatMessageSpy).toHaveBeenCalledWith('CONTENT_NAME_SELECTED_TEXT');
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
   });
 });

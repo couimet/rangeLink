@@ -1,30 +1,36 @@
 import assert from 'node:assert';
+import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
 import {
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_TERMINAL_HERE,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
 } from '../../constants/commandIds';
 import {
   assertFilePathLogged,
-  assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
-  assertToastLogged,
   createFileAt,
   extractQuickPickItemsLogged,
   getLogCapture,
+  openAndDismiss,
   openEditor,
+  openSourceWithSelection,
   standardSuite,
-  waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
 
 standardSuite('Send File Path', (ss) => {
   test('send-file-path-001: R-F sends workspace-relative path to bound terminal', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = ss.createWorkspaceFile('sfp-001', 'content\n');
     await openEditor(fileUri);
@@ -39,9 +45,6 @@ standardSuite('Send File Path', (ss) => {
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
     const lines = logCapture.getLinesSince('before-001');
-    assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: File path copied to clipboard & sent to Terminal ("sfp-test")',
-    });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
     assertFilePathLogged(lines, {
       pathFormat: 'workspace-relative',
@@ -53,6 +56,10 @@ standardSuite('Send File Path', (ss) => {
 
   test('send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = ss.createWorkspaceFile('sfp-002', 'content\n');
     await openEditor(fileUri);
@@ -78,6 +85,10 @@ standardSuite('Send File Path', (ss) => {
 
   test('send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -111,6 +122,10 @@ standardSuite('Send File Path', (ss) => {
 
   test('send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -146,6 +161,11 @@ standardSuite('Send File Path', (ss) => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = ss.createWorkspaceFile('sfp-006-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
     const sourceUri = createFileAt('__rl-test-source with spaces.ts', 'content\n');
     ss.trackFileUri(sourceUri);
 
@@ -198,6 +218,10 @@ standardSuite('Send File Path', (ss) => {
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -235,7 +259,7 @@ standardSuite('Send File Path', (ss) => {
     ss.log('✓ Both terminal and clipboard receive the quoted path (single clipboard write)');
   });
 
-  test('send-file-path-008: self-paste shows info notification and copies smart-padded path to clipboard without modifying file', async () => {
+  test('send-file-path-008: self-paste with no selection inserts path at cursor and shows normal feedback', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -244,38 +268,49 @@ standardSuite('Send File Path', (ss) => {
       .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
 
     const fileUri = ss.createWorkspaceFile('sfp-008-self', 'original content\n');
-    await openEditor(fileUri);
+    const destBasename = path.basename(fileUri.fsPath);
+    const destEditor = await openEditor(fileUri);
+    // Place cursor at beginning — no selection, so R-F is allowed
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
+    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
     await writeClipboardSentinel();
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-008');
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await ss.settle();
 
-    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
-    const lines = logCapture.getLinesSince('before-008');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: 'Selected text copied to clipboard. Cannot paste to same file.',
-    });
     const clipboard = await vscode.env.clipboard.readText();
     const expectedPadded = ` ${relativePath} `;
     assert.strictEqual(
       clipboard,
       expectedPadded,
-      `Expected clipboard to contain smart-padded path "${JSON.stringify(expectedPadded)}" after self-paste, got: ${JSON.stringify(clipboard)}`,
+      `Expected clipboard to contain smart-padded path "${JSON.stringify(expectedPadded)}" after send, got: ${JSON.stringify(clipboard)}`,
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
-    ss.log('✓ Self-paste: info notification shown, smart-padded path on clipboard, file unchanged');
+    const expectedContent = ` ${relativePath} original content\n`;
+    assert.strictEqual(
+      doc.getText(),
+      expectedContent,
+      `Expected file to have path inserted at cursor, got: ${JSON.stringify(doc.getText())}`,
+    );
+    ss.log('✓ Self-paste with no selection: path inserted at cursor, normal status bar feedback');
   });
 
-  test('[assisted] send-file-path-009: unbound — R-F opens destination picker before sending', async () => {
+  test('send-file-path-009: unbound — R-F opens destination picker before sending', async () => {
     const capturing = await ss.createCapturingTerminal('sfp-picker-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-picker-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-picker-test")',
+    ]);
 
     const fileUri = ss.createWorkspaceFile('sfp-009', 'content\n');
     await openEditor(fileUri);
@@ -285,17 +320,8 @@ standardSuite('Send File Path', (ss) => {
     logCapture.mark('before-009');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-file-path-009',
-      'R-F with no destination bound → picker appears, select terminal "sfp-picker-test"',
-      [
-        'Focus the file open in the editor.',
-        'Press Cmd+R Cmd+F — the destination picker should appear.',
-        'Select terminal "sfp-picker-test" from the picker.',
-        'Confirm the file path is sent to the terminal.',
-      ],
-    );
-
+    // Open the destination picker, capture picker items from logs, then dismiss
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
     await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
@@ -304,15 +330,29 @@ standardSuite('Send File Path', (ss) => {
     assert.ok(items !== undefined, 'Expected destination picker to be shown via log');
     const terminalItem = items?.find(
       (item) =>
-        typeof item.label === 'string' && (item.label as string).includes('sfp-picker-test'),
+        item.itemKind === 'bindable' &&
+        typeof item.displayName === 'string' &&
+        (item.displayName as string).includes('sfp-picker-test'),
     );
     assert.ok(terminalItem !== undefined, 'Expected "sfp-picker-test" to appear in the picker');
+
+    // Bind to the capturing terminal and send the file path
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
     ss.log('✓ Unbound R-F opens picker; path sent after selection');
   });
 
   test('send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = ss.createWorkspaceFile('sfp-010', 'content\n');
     await openEditor(fileUri);
@@ -338,6 +378,10 @@ standardSuite('Send File Path', (ss) => {
 
   test('send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
     const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
 
     const fileUri = ss.createWorkspaceFile('sfp-011', 'content\n');
     await openEditor(fileUri);
@@ -365,7 +409,13 @@ standardSuite('Send File Path', (ss) => {
     const ANCHOR_START = 'ANCHOR_START';
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = ss.createWorkspaceFile('sfp-012-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const destBasename = path.basename(destUri.fsPath);
     const sourceUri = ss.createWorkspaceFile('sfp-012-source', 'content\n');
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -411,5 +461,134 @@ standardSuite('Send File Path', (ss) => {
       `Expected exact dest content, got: ${JSON.stringify(destDoc.getText())}`,
     );
     ss.log('✓ Bound editor brought to foreground and received exact file path');
+  });
+
+  test('send-file-path-013: same file, same column, no selection — absolute path inserted at cursor', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+
+    const fileUri = ss.createWorkspaceFile('sfp-013-self', 'line 1\nline 2\n');
+    const destBasename = path.basename(fileUri.fsPath);
+    const destEditor = await openEditor(fileUri);
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(1, 0),
+      new vscode.Position(1, 0),
+    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
+    await ss.settle();
+
+    const absolutePath = fileUri.fsPath;
+    const clipboard = await vscode.env.clipboard.readText();
+    assert.strictEqual(
+      clipboard,
+      ` ${absolutePath} `,
+      `Expected clipboard to contain absolute path "${JSON.stringify(` ${absolutePath} `)}", got: ${JSON.stringify(clipboard)}`,
+    );
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const expectedContent = `line 1\n ${absolutePath} line 2\n`;
+    assert.strictEqual(
+      doc.getText(),
+      expectedContent,
+      `Expected absolute path inserted at cursor, got: ${JSON.stringify(doc.getText())}`,
+    );
+    ss.log('✓ Same file, no selection: absolute path inserted at cursor, normal feedback');
+  });
+
+  test('send-file-path-014: same file, same column, with active selection — blocked with toast and clipboard copy', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+
+    const fileUri = ss.createWorkspaceFile('sfp-014-self', 'original content\n');
+    const destBasename = path.basename(fileUri.fsPath);
+    const destEditor = await openEditor(fileUri);
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 5),
+    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      '✓ RangeLink: File path copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      {
+        level: 'info',
+        message:
+          'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
+      },
+    ]);
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
+    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    const clipboard = await vscode.env.clipboard.readText();
+    assert.strictEqual(
+      clipboard,
+      ` ${relativePath} `,
+      `Expected clipboard to contain path "${JSON.stringify(` ${relativePath} `)}" after blocked self-paste, got: ${JSON.stringify(clipboard)}`,
+    );
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    assert.strictEqual(
+      doc.getText(),
+      'original content\n',
+      'Expected file to remain unmodified after blocked self-paste',
+    );
+    ss.log(
+      '✓ Self-paste with active selection: blocked, toast shown, path on clipboard, file unchanged',
+    );
+  });
+
+  test('send-file-path-015: same file, different view column — allowed', async () => {
+    const ANCHOR_START = 'ANCHOR_START';
+    const ANCHOR_END = 'ANCHOR_END';
+    const destUri = ss.createWorkspaceFile('sfp-015-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const destBasename = path.basename(destUri.fsPath);
+    const sourceUri = ss.createWorkspaceFile('sfp-015-source', 'source content\n');
+    ss.trackFileUri(sourceUri);
+
+    const destEditor = await openEditor(destUri, vscode.ViewColumn.Two);
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(1, 0),
+      new vscode.Position(1, 0),
+    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    // Activate source file in a different column, using a fresh column to avoid
+    // the test runner's focus-steal issue where showTextDocument in a reused
+    // column leaves the prior editor active.
+    await openSourceWithSelection(sourceUri, vscode.ViewColumn.Three);
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
+    const relativePath = vscode.workspace.asRelativePath(sourceUri, false);
+    const destDoc = await vscode.workspace.openTextDocument(destUri);
+    assert.ok(
+      destDoc.getText().includes(` ${relativePath} `),
+      `Expected destination to contain path "${relativePath}", got: ${JSON.stringify(destDoc.getText())}`,
+    );
+    ss.log('✓ Same file, different view column: allowed, path inserted in destination column');
   });
 });

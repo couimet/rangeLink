@@ -5,13 +5,14 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_TERMINAL,
+  CMD_BIND_TO_TERMINAL_HERE,
   CMD_OPEN_STATUS_BAR_MENU,
 } from '../../constants/commandIds';
 import {
-  assertToastLogged,
   extractQuickPickItemsLogged,
   findTerminalItems,
   getLogCapture,
+  getQuickPickLines,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   standardSuite,
@@ -73,8 +74,10 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-002: bound terminal is marked with bound badge', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-002")']);
+
     await ss.createTerminal('rl-tp-002');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     const t2 = await ss.createTerminal('rl-tp-002-other');
     t2.show(true);
@@ -123,8 +126,9 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-003")']);
     const t = await ss.createTerminal('rl-tp-003');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     t.show(true);
     await ss.settle();
 
@@ -163,8 +167,9 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-004: bound terminal always appears first in the list', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-004-b")']);
     await ss.createTerminal('rl-tp-004-b');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     await ss.createTerminal('rl-tp-004-a');
 
@@ -211,8 +216,9 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-005: active non-bound terminal appears second', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-005-a")']);
     await ss.createTerminal('rl-tp-005-a');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     const t2 = await ss.createTerminal('rl-tp-005-b');
     t2.show(true);
@@ -393,9 +399,7 @@ standardSuite('Terminal Picker', (ss) => {
     );
 
     const lines = logCapture.getLinesSince('before-tp-009');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(quickPickEntries.length >= 2, 'Expected at least 2 showQuickPick entries');
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
@@ -458,9 +462,7 @@ standardSuite('Terminal Picker', (ss) => {
     );
 
     const lines = logCapture.getLinesSince('before-tp-010');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(quickPickEntries.length >= 3, 'Expected at least 3 showQuickPick entries');
 
     const firstItems = parseQuickPickItemsFromLogLine(quickPickEntries[0]);
@@ -777,16 +779,12 @@ standardSuite('Terminal Picker', (ss) => {
     const ptyTerminal = await ss.createTerminal('rl-tp-015-pty', { pty });
     await ss.settle();
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-tp-015');
+    ss.expectToastMessages([
+      { level: 'error', message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.' },
+    ]);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, ptyTerminal);
     await ss.settle();
-
-    assertToastLogged(logCapture.getLinesSince('before-tp-015'), {
-      type: 'error',
-      message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.',
-    });
 
     ss.log('✓ Direct bind to pty terminal rejected with error notification');
   });

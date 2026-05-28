@@ -3,15 +3,25 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
-  assertNoStatusBarMsgLogged,
-  assertStatusBarMsgLogged,
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
+  CMD_BIND_TO_TERMINAL_HERE,
+  CMD_BIND_TO_TEXT_EDITOR,
+  CMD_JUMP_TO_DESTINATION,
+} from '../../constants/commandIds';
+import {
+  MENU_ITEM_GROUP_AI_ASSISTANTS,
+  MENU_ITEM_GROUP_TERMINALS,
+  assertQuickPickContains,
+  assertQuickPickItemsLogged,
   closeAllEditors,
+  dismissQuickPick,
   extractQuickPickItemsLogged,
   findTerminalItems,
   findTestItemsByPrefix,
   getLogCapture,
+  getQuickPickLines,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   standardSuite,
@@ -23,23 +33,15 @@ standardSuite('R-D Bind to Destination', (ss) => {
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     findTestItemsByPrefix(items, '__rl-test-btd-');
 
-  const AI_ASSISTANT_DISPLAY_NAMES = [
-    'Claude Code Chat',
-    'Gemini Code Assist',
-    'Cursor AI Assistant',
-    'GitHub Copilot Chat',
-  ];
-
-  test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
+  test('bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
     await ss.createTerminal('rl-btd-004');
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-004")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-004');
 
-    await waitForHuman(
-      'bind-to-destination-004',
-      'Press Cmd+R Cmd+D, select Terminal ("rl-btd-004")',
-    );
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-btd-004');
 
@@ -68,26 +70,23 @@ standardSuite('R-D Bind to Destination', (ss) => {
       ],
     );
 
-    assertStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: Bound to Terminal ("rl-btd-004")',
-    });
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: 'RangeLink: No destination bound',
-    });
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await ss.settle();
 
     ss.log('✓ Picker showed unbound terminal; bind succeeded with correct status bar toast');
   });
 
-  test('[assisted] bind-to-destination-005: selecting a text editor destination binds it and shows success toast', async () => {
+  test('bind-to-destination-005: selecting a text editor destination binds it and shows success toast', async () => {
     await ss.createAndOpenFile('btd-005-a', 'line 1\n', undefined);
     const uriB = await ss.createAndOpenFile('btd-005-b', 'line 2\n', vscode.ViewColumn.Two);
     const fnB = path.basename(uriB.fsPath);
 
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnB}")`]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-005');
 
-    await waitForHuman('bind-to-destination-005', `Press Cmd+R Cmd+D, select "${fnB}"`);
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
 
     const lines = logCapture.getLinesSince('before-btd-005');
 
@@ -112,97 +111,64 @@ standardSuite('R-D Bind to Destination', (ss) => {
       },
     );
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Text Editor ("${fnB}")`,
-    });
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: 'RangeLink: No destination bound',
-    });
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR, uriB);
+    await ss.settle();
 
     ss.log('✓ Picker showed unbound file; bind succeeded with correct status bar toast');
   });
 
-  test('[assisted] bind-to-destination-006: selecting a built-in AI assistant destination binds it and shows success toast', async () => {
-    const logCapture = getLogCapture();
-    logCapture.mark('before-btd-006');
+  test('bind-to-destination-006: selecting a built-in AI assistant destination binds it and shows success toast', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat']);
 
-    await waitForHuman(
-      'bind-to-destination-006',
-      'Press Cmd+R Cmd+D, select any available built-in AI assistant entry',
-    );
-
-    const lines = logCapture.getLinesSince('before-btd-006');
-
-    const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
-      lines.some((line) => line.includes(`✓ RangeLink: Bound to ${name}`)),
-    );
-    assert.ok(
-      boundToAny,
-      `Expected status bar message "✓ RangeLink bound to <AI assistant>" for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
-    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
 
     ss.log('✓ AI assistant bind success toast logged');
   });
 
-  test('[assisted] bind-to-destination-007: when already bound, destination picker shows smart-bind confirmation dialog', async () => {
+  test('bind-to-destination-007: when already bound, binding a different terminal shows smart-bind confirmation dialog', async () => {
     await ss.createTerminal('rl-btd-007-a');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
-    await ss.createTerminal('rl-btd-007-b');
+    const terminalB = await ss.createTerminal('rl-btd-007-b');
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-007-a")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-007');
 
-    await waitForHuman(
-      'bind-to-destination-007',
-      'Cmd+R Cmd+D → select "rl-btd-007-b" → Escape the confirmation dialog',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Select Terminal ("rl-btd-007-b") from the picker',
-        '3. Escape the confirmation dialog that appears',
-      ],
-    );
+    const bindPromise = vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE, terminalB);
+    await ss.settle();
 
     const lines = logCapture.getLinesSince('before-btd-007');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
-    assert.ok(
-      quickPickEntries.length >= 2,
-      `Expected at least 2 showQuickPick entries (R-D picker + confirmation dialog), got ${quickPickEntries.length}`,
-    );
+    assertQuickPickItemsLogged(lines, [
+      {
+        label: 'Yes, replace',
+        description: 'Switch from Terminal ("rl-btd-007-a") to Terminal ("rl-btd-007-b")',
+      },
+      {
+        label: 'No, keep current binding',
+        description: 'Stay bound to Terminal ("rl-btd-007-a")',
+      },
+    ]);
 
-    const confirmItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
-    assert.deepStrictEqual(
-      confirmItems.map(({ label, description }) => ({ label, description })),
-      [
-        {
-          label: 'Yes, replace',
-          description: 'Switch from Terminal ("rl-btd-007-a") to Terminal ("rl-btd-007-b")',
-        },
-        {
-          label: 'No, keep current binding',
-          description: 'Stay bound to Terminal ("rl-btd-007-a")',
-        },
-      ],
-    );
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: Bound to Terminal ("rl-btd-007-b")',
-    });
-    assertNoStatusBarMsgLogged(lines, {
-      message: 'Unbound Terminal ("rl-btd-007-a"), now bound to Terminal ("rl-btd-007-b")',
-    });
+    await dismissQuickPick();
+    await bindPromise;
+    await ss.settle();
 
     ss.log('✓ Confirmation dialog items validated; no bind/rebind toast after Escape');
   });
 
   test('[assisted] bind-to-destination-008: smart-bind confirmation Yes replaces the binding', async () => {
     await ss.createTerminal('rl-btd-008-a');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     await ss.createTerminal('rl-btd-008-b');
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-btd-008-a")',
+      '✓ RangeLink: Unbound Terminal ("rl-btd-008-a"), now bound to Terminal ("rl-btd-008-b")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
@@ -217,24 +183,16 @@ standardSuite('R-D Bind to Destination', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-btd-008');
-
-    assertStatusBarMsgLogged(lines, {
-      message: 'Unbound Terminal ("rl-btd-008-a"), now bound to Terminal ("rl-btd-008-b")',
-    });
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: Bound to Terminal ("rl-btd-008-a")',
-    });
-
     ss.log('✓ Replacement binding toast logged; old binding not re-confirmed');
   });
 
   test('[assisted] bind-to-destination-009: smart-bind confirmation No keeps existing binding', async () => {
     await ss.createTerminal('rl-btd-009-a');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     await ss.createTerminal('rl-btd-009-b');
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-009-a")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
@@ -251,14 +209,6 @@ standardSuite('R-D Bind to Destination', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-btd-009');
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: 'Unbound Terminal ("rl-btd-009-a"), now bound to Terminal ("rl-btd-009-b")',
-    });
-    assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: Bound to Terminal ("rl-btd-009-b")',
-    });
     assert.strictEqual(
       verdict,
       'pass',
@@ -269,8 +219,9 @@ standardSuite('R-D Bind to Destination', (ss) => {
   });
 
   test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-010")']);
     await ss.createTerminal('rl-btd-010');
-    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -280,80 +231,56 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
     const lines = logCapture.getLinesSince('before-btd-010');
 
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry (picker did open)');
-
-    assertNoStatusBarMsgLogged(lines, {
-      message: '✓ RangeLink: Bound to Terminal ("rl-btd-010")',
-    });
-    assertNoStatusBarMsgLogged(lines, {
-      message: 'RangeLink: No destination bound',
-    });
+    assertQuickPickContains(lines, MENU_ITEM_GROUP_AI_ASSISTANTS, MENU_ITEM_GROUP_TERMINALS);
 
     ss.log('✓ No bind or unbind toast after Escape — binding state unchanged');
   });
 
-  test('[assisted] bind-to-destination-011: re-binding same built-in AI assistant shows already-bound message', async () => {
-    const logCapture = getLogCapture();
-    logCapture.mark('before-btd-011');
+  test('bind-to-destination-011: re-binding same built-in AI assistant shows already-bound message', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat']);
+    ss.expectToastMessages([{ level: 'info', message: 'Already bound to GitHub Copilot Chat' }]);
 
-    await waitForHuman(
-      'bind-to-destination-011',
-      'Cmd+R Cmd+D → select a built-in AI assistant → Cmd+R Cmd+D → select same built-in AI assistant',
-      [
-        '1. Press Cmd+R Cmd+D and select any built-in AI assistant (e.g., Claude Code Chat)',
-        '2. Press Cmd+R Cmd+D and select any built-in AI assistant (e.g., Gemini Code Assist)',
-        '3. Press Cmd+R Cmd+D again',
-        '3. Select the same built-in AI assistant a second time',
-      ],
-    );
+    // First bind — success toast
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-btd-011');
-
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
-    assert.strictEqual(
-      quickPickEntries.length,
-      2,
-      `Expected exactly 2 showQuickPick entries (two destination picker opens, no confirmation dialog), got ${quickPickEntries.length}`,
-    );
-
-    const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
-      lines.some((line) => line.includes(`Already bound to ${name}`)),
-    );
-    assert.ok(
-      alreadyBoundLogged,
-      `Expected "Already bound to <AI assistant>" info toast for one of: ${AI_ASSISTANT_DISPLAY_NAMES.join(', ')}`,
-    );
+    // Second bind to same AI — should show "Already bound" info, no confirmation dialog
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
 
     ss.log('✓ Already-bound info toast logged; no confirmation dialog shown');
   });
 
   test('[assisted] bind-to-destination-012: switching between different AI assistants shows confirmation dialog', async () => {
+    // Programmatic first bind to Copilot Chat
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: Unbound GitHub Copilot Chat, now bound to Dummy AI (Tier 3)',
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-012');
 
     await waitForHuman(
       'bind-to-destination-012',
-      'Cmd+R Cmd+D → select GitHub Copilot Chat → Cmd+R Cmd+D → select Dummy AI (Tier 3) → click "Yes, replace"',
+      'Cmd+R Cmd+D → select Dummy AI (Tier 3) → click "Yes, replace"',
       [
         'The Dummy AI extension is loaded — its destinations appear in the picker.',
-        '1. Press Cmd+R Cmd+D and select GitHub Copilot Chat',
-        '2. Press Cmd+R Cmd+D again',
-        '3. Select "Dummy AI (Tier 3)" (custom AI assistant)',
-        '4. When the confirmation dialog appears, click "Yes, replace"',
+        '1. Press Cmd+R Cmd+D',
+        '2. Select "Dummy AI (Tier 3)" (custom AI assistant) from the picker',
+        '3. When the confirmation dialog appears, click "Yes, replace"',
       ],
     );
 
     const lines = logCapture.getLinesSince('before-btd-012');
 
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(
-      quickPickEntries.length >= 3,
-      `Expected at least 3 showQuickPick entries (first picker, second picker, confirmation dialog), got ${quickPickEntries.length}`,
+      quickPickEntries.length >= 2,
+      `Expected at least 2 showQuickPick entries (destination picker + confirmation dialog), got ${quickPickEntries.length}`,
     );
 
     const confirmItems = parseQuickPickItemsFromLogLine(
@@ -364,36 +291,21 @@ standardSuite('R-D Bind to Destination', (ss) => {
       [{ label: 'Yes, replace' }, { label: 'No, keep current binding' }],
     );
 
-    const reboundLogged = lines.some(
-      (line) => line.includes('VscodeAdapter.setStatusBarMessage') && line.includes('now bound to'),
-    );
-    assert.ok(reboundLogged, 'Expected rebound status bar message after "Yes, replace"');
-
     ss.log('✓ Confirmation dialog shown; rebind toast logged after "Yes, replace"');
   });
 
-  test('[assisted] bind-to-destination-014: Jump to Bound Destination with no bound destination opens picker', async () => {
-    const verdict = await waitForHumanVerdict(
-      'bind-to-destination-014',
-      'No destination is bound. Press Cmd+R Cmd+J (Jump to Bound Destination) — verify destination picker opens. Escape.',
-      [
-        '1. Confirm no destination is bound',
-        '2. Press Cmd+R Cmd+J',
-        '3. Verify destination picker appears so you can bind first',
-        '4. Press Escape to dismiss',
-        '   Click Pass if picker appeared, Fail if nothing happened or you got an error',
-      ],
-    );
+  test('bind-to-destination-014: Jump to Bound Destination with no bound destination opens picker', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-btd-014');
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Jump to Bound Destination with no destination did not open picker',
-    );
-    ss.log('✓ Jump to Bound Destination with no destination opens picker (human verdict)');
+    await openAndDismiss(CMD_JUMP_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-btd-014');
+    assertQuickPickContains(lines, MENU_ITEM_GROUP_AI_ASSISTANTS);
+    ss.log('✓ Jump to Bound Destination with no destination opens picker (log-based)');
   });
 
-  test('[assisted] bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
+  test('bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
     await closeAllEditors();
 
     const fileA = ss.createWorkspaceFile('btd-015-a', 'file A content\n');
@@ -404,24 +316,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
     await vscode.window.showTextDocument(docB, vscode.ViewColumn.One);
     await ss.settle();
 
-    const verdict = await waitForHumanVerdict(
-      'bind-to-destination-015',
-      'One tab group only — no split. Press Cmd+R Cmd+D, select any file, verify success toast and no split-required error.',
-      [
-        '1. Confirm there is only ONE tab group (no split view)',
-        '2. Press Cmd+R Cmd+D',
-        '3. Select either open file from the destination picker',
-        '4. Verify a success toast appears (e.g., "✓ RangeLink bound to ...")',
-        '5. Verify NO error about needing a split view or a second tab group',
-        '   Click Pass if binding succeeded without any split requirement, Fail otherwise',
-      ],
-    );
+    const fnB = path.basename(fileB.fsPath);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnB}")`]);
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Binding a text editor in a single tab group failed or required a split',
-    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR, fileB);
+    await ss.settle();
     ss.log('✓ Text editor binding works in single tab group — no split required (human verdict)');
   });
 });

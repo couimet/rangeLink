@@ -37,6 +37,9 @@ module.exports = {
     '^vscode$': '<rootDir>/src/__tests__/__mocks__/vscode',
     // Mock nanoid (ESM-only package) - tests use injected IdGenerator anyway
     '^nanoid$': '<rootDir>/src/__tests__/__mocks__/nanoid.ts',
+    // Resolve rangelink-core-ts to source so jest.spyOn works (compiled CJS __exportStar uses
+    // non-configurable Object.defineProperty on barrel exports, blocking spyOn)
+    '^rangelink-core-ts$': '<rootDir>/../rangelink-core-ts/src/index.ts',
   },
   transform: {
     '^.+\\.ts$': 'ts-jest',

@@ -13,12 +13,12 @@ import {
   type BindOptions,
   type BoundDestinationInfo,
   type ConfirmationQuickPickItem,
-  type TextEditorBindOptions,
   type DestinationKind,
   ExtensionResult,
-  isAnyAiAssistantKind,
   isCustomAiAssistantKind,
   MessageCode,
+  type StatusBarOptions,
+  type TextEditorBindOptions,
 } from '../types';
 import {
   formatMessage,
@@ -151,18 +151,23 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (!bindResult.success) {
       return ExtensionResult.err(bindResult.error);
     }
-    return this.focusBoundDestination({ silent: true });
+    return this.focusBoundDestination({ skipMessage: true });
   }
 
   /**
    * Unbind current destination
+   *
+   * @param options.skipMessage - If true, suppresses the status bar message.
+   *   Used by close listeners that provide their own merged message.
    */
-  unbind(): void {
+  unbind(options?: StatusBarOptions): void {
     if (!this.boundDestination) {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
-      this.vscodeAdapter.setStatusBarMessage(
-        formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
-      );
+      if (!options?.skipMessage) {
+        this.vscodeAdapter.setStatusBarMessage(
+          formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
+        );
+      }
       return;
     }
 
@@ -175,9 +180,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully unbound from ${displayName}`,
     );
 
-    this.vscodeAdapter.setSuccessfulStatusBarMessage(
-      formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
-    );
+    if (!options?.skipMessage) {
+      this.vscodeAdapter.setSuccessfulStatusBarMessage(
+        formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
+      );
+    }
   }
 
   /**
@@ -252,13 +259,13 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * Brings the bound destination into focus/view for quick navigation.
    *
-   * @param options.silent - If true, suppresses the status bar success message.
+   * @param options.skipMessage - If true, suppresses the status bar success message.
    *   Used by bindAndFocus() where the binding toast is already shown.
    * @returns ExtensionResult with FocusSuccessInfo on success, error on failure
    */
-  async focusBoundDestination(options?: {
-    silent?: boolean;
-  }): Promise<ExtensionResult<FocusSuccessInfo>> {
+  async focusBoundDestination(
+    options?: StatusBarOptions,
+  ): Promise<ExtensionResult<FocusSuccessInfo>> {
     if (!this.boundDestination) {
       return ExtensionResult.err(
         new RangeLinkExtensionError({
@@ -298,7 +305,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
     }
 
-    if (!options?.silent) {
+    if (!options?.skipMessage) {
       const successMessage = this.boundDestination.getJumpSuccessMessage();
       this.vscodeAdapter.setSuccessfulStatusBarMessage(successMessage);
     }
@@ -309,19 +316,13 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send a formatted RangeLink to bound destination with user feedback
+   * Send a formatted RangeLink to bound destination.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @param basicStatusMessage - Base message for status bar (e.g., "RangeLink copied to clipboard")
-
    * @returns true if sent successfully, false otherwise
    */
-  async sendLinkToDestination(
-    formattedLink: FormattedLink,
-    basicStatusMessage: string,
-  ): Promise<boolean> {
-    return this.sendWithFeedback({
-      basicStatusMessage,
+  async sendLinkToDestination(formattedLink: FormattedLink): Promise<boolean> {
+    return this.executeSend({
       logContext: {
         fn: 'PasteDestinationManager.sendLinkToDestination',
         formattedLink,
@@ -333,19 +334,13 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send text content to bound destination with user feedback
-   *
-   * Similar to sendToDestination() but for raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to bound destinations (issue #89).
+   * Send text content to bound destination.
    *
    * @param content - The text content to send
-   * @param basicStatusMessage - Base message for status bar (e.g., "Text copied to clipboard")
-
    * @returns true if sent successfully, false otherwise
    */
-  async sendTextToDestination(content: string, basicStatusMessage: string): Promise<boolean> {
-    return this.sendWithFeedback({
-      basicStatusMessage,
+  async sendTextToDestination(content: string): Promise<boolean> {
+    return this.executeSend({
       logContext: {
         fn: 'PasteDestinationManager.sendTextToDestination',
         contentLength: content.length,
@@ -379,14 +374,17 @@ export class PasteDestinationManager implements vscode.Disposable {
       }
 
       if (this.boundDestination.resource.terminal === closedTerminal) {
+        const destinationName = this.boundDestination.displayName;
         const terminalName = closedTerminal.name || 'Unnamed Terminal';
         this.logger.info(
           { fn: 'PasteDestinationManager.onDidCloseTerminal', terminalName },
           `Bound terminal closed: ${terminalName} - auto-unbinding`,
         );
-        this.unbind();
+        this.unbind({ skipMessage: true });
         this.vscodeAdapter.setStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED),
+          formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED, {
+            destinationName,
+          }),
         );
       }
     });
@@ -679,9 +677,12 @@ export class PasteDestinationManager implements vscode.Disposable {
         logCtx,
         `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`,
       );
-      this.unbind();
+      const destinationName = this.boundDestination.displayName;
+      this.unbind({ skipMessage: true });
       this.vscodeAdapter.setStatusBarMessage(
-        formatMessage(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND),
+        formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED, {
+          destinationName,
+        }),
       );
     });
 
@@ -758,22 +759,11 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send content to bound destination and handle all feedback (status bar, toasts, errors).
+   * Execute paste to bound destination (no UI feedback).
    *
-   * Shared helper for sendToDestination() and sendTextToDestination() to eliminate duplication.
-   * Follows ChatAssistantDestination.sendTextToChat() pattern.
-   *
-   * **Feedback handling:**
-   * - Success (automatic destinations): Status bar "✓ ${basicStatusMessage} and sent to ${displayName}"
-   * - Success (clipboard destinations): Status bar + toast with getUserInstruction(AutoPasteResult.Success)
-   * - Failure (clipboard destinations): Status bar + warning with getUserInstruction(AutoPasteResult.Failure)
-   * - Failure (automatic destinations): Warning with buildPasteFailureMessage()
-   *
-   * @param options - Configuration for sending and feedback
-   * @returns true if paste succeeded, false otherwise
+   * Feedback is handled by SendRouter via OperationFeedbackProvider.
    */
-  private async sendWithFeedback(options: {
-    basicStatusMessage: string;
+  private async executeSend(options: {
     logContext: LoggingContext;
     debugMessage: (displayName: string) => string;
     errorMessage: (displayName: string) => string;
@@ -787,7 +777,6 @@ export class PasteDestinationManager implements vscode.Disposable {
     const destination = this.boundDestination;
     const displayName = destination.displayName || 'destination';
 
-    // Build enhanced log context with destination details
     const enhancedLogContext: LoggingContext = {
       ...options.logContext,
       destinationKind: destination.id,
@@ -800,95 +789,12 @@ export class PasteDestinationManager implements vscode.Disposable {
     const pasteSucceeded = await options.execute(destination);
 
     if (pasteSucceeded) {
-      const successInstruction = destination.getUserInstruction?.(AutoPasteResult.Success);
-
-      if (successInstruction) {
-        this.vscodeAdapter.setSuccessfulStatusBarMessage(options.basicStatusMessage);
-        void this.vscodeAdapter.showInformationMessage(successInstruction);
-      } else {
-        const enhancedMessage = formatMessage(MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION, {
-          statusMessage: options.basicStatusMessage,
-          destinationName: displayName,
-        });
-        this.vscodeAdapter.setSuccessfulStatusBarMessage(enhancedMessage);
-      }
-
-      return true;
-    }
-
-    const failureInstruction = destination.getUserInstruction?.(AutoPasteResult.Failure);
-
-    if (failureInstruction) {
-      this.vscodeAdapter.setSuccessfulStatusBarMessage(options.basicStatusMessage);
-      void this.vscodeAdapter.showWarningMessage(failureInstruction);
+      this.logger.info(enhancedLogContext, `Pasted to ${displayName}`);
     } else {
-      const errorMsg = this.buildPasteFailureMessage(destination, options.basicStatusMessage);
-      this.vscodeAdapter.showWarningMessage(errorMsg);
+      this.logger.error(enhancedLogContext, options.errorMessage(displayName));
     }
 
-    this.logger.error(enhancedLogContext, options.errorMessage(displayName));
-
-    return false;
-  }
-
-  /**
-   * Build destination-aware error message for paste failures
-   *
-   * Provides specific guidance for destinations that don't provide their own
-   * manual fallback instructions via getUserInstruction().
-   *
-   * Note: Chat assistants (Claude Code, Cursor AI, GitHub Copilot) provide their own instructions
-   * via getUserInstruction(AutoPasteResult.Failure), so they should never reach this method.
-   *
-   * @param destination - The destination that failed to receive the paste
-   * @param basicStatusMessage - Base message to prepend to error
-   * @returns User-friendly error message with destination-specific guidance
-   * @throws RangeLinkExtensionError if called with unknown destination kind
-   */
-  private buildPasteFailureMessage(
-    destination: PasteDestination,
-    basicStatusMessage: string,
-  ): string {
-    switch (destination.id) {
-      case 'text-editor':
-        return formatMessage(MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN, {
-          statusMessage: basicStatusMessage,
-        });
-
-      case 'terminal':
-        return formatMessage(MessageCode.WARN_PASTE_FAILED_TERMINAL, {
-          statusMessage: basicStatusMessage,
-        });
-
-      case 'claude-code':
-      case 'cursor-ai':
-      case 'gemini-code-assist':
-      case 'github-copilot-chat':
-        // Chat assistants should provide getUserInstruction(AutoPasteResult.Failure)
-        // and never reach this fallback method
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-          message: `Chat assistant destination '${destination.id}' should provide getUserInstruction() and never reach buildPasteFailureMessage()`,
-          functionName: 'PasteDestinationManager.buildPasteFailureMessage',
-          details: { destinationId: destination.id, displayName: destination.displayName },
-        });
-
-      default:
-        if (isAnyAiAssistantKind(destination.id as DestinationKind)) {
-          throw new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-            message: `AI assistant destination '${destination.id}' should provide getUserInstruction() and never reach buildPasteFailureMessage()`,
-            functionName: 'PasteDestinationManager.buildPasteFailureMessage',
-            details: { destinationId: destination.id, displayName: destination.displayName },
-          });
-        }
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
-          message: `Unknown destination kind '${destination.id}' - missing case in buildPasteFailureMessage()`,
-          functionName: 'PasteDestinationManager.buildPasteFailureMessage',
-          details: { destinationId: destination.id, displayName: destination.displayName },
-        });
-    }
+    return pasteSucceeded;
   }
 
   private bindFailedResult(

@@ -118,6 +118,7 @@ describe('handleDirtyBufferWarning', () => {
     );
 
     expect(result).toBe('SaveFailed');
+    expect(mockAdapter.showWarningMessage).toHaveBeenNthCalledWith(2, 'Save failed');
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { fn: 'handleDirtyBufferWarning' },
       'Save operation failed or was cancelled',
@@ -154,6 +155,7 @@ describe('handleDirtyBufferWarning', () => {
     const formatMessageSpy = spyOnFormatMessage();
     const mockAdapter = createMockVscodeAdapter();
     jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
+    const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
     const configReader = createConfigReader();
     formatMessageSpy.mockImplementation((code: string) => {
       if (code === 'WARN_LINK_DIRTY_BUFFER_SAVE') return 'Save & Generate';
@@ -170,6 +172,7 @@ describe('handleDirtyBufferWarning', () => {
     );
 
     expect(result).toBe('Dismissed');
+    expect(showInfoSpy).toHaveBeenCalledWith('mock:INFO_OPERATION_ABORTED_DIRTY_BUFFER');
     expect(mockLogger.debug).toHaveBeenCalledWith(
       { fn: 'handleDirtyBufferWarning' },
       'User dismissed warning, aborting',

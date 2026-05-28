@@ -280,6 +280,7 @@ export class VscodeAdapter
             ...('itemKind' in item ? { itemKind: record.itemKind } : {}),
             ...('displayName' in item ? { displayName: record.displayName } : {}),
             ...('remainingCount' in item ? { remainingCount: record.remainingCount } : {}),
+            ...('command' in item ? { command: record.command } : {}),
           };
           return isLogCaptureEnabled ? { ...base, ...projectTestStatusFields(record) } : base;
         }),
@@ -908,6 +909,15 @@ export class VscodeAdapter
   }
 
   /**
+   * Get the view column of the currently active text editor.
+   *
+   * @returns ViewColumn of active editor or undefined if no editor is active
+   */
+  getActiveEditorViewColumn(): vscode.ViewColumn | undefined {
+    return this.activeTextEditor?.viewColumn;
+  }
+
+  /**
    * Get all visible text editors.
    *
    * @returns Array of visible text editors
@@ -935,6 +945,23 @@ export class VscodeAdapter
     return this.visibleTextEditors.some(
       (editor) => editor.document.uri.toString() === uriString && editor.viewColumn === viewColumn,
     );
+  }
+
+  /**
+   * Check if a visible editor at the given URI has an active (non-empty) selection.
+   *
+   * When viewColumn is provided, only considers editors in that column.
+   * Editor-only — terminals and AI assistants never have text selections.
+   *
+   * @param uri - Document URI to match against
+   * @param viewColumn - Optional view column to scope the check
+   * @returns true if at least one matching visible editor has a non-empty selection
+   */
+  editorHasActiveSelection(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): boolean {
+    const editors = this.findVisibleEditorsByUri(uri);
+    const relevantEditors =
+      viewColumn !== undefined ? editors.filter((e) => e.viewColumn === viewColumn) : editors;
+    return relevantEditors.length > 0 && relevantEditors.some((e) => !e.selection.isEmpty);
   }
 
   /**

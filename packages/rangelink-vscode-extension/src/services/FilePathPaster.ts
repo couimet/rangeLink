@@ -18,8 +18,8 @@ import {
 } from '../types';
 import { applySmartPadding, formatMessage } from '../utils';
 
-import type { ClipboardRouter } from './ClipboardRouter';
 import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
+import type { SendRouter } from './SendRouter';
 import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
 
 /**
@@ -52,7 +52,7 @@ export class FilePathPaster {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
-    private readonly clipboardRouter: ClipboardRouter,
+    private readonly sendRouter: SendRouter,
     private readonly logger: Logger,
   ) {}
 
@@ -111,8 +111,8 @@ export class FilePathPaster {
       DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
     );
 
-    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-    if (destinationBehavior === undefined) return;
+    const resolved = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolved) return;
 
     const destinationFilePath = quotePath(filePath);
 
@@ -125,23 +125,24 @@ export class FilePathPaster {
       );
     }
 
-    await this.clipboardRouter.copyAndSendToDestination({
+    await this.sendRouter.sendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior,
       },
       content: {
         clipboard: paddedPath,
         send: paddedPath,
         sourceUri: uri,
+        sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),
       },
       strategies: {
-        sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
+        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
-      contentName: formatMessage(MessageCode.CONTENT_NAME_FILE_PATH),
+      contentNameCode: MessageCode.CONTENT_NAME_FILE_PATH,
       fnName: 'pasteFilePath',
+      selfPastePolicy: 'block-on-editor-selection',
+      writeClipboardOnSelfPasteBlock: true,
     });
   }
 }

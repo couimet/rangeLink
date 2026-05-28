@@ -25,6 +25,7 @@ import { registerAllDestinationBuilders } from './destinations/destinationBuilde
 import { DestinationPicker } from './destinations/DestinationPicker';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import { OperationFeedbackProvider } from './feedback/OperationFeedbackProvider';
 import type { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
 import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
@@ -33,10 +34,10 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import {
-  ClipboardRouter,
   FilePathPaster,
   LinkGenerator,
   SelectionValidator,
+  SendRouter,
   TerminalSelectionService,
   TextSelectionPaster,
 } from './services';
@@ -156,11 +157,13 @@ export const createWiringServices = (
   const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   const selectionValidator = new SelectionValidator(ideAdapter, logger);
-  const clipboardRouter = new ClipboardRouter(
+  const feedbackProvider = new OperationFeedbackProvider(ideAdapter);
+  const sendRouter = new SendRouter(
     ideAdapter,
     destinationManager,
     destinationPicker,
     clipboardPreserver,
+    feedbackProvider,
     logger,
   );
   const terminalSelectionService = new TerminalSelectionService(
@@ -168,14 +171,14 @@ export const createWiringServices = (
     destinationManager,
     configReader,
     clipboardPreserver,
-    clipboardRouter,
+    sendRouter,
     logger,
   );
   const filePathPaster = new FilePathPaster(
     ideAdapter,
     destinationManager,
     configReader,
-    clipboardRouter,
+    sendRouter,
     logger,
   );
   const linkGenerator = new LinkGenerator(
@@ -183,14 +186,15 @@ export const createWiringServices = (
     ideAdapter,
     destinationManager,
     configReader,
-    clipboardRouter,
+    sendRouter,
     selectionValidator,
+    feedbackProvider,
     logger,
   );
   const textSelectionPaster = new TextSelectionPaster(
     destinationManager,
     configReader,
-    clipboardRouter,
+    sendRouter,
     selectionValidator,
     logger,
   );

@@ -28,6 +28,19 @@ export interface PasteDestination {
   readonly displayName: string;
 
   /**
+   * Raw resource label without kind prefix formatting.
+   *
+   * This is the unformatted name used as the {name} parameter in i18n display
+   * format strings. Examples: "rl-ctxterm-005-TARGET" for terminals,
+   * "src/file.ts" for editors, "Claude Code Chat" for AI assistants.
+   *
+   * Paired with {@link id} (the DestinationKind), the feedback provider can
+   * assemble a localized display name via the appropriate DESTINATION_*_DISPLAY_FORMAT
+   * message code.
+   */
+  readonly rawLabel: string;
+
+  /**
    * Check if this destination is currently available for pasting
    *
    * Availability criteria vary by destination:
@@ -176,6 +189,28 @@ export interface PasteDestination {
    *          non-document destinations (terminals use processId, AI assistants are singletons)
    */
   getDestinationUri(): vscode.Uri | undefined;
+
+  /**
+   * Get the view column of the destination editor (for text-editor destinations).
+   *
+   * Used for self-paste detection to distinguish same-file different-column
+   * (allowed) from same-file same-column (blocked by policy).
+   *
+   * @returns View column number for text-editor destinations, undefined for
+   *          non-editor destinations
+   */
+  getDestinationViewColumn?(): vscode.ViewColumn | undefined;
+
+  /**
+   * Check if the destination editor has an active (non-empty) selection.
+   *
+   * Only meaningful for text-editor destinations. Used by the `block-on-editor-selection`
+   * self-paste policy to decide whether to allow the operation (no selection → safe to
+   * insert at cursor) or block it (has selection → would overwrite).
+   *
+   * @returns true if the bound editor has a non-empty selection, false otherwise
+   */
+  editorHasActiveSelection?(): boolean;
 
   /**
    * Whether clipboard content should be restored after a paste operation.

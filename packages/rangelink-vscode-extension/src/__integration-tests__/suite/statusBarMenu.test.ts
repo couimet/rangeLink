@@ -4,21 +4,32 @@ import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_TERMINAL_HERE,
+  CMD_GO_TO_RANGELINK,
+  CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
+  assertCommandsAbsent,
+  assertCommandsPresent,
+  assertExecuteCommandLogged,
+  assertInputBoxLogged,
+  assertQuickPickFirstItem,
   assertQuickPickItemsLogged,
-  extractQuickPickItemsLogged,
+  assertQuickPickTrailingItems,
+  buildJumpMenuItem,
   getLogCapture,
+  MENU_ITEM_GO_TO_LINK,
+  MENU_ITEM_SEPARATOR,
+  MENU_ITEM_UNBIND,
+  MENU_ITEM_UNBOUND,
+  MENU_ITEM_VERSION_INFO,
   openAndDismiss,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
-
-const SEPARATOR_KIND = -1;
 
 const APPEARANCE_FN = 'RangeLinkStatusBar.updateStatusBarAppearance';
 
@@ -47,29 +58,13 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-menu-002');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry with items');
-
-    assert.deepStrictEqual(
-      { label: items![0].label, itemKind: items![0].itemKind },
-      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
-    );
-
-    assert.strictEqual(
-      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-      undefined,
-      'Expected no Jump item in unbound state',
-    );
-
-    const lastThree = items!.slice(-3);
-    assert.deepStrictEqual(
-      lastThree.map(({ label, kind, itemKind }) => ({ label, kind, itemKind })),
-      [
-        { label: '', kind: SEPARATOR_KIND, itemKind: undefined },
-        { label: '$(link-external) Go to Link', kind: undefined, itemKind: 'command' },
-        { label: '$(info) Show Version Info', kind: undefined, itemKind: 'command' },
-      ],
-    );
+    assertQuickPickFirstItem(lines, MENU_ITEM_UNBOUND);
+    assertCommandsAbsent(lines, CMD_JUMP_TO_DESTINATION);
+    assertQuickPickTrailingItems(lines, [
+      MENU_ITEM_SEPARATOR,
+      MENU_ITEM_GO_TO_LINK,
+      MENU_ITEM_VERSION_INFO,
+    ]);
 
     ss.log('✓ Unbound menu: no Jump item, correct structure');
   });
@@ -86,34 +81,19 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-menu-003');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry with items');
-
-    assert.deepStrictEqual(
-      { label: items![0].label, itemKind: items![0].itemKind },
-      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
-    );
-
-    assert.strictEqual(
-      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-      undefined,
-      'Expected no Jump item in unbound state',
-    );
-
-    const lastThree = items!.slice(-3);
-    assert.deepStrictEqual(
-      lastThree.map(({ label, kind, itemKind }) => ({ label, kind, itemKind })),
-      [
-        { label: '', kind: SEPARATOR_KIND, itemKind: undefined },
-        { label: '$(link-external) Go to Link', kind: undefined, itemKind: 'command' },
-        { label: '$(info) Show Version Info', kind: undefined, itemKind: 'command' },
-      ],
-    );
+    assertQuickPickFirstItem(lines, MENU_ITEM_UNBOUND);
+    assertCommandsAbsent(lines, CMD_JUMP_TO_DESTINATION);
+    assertQuickPickTrailingItems(lines, [
+      MENU_ITEM_SEPARATOR,
+      MENU_ITEM_GO_TO_LINK,
+      MENU_ITEM_VERSION_INFO,
+    ]);
 
     ss.log('✓ Direct command menu: no Jump item, correct structure');
   });
 
   test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-menu-test")']);
     await ss.createTerminal('rl-menu-test');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -126,15 +106,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
 
     const lines = logCapture.getLinesSince('before-menu-005');
     assertQuickPickItemsLogged(lines, [
-      {
-        label: '$(arrow-right) Jump to Bound Destination',
-        description: '→ Terminal ("rl-menu-test")',
-        itemKind: 'command',
-      },
-      { label: '$(close) Unbind Destination', itemKind: 'command' },
-      { label: '', kind: SEPARATOR_KIND },
-      { label: '$(link-external) Go to Link', itemKind: 'command' },
-      { label: '$(info) Show Version Info', itemKind: 'command' },
+      buildJumpMenuItem('→ Terminal ("rl-menu-test")'),
+      MENU_ITEM_UNBIND,
+      MENU_ITEM_SEPARATOR,
+      MENU_ITEM_GO_TO_LINK,
+      MENU_ITEM_VERSION_INFO,
     ]);
 
     ss.log('✓ Bound-state menu items validated via log capture');
@@ -162,21 +138,16 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-006');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry with items');
-    assert.deepStrictEqual(
-      { label: items![0].label, itemKind: items![0].itemKind },
-      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
-    );
-    assert.strictEqual(
-      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-      undefined,
-      'Expected no Jump item in unbound state',
-    );
+    assertQuickPickFirstItem(lines, MENU_ITEM_UNBOUND);
+    assertCommandsAbsent(lines, CMD_JUMP_TO_DESTINATION);
     ss.log('✓ Unbound menu shows "choose below" info item and no Jump item');
   });
 
-  test('[assisted] status-bar-menu-007: R-M menu Unbind Destination item unbinds the destination when selected', async () => {
+  test('status-bar-menu-007: R-M menu reflects bound and unbound state', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sbm-007")',
+      '✓ RangeLink: Unbound from Terminal ("rl-sbm-007")',
+    ]);
     await ss.createTerminal('rl-sbm-007');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -184,56 +155,33 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-007');
 
-    await waitForHuman(
-      'status-bar-menu-007',
-      'Destination is bound to "rl-sbm-007". Open the R-M menu (Cmd+R Cmd+M), verify Jump and Unbind are present, select "$(close) Unbind Destination", then click Cancel.',
-      [
-        '1. Press Cmd+R Cmd+M to open the R-M menu',
-        '2. Confirm "$(arrow-right) Jump to Bound Destination" shows "rl-sbm-007"',
-        '3. Confirm "$(close) Unbind Destination" is visible',
-        '4. Select "$(close) Unbind Destination"',
-        '5. Click Cancel on this notification',
-      ],
-    );
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const lines = logCapture.getLinesSince('before-007');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry with items');
-    assert.ok(
-      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-      'Expected Jump item present in bound state',
-    );
-    assert.ok(
-      items!.find((i) => i.label === '$(close) Unbind Destination'),
-      'Expected Unbind item present in bound state',
-    );
-    const commandSelectedLog = lines.find(
-      (l) => l.includes('Command item selected') && l.includes('Unbind Destination'),
-    );
-    assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Unbind Destination');
+    assertQuickPickItemsLogged(lines, [
+      buildJumpMenuItem('→ Terminal ("rl-sbm-007")'),
+      MENU_ITEM_UNBIND,
+      MENU_ITEM_SEPARATOR,
+      MENU_ITEM_GO_TO_LINK,
+      MENU_ITEM_VERSION_INFO,
+    ]);
+
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+    await ss.settle();
 
     logCapture.mark('after-unbind-007');
-    await waitForHuman(
-      'status-bar-menu-007',
-      'Re-open the R-M menu (Cmd+R Cmd+M), verify "Jump to Bound Destination" is gone, then press Escape and click Cancel.',
-      [
-        '1. Press Cmd+R Cmd+M to open the R-M menu',
-        '2. Confirm "$(arrow-right) Jump to Bound Destination" is NOT present',
-        '3. Press Escape to dismiss, then click Cancel',
-      ],
-    );
+
+    await openAndDismiss(CMD_OPEN_STATUS_BAR_MENU);
 
     const postLines = logCapture.getLinesSince('after-unbind-007');
-    const postItems = extractQuickPickItemsLogged(postLines);
-    assert.ok(postItems, 'Expected post-unbind showQuickPick log entry with items');
-    assert.strictEqual(
-      postItems!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
-      undefined,
-      'Expected no Jump item after unbind',
-    );
-    ss.log(
-      '✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent',
-    );
+    assertQuickPickFirstItem(postLines, MENU_ITEM_UNBOUND);
+    assertCommandsAbsent(postLines, CMD_JUMP_TO_DESTINATION);
+    assertQuickPickTrailingItems(postLines, [
+      MENU_ITEM_SEPARATOR,
+      MENU_ITEM_GO_TO_LINK,
+      MENU_ITEM_VERSION_INFO,
+    ]);
+    ss.log('✓ Bound menu showed Jump + Unbind; unbind removed Jump item');
   });
 
   test('[assisted] status-bar-menu-008: R-M menu Go to Link item opens the R-G input box', async () => {
@@ -252,20 +200,12 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     );
 
     const lines = logCapture.getLinesSince('before-008');
-    const items = extractQuickPickItemsLogged(lines);
-    assert.ok(items, 'Expected showQuickPick log entry with items');
-    assert.ok(
-      items!.find((i) => i.label === '$(link-external) Go to Link'),
-      'Expected "Go to Link" item in menu',
-    );
-    const commandSelectedLog = lines.find(
-      (l) => l.includes('Command item selected') && l.includes('Go to Link'),
-    );
-    assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Go to Link');
-    const inputBoxLog = lines.find(
-      (l) => l.includes('GoToRangeLinkCommand.execute') && l.includes('Showing input box'),
-    );
-    assert.ok(inputBoxLog, 'Expected GoToRangeLinkCommand to log input box presentation');
+    assertCommandsPresent(lines, CMD_GO_TO_RANGELINK);
+    assertExecuteCommandLogged(lines, CMD_GO_TO_RANGELINK);
+    assertInputBoxLogged(lines, {
+      prompt: 'Enter RangeLink to navigate',
+      placeHolder: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
+    });
     ss.log('✓ R-M menu "Go to Link" dispatched the R-G command and input box was shown');
   });
 
@@ -309,6 +249,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   // Status bar appearance tests (bind/unbind → tooltip + color)
 
   test('status-bar-appearance-001: status bar appearance updates to bound state after bind', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sba-001")']);
     await ss.createTerminal('rl-sba-001');
 
     const logCapture = getLogCapture();
@@ -329,6 +270,10 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   });
 
   test('status-bar-appearance-002: status bar appearance updates to unbound state after unbind', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sba-002")',
+      '✓ RangeLink: Unbound from Terminal ("rl-sba-002")',
+    ]);
     await ss.createTerminal('rl-sba-002');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -350,6 +295,10 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   });
 
   test('[assisted] status-bar-appearance-003: status bar tooltip and color reflect bind state', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sba-003")',
+      '✓ RangeLink: Unbound from Terminal ("rl-sba-003")',
+    ]);
     const terminalName = 'rl-sba-003';
     await ss.createTerminal(terminalName);
 

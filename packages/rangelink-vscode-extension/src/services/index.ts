@@ -1,7 +1,7 @@
-export { ClipboardRouter } from './ClipboardRouter';
-export { FilePathPaster, getReferencePath } from './FilePathPaster';
-export { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
-export { LinkGenerator } from './LinkGenerator';
-export { SelectionValidator } from './SelectionValidator';
-export { TerminalSelectionService } from './TerminalSelectionService';
-export { TextSelectionPaster } from './TextSelectionPaster';
+export * from './FilePathPaster';
+export * from './handleDirtyBufferWarning';
+export * from './LinkGenerator';
+export * from './SelectionValidator';
+export * from './SendRouter';
+export * from './TerminalSelectionService';
+export * from './TextSelectionPaster';

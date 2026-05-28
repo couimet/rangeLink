@@ -3,35 +3,10 @@ import assert from 'node:assert';
 import type { LoggingContext } from 'barebone-logger';
 
 /**
- * Toast types mapped to the VscodeAdapter function names that appear in log JSON context.
- * Status bar messages are NOT toasts — use assertStatusBarMsgLogged() for those.
- */
-const TOAST_FN_MAP = {
-  info: 'VscodeAdapter.showInformationMessage',
-  warning: 'VscodeAdapter.showWarningMessage',
-  error: 'VscodeAdapter.showErrorMessage',
-} as const;
-
-const STATUS_BAR_FNS = [
-  'VscodeAdapter.setStatusBarMessage',
-  'VscodeAdapter.setSuccessfulStatusBarMessage',
-];
-
-type ToastType = keyof typeof TOAST_FN_MAP;
-
-interface MessageAssertionOptions {
-  message: string;
-}
-
-interface ToastAssertionOptions extends MessageAssertionOptions {
-  type: ToastType;
-}
-
-/**
  * Parse a log line's JSON context block.
  * Log format: `[LEVEL] {"fn":"...","message":"...",...} Human-readable text`
  */
-const parseLogContext = (line: string): LoggingContext | undefined => {
+export const parseLogContext = (line: string): LoggingContext | undefined => {
   const jsonStart = line.indexOf('{');
   const jsonEnd = line.lastIndexOf('}');
   if (jsonStart === -1 || jsonEnd === -1) {
@@ -46,55 +21,6 @@ const parseLogContext = (line: string): LoggingContext | undefined => {
     return undefined;
   }
   return undefined;
-};
-
-const findLogEntry = (lines: string[], expectedFns: string[], expectedMessage: string): boolean =>
-  lines.some((line) => {
-    const ctx = parseLogContext(line);
-    return ctx !== undefined && expectedFns.includes(ctx.fn) && ctx.message === expectedMessage;
-  });
-
-/**
- * Assert that a specific toast (info/warning/error) was logged.
- */
-export const assertToastLogged = (lines: string[], opts: ToastAssertionOptions): void => {
-  assert.ok(
-    findLogEntry(lines, [TOAST_FN_MAP[opts.type]], opts.message),
-    `Expected ${opts.type} toast with message "${opts.message}" but it was not found in ${lines.length} log lines`,
-  );
-};
-
-/**
- * Assert that a specific toast was NOT logged.
- */
-export const assertNoToastLogged = (lines: string[], opts: ToastAssertionOptions): void => {
-  assert.ok(
-    !findLogEntry(lines, [TOAST_FN_MAP[opts.type]], opts.message),
-    `Expected ${opts.type} toast with message "${opts.message}" to NOT be logged, but it was found`,
-  );
-};
-
-/**
- * Assert that a specific status bar message was logged.
- */
-export const assertStatusBarMsgLogged = (lines: string[], opts: MessageAssertionOptions): void => {
-  assert.ok(
-    findLogEntry(lines, STATUS_BAR_FNS, opts.message),
-    `Expected status bar message "${opts.message}" but it was not found in ${lines.length} log lines`,
-  );
-};
-
-/**
- * Assert that a specific status bar message was NOT logged.
- */
-export const assertNoStatusBarMsgLogged = (
-  lines: string[],
-  opts: MessageAssertionOptions,
-): void => {
-  assert.ok(
-    !findLogEntry(lines, STATUS_BAR_FNS, opts.message),
-    `Expected status bar message "${opts.message}" to NOT be logged, but it was found`,
-  );
 };
 
 const INPUT_BOX_FN = 'VscodeAdapter.showInputBox';
@@ -135,11 +61,13 @@ export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOpt
 const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
 
 interface QuickPickItemExpectation {
-  label: string;
+  label?: string;
   description?: string;
   detail?: string;
   kind?: number;
   itemKind?: string;
+  command?: string;
+  displayName?: string;
 }
 
 /**
@@ -184,6 +112,16 @@ export const assertQuickPickItemsLogged = (
     }
   }
 };
+
+/**
+ * Filter lines to only those that are showQuickPick log entries with items.
+ * Use instead of raw `VscodeAdapter.showQuickPick` substring matching.
+ */
+export const getQuickPickLines = (lines: string[]): string[] =>
+  lines.filter((line) => {
+    const ctx = parseLogContext(line);
+    return ctx?.fn === QUICK_PICK_FN && Array.isArray(ctx.items);
+  });
 
 /**
  * Parse the items array from a single showQuickPick log line.
@@ -318,6 +256,21 @@ export const assertNoSetContextLogged = (
   );
 };
 
+/**
+ * Assert that `VscodeAdapter.executeCommand` was logged for the given command ID.
+ * Asserts at the adapter boundary rather than tying to internal routing details.
+ */
+export const assertExecuteCommandLogged = (lines: string[], command: string): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as (LoggingContext & { command?: unknown }) | undefined;
+    return ctx?.fn === EXECUTE_COMMAND_FN && ctx.command === command;
+  });
+  assert.ok(
+    found,
+    `Expected ${EXECUTE_COMMAND_FN} log with command="${command}" but it was not found in ${lines.length} log lines`,
+  );
+};
+
 const TERMINAL_PASTE_FN = 'VscodeAdapter.pasteTextToTerminalViaClipboard';
 
 interface TerminalPasteAssertionOptions {
@@ -375,13 +328,13 @@ export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void 
 const PASTE_TO_AI_ASSISTANT_FN = 'VscodeAdapter.pasteClipboardToAiAssistant';
 
 interface PasteCommandAssertionOptions {
-  command: string;
+  command?: string;
 }
 
 /**
- * Assert that `pasteClipboardToAiAssistant` reported a successful paste via the named command.
- * Matches on the `command` field of the success log, which identifies which entry of
- * the `AI_ASSISTANT_PASTE_COMMANDS` fallback chain ultimately delivered the paste.
+ * Assert that `pasteClipboardToAiAssistant` reported a successful paste.
+ * When `opts.command` is provided, also asserts which entry of the
+ * `AI_ASSISTANT_PASTE_COMMANDS` fallback chain delivered the paste.
  */
 export const assertPasteCommandLogged = (
   lines: string[],
@@ -389,16 +342,121 @@ export const assertPasteCommandLogged = (
 ): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line) as (LoggingContext & { command?: unknown }) | undefined;
-    return (
-      ctx?.fn === PASTE_TO_AI_ASSISTANT_FN &&
-      ctx.message === 'Clipboard paste succeeded' &&
-      ctx.command === opts.command
-    );
+    if (ctx?.fn !== PASTE_TO_AI_ASSISTANT_FN || ctx.message !== 'Clipboard paste succeeded') {
+      return false;
+    }
+    if (opts.command !== undefined && ctx.command !== opts.command) return false;
+    return true;
   });
+  const cmdSuffix = opts.command !== undefined ? ` with command="${opts.command}"` : '';
   assert.ok(
     found,
-    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log with command="${opts.command}" but it was not found in ${lines.length} log lines`,
+    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log${cmdSuffix} but it was not found in ${lines.length} log lines`,
   );
+};
+
+export const assertCommandsPresent = (
+  lines: string[],
+  command: string,
+  ...moreCommands: string[]
+): void => {
+  const allCommands = [command, ...moreCommands];
+  const items = extractQuickPickItemsLogged(lines);
+  assert.ok(
+    items !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+  for (const cmd of allCommands) {
+    assert.ok(
+      items!.some((item) => item.command === cmd),
+      `Expected command "${cmd}" to be present in QuickPick items but it was not found`,
+    );
+  }
+};
+
+/**
+ * Assert that the first QuickPick item matches the expected shape exactly.
+ * Use for position-dependent checks where ordering matters (e.g. "the first
+ * item should be the unbound info item").
+ */
+export const assertQuickPickFirstItem = (
+  lines: string[],
+  expected: QuickPickItemExpectation,
+): void => {
+  const items = extractQuickPickItemsLogged(lines);
+  assert.ok(
+    items !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+  assert.deepStrictEqual(items[0], expected);
+};
+
+/**
+ * Assert that the last N QuickPick items match the expected list in exact order.
+ * Use when the middle of the menu varies by environment (e.g. destination
+ * picker items) but the trailing items are known and their order matters.
+ */
+export const assertQuickPickTrailingItems = (
+  lines: string[],
+  expectedItems: QuickPickItemExpectation[],
+): void => {
+  const items = extractQuickPickItemsLogged(lines);
+  assert.ok(
+    items !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+  assert.deepStrictEqual(items.slice(-expectedItems.length), expectedItems);
+};
+
+/**
+ * Assert that the QuickPick contains items matching every field in each
+ * given expectation. Only the fields present on the expectation are checked —
+ * items may carry additional fields (itemCount, options, test-status metadata
+ * from projectTestStatusFields) that are ignored. This makes it a partial match
+ * rather than a full deepStrictEqual.
+ *
+ * Field comparison uses strict equality (===). All fields on
+ * QuickPickItemExpectation are primitives (string, number, undefined), so this
+ * is equivalent to deepStrictEqual per field.
+ */
+export const assertQuickPickContains = (
+  lines: string[],
+  first: QuickPickItemExpectation,
+  ...more: QuickPickItemExpectation[]
+): void => {
+  const items = extractQuickPickItemsLogged(lines);
+  assert.ok(
+    items !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+  for (const expected of [first, ...more]) {
+    const match = items.some((item) =>
+      Object.entries(expected).every(
+        ([key, value]) => (item as Record<string, unknown>)[key] === value,
+      ),
+    );
+    assert.ok(match, `Expected picker to contain item matching ${JSON.stringify(expected)}`);
+  }
+};
+
+export const assertCommandsAbsent = (
+  lines: string[],
+  command: string,
+  ...moreCommands: string[]
+): void => {
+  const allCommands = [command, ...moreCommands];
+  const items = extractQuickPickItemsLogged(lines);
+  assert.ok(
+    items !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+  for (const cmd of allCommands) {
+    assert.strictEqual(
+      items!.find((item) => item.command === cmd),
+      undefined,
+      `Expected command "${cmd}" to be absent from QuickPick items but it was found`,
+    );
+  }
 };
 
 const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
@@ -424,5 +482,16 @@ export const assertClipboardWriteLogged = (
   assert.ok(
     found,
     `Expected ${CLIPBOARD_WRITE_FN} log with textLength=${opts.textLength} but it was not found in ${lines.length} log lines`,
+  );
+};
+
+/**
+ * Assert that NO `writeTextToClipboard` log was emitted.
+ * Use to prove clipboard was not touched during error paths.
+ */
+export const assertNoClipboardWriteLogged = (lines: string[]): void => {
+  assert.ok(
+    !lines.some((line) => parseLogContext(line)?.fn === CLIPBOARD_WRITE_FN),
+    `Expected no ${CLIPBOARD_WRITE_FN} log but one was found in ${lines.length} log lines`,
   );
 };

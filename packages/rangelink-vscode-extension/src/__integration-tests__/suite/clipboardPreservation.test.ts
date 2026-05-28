@@ -1,11 +1,14 @@
 import assert from 'node:assert';
+import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_COPY_LINK_ONLY_RELATIVE,
   CMD_COPY_LINK_RELATIVE,
+  CMD_COPY_PORTABLE_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
 } from '../../constants/commandIds';
@@ -41,6 +44,10 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: File path sent to Terminal ("rl-clipboard-test")',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
@@ -56,6 +63,10 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-006: R-L with preserve=never leaves clipboard with the generated link', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: RangeLink sent to Terminal ("rl-clipboard-test")',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -82,15 +93,19 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     const logCapture = getLogCapture();
-    logCapture.mark('before-008a');
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    logCapture.mark('before-008');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
     await ss.settle();
-    const lines = logCapture.getLinesSince('before-008a');
+    const lines = logCapture.getLinesSince('before-008');
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with preserve=always');
@@ -101,12 +116,16 @@ standardSuite('Clipboard Preservation', (ss) => {
     );
   });
 
-  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
+  test('clipboard-preservation-019: R-C writes link to clipboard with default preserve setting', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
     const logCapture = getLogCapture();
-    logCapture.mark('before-008b');
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    logCapture.mark('before-019');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
     await ss.settle();
-    const lines = logCapture.getLinesSince('before-008b');
+    const lines = logCapture.getLinesSince('before-019');
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with default preserve');
@@ -117,16 +136,20 @@ standardSuite('Clipboard Preservation', (ss) => {
     );
   });
 
-  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
+  test('clipboard-preservation-020: R-C writes link to clipboard with preserve=never', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     const logCapture = getLogCapture();
-    logCapture.mark('before-008c');
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    logCapture.mark('before-020');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
     await ss.settle();
-    const lines = logCapture.getLinesSince('before-008c');
+    const lines = logCapture.getLinesSince('before-020');
     const generatedLink = extractGeneratedLink(lines);
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
     const clipboard = await assertClipboardChanged('R-C with preserve=never');
@@ -136,10 +159,32 @@ standardSuite('Clipboard Preservation', (ss) => {
       `Expected clipboard to equal generated link, got: ${clipboard}`,
     );
   });
+
+  test('clipboard-preservation-021: R-L portable link sent to terminal shows portable content type in status bar', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
+      '✓ RangeLink: Portable RangeLink sent to Terminal ("rl-clipboard-test")',
+    ]);
+    const logCapture = getLogCapture();
+    logCapture.mark('before-021');
+    await vscode.commands.executeCommand(CMD_COPY_PORTABLE_LINK_RELATIVE);
+    await ss.settle();
+    const lines = logCapture.getLinesSince('before-021');
+    const generatedLink = extractGeneratedLink(lines);
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    await assertClipboardRestored(
+      'clipboard-preservation-021: terminal send — clipboard must be restored after paste',
+    );
+    ss.log('✓ Portable RangeLink content type shown in status bar, clipboard preserved');
+  });
 });
 
 standardSuite('Clipboard Preservation — Assisted', (ss) => {
   test('clipboard-preservation-001: always mode — R-L to terminal restores clipboard', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("cbp-001-dest")',
+      '✓ RangeLink: RangeLink sent to Terminal ("cbp-001-dest")',
+    ]);
     const { uri: fileUri } = ss.createContentFile('cbp-001', 10, (i) => `line ${i + 1} content`);
 
     const capturing = await ss.createAndBindCapturingTerminal('cbp-001-dest');
@@ -172,6 +217,11 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const PHRASE = 'hello world cbp-002';
 
     const fileUri = ss.createWorkspaceFile('cbp-002', '');
+    const destBasename = path.basename(fileUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
+    ]);
 
     await ss.openEditor(fileUri);
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
@@ -206,6 +256,10 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
   });
 
   test('clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+    ]);
     const { uri: fileUri } = ss.createContentFile('cbp-004', 10, (i) => `line ${i + 1} content`);
 
     const relPath = vscode.workspace.asRelativePath(fileUri);
@@ -243,6 +297,10 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
   });
 
   test('clipboard-preservation-005: always mode — terminal paste (fresh bind) restores clipboard', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("cbp-005-dest")',
+      '✓ RangeLink: RangeLink sent to Terminal ("cbp-005-dest")',
+    ]);
     const { uri: fileUri } = ss.createContentFile('cbp-005', 10, (i) => `entry ${i + 1}`);
 
     const capturing = await ss.createAndBindCapturingTerminal('cbp-005-dest');
@@ -284,6 +342,11 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
+    const destBasename = path.basename(fileUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
+    ]);
     const srcTerminal = await ss.createTerminal('cbp-007-src');
     srcTerminal.show(true);
     await ss.settle();
@@ -341,6 +404,14 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await ss.settle();
     await writeClipboardSentinel();
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
+    ]);
+
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension-focus-fail',
     });
@@ -359,28 +430,67 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
       'Expected "Focus failed, cannot paste link" log — the focus command should have thrown',
     );
 
-    const warningToastLog = lines010.find(
-      (line) =>
-        line.includes('VscodeAdapter.showWarningMessage') && line.toLowerCase().includes('paste'),
-    );
-    assert.ok(
-      warningToastLog,
-      'Expected warning toast log instructing manual paste after focus failure',
-    );
-
     const clipboardContent = await assertClipboardChanged(
       'clipboard-preservation-010: focus-fail — link must stay in clipboard',
     );
-    const generatedLink = extractGeneratedLink(lines010);
+    const generatedLink = extractGeneratedLink(lines010, { smartPad: 'both' });
     assert.ok(generatedLink, 'Expected "Generated link:" log line');
-    const PADDED_GENERATED_LINK = ` ${generatedLink} `;
     assert.strictEqual(
       clipboardContent,
-      PADDED_GENERATED_LINK,
-      `Expected clipboard to equal "${PADDED_GENERATED_LINK}", got: ${JSON.stringify(clipboardContent)}`,
+      generatedLink,
+      `Expected clipboard to equal "${generatedLink}", got: ${JSON.stringify(clipboardContent)}`,
     );
     ss.log(
       '✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste',
+    );
+  });
+
+  test('clipboard-preservation-022: focus command failure preserves portable link in clipboard for manual paste with portable content type in UI', async () => {
+    const { uri: fileUri } = ss.createContentFile('cbp-022', 5, (i) => `line ${i + 1}`);
+
+    const editor = await ss.openEditor(fileUri);
+    editor.selection = new vscode.Selection(0, 0, 3, 0);
+    await ss.settle();
+    await writeClipboardSentinel();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
+      '✓ RangeLink: Portable RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
+    ]);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-focus-fail',
+    });
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-022');
+
+    await vscode.commands.executeCommand(CMD_COPY_PORTABLE_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines022 = logCapture.getLinesSince('before-022');
+    const focusFailLog = lines022.find((line) => line.includes('Focus failed, cannot paste link'));
+    assert.ok(
+      focusFailLog,
+      'Expected "Focus failed, cannot paste link" log — the focus command should have thrown',
+    );
+
+    const clipboardContent = await assertClipboardChanged(
+      'clipboard-preservation-022: focus-fail — portable link must stay in clipboard',
+    );
+    const generatedLink = extractGeneratedLink(lines022, { smartPad: 'both' });
+    assert.ok(generatedLink, 'Expected "Generated link:" log line');
+    assert.strictEqual(
+      clipboardContent,
+      generatedLink,
+      `Expected clipboard to equal "${generatedLink}", got: ${JSON.stringify(clipboardContent)}`,
+    );
+    ss.log(
+      '✓ Clipboard not restored after focus failure — portable link stays in clipboard for manual paste. Portable content type shown in status bar and toast.',
     );
   });
 });

@@ -6,18 +6,18 @@ import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinatio
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
 import type { BindOptions, DestinationPickerResult } from '../../types';
-import { ExtensionResult, MessageCode } from '../../types';
+import { ExtensionResult } from '../../types';
 import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
 
 describe('JumpToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
-    expect(messagesEn[MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]).toBe(
+    expect(messagesEn['INFO_JUMP_QUICK_PICK_PLACEHOLDER']).toBe(
       'RangeLink: No destination bound. Choose destination to jump to',
     );
   });
 
   it('no-destinations message explains how to resolve the situation', () => {
-    expect(messagesEn[MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]).toBe(
+    expect(messagesEn['INFO_JUMP_NO_DESTINATIONS_AVAILABLE']).toBe(
       'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
     );
   });

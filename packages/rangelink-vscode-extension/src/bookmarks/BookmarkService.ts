@@ -9,7 +9,7 @@ import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { ExtensionResult } from '../types';
+import { type ExtensionResult } from '../types';
 
 import type { BookmarksStore } from './BookmarksStore';
 import type { Bookmark, BookmarkId, BookmarkInput } from './types';
@@ -106,10 +106,7 @@ export class BookmarkService {
     await this.bookmarksStore.recordAccess(bookmarkId);
     await this.ideAdapter.writeTextToClipboard(bookmark.link);
 
-    await this.destinationManager.sendTextToDestination(
-      bookmark.link,
-      `Bookmark pasted: ${bookmark.label}`,
-    );
+    await this.destinationManager.sendTextToDestination(bookmark.link);
     this.logger.debug({ ...logCtx, bookmark }, `Sent bookmark to destination: ${bookmark.label}`);
   }
 }

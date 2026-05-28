@@ -75,9 +75,9 @@ test_cases:
 
   - id: status-bar-menu-007
     feature: 'R-M Status Bar Menu'
-    scenario: 'R-M menu shows Unbind Destination when a destination is bound'
-    expected_result: "The destination is unbound. A notification confirms. R-M menu no longer shows 'Jump to Bound Destination' next time."
-    automated: assisted
+    scenario: 'R-M menu reflects bound and unbound state'
+    expected_result: 'Menu shows Jump and Unbind when bound; after programmatic unbind, Jump is absent.'
+    automated: true
 
   - id: status-bar-menu-008
     feature: 'R-M Status Bar Menu'
@@ -99,13 +99,13 @@ test_cases:
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting a terminal destination binds it and shows success toast'
     expected_result: "The terminal is bound. A success toast appears (e.g., 'Bound to Terminal')."
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-005
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting a text editor destination binds it and shows success toast'
     expected_result: 'The selected file becomes the bound destination. Success toast appears.'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-006
     labels:
@@ -113,13 +113,13 @@ test_cases:
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting an AI assistant destination binds it and shows success toast'
     expected_result: 'AI assistant is now the bound destination. Success toast appears.'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-007
     feature: 'R-D Bind to Destination'
     scenario: 'When already bound, destination picker shows smart-bind confirmation dialog'
     expected_result: "A confirmation dialog appears showing the current binding name and the proposed new binding name, with 'Yes, replace' and 'No, keep current' options."
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-008
     feature: 'R-D Bind to Destination'
@@ -145,7 +145,7 @@ test_cases:
     feature: 'R-D Bind to Destination'
     scenario: 'Re-binding same AI assistant shows already-bound message instead of confirmation dialog'
     expected_result: 'No confirmation dialog appears. An "already bound" info notification is shown. Binding is unchanged.'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-012
     labels:
@@ -165,13 +165,13 @@ test_cases:
     feature: 'R-D Bind to Destination'
     scenario: 'Jump to Bound Destination (R-J) with no destination bound opens the destination picker'
     expected_result: 'Destination picker opens so the user can bind a destination first.'
-    automated: assisted
+    automated: true
 
   - id: bind-to-destination-015
     feature: 'R-D Bind to Destination'
     scenario: 'Binding a text editor in a single tab group (no split) succeeds'
     expected_result: 'The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 3 — Terminal Picker
@@ -499,7 +499,7 @@ test_cases:
     feature: 'Clipboard Preservation — AI Assistant Lifecycle'
     scenario: 'AI assistant focus/paste command throws: RangeLink stays on clipboard for manual paste'
     expected_result: 'RangeLink remains on clipboard (prior content NOT restored). isClipboardRestorationApplicable returns false — user must paste manually.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-018
     labels:
@@ -508,6 +508,38 @@ test_cases:
     scenario: 'Two rapid R-L operations to the same AI assistant — last write wins, prior content restored once'
     expected_result: 'Both RangeLinks are delivered. Prior clipboard content is restored after the last operation completes. No clipboard corruption from overlapping writes.'
     automated: assisted
+
+  - id: clipboard-preservation-019
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation'
+    scenario: 'R-C (Copy RangeLink) writes link to clipboard with default preserve setting'
+    expected_result: 'Clipboard contains the RangeLink. R-C is clipboard-only; preserve does not apply regardless of the setting.'
+    automated: true
+
+  - id: clipboard-preservation-020
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation'
+    scenario: 'R-C (Copy RangeLink) writes link to clipboard with preserve=never'
+    expected_result: 'Clipboard contains the RangeLink. R-C is clipboard-only; preserve does not apply regardless of the setting.'
+    automated: true
+
+  - id: clipboard-preservation-021
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation'
+    scenario: 'R-L (Portable RangeLink) sends portable link to terminal and shows portable content type in status bar'
+    expected_result: 'Status bar shows "Portable RangeLink sent to Terminal" confirming content type name propagation. Clipboard is preserved (restored after send).'
+    automated: true
+
+  - id: clipboard-preservation-022
+    labels:
+      - clipboard
+    feature: 'Clipboard Preservation — AI Assistant Lifecycle'
+    scenario: 'Focus failure preserves portable link in clipboard for manual paste, status bar and toast show portable content type'
+    expected_result: 'Status bar shows "Portable RangeLink copied to clipboard" and toast warns "Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use." Clipboard contains the portable link.'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
@@ -583,8 +615,8 @@ test_cases:
     labels:
       - clipboard
     feature: 'Send File Path'
-    scenario: 'Self-paste: sending path of the currently active file to that same file shows info + clipboard copy'
-    expected_result: 'Info notification appears. Clipboard contains path. File not modified.'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
   - id: send-file-path-009
@@ -593,7 +625,7 @@ test_cases:
     feature: 'Send File Path'
     scenario: 'Unbound: R-F opens destination picker to bind before sending'
     expected_result: 'Destination picker opens. Selecting a destination binds it and sends the file path.'
-    automated: assisted
+    automated: true
 
   - id: send-file-path-010
     labels:
@@ -617,6 +649,30 @@ test_cases:
     feature: 'Send File Path'
     scenario: 'Bound text editor hidden behind another tab — paste still lands in bound editor'
     expected_result: 'Bound editor is surfaced automatically and receives the file path. Source editor had focus; paste still landed in bound editor.'
+    automated: true
+
+  - id: send-file-path-013
+    labels:
+      - clipboard
+    feature: 'Send File Path'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
+    automated: true
+
+  - id: send-file-path-014
+    labels:
+      - clipboard
+    feature: 'Send File Path'
+    scenario: 'R-F blocked when bound editor has active selection'
+    expected_result: 'Toast warns. Status bar "File path copied to clipboard". Clipboard has path. Editor unchanged.'
+    automated: true
+
+  - id: send-file-path-015
+    labels:
+      - clipboard
+    feature: 'Send File Path'
+    scenario: 'R-F to same file in different view column allowed'
+    expected_result: 'File path inserted in destination column.'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -765,6 +821,30 @@ test_cases:
     expected_result: "'Send RangeLink', 'Send RangeLink (Absolute)', 'Send Portable Link', 'Send Portable Link (Absolute)', and 'Send Selected Text' are NOT visible. File-path and Bind/Unbind items remain visible."
     automated: assisted
 
+  - id: context-menus-editor-content-012
+    labels:
+      - clipboard
+    feature: 'Context Menus — Editor Content'
+    scenario: 'R-V to same file (same column) blocked — toast shown, clipboard untouched, editor unchanged'
+    expected_result: 'Toast warns. Clipboard untouched (sentinel remains). Editor unchanged.'
+    automated: true
+
+  - id: context-menus-editor-content-013
+    labels:
+      - clipboard
+    feature: 'Context Menus — Editor Content'
+    scenario: 'R-V multi-selection to same file blocked — toast shown, clipboard untouched'
+    expected_result: 'Toast warns. Clipboard untouched. Editor unchanged. Selection count logged.'
+    automated: true
+
+  - id: context-menus-editor-content-014
+    labels:
+      - clipboard
+    feature: 'Context Menus — Editor Content'
+    scenario: 'R-V to same file in different view column allowed'
+    expected_result: 'Selected text inserted in destination column.'
+    automated: true
+
   - id: context-menus-terminal-001
     labels:
       - clipboard
@@ -832,12 +912,6 @@ test_cases:
   # ---------------------------------------------------------------------------
   # Section 8 — Dirty Buffer Warning
   # ---------------------------------------------------------------------------
-
-  - id: dirty-buffer-warning-001
-    feature: 'Dirty Buffer Warning'
-    scenario: 'Generating a link from a file with unsaved changes shows the dirty buffer dialog'
-    expected_result: 'A warning dialog appears before the RangeLink is generated. Dialog references unsaved changes.'
-    automated: assisted
 
   - id: dirty-buffer-warning-002
     feature: 'Dirty Buffer Warning'
@@ -1122,13 +1196,13 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'Invalid link format shows error message'
     expected_result: "An error notification appears (e.g., 'Invalid RangeLink format'). No navigation occurs."
-    automated: assisted
+    automated: true
 
   - id: go-to-link-006
     feature: 'R-G Go to Link'
     scenario: 'Empty input dismisses with error notification'
     expected_result: "The input box closes. An error notification appears (e.g., 'Please enter a link to navigate'). No navigation occurs."
-    automated: assisted
+    automated: true
 
   - id: go-to-link-007
     feature: 'R-G Go to Link'
@@ -1140,13 +1214,13 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'RangeLink: Go to Link available in Command Palette'
     expected_result: 'Same input box opens as the R-G keybinding.'
-    automated: assisted
+    automated: true
 
   - id: go-to-link-009
     feature: 'R-G Go to Link'
     scenario: 'Go to Link item in R-M menu opens the same input box'
     expected_result: 'The R-G input box opens. Behavior is identical to the keybinding.'
-    automated: assisted
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 11 — R-U Unbind
@@ -1427,7 +1501,15 @@ test_cases:
     feature: 'Text Editor Destination'
     scenario: 'Self-paste: R-L to the same file that is bound as destination copies link to clipboard and shows info message'
     expected_result: 'Info notification appears: "RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links." File is not modified. Clipboard contains the RangeLink.'
-    automated: assisted
+    automated: true
+
+  - id: text-editor-destination-002
+    labels:
+      - clipboard
+    feature: 'Text Editor Destination'
+    scenario: 'R-L cross-column: link pasted when source and destination are in different view columns'
+    expected_result: 'Link pasted in destination column. Status bar confirms send.'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Clickable File Paths (issues/253)
@@ -1564,7 +1646,7 @@ test_cases:
     feature: 'Smart Padding — Single-Write Architecture'
     scenario: 'pasteLink=both: RangeLink sent to AI assistant has leading and trailing space'
     expected_result: 'The AI assistant chat input contains the RangeLink with leading and trailing spaces applied by applySmartPadding.'
-    automated: assisted
+    automated: true
 
   - id: smart-padding-010
     labels:
@@ -1881,6 +1963,14 @@ test_cases:
     feature: 'Custom AI Assistants — Cold Start'
     scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
     expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
+    automated: true
+
+  - id: custom-ai-assistant-018
+    labels:
+      - clipboard
+    feature: 'Custom AI Assistants — Copilot Override'
+    scenario: 'Copilot Chat override routes content to Dummy AI via setup-integration-test-settings'
+    expected_result: 'Bound to GitHub Copilot Chat, content arrives in Dummy AI Tier 1 textarea; Tier 2 is empty (no cross-contamination)'
     automated: true
 
   # ---------------------------------------------------------------------------

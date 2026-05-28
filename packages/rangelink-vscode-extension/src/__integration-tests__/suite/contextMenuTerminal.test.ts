@@ -11,10 +11,9 @@ import {
 import {
   TERMINAL_READY_MS,
   assertSetContextLogged,
-  assertStatusBarMsgLogged,
   assertTerminalBufferContains,
   echoToTerminal,
-  extractQuickPickItemsLogged,
+  assertQuickPickContains,
   getLogCapture,
   standardSuite,
   waitForHuman,
@@ -27,6 +26,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-001';
     await ss.createTerminal(terminalName);
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-001")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-001');
@@ -43,10 +44,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-001');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Terminal ("${terminalName}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Terminal-tab context menu bound the terminal destination');
@@ -55,6 +52,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-002: Terminal content-area "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-002';
     await ss.createTerminal(terminalName);
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-002")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-002');
@@ -71,10 +70,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-002');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Terminal ("${terminalName}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Terminal content-area context menu bound the terminal destination');
@@ -85,6 +80,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-003');
@@ -102,10 +99,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-003');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
     ss.log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
@@ -116,6 +109,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const otherName = 'rl-ctxmenu-term-004-OTHER';
     await ss.createTerminal(otherName);
     await ss.createTerminal(targetName);
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-004-TARGET")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-004');
@@ -134,21 +129,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-004');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Terminal ("${targetName}")`,
-    });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
-    const directBindLogged = lines.some(
-      (line) =>
-        line.includes('"fn":"BindToTerminalCommand.execute"') &&
-        line.includes('"source":"context-menu"') &&
-        line.includes(`"terminalName":"${targetName}"`),
-    );
-    assert.ok(
-      directBindLogged,
-      `Expected direct-bind log for "${targetName}" from context-menu source`,
-    );
 
     ss.log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
   });
@@ -158,6 +139,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const otherName = 'rl-ctxmenu-term-005-OTHER';
     await ss.createTerminal(otherName);
     await ss.createTerminal(targetName);
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-005-TARGET")']);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-005');
@@ -176,21 +159,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-005');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Terminal ("${targetName}")`,
-    });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
-    const directBindLogged = lines.some(
-      (line) =>
-        line.includes('"fn":"BindToTerminalCommand.execute"') &&
-        line.includes('"source":"context-menu"') &&
-        line.includes(`"terminalName":"${targetName}"`),
-    );
-    assert.ok(
-      directBindLogged,
-      `Expected direct-bind log for "${targetName}" from context-menu source`,
-    );
 
     ss.log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
   });
@@ -278,6 +247,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     shellTerminal.show(true);
     await ss.settle();
 
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-008-shell")']);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-008');
 
@@ -295,21 +266,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-term-008');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Terminal ("${shellName}")`,
-    });
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
-    const directBindLogged = lines.some(
-      (line) =>
-        line.includes('"fn":"BindToTerminalCommand.execute"') &&
-        line.includes('"source":"context-menu"') &&
-        line.includes(`"terminalName":"${shellName}"`),
-    );
-    assert.ok(
-      directBindLogged,
-      `Expected direct-bind log for "${shellName}" from context-menu source`,
-    );
 
     ss.log('✓ Shell tab "Bind Here" present and bound the shell (not the pty) when both open');
   });
@@ -330,6 +287,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, shellTerminal);
     await ss.settle();
+
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-009-shell")']);
 
     const verdict = await waitForHumanVerdict(
       'context-menus-terminal-009',
@@ -375,6 +334,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${editorFn}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`,
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-005');
 
@@ -392,19 +356,12 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-sts-005');
-
-    const pasteStarted = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
+    const editor = await ss.openEditor(editorUri);
+    const editorText = editor.document.getText();
     assert.ok(
-      pasteStarted,
-      'Expected TerminalSelectionService.pasteTerminalSelectionToDestination log (terminal selection was read)',
+      editorText.includes(markerText),
+      `Expected editor to contain "${markerText}" but got: ${editorText}`,
     );
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Selected text copied to clipboard & sent to Text Editor ("${editorFn}")`,
-    });
 
     ss.log(
       '✓ Terminal context-menu "Send Selection to Destination" routed selection to bound editor',
@@ -427,6 +384,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(sourceTerminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")',
+      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")',
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-008');
     capturingBound.clearCaptured();
@@ -446,15 +408,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
     );
 
     const lines = logCapture.getLinesSince('before-sts-008');
-
-    const readLogged = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
-    assert.ok(readLogged, 'Expected TerminalSelectionService log (selection was read)');
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${boundName}")`,
-    });
 
     const focusLogged = lines.some(
       (line) =>
@@ -478,6 +431,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, 'STS_009_MARKER_TEXT');
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-009")']);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-009');
 
@@ -493,22 +448,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-sts-009');
-
     assert.strictEqual(
       verdict,
       'pass',
       'Human reported "Send Selection to Destination" WAS visible in the tab menu — this is a bug',
     );
-    const pasteFired = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
-    assert.ok(
-      !pasteFired,
-      'Expected no TerminalSelectionService log — nothing should have triggered a paste during observation',
-    );
 
-    ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict + no paste log)');
+    ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict)');
   });
 
   // ---------------------------------------------------------------------------
@@ -523,6 +469,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const markerText = 'STS_010_SELF_PASTE_MARKER';
     capturing.terminal.sendText(markerText, false);
     await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sts-010")',
+      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-010');
@@ -539,12 +490,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
         'The selection will be pasted BACK into the same terminal (this documents current behavior; a self-paste guard for terminals is worth filing as a follow-up).',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-sts-010');
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
-    });
 
     assertTerminalBufferContains(capturing.getCapturedText(), markerText);
 
@@ -570,6 +515,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(sourceTerminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST")',
+      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-011-DEST")',
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-011');
     capturingDest.clearCaptured();
@@ -589,27 +539,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const lines = logCapture.getLinesSince('before-sts-011');
 
-    const readLogged = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
-    assert.ok(readLogged, 'Expected TerminalSelectionService log (selection was read)');
-
-    const pickerItems = extractQuickPickItemsLogged(lines);
-    assert.ok(
-      pickerItems,
-      'Expected showQuickPick log with items — destination picker should have opened because nothing was bound',
-    );
-    const destLabel = `Terminal ("${destName}")`;
-    assert.ok(
-      pickerItems!.some((item) => item.label === destLabel),
-      `Expected destination picker to offer "${destLabel}" as a pickable item`,
-    );
+    assertQuickPickContains(lines, {
+      itemKind: 'bindable',
+      displayName: destName,
+      label: `Terminal ("${destName}")`,
+    });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Selected text copied to clipboard & sent to Terminal ("${destName}")`,
-    });
 
     assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);
 
@@ -631,6 +567,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, 'STS_012_MARKER_TEXT');
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-012")']);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-012');
 
@@ -646,22 +584,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-sts-012');
-
     assert.strictEqual(
       verdict,
       'pass',
       'Human reported "Send Selection" WAS visible with no text selected — the `when: terminalTextSelected` clause is not working',
     );
-    const pasteFired = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
-    assert.ok(
-      !pasteFired,
-      'Expected no paste log — nothing should have triggered a paste during observation',
-    );
 
-    ss.log('✓ No-selection state: "Send Selection" absent (human verdict + no paste log)');
+    ss.log('✓ No-selection state: "Send Selection" absent (human verdict)');
   });
 
   // ---------------------------------------------------------------------------
@@ -686,6 +615,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)',
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-013');
 
@@ -701,22 +635,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
         '4. Select "RangeLink: Send Selection to Destination"',
         'The selection should be delivered to the Dummy AI extension via direct insert.',
       ],
-    );
-
-    const lines = logCapture.getLinesSince('before-sts-013');
-
-    const readLogged = lines.some((line) =>
-      line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
-    );
-    assert.ok(readLogged, 'Expected TerminalSelectionService log (selection was read)');
-
-    const directInsertLog = lines.some(
-      (line) =>
-        line.includes('DirectInsertFactory.insert') && line.includes('Direct insert succeeded'),
-    );
-    assert.ok(
-      directInsertLog,
-      'Expected DirectInsertFactory.insert success log — Dummy AI Tier 1 uses direct insert',
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as

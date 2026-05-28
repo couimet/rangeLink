@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -24,25 +25,27 @@ import {
   assertClipboardChanged,
   assertClipboardPreservationRan,
   assertClipboardRestored,
-  assertStatusBarMsgLogged,
+  assertPasteCommandLogged,
   extractGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
   standardSuite,
-  waitForHuman,
   waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
-const CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Claude Code Chat';
 const GEMINI_CODE_ASSIST_DISPLAY_NAME = 'Gemini Code Assist';
-const GEMINI_BIND_STATUS_BAR_MESSAGE = '✓ RangeLink: Bound to Gemini Code Assist';
 
 standardSuite('Built-in AI Assistants', (ss) => {
   test('[assisted] claude-code-002: binding to Claude Code Chat and sending a link delivers content to chat', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
     await ss.settle();
@@ -52,11 +55,6 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
     await ss.settle();
-
-    const bindLines = logCapture.getLinesSince('before-cc-002-bind');
-    assertStatusBarMsgLogged(bindLines, {
-      message: CLAUDE_CODE_BIND_STATUS_BAR_MESSAGE,
-    });
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -74,21 +72,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const sendLines = logCapture.getLinesSince('before-cc-002-send');
 
-    const pasteSuccessLog = sendLines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(
-      pasteSuccessLog,
-      'Expected paste link success log after send (code-side paste fired)',
-    );
-
-    const clipboardPasteLog = sendLines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(sendLines, {});
 
     const verdict = await waitForHumanVerdict(
       'claude-code-002',
@@ -109,6 +93,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] claude-code-004: cold panel paste — content arrives in Claude Code chat after first R-L since bind', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cc-004', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -126,18 +115,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-cc-004');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log after cold paste send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(lines, {});
 
     const verdict = await waitForHumanVerdict(
       'claude-code-004',
@@ -159,6 +137,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] claude-code-005: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cc-005', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -202,18 +186,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-cc-005-warm');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log on warm send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
+    assertPasteCommandLogged(lines, {});
 
     const warmVerdict = await waitForHumanVerdict(
       'claude-code-005-warm',
@@ -234,6 +207,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] gemini-code-assist-002: binding to Gemini Code Assist and sending a link delivers content to chat', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Gemini Code Assist',
+      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
     await ss.settle();
@@ -245,19 +223,6 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GEMINI_CODE_ASSIST);
     await ss.settle();
-
-    const bindLines = logCapture.getLinesSince('before-gc-002-bind');
-    assertStatusBarMsgLogged(bindLines, {
-      message: GEMINI_BIND_STATUS_BAR_MESSAGE,
-    });
-
-    const bindDestinationLog = bindLines.find(
-      (line) => line.includes('PasteDestinationManager') && line.includes('bound to'),
-    );
-    assert.ok(
-      bindDestinationLog,
-      `Expected a PasteDestinationManager "bound to" log line in the ${bindLines.length} bind lines`,
-    );
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -271,21 +236,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const sendLines = logCapture.getLinesSince('before-gc-002-send');
 
-    const pasteSuccessLog = sendLines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(
-      pasteSuccessLog,
-      'Expected paste link success log after send (code-side paste fired)',
-    );
-
-    const clipboardPasteLog = sendLines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(sendLines, {});
 
     const verdict = await waitForHumanVerdict(
       'gemini-code-assist-002',
@@ -306,6 +257,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] gemini-code-assist-003: cold panel paste — content arrives in Gemini Code Assist chat after first R-L since bind', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Gemini Code Assist',
+      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -325,18 +281,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-gc-003');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log after cold paste send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(lines, {});
 
     const verdict = await waitForHumanVerdict(
       'gemini-code-assist-003',
@@ -358,6 +303,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] gemini-code-assist-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Gemini Code Assist',
+      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -401,18 +351,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-gc-004-warm');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log on warm send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
+    assertPasteCommandLogged(lines, {});
 
     const warmVerdict = await waitForHumanVerdict(
       'gemini-code-assist-004-warm',
@@ -433,6 +372,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] github-copilot-chat-002: binding to GitHub Copilot Chat and sending a link delivers content to chat', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('ghc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
     await ss.settle();
@@ -442,11 +386,6 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
     await ss.settle();
-
-    const bindLines = logCapture.getLinesSince('before-ghc-002-bind');
-    assertStatusBarMsgLogged(bindLines, {
-      message: '✓ RangeLink: Bound to GitHub Copilot Chat',
-    });
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -460,21 +399,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const sendLines = logCapture.getLinesSince('before-ghc-002-send');
 
-    const pasteSuccessLog = sendLines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(
-      pasteSuccessLog,
-      'Expected paste link success log after send (code-side paste fired)',
-    );
-
-    const clipboardPasteLog = sendLines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(sendLines, {});
 
     const verdict = await waitForHumanVerdict(
       'github-copilot-chat-002',
@@ -495,6 +420,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] github-copilot-chat-003: cold panel paste — content arrives in GitHub Copilot Chat after first R-L since bind', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('ghc-003', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -512,18 +442,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ghc-003');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log after cold paste send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log');
+    assertPasteCommandLogged(lines, {});
 
     const verdict = await waitForHumanVerdict(
       'github-copilot-chat-003',
@@ -545,6 +464,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] github-copilot-chat-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('ghc-004', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -586,18 +511,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ghc-004-warm');
 
-    const pasteSuccessLog = lines.find(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteSuccessLog, 'Expected paste link success log on warm send');
-
-    const clipboardPasteLog = lines.find(
-      (line) =>
-        line.includes('VscodeAdapter.pasteClipboardToAiAssistant') &&
-        line.includes('Clipboard paste succeeded'),
-    );
-    assert.ok(clipboardPasteLog, 'Expected Clipboard paste succeeded log on warm send');
+    assertPasteCommandLogged(lines, {});
 
     const warmVerdict = await waitForHumanVerdict(
       'github-copilot-chat-004-warm',
@@ -618,6 +532,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -640,6 +559,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-012: warm paste to Claude Code — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -672,6 +597,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Cursor AI Assistant',
+      '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -694,6 +624,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-014: warm paste to Cursor AI — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Cursor AI Assistant',
+      '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
+      '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -726,6 +662,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-015: cold paste to Copilot Chat — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
     const fileUri = ss.createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -748,6 +688,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-016: warm paste to Copilot Chat — prior clipboard restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -779,19 +725,22 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
   });
 
-  test('[assisted] clipboard-preservation-017: failed paste — RangeLink stays on clipboard for manual paste', async () => {
+  test('clipboard-preservation-017: failed paste — RangeLink stays on clipboard for manual paste', async () => {
     const fileUri = ss.createWorkspaceFile('cp-017', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
 
-    await waitForHuman(
-      'clipboard-preservation-017',
-      'Bind "Dummy AI (Focus-Fail)" via R-D picker, then Cancel',
-      [
-        '1. Press Cmd+R Cmd+D → select "Dummy AI (Focus-Fail)" from the picker',
-        '2. Press Cancel to continue (assertions happen automatically)',
-      ],
-    );
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
+    ]);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'rangelink.dummy-ai-extension-focus-fail',
+    });
     await ss.settle();
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
@@ -805,18 +754,24 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
     const lines017 = logCapture.getLinesSince('before-017');
-    const generatedLink017 = extractGeneratedLink(lines017);
+    const generatedLink017 = extractGeneratedLink(lines017, { smartPad: 'both' });
     assert.ok(generatedLink017, 'Expected "Generated link:" log line');
     const clipboard017 = await assertClipboardChanged('clipboard-preservation-017: failed paste');
     assert.strictEqual(
       clipboard017,
       generatedLink017,
-      `Expected clipboard to equal generated link, got: ${clipboard017}`,
+      `Expected clipboard to equal "${generatedLink017}", got: ${JSON.stringify(clipboard017)}`,
     );
     ss.log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
 
   test('[assisted] clipboard-preservation-018: two rapid R-L to Claude Code — last write wins, prior content restored once', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+      '✓ RangeLink: RangeLink sent to Claude Code Chat',
+    ]);
+
     const fileUri = ss.createWorkspaceFile('cp-018', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -839,15 +794,6 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-018-rapid');
-
-    // Both sends should have fired paste commands
-    const pasteLogs = lines.filter(
-      (line) =>
-        line.includes('ComposablePasteDestination.pasteLink') && line.includes('Pasted link'),
-    );
-    assert.ok(pasteLogs.length >= 2, `Expected at least 2 paste logs, got ${pasteLogs.length}`);
 
     // Clipboard preservation should have run (exactly once restoration after last op)
     assertClipboardPreservationRan(logCapture, 'before-018-rapid', 'R-L');

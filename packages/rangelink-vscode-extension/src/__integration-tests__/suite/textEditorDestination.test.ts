@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
@@ -8,16 +9,14 @@ import {
   CMD_PASTE_TO_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  assertNoToastLogged,
-  assertToastLogged,
   getLogCapture,
   openSourceWithSelection,
   standardSuite,
-  waitForHumanVerdict,
+  writeClipboardSentinel,
 } from '../helpers';
 
 standardSuite('Text Editor Destination', (ss) => {
-  test('[assisted] text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {
+  test('text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {
     const fileUri = ss.createWorkspaceFile('ted-001', 'self-paste test\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -26,35 +25,76 @@ standardSuite('Text Editor Destination', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
+    const destBasename = path.basename(fileUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      {
+        level: 'info',
+        message:
+          'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+      },
+    ]);
+
+    await writeClipboardSentinel();
+
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
     await ss.settle();
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-ted-001');
 
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-ted-001');
-
-    assertToastLogged(lines, {
-      type: 'info',
-      message:
-        'RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links.',
-    });
-
-    const verdict = await waitForHumanVerdict(
-      'text-editor-destination-001',
-      'Verify info message appeared and file content is unchanged',
-      [
-        '1. An info notification appeared about self-paste',
-        '2. The file content has NOT changed',
-        '3. Click PASS if both checks pass, FAIL otherwise',
-      ],
+    const clipboard = await vscode.env.clipboard.readText();
+    const fn = path.basename(fileUri.fsPath);
+    assert.ok(
+      clipboard.includes(fn),
+      `Expected clipboard to contain filename "${fn}", got: "${clipboard}"`,
     );
-    assert.strictEqual(verdict, 'pass');
+    assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
 
-    ss.log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
+    ss.log('✓ Self-paste R-L: info toast shown, link on clipboard, file unchanged');
+  });
+
+  test('text-editor-destination-002: R-L to different view column — allowed', async () => {
+    const ANCHOR_START = 'ANCHOR_START';
+    const ANCHOR_END = 'ANCHOR_END';
+    const destUri = ss.createWorkspaceFile('ted-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
+    const sourceUri = ss.createWorkspaceFile('ted-002-source', 'source content\n');
+    ss.trackFileUri(sourceUri);
+    const destBasename = path.basename(destUri.fsPath);
+
+    const destEditor = await vscode.window.showTextDocument(
+      await vscode.workspace.openTextDocument(destUri),
+      { viewColumn: vscode.ViewColumn.Two, preview: false },
+    );
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(1, 0),
+      new vscode.Position(1, 0),
+    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    // Open source file in a different column
+    await openSourceWithSelection(sourceUri, vscode.ViewColumn.Three);
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
+    ]);
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const destDoc = await vscode.workspace.openTextDocument(destUri);
+    const relativeSourcePath = vscode.workspace.asRelativePath(sourceUri);
+    assert.ok(
+      destDoc.getText().includes(` ${relativeSourcePath}#L1`),
+      `Expected RangeLink "${relativeSourcePath}#L1" in dest, got: ${JSON.stringify(destDoc.getText())}`,
+    );
+    ss.log('✓ R-L different view column: allowed, link pasted in destination column');
   });
 
   test('hidden-tab-paste-001: R-L with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
@@ -63,6 +103,11 @@ standardSuite('Text Editor Destination', (ss) => {
     const SOURCE_CONTENT = 'source-for-rangelink';
     const destUri = ss.createWorkspaceFile('htl-001-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('htl-001-source', `${SOURCE_CONTENT}\n`);
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
+    ]);
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -121,6 +166,11 @@ standardSuite('Text Editor Destination', (ss) => {
     const SELECTED_TEXT = 'text-to-paste';
     const destUri = ss.createWorkspaceFile('htl-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('htl-002-source', `${SELECTED_TEXT}\n`);
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
+    ]);
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -173,6 +223,9 @@ standardSuite('Text Editor Destination', (ss) => {
 
   test('duplicate-tab-group-001: warning toast fires when bound file is opened in a second editor group', async () => {
     const destUri = ss.createWorkspaceFile('dtg-001-dest', 'destination file\n');
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
     const triggerUri = ss.createWorkspaceFile('dtg-001-trigger', '');
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
@@ -191,9 +244,6 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-dtg-001');
-
     // Open a dummy file in col 3 to force another onDidChangeTabs. At this point
     // visibleTextEditors already contains both dest instances (col 1 and col 2),
     // so the listener sees length > 1 and fires the warning.
@@ -203,16 +253,14 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    assertToastLogged(logCapture.getLinesSince('before-dtg-001'), {
-      type: 'warning',
-      message: WARN_DUPLICATE_TAB_GROUPS,
-    });
-
     ss.log('✓ Warning toast fired when bound file open in multiple editor groups');
   });
 
   test('duplicate-tab-group-002: warning is not repeated when duplicate state is already active', async () => {
     const destUri = ss.createWorkspaceFile('dtg-002-dest', 'destination file\n');
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
     const trigger1Uri = ss.createWorkspaceFile('dtg-002-trigger1', '');
     const trigger2Uri = ss.createWorkspaceFile('dtg-002-trigger2', '');
 
@@ -237,9 +285,6 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-dtg-002');
-
     // Open trigger2 while both dest instances remain visible — isInDuplicateTabState is already
     // true so the listener must NOT fire a second warning.
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(trigger2Uri), {
@@ -248,17 +293,26 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    assertNoToastLogged(logCapture.getLinesSince('before-dtg-002'), {
-      type: 'warning',
-      message: WARN_DUPLICATE_TAB_GROUPS,
-    });
-
     ss.log('✓ No second warning fired while already in duplicate tab state');
   });
 
   test('duplicate-tab-group-003: paste is blocked with error when bound file is visible in multiple tab groups', async () => {
     const SOURCE_TEXT = 'dtg-003-source-text';
     const destUri = ss.createWorkspaceFile('dtg-003-dest', 'ANCHOR\n');
+    const destBasename = path.basename(destUri.fsPath);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectToastMessages([
+      { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
+      {
+        level: 'error',
+        message:
+          'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+      },
+      {
+        level: 'warning',
+        message: 'Could not send to editor. Make sure the bound editor is visible and focused.',
+      },
+    ]);
     const sourceUri = ss.createWorkspaceFile('dtg-003-source', `${SOURCE_TEXT}\n`);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
@@ -283,17 +337,8 @@ standardSuite('Text Editor Destination', (ss) => {
     // after prior tests have manipulated it).
     await openSourceWithSelection(sourceUri, vscode.ViewColumn.Four);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-dtg-003');
-
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    assertToastLogged(logCapture.getLinesSince('before-dtg-003'), {
-      type: 'error',
-      message:
-        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
-    });
 
     const destContentAfter = (await vscode.workspace.openTextDocument(destUri)).getText();
     assert.strictEqual(
@@ -307,9 +352,16 @@ standardSuite('Text Editor Destination', (ss) => {
 
   test('duplicate-tab-group-004: duplicate state clears when conflict resolves and re-entry triggers a fresh warning', async () => {
     const destUri = ss.createWorkspaceFile('dtg-004-dest', 'destination file\n');
+    const destBasename = path.basename(destUri.fsPath);
     const trigger1Uri = ss.createWorkspaceFile('dtg-004-trigger1', '');
     const trigger2Uri = ss.createWorkspaceFile('dtg-004-trigger2', '');
     const trigger3Uri = ss.createWorkspaceFile('dtg-004-trigger3', '');
+
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectToastMessages([
+      { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
+      { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
+    ]);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, {
@@ -361,8 +413,6 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    logCapture.mark('before-dtg-004-rewarn');
-
     // Open trigger3 → onDidChangeTabs fires with both dest instances visible → fresh warning.
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(trigger3Uri), {
       viewColumn: vscode.ViewColumn.Three,
@@ -370,19 +420,21 @@ standardSuite('Text Editor Destination', (ss) => {
     });
     await ss.settle();
 
-    assertToastLogged(logCapture.getLinesSince('before-dtg-004-rewarn'), {
-      type: 'warning',
-      message: WARN_DUPLICATE_TAB_GROUPS,
-    });
-
     ss.log('✓ Duplicate state cleared on resolve; re-entry triggered a fresh warning');
   });
 
   test('stale-viewcolumn-001: paste targets the correct new column after bound editor is moved', async () => {
     const SOURCE_TEXT = 'stale-vc-001-source-text';
     const destUri = ss.createWorkspaceFile('svc-001-dest', 'ANCHOR\n');
+    const destBasename = path.basename(destUri.fsPath);
     const sourceUri = ss.createWorkspaceFile('svc-001-source', `${SOURCE_TEXT}\n`);
     const dummyUri = ss.createWorkspaceFile('svc-001-dummy', '');
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
+    ]);
+    ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
 

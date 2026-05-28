@@ -350,12 +350,20 @@ describe('formatMessage', () => {
       expect(result).toStrictEqual('Unbound from Terminal');
     });
 
-    it('should format STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED (static)', () => {
-      const result = formatMessage(
-        MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED,
-      );
+    it('should format STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED, {
+        destinationName: 'Text Editor ("server.ts")',
+      });
 
-      expect(result).toStrictEqual('Destination binding removed (terminal closed)');
+      expect(result).toStrictEqual('Unbound from Text Editor ("server.ts") — editor closed');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED, {
+        destinationName: 'Terminal ("bash")',
+      });
+
+      expect(result).toStrictEqual('Unbound from Terminal ("bash") — terminal closed');
     });
 
     it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {

@@ -5,23 +5,15 @@ import type * as vscode from 'vscode';
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_SMART_PADDING_PASTE_LINK, SETTING_SMART_PADDING_PASTE_LINK } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { OperationFeedbackProvider } from '../feedback/OperationFeedbackProvider';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  DestinationBehavior,
-  DirtyBufferWarningResult,
-  MessageCode,
-  PasteContentType,
-  PathFormat,
-} from '../types';
+import { DirtyBufferWarningResult, MessageCode, PasteContentType, PathFormat } from '../types';
 import { applySmartPadding, formatMessage, generateLinkFromSelections } from '../utils';
 
-import type { ClipboardRouter } from './ClipboardRouter';
 import { getReferencePath } from './FilePathPaster';
 import { handleDirtyBufferWarning, LINK_DIRTY_BUFFER_CODES } from './handleDirtyBufferWarning';
 import type { SelectionValidator } from './SelectionValidator';
-
-const NOOP_SEND_FN = () => Promise.resolve(false);
-const NOOP_ELIGIBILITY_FN = () => Promise.resolve(false);
+import type { SendRouter } from './SendRouter';
 
 /**
  * Orchestrates link creation from editor selections.
@@ -34,38 +26,26 @@ export class LinkGenerator {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
-    private readonly clipboardRouter: ClipboardRouter,
+    private readonly sendRouter: SendRouter,
     private readonly selectionValidator: SelectionValidator,
+    private readonly feedbackProvider: OperationFeedbackProvider,
     private readonly logger: Logger,
   ) {}
 
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    await this.createLinkCore(
-      pathFormat,
-      LinkType.Regular,
-      formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
-    );
+    await this.createLinkCore(pathFormat, LinkType.Regular, MessageCode.CONTENT_NAME_RANGELINK);
   }
 
   async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Regular);
     if (formattedLink) {
-      await this.clipboardRouter.copyAndSendToDestination({
-        control: {
-          contentType: PasteContentType.Link,
-          destinationBehavior: DestinationBehavior.ClipboardOnly,
-        },
-        content: {
-          clipboard: formattedLink.link,
-          send: formattedLink,
-        },
-        strategies: {
-          sendFn: NOOP_SEND_FN,
-          isEligibleFn: NOOP_ELIGIBILITY_FN,
-        },
-        contentName: formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
-        fnName: 'createLinkOnly',
-      });
+      await this.ideAdapter.writeTextToClipboard(formattedLink.link);
+      this.feedbackProvider.provideCopyFeedback(MessageCode.CONTENT_NAME_RANGELINK);
+    } else {
+      this.logger.debug(
+        { fn: 'LinkGenerator.createLinkOnly' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
     }
   }
 
@@ -73,14 +53,14 @@ export class LinkGenerator {
     await this.createLinkCore(
       pathFormat,
       LinkType.Portable,
-      formatMessage(MessageCode.CONTENT_NAME_PORTABLE_RANGELINK),
+      MessageCode.CONTENT_NAME_PORTABLE_RANGELINK,
     );
   }
 
   private async createLinkCore(
     pathFormat: PathFormat,
     linkType: LinkType,
-    contentName: string,
+    contentNameCode: MessageCode,
   ): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.createLinkCore', linkType };
     const formattedLink = await this.generateLinkFromSelection(pathFormat, linkType);
@@ -90,14 +70,9 @@ export class LinkGenerator {
         this.logger.debug(logCtx, 'Active editor URI unavailable, aborting');
         return;
       }
-      const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-      if (destinationBehavior === undefined) return;
-      await this.copyToClipboardAndDestination(
-        formattedLink,
-        contentName,
-        sourceUri,
-        destinationBehavior,
-      );
+      const resolved = await this.sendRouter.resolveDestination(logCtx);
+      if (!resolved) return;
+      await this.copyToClipboardAndDestination(formattedLink, contentNameCode, sourceUri);
     } else {
       this.logger.debug(logCtx, 'generateLinkFromSelection returned undefined, aborting');
     }
@@ -163,12 +138,16 @@ export class LinkGenerator {
     });
 
     if (!result.success) {
-      const linkTypeName = linkType === LinkType.Portable ? 'portable link' : 'link';
+      const linkTypeName = formatMessage(
+        linkType === LinkType.Portable
+          ? MessageCode.ERROR_LINK_TYPE_NAME_PORTABLE
+          : MessageCode.ERROR_LINK_TYPE_NAME_REGULAR,
+      );
       this.logger.error(
         { fn: 'generateLinkFromSelection', error: result.error, linkType },
         `Failed to generate ${linkTypeName}`,
       );
-      this.ideAdapter.showErrorMessage(
+      this.feedbackProvider.showError(
         formatMessage(MessageCode.ERROR_LINK_GENERATION_FAILED, { linkTypeName }),
       );
       return undefined;
@@ -185,9 +164,8 @@ export class LinkGenerator {
 
   private async copyToClipboardAndDestination(
     formattedLink: FormattedLink,
-    linkTypeName: string,
+    contentNameCode: MessageCode,
     sourceUri: vscode.Uri,
-    destinationBehavior: DestinationBehavior,
   ): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.copyToClipboardAndDestination' };
     const paddingMode = this.configReader.getPaddingMode(
@@ -202,23 +180,24 @@ export class LinkGenerator {
       'Sending link to destination',
     );
 
-    await this.clipboardRouter.copyAndSendToDestination({
+    await this.sendRouter.sendToDestination({
       control: {
         contentType: PasteContentType.Link,
-        destinationBehavior,
       },
       content: {
         clipboard: paddedLink,
         send: { ...formattedLink, link: paddedLink },
         sourceUri,
+        sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),
       },
       strategies: {
-        sendFn: (link, basicStatusMessage) =>
-          this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
+        sendFn: (link) => this.destinationManager.sendLinkToDestination(link),
         isEligibleFn: (destination, link) => destination.isEligibleForPasteLink(link),
       },
-      contentName: linkTypeName,
+      contentNameCode,
       fnName: 'copyToClipboardAndDestination',
+      selfPastePolicy: 'block-on-uri',
+      writeClipboardOnSelfPasteBlock: true,
     });
   }
 }
