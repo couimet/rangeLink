@@ -340,10 +340,20 @@ export const assertPasteCommandSucceeded = (lines: string[]): void => {
     if (ctx?.fn !== PASTE_TO_AI_ASSISTANT_FN) return false;
     return line.includes('Clipboard paste succeeded');
   });
-  assert.ok(
-    found,
-    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log but it was not found in ${lines.length} log lines`,
-  );
+  if (!found) {
+    const dump = lines
+      .map((line, i) => {
+        const ctx = parseLogContext(line);
+        const fn = ctx?.fn ?? '-';
+        const msg = ctx?.message ?? line.slice(0, 120);
+        return `  ${i + 1}. [${fn}] ${msg}`;
+      })
+      .join('\n');
+    assert.ok(
+      false,
+      `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log but it was not found in ${lines.length} log lines.\n\nCaptured lines:\n${dump}`,
+    );
+  }
 };
 
 export const assertCommandsPresent = (
