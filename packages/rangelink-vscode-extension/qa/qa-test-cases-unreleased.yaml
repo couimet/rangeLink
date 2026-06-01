@@ -655,8 +655,8 @@ test_cases:
     labels:
       - clipboard
     feature: 'Send File Path'
-    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
-    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
+    scenario: 'R-Shift+F to same file (same column, no selection) inserts absolute path at cursor'
+    expected_result: 'Absolute file path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
   - id: send-file-path-014

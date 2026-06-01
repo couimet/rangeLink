@@ -60,6 +60,13 @@ export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOpt
 
 const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
 
+/**
+ * Subset of fields expected on a logged QuickPick item.
+ *
+ * All fields are optional: omitted fields are skipped during assertion. This
+ * allows callers to assert only the fields they care about (e.g. just `kind`
+ * and `itemKind` for separator checks).
+ */
 interface QuickPickItemExpectation {
   label?: string;
   description?: string;

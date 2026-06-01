@@ -427,10 +427,12 @@ export class ComposablePasteDestination implements PasteDestination {
 
   get rawLabel(): string {
     if (this.resource.kind === 'terminal') {
-      return this.loggingDetails.terminalName as string;
+      const name = this.loggingDetails.terminalName;
+      return typeof name === 'string' ? name : this.displayName;
     }
     if (this.resource.kind === 'editor') {
-      return this.loggingDetails.editorName as string;
+      const name = this.loggingDetails.editorName;
+      return typeof name === 'string' ? name : this.displayName;
     }
     return this.displayName;
   }

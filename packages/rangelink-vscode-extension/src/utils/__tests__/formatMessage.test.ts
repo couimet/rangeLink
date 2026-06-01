@@ -355,7 +355,7 @@ describe('formatMessage', () => {
         destinationName: 'Text Editor ("server.ts")',
       });
 
-      expect(result).toStrictEqual('Unbound from Text Editor ("server.ts") — editor closed');
+      expect(result).toBe('Unbound from Text Editor ("server.ts") — editor closed');
     });
 
     it('should format STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED with destinationName param', () => {
@@ -363,7 +363,7 @@ describe('formatMessage', () => {
         destinationName: 'Terminal ("bash")',
       });
 
-      expect(result).toStrictEqual('Unbound from Terminal ("bash") — terminal closed');
+      expect(result).toBe('Unbound from Terminal ("bash") — terminal closed');
     });
 
     it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {

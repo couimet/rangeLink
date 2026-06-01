@@ -16,6 +16,7 @@ import {
   waitForHuman,
   waitForHumanVerdict,
   writeClipboardSentinel,
+  assertClipboardRestored,
 } from '../helpers';
 
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
@@ -487,12 +488,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
 
-    const clipboard = await vscode.env.clipboard.readText();
-    assert.notStrictEqual(
-      clipboard,
-      'line 2',
-      'Expected clipboard to NOT contain selected text (clipboard untouched on R-V block)',
-    );
+    await assertClipboardRestored('R-V same file same column block');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.strictEqual(
       doc.getText(),
@@ -527,12 +523,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
 
-    const clipboard = await vscode.env.clipboard.readText();
-    assert.notStrictEqual(
-      clipboard,
-      'line 3',
-      'Expected clipboard to NOT contain selected text (clipboard untouched on R-V block)',
-    );
+    await assertClipboardRestored('R-V multi-selection same file block');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.strictEqual(
       doc.getText(),

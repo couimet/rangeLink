@@ -129,6 +129,23 @@ export class SendRouter {
     );
     if (!isSameFile) return undefined;
 
+    const policyIsDefault = !selfPastePolicy;
+    const clipboardOnBlockIsDefault = writeClipboardOnSelfPasteBlock === undefined;
+    if (policyIsDefault || clipboardOnBlockIsDefault) {
+      this.logger.debug(
+        {
+          fn: fnName,
+          selfPastePolicy: selfPastePolicy ?? 'block-on-uri',
+          writeClipboardOnSelfPasteBlock,
+          usedDefaults: {
+            selfPastePolicy: policyIsDefault,
+            writeClipboardOnSelfPasteBlock: clipboardOnBlockIsDefault,
+          },
+        },
+        'Self-paste policy resolution',
+      );
+    }
+
     if (!selfPastePolicy || selfPastePolicy === 'block-on-uri') {
       await this.clipboardWriter.writeTextToClipboard(content.clipboard);
       this.logger.info({ fn: fnName }, 'Self-paste detected - copying to clipboard');

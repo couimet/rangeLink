@@ -102,22 +102,6 @@ teardown() {
 
 # ── Report file naming ────────────────────────────────────────────────────────
 
-@test "report file includes timestamp and mode" {
-  OUTPUT_DIR="$TEST_DIR/qa/output"
-  mkdir -p "$OUTPUT_DIR"
-  TIMESTAMP="20260101-000000"
-  REPORT_MODE="automated"
-  REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-${REPORT_MODE}.txt"
-  touch "$REPORT_FILE"
-  [[ -f "$REPORT_FILE" ]]
-}
-
-@test "report file with grep mode includes pattern slug" {
-  OUTPUT_DIR="$TEST_DIR/qa/output"
-  mkdir -p "$OUTPUT_DIR"
-  TIMESTAMP="20260101-000000"
-  PATTERN_SLUG="status-bar-menu-002"
-  REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
-  touch "$REPORT_FILE"
-  [[ -f "$REPORT_FILE" ]]
-}
+# Report file naming is verified indirectly by the argument parsing tests
+# above — the script's naming is simple variable interpolation that can't be
+# meaningfully tested without running a full integration test suite through it.

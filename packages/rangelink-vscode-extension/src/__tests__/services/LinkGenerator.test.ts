@@ -446,6 +446,7 @@ describe('LinkGenerator', () => {
         'Sending link to destination',
       );
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
         control: {
           contentType: 'Link',
@@ -454,7 +455,7 @@ describe('LinkGenerator', () => {
           clipboard: ' src/file.ts#L1 ',
           send: { ...link, link: ' src/file.ts#L1 ' },
           sourceUri: mockDoc.uri,
-          sourceViewColumn: mockAdapter.getActiveEditorViewColumn(),
+          sourceViewColumn: expectedViewColumn,
         },
         strategies: {
           sendFn: expect.any(Function) as unknown,

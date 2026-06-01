@@ -285,6 +285,15 @@ describe('SendRouter', () => {
 
       await router.sendToDestination(options as any);
 
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'testFn',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: undefined,
+          usedDefaults: { selfPastePolicy: false, writeClipboardOnSelfPasteBlock: true },
+        },
+        'Self-paste policy resolution',
+      );
       expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
         {
           contentType: 'CONTENT_NAME_RANGELINK',
@@ -557,6 +566,15 @@ describe('SendRouter', () => {
       await router.sendToDestination(options as any);
 
       expect(mockClipboardWriter.writeTextToClipboard).toHaveBeenCalledWith(' src/file.ts#L1 ');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'testFn',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: undefined,
+          usedDefaults: { selfPastePolicy: false, writeClipboardOnSelfPasteBlock: true },
+        },
+        'Self-paste policy resolution',
+      );
       expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
         {
           contentType: 'CONTENT_NAME_RANGELINK',
@@ -658,6 +676,11 @@ describe('SendRouter', () => {
             'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
         },
       );
+      expect(
+        jest
+          .mocked(mockLogger.debug)
+          .mock.calls.filter((c) => c[1] === 'Self-paste policy resolution'),
+      ).toStrictEqual([]);
     });
 
     it('blocks with block-on-editor-selection when selection is active and does NOT write clipboard', async () => {
@@ -706,6 +729,11 @@ describe('SendRouter', () => {
           toastMessage: 'Cannot paste when bound editor has an active selection.',
         },
       );
+      expect(
+        jest
+          .mocked(mockLogger.debug)
+          .mock.calls.filter((c) => c[1] === 'Self-paste policy resolution'),
+      ).toStrictEqual([]);
     });
 
     it('allows paste with block-on-editor-selection when destination has no active selection', async () => {
@@ -740,6 +768,15 @@ describe('SendRouter', () => {
 
       await router.sendToDestination(options as any);
 
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'testFn',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: undefined,
+          usedDefaults: { selfPastePolicy: false, writeClipboardOnSelfPasteBlock: true },
+        },
+        'Self-paste policy resolution',
+      );
       expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
         {
           contentType: 'CONTENT_NAME_RANGELINK',

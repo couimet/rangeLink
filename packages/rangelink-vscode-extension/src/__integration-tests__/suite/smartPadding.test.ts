@@ -22,6 +22,9 @@ import {
   waitForHuman,
 } from '../helpers';
 
+const DUMMY_AI_EXTENSION_ID = 'rangelink.dummy-ai-extension';
+const DUMMY_AI_GET_TEXT_COMMAND = 'dummyAi.getText';
+
 // ---------------------------------------------------------------------------
 // Suites — Editor-to-Editor R-V (tests requiring real editor destinations)
 //
@@ -377,7 +380,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
-      extensionId: 'rangelink.dummy-ai-extension',
+      extensionId: DUMMY_AI_EXTENSION_ID,
     });
     await ss.settle();
 
@@ -386,10 +389,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+    const textResult = (await vscode.commands.executeCommand(DUMMY_AI_GET_TEXT_COMMAND)) as
       | { tier1: string; tier2: string }
       | undefined;
-    assert.ok(textResult, 'Expected dummyAi.getText to return a result');
+    assert.ok(textResult, `Expected ${DUMMY_AI_GET_TEXT_COMMAND} to return a result`);
     assert.ok(
       textResult!.tier1.startsWith(' ') && textResult!.tier1.endsWith(' '),
       `Expected padded RangeLink (leading + trailing space), got: "${textResult!.tier1}"`,
