@@ -1831,6 +1831,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: custom-ai-assistant-001
+    labels:
+      - requires-extensions
     feature: 'Custom AI Assistants — Configuration'
     scenario: 'Three-tier config with dummy AI extension is parsed and logged at activation'
     expected_result: 'Log shows "Loaded 3 custom AI assistant(s)" with all three extensionIds'
@@ -1839,6 +1841,7 @@ test_cases:
   - id: custom-ai-assistant-002
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Registration'
     scenario: 'All three tier entries registered as destination kinds'
     expected_result: 'Log shows 3 custom-ai: destination registrations — one for each tier entry'
@@ -1856,6 +1859,7 @@ test_cases:
   - id: custom-ai-assistant-004
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Command Detection'
     scenario: 'Dummy extension insertText command is detectable by the availability system'
     expected_result: 'dummyAi.insertText is present in the registered commands list'
@@ -1864,6 +1868,7 @@ test_cases:
   - id: custom-ai-assistant-005
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Availability'
     scenario: 'Tier 1 entry availability checked when insertCommand is registered'
     expected_result: 'Availability check log exists for the Tier 1 entry'
@@ -1872,6 +1877,7 @@ test_cases:
   - id: custom-ai-assistant-006
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Command Registration'
     scenario: 'All dummy extension commands are registered and detectable'
     expected_result: 'All 5 dummyAi commands (insertText, focusForPaste, focusPanel, getText, clearAll) are registered'
@@ -1880,6 +1886,7 @@ test_cases:
   - id: custom-ai-assistant-007
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Destination Picker'
     scenario: 'Multiple custom AI assistants listed in user-defined order'
     expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
@@ -1888,6 +1895,7 @@ test_cases:
   - id: custom-ai-assistant-008
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Configuration'
     scenario: 'Parser normalizes plain string insertCommands to { command } objects'
     expected_result: 'Activation log shows insertCommands were parsed and the assistant was loaded'
@@ -1896,6 +1904,7 @@ test_cases:
   - id: custom-ai-assistant-009
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Configuration'
     scenario: 'Template entry with ${content} interpolation in insertCommands is parsed and registered'
     expected_result: 'Destination builder registered for the template entry'
@@ -1904,6 +1913,7 @@ test_cases:
   - id: custom-ai-assistant-010
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Tier 1 Paste Flow'
     scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
     expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
@@ -1912,6 +1922,7 @@ test_cases:
   - id: custom-ai-assistant-011
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Tier 1 Clipboard'
     scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
     expected_result: 'Clipboard contains the sentinel (outer preserve restores it; DirectInsertFactory never touches clipboard)'
@@ -1920,6 +1931,7 @@ test_cases:
   - id: custom-ai-assistant-012
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Tier 3 Toast'
     scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
     expected_result: 'Info toast "Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use." logged; ManualPasteInsertFactory success logged'
@@ -1928,6 +1940,7 @@ test_cases:
   - id: custom-ai-assistant-013
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Tier 2→3 Fallback'
     scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
     expected_result: 'Tier 2 skip log (nonexistent.paste not registered), Tier 3 resolution log (dummyAi.focusPanel), manual-paste toast shown'
@@ -1936,6 +1949,7 @@ test_cases:
   - id: custom-ai-assistant-014
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — ${content} Template'
     scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
     expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
@@ -1944,6 +1958,7 @@ test_cases:
   - id: custom-ai-assistant-015
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'GitHub Copilot Chat registers as a built-in destination kind'
     expected_result: 'Exactly one registration for github-copilot-chat kind as a built-in destination'
@@ -1952,6 +1967,7 @@ test_cases:
   - id: custom-ai-assistant-016
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Built-in AI Assistants'
     scenario: 'GitHub Copilot Chat does not register as custom-ai: prefixed kind'
     expected_result: 'No custom-ai:github.copilot-chat registration found — registers as built-in kind only'
@@ -1960,6 +1976,7 @@ test_cases:
   - id: custom-ai-assistant-017
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Cold Start'
     scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
     expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
@@ -1968,6 +1985,7 @@ test_cases:
   - id: custom-ai-assistant-018
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Copilot Override'
     scenario: 'Copilot Chat override routes content to Dummy AI via setup-integration-test-settings'
     expected_result: 'Bound to GitHub Copilot Chat, content arrives in Dummy AI Tier 1 textarea; Tier 2 is empty (no cross-contamination)'
