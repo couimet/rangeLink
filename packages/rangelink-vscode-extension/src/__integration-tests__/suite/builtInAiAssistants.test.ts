@@ -594,7 +594,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
   test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension('cursor.cursor')) {
-      ss.log('Skipping clipboard-preservation-013 — Cursor AI extension not installed in this test config');
+      ss.log(
+        'Skipping clipboard-preservation-013 — Cursor AI extension not installed in this test config',
+      );
       this.skip();
     }
 
@@ -1033,6 +1035,11 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     await ss.settle();
 
     await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Gemini Code Assist',
+      '✓ RangeLink: Focused Gemini Code Assist',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-006');

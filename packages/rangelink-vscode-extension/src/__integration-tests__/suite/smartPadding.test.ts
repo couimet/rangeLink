@@ -412,6 +412,12 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
     const destUri = ss.createWorkspaceFile('pad-010-dest', '');
+    const destFileName = path.basename(destUri.fsPath);
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destFileName}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${destFileName}")`,
+    ]);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);

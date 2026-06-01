@@ -10,6 +10,7 @@ import {
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
+import * as versionInfo from '../../version.json';
 import {
   assertCommandsAbsent,
   assertCommandsPresent,
@@ -212,6 +213,17 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   test('[assisted] status-bar-menu-009: R-M menu Show Version Info displays version, commit, branch, and build date', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-009');
+
+    const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
+    const expectedVersionMessage = `RangeLink v${versionInfo.version}\nCommit: ${versionInfo.commit}${isDirtyIndicator}\nBranch: ${versionInfo.branch}\nBuild: ${versionInfo.buildDate}`;
+
+    ss.expectModalDialogs([
+      {
+        level: 'info',
+        message: expectedVersionMessage,
+        items: ['Copy Commit Hash'],
+      },
+    ]);
 
     const verdict = await waitForHumanVerdict(
       'status-bar-menu-009',
