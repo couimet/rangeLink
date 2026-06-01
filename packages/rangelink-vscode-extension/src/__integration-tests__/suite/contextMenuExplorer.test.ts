@@ -54,8 +54,9 @@ standardSuite('Context Menus — Explorer', (ss) => {
       uriSource: 'context-menu',
       filePath: uri.fsPath,
     });
-    assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log('✓ Absolute path landed in bound terminal buffer (pty capture verified content)');
   });
@@ -95,8 +96,9 @@ standardSuite('Context Menus — Explorer', (ss) => {
       uriSource: 'context-menu',
       filePath: relativePath,
     });
-    assertClipboardWriteLogged(lines, { textLength: relativePath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log(
       '✓ Workspace-relative path landed in bound terminal buffer (pty capture verified content)',

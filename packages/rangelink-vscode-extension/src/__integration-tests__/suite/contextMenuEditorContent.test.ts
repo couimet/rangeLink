@@ -308,7 +308,8 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       uriSource: 'context-menu',
       filePath: uri.fsPath,
     });
-    assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
 
     ss.log('✓ Editor-content "Send This File\'s Path" delivered absolute path to bound terminal');
@@ -350,7 +351,8 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       uriSource: 'context-menu',
       filePath: relativePath,
     });
-    assertClipboardWriteLogged(lines, { textLength: relativePath.length });
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
 
     ss.log(

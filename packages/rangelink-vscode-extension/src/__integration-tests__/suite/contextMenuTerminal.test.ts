@@ -81,7 +81,10 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
-    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")']);
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")',
+      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-term-003")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-003');
