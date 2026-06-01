@@ -58,11 +58,6 @@ const settings = {
       extensionName: 'Dummy AI (Focus-Fail)',
       focusAndPasteCommands: ['dummyAi.focusFail'],
     },
-    {
-      extensionId: 'github.copilot-chat',
-      extensionName: 'Copilot Override',
-      insertCommands: ['dummyAi.insertText'],
-    },
   ],
 };
 
@@ -75,6 +70,14 @@ try {
   if (err.code !== 'ENOENT') {
     console.warn(`[setup-integration-test-settings] Warning: ${err.message}, starting fresh`);
   }
+}
+
+if (process.argv.includes('--copilot-override')) {
+  settings['rangelink.customAiAssistants'].push({
+    extensionId: 'github.copilot-chat',
+    extensionName: 'Copilot Override',
+    insertCommands: ['dummyAi.insertText'],
+  });
 }
 
 const merged = { ...existing, ...settings };

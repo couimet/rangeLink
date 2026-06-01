@@ -27,6 +27,7 @@ cd "$PACKAGE_ROOT"
 
 CONFIG_AUTOMATED=false
 CONFIG_EXTENSIONS=false
+CONFIG_COPILOT_OVERRIDE=false
 GREP_PATTERN=""
 LABEL_FILTERS=()
 EXCLUDE_LABELS=()
@@ -55,6 +56,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-extensions)
       CONFIG_EXTENSIONS=true
+      shift
+      ;;
+    --override-copilot)
+      CONFIG_COPILOT_OVERRIDE=true
       shift
       ;;
     --grep)
@@ -112,6 +117,7 @@ if [[ "$SHOW_HELP" == true ]]; then
   echo "Flags:"
   echo "  --automated              Use automated config (20s timeout, excludes assisted)"
   echo "  --with-extensions        Use with-extensions config + install marketplace extensions"
+  echo "  --override-copilot       Route Copilot Chat to Dummy AI (local dev without Copilot)"
   echo "  --grep <pattern>         Mocha grep filter (AND-combined with resolved label IDs)"
   echo "  --label <name>           Include TCs with this QA YAML label (repeatable, OR within labels)"
   echo "  --exclude-label <name>   Exclude TCs with this QA YAML label (repeatable)"
@@ -124,6 +130,7 @@ if [[ "$SHOW_HELP" == true ]]; then
   echo "  ./scripts/run-integration-tests.sh --label clipboard --assisted"
   echo "  ./scripts/run-integration-tests.sh --automated --exclude-label requires-extensions"
   echo "  ./scripts/run-integration-tests.sh --with-extensions --grep \"claude-code-001\""
+  echo "  ./scripts/run-integration-tests.sh --with-extensions --override-copilot --exclude-label needs-real-copilot"
   exit 0
 fi
 
@@ -249,7 +256,11 @@ echo ""
 pnpm test:release:prepare
 
 if [[ "$CONFIG_EXTENSIONS" == true ]]; then
-  node "$SCRIPT_DIR/setup-integration-test-settings.js" --suffix -with-ext
+  SETUP_CMD="node $SCRIPT_DIR/setup-integration-test-settings.js --suffix -with-ext"
+  if [[ "$CONFIG_COPILOT_OVERRIDE" == true ]]; then
+    SETUP_CMD="$SETUP_CMD --copilot-override"
+  fi
+  $SETUP_CMD
 fi
 
 strip_ansi() {
@@ -307,6 +318,7 @@ TOTAL_COUNT=$(( ${PASSING_COUNT:-0} + ${FAILING_COUNT:-0} ))
       [[ "$EXCLUDE_ASSISTED" == true ]] && RERUN_CMD="$RERUN_CMD --exclude-assisted"
       [[ "$CONFIG_AUTOMATED" == true ]] && RERUN_CMD="$RERUN_CMD --automated"
       [[ "$CONFIG_EXTENSIONS" == true ]] && RERUN_CMD="$RERUN_CMD --with-extensions"
+      [[ "$CONFIG_COPILOT_OVERRIDE" == true ]] && RERUN_CMD="$RERUN_CMD --override-copilot"
       echo ""
       echo ""
       echo "Re-run failed tests:"

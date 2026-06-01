@@ -463,6 +463,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.expectStatusBarMessages([
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
 
     const fileUri = ss.createWorkspaceFile('ghc-004', 'line 1\nline 2\nline 3\nline 4\n');
