@@ -2048,6 +2048,8 @@ test_cases:
     non_automatable_reason: ide-specific
 
   - id: github-copilot-chat-001
+    labels:
+      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'GitHub Copilot Chat appears in destination picker when available'
     expected_result: '"GitHub Copilot Chat" is listed in the AI Assistants group of the destination picker'
@@ -2056,6 +2058,7 @@ test_cases:
   - id: github-copilot-chat-002
     labels:
       - clipboard
+      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Binding to GitHub Copilot Chat and sending a link delivers content to chat'
     expected_result: 'GitHub Copilot Chat opens and contains the RangeLink and selected code snippet'
@@ -2141,6 +2144,7 @@ test_cases:
   - id: github-copilot-chat-003
     labels:
       - clipboard
+      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Cold panel paste verification — content arrives in GitHub Copilot Chat input after a single R-L since bind'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show paste command succeeded with a post-paste delay. Single clipboard write architecture: no double-write.'
@@ -2149,6 +2153,7 @@ test_cases:
   - id: github-copilot-chat-004
     labels:
       - clipboard
+      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Warm panel paste verification — content arrives in GitHub Copilot Chat input on second R-L without cold-start refocus signals'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'
