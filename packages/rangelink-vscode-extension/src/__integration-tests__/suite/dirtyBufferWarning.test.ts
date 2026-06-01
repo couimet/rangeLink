@@ -130,6 +130,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
   test('[assisted] dirty-buffer-warning-009: R-F on clean file sends path without warning', async () => {
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
+      '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
+    ]);
+
     const cleanUri = ss.createWorkspaceFile('clean-rf', 'clean content\n');
 
     const editor = await ss.openEditor(cleanUri);
@@ -363,6 +368,26 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
   test('[assisted] dirty-buffer-warning-002: dirty buffer dialog shows Save & Generate, Generate Anyway, and dismiss options', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
+    ]);
+
+    ss.expectModalDialogs([
+      {
+        level: 'warning',
+        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        items: ['Save & Generate', 'Generate Anyway'],
+      },
+    ]);
+
+    ss.expectToastMessages([
+      {
+        level: 'info',
+        message: 'Operation cancelled — file has unsaved changes.',
+      },
+    ]);
+
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
     const editor = await ss.openEditor(testFileUri);
@@ -382,12 +407,12 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
     const verdict = await waitForHumanVerdict(
       'dirty-buffer-warning-002',
-      'Press Cmd+R Cmd+L → PASS if dialog shows "Save & Generate" + "Generate Anyway" + X, FAIL if not',
+      'Press Cmd+R Cmd+L → verify dialog shows "Save & Generate" + "Generate Anyway" + X → dismiss (Escape or X) → then click PASS',
       [
         'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
         'Confirm the dialog shows exactly 3 choices: "Save & Generate", "Generate Anyway", and an X/dismiss button.',
-        'If all 3 options are present → click PASS, then dismiss the dialog (Escape or X).',
-        'If any option is missing or the dialog did not appear → click FAIL.',
+        'If all 3 options are present → dismiss the dialog (Escape or X) → then click PASS.',
+        'If any option is missing or the dialog did not appear → click FAIL (no need to dismiss first).',
       ],
     );
     assert.strictEqual(
