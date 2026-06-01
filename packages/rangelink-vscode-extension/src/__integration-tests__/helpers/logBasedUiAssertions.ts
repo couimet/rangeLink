@@ -334,31 +334,15 @@ export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void 
 
 const PASTE_TO_AI_ASSISTANT_FN = 'VscodeAdapter.pasteClipboardToAiAssistant';
 
-interface PasteCommandAssertionOptions {
-  command?: string;
-}
-
-/**
- * Assert that `pasteClipboardToAiAssistant` reported a successful paste.
- * When `opts.command` is provided, also asserts which entry of the
- * `AI_ASSISTANT_PASTE_COMMANDS` fallback chain delivered the paste.
- */
-export const assertPasteCommandLogged = (
-  lines: string[],
-  opts: PasteCommandAssertionOptions,
-): void => {
+export const assertPasteCommandSucceeded = (lines: string[]): void => {
   const found = lines.some((line) => {
-    const ctx = parseLogContext(line) as (LoggingContext & { command?: unknown }) | undefined;
-    if (ctx?.fn !== PASTE_TO_AI_ASSISTANT_FN || ctx.message !== 'Clipboard paste succeeded') {
-      return false;
-    }
-    if (opts.command !== undefined && ctx.command !== opts.command) return false;
-    return true;
+    const ctx = parseLogContext(line);
+    if (ctx?.fn !== PASTE_TO_AI_ASSISTANT_FN) return false;
+    return line.includes('Clipboard paste succeeded');
   });
-  const cmdSuffix = opts.command !== undefined ? ` with command="${opts.command}"` : '';
   assert.ok(
     found,
-    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log${cmdSuffix} but it was not found in ${lines.length} log lines`,
+    `Expected ${PASTE_TO_AI_ASSISTANT_FN} success log but it was not found in ${lines.length} log lines`,
   );
 };
 

@@ -25,7 +25,7 @@ import {
   assertClipboardChanged,
   assertClipboardPreservationRan,
   assertClipboardRestored,
-  assertPasteCommandLogged,
+  assertPasteCommandSucceeded,
   extractGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
@@ -63,16 +63,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     logCapture.mark('before-cc-002-send');
 
-    // Invoke the send command directly rather than asking the human to press the chord.
-    // This TC verifies bind→send delivery to Claude Code, not keybinding dispatch (which
-    // claude-code-004/005 cover). Programmatic invocation removes the focus-fragility
-    // that bites when the editor hasn't received a real user click.
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
     const sendLines = logCapture.getLinesSince('before-cc-002-send');
 
-    assertPasteCommandLogged(sendLines, {});
+    assertPasteCommandSucceeded(sendLines);
 
     const verdict = await waitForHumanVerdict(
       'claude-code-002',
@@ -115,7 +111,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-cc-004');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(lines);
 
     const verdict = await waitForHumanVerdict(
       'claude-code-004',
@@ -184,9 +180,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-cc-005-warm');
+    const warmLines = logCapture.getLinesSince('before-cc-005-warm');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(warmLines);
 
     const warmVerdict = await waitForHumanVerdict(
       'claude-code-005-warm',
@@ -236,7 +232,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const sendLines = logCapture.getLinesSince('before-gc-002-send');
 
-    assertPasteCommandLogged(sendLines, {});
+    assertPasteCommandSucceeded(sendLines);
 
     const verdict = await waitForHumanVerdict(
       'gemini-code-assist-002',
@@ -281,7 +277,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-gc-003');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(lines);
 
     const verdict = await waitForHumanVerdict(
       'gemini-code-assist-003',
@@ -351,7 +347,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-gc-004-warm');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(lines);
 
     const warmVerdict = await waitForHumanVerdict(
       'gemini-code-assist-004-warm',
@@ -399,7 +395,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const sendLines = logCapture.getLinesSince('before-ghc-002-send');
 
-    assertPasteCommandLogged(sendLines, {});
+    assertPasteCommandSucceeded(sendLines);
 
     const verdict = await waitForHumanVerdict(
       'github-copilot-chat-002',
@@ -442,7 +438,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ghc-003');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(lines);
 
     const verdict = await waitForHumanVerdict(
       'github-copilot-chat-003',
@@ -511,7 +507,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ghc-004-warm');
 
-    assertPasteCommandLogged(lines, {});
+    assertPasteCommandSucceeded(lines);
 
     const warmVerdict = await waitForHumanVerdict(
       'github-copilot-chat-004-warm',
@@ -596,7 +592,12 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
   });
 
-  test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async () => {
+  test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension('cursor.cursor')) {
+      ss.log('Skipping clipboard-preservation-013 — Cursor AI extension not installed in this test config');
+      this.skip();
+    }
+
     ss.expectStatusBarMessages([
       '✓ RangeLink: Bound to Cursor AI Assistant',
       '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
@@ -916,6 +917,11 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       ss.log('Skipping claude-code-007 — Claude Code extension not installed in this test config');
       this.skip();
     }
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Claude Code Chat',
+      '✓ RangeLink: Focused Claude Code Chat',
+    ]);
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
