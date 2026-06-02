@@ -369,9 +369,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
   test('[assisted] dirty-buffer-warning-002: dirty buffer dialog shows Save & Generate, Generate Anyway, and dismiss options', async () => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("dirty-buffer-test")']);
 
     ss.expectModalDialogs([
       {

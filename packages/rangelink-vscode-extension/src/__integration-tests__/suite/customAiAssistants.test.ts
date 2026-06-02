@@ -561,7 +561,11 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       | { tier1: string; tier2: string }
       | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.strictEqual(textResult!.tier1, '', 'Expected tier1 to be empty (focusCommands-only, no direct insert)');
+    assert.strictEqual(
+      textResult!.tier1,
+      '',
+      'Expected tier1 to be empty (focusCommands-only, no direct insert)',
+    );
 
     const verdict = await waitForHumanVerdict(
       'custom-ai-assistant-019',
@@ -573,8 +577,14 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
         '4. Click PASS if everything looks correct, FAIL otherwise',
       ],
     );
-    assert.strictEqual(verdict, 'pass', 'Human reported clipboard content was not a valid RangeLink');
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported clipboard content was not a valid RangeLink',
+    );
 
-    ss.log('✓ Misconfigured override (focusCommands-only) leaves link in clipboard, human confirmed');
+    ss.log(
+      '✓ Misconfigured override (focusCommands-only) leaves link in clipboard, human confirmed',
+    );
   });
 });
