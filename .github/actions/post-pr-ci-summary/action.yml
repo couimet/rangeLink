@@ -63,7 +63,7 @@ runs:
           RESOLVE_ARGS+=(--exclude-label requires-extensions)
         fi
         QA_JSON=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js "${RESOLVE_ARGS[@]}")
-        TC_TOTAL=$(echo "$QA_JSON" | jq '[.groups[].total] | add')
+        TC_TOTAL=$(echo "$QA_JSON" | jq '[.groups[].total] | add // 0')
         FEATURE_COUNT=$(echo "$QA_JSON" | jq '.groups | length')
         FEATURE_TABLE=$(echo "$QA_JSON" | jq -r '.groups | sort_by(.feature) | map("| \(.feature) | \(.total) |") | join("\n")')
 

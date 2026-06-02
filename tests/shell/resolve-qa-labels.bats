@@ -107,8 +107,6 @@ EOF
 # ════════════════════════════════════════════════════════════════════
 
 @test "resolve-qa-labels: --yaml with nonexistent file exits 1" {
-  run node "$REAL_SCRIPT" --yarn /nonexistent/path.yaml --json
-  # Wrong: --yarn is unknown option; use --yaml
   run node "$REAL_SCRIPT" --yaml /nonexistent/path.yaml
   [[ "$status" -eq 1 ]]
   [[ "$output" =~ "Cannot read YAML" ]]
