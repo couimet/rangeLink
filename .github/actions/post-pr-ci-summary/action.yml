@@ -51,21 +51,19 @@ runs:
         ELAPSED=$(( NOW - ${{ inputs.job-start }} ))
         DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
 
-        # Latest QA YAML
-        QA_YAML=$(find packages/rangelink-vscode-extension/qa -name 'qa-test-cases-*.yaml' | sort -V | tail -1)
-
-        # Resolve TC IDs via JSON for structured counts and feature breakdown
+        # Extract resolved TC data from report file JSON blocks (single source of truth)
         LABEL_FILTER="${{ inputs.label-filter }}"
-        RESOLVE_ARGS=(--automated-only --yaml "$QA_YAML" --json)
-        if [ -n "$LABEL_FILTER" ]; then
-          RESOLVE_ARGS+=(--label "$LABEL_FILTER")
-        else
-          RESOLVE_ARGS+=(--exclude-label requires-extensions)
+        RESOLVED_JSON="{}"
+        if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
+          RESOLVED_JSON=$(sed -n '/++RESOLVED_JSON_START++/,/++RESOLVED_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
+          RESULTS_JSON=$(sed -n '/++RESULTS_JSON_START++/,/++RESULTS_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
         fi
-        QA_JSON=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js "${RESOLVE_ARGS[@]}")
-        TC_TOTAL=$(echo "$QA_JSON" | jq '[.groups[].total] | add // 0')
-        FEATURE_COUNT=$(echo "$QA_JSON" | jq '.groups | length')
-        FEATURE_TABLE=$(echo "$QA_JSON" | jq -r '.groups | sort_by(.feature) | map("| \(.feature) | \(.total) |") | join("\n")')
+        if [ -z "$RESOLVED_JSON" ]; then
+          RESOLVED_JSON="{}"
+        fi
+        TC_TOTAL=$(echo "$RESOLVED_JSON" | jq -r '.tc_total // 0')
+        FEATURE_COUNT=$(echo "$RESOLVED_JSON" | jq -r '.groups | length')
+        FEATURE_TABLE=$(echo "$RESOLVED_JSON" | jq -r '.groups | group_by(.feature) | map("| \(.[0].feature) | \(map(.total) | add) | \(map(.ids[]) | join(", ")) |") | join("\n")')
 
         # Determine pass/fail
         PASS=true
@@ -126,7 +124,7 @@ runs:
         TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
 
         # Collapsible feature breakdown
-        TABLE="${TABLE}"$'\n\n'"<details>"$'\n'"<summary>Feature breakdown</summary>"$'\n\n'"| Feature | TCs |"$'\n'"|---|---|"$'\n'"${FEATURE_TABLE}"$'\n\n'"</details>"
+        TABLE="${TABLE}"$'\n\n'"<details>"$'\n'"<summary>Feature breakdown</summary>"$'\n\n'"| Feature | TCs | IDs |"$'\n'"|---|---|---|"$'\n'"${FEATURE_TABLE}"$'\n\n'"</details>"
 
         # Extract re-run command from test report
         BODY="$TABLE"

@@ -14,6 +14,8 @@ set -euo pipefail
 #   ./scripts/run-integration-tests.sh --label "clipboard"       # only tests with matching label
 #   ./scripts/run-integration-tests.sh --label "clipboard" --assisted    # label + assisted-only
 #   ./scripts/run-integration-tests.sh --label "clipboard" --exclude-assisted  # label + exclude assisted
+#   ./scripts/run-integration-tests.sh --feature "context-menus"          # only tests with feature slug
+#   ./scripts/run-integration-tests.sh --feature "context-menus" --label "explorer"  # feature + label
 #   ./scripts/run-integration-tests.sh --exclude-label "requires-extensions"  # exclude labeled tests
 #   ./scripts/run-integration-tests.sh --help                    # print usage
 #
@@ -31,6 +33,8 @@ USE_OVERRIDES=false
 GREP_PATTERN=""
 LABEL_FILTERS=()
 EXCLUDE_LABELS=()
+FEATURE_FILTERS=()
+EXCLUDE_FEATURES=()
 ASSISTED_ONLY=false
 EXCLUDE_ASSISTED=false
 SHOW_HELP=false
@@ -103,6 +107,33 @@ while [[ $# -gt 0 ]]; do
       EXCLUDE_LABELS+=("$2")
       shift 2
       ;;
+    --feature)
+      if [[ $# -lt 2 || "$2" == -* ]]; then
+        echo "Error: --feature requires a feature slug argument" >&2
+        echo "" >&2
+        echo "Usage: ./scripts/run-integration-tests.sh --feature <feature-slug>" >&2
+        echo "" >&2
+        echo "Examples:" >&2
+        echo '  ./scripts/run-integration-tests.sh --feature context-menus' >&2
+        echo '  ./scripts/run-integration-tests.sh --feature context-menus --label explorer' >&2
+        exit 1
+      fi
+      FEATURE_FILTERS+=("$2")
+      shift 2
+      ;;
+    --exclude-feature)
+      if [[ $# -lt 2 || "$2" == -* ]]; then
+        echo "Error: --exclude-feature requires a feature slug argument" >&2
+        echo "" >&2
+        echo "Usage: ./scripts/run-integration-tests.sh --exclude-feature <feature-slug>" >&2
+        echo "" >&2
+        echo "Examples:" >&2
+        echo '  ./scripts/run-integration-tests.sh --exclude-feature custom-ai-assistants' >&2
+        exit 1
+      fi
+      EXCLUDE_FEATURES+=("$2")
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1" >&2
       echo "Run with --help for usage information." >&2
@@ -126,6 +157,8 @@ if [[ "$SHOW_HELP" == true ]]; then
   echo "  --grep <pattern>         Mocha grep filter (AND-combined with resolved label IDs)"
   echo "  --label <name>           Include TCs with this QA YAML label (repeatable, OR within labels)"
   echo "  --exclude-label <name>   Exclude TCs with this QA YAML label (repeatable)"
+  echo "  --feature <slug>         Include TCs with this feature slug (repeatable, OR within features)"
+  echo "  --exclude-feature <slug> Exclude TCs with this feature slug (repeatable)"
   echo "  --assisted               Only tests marked automated: assisted in QA YAML"
   echo "  --exclude-assisted       Exclude tests marked automated: assisted in QA YAML"
   echo "  --help                   Print this help and exit"
@@ -133,6 +166,8 @@ if [[ "$SHOW_HELP" == true ]]; then
   echo "Examples:"
   echo "  ./scripts/run-integration-tests.sh --label clipboard"
   echo "  ./scripts/run-integration-tests.sh --label clipboard --assisted"
+  echo "  ./scripts/run-integration-tests.sh --feature context-menus"
+  echo "  ./scripts/run-integration-tests.sh --feature context-menus --label explorer"
   echo "  ./scripts/run-integration-tests.sh --automated --exclude-label requires-extensions"
   echo "  ./scripts/run-integration-tests.sh --with-extensions --grep \"claude-code-001\""
   echo "  ./scripts/run-integration-tests.sh --with-extensions --use-overrides"
@@ -150,7 +185,7 @@ else
 fi
 
 HAS_FILTER=false
-[[ -n "$GREP_PATTERN" || ${#LABEL_FILTERS[@]} -gt 0 || ${#EXCLUDE_LABELS[@]} -gt 0 ]] && HAS_FILTER=true
+[[ -n "$GREP_PATTERN" || ${#LABEL_FILTERS[@]} -gt 0 || ${#EXCLUDE_LABELS[@]} -gt 0 || ${#FEATURE_FILTERS[@]} -gt 0 || ${#EXCLUDE_FEATURES[@]} -gt 0 ]] && HAS_FILTER=true
 [[ "$ASSISTED_ONLY" == true || "$EXCLUDE_ASSISTED" == true ]] && HAS_FILTER=true
 
 if [[ "$CONFIG_EXTENSIONS" == true ]]; then
@@ -187,6 +222,18 @@ fi
 if [[ ${#EXCLUDE_LABELS[@]} -gt 0 ]]; then
   for exclude in "${EXCLUDE_LABELS[@]}"; do
     RESOLVE_ARGS+=("--exclude-label" "$exclude")
+  done
+fi
+
+if [[ ${#FEATURE_FILTERS[@]} -gt 0 ]]; then
+  for feature in "${FEATURE_FILTERS[@]}"; do
+    RESOLVE_ARGS+=("--feature" "$feature")
+  done
+fi
+
+if [[ ${#EXCLUDE_FEATURES[@]} -gt 0 ]]; then
+  for exclude in "${EXCLUDE_FEATURES[@]}"; do
+    RESOLVE_ARGS+=("--exclude-feature" "$exclude")
   done
 fi
 
@@ -261,6 +308,48 @@ RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
   echo ""
 } > "$REPORT_FILE"
 
+# ── Block 1: Resolved JSON (pre-run) ──────────────────────────────────
+
+QA_DIR="$SCRIPT_DIR/../qa"
+YAML_PATH=$(find "$QA_DIR" -name 'qa-test-cases-*.yaml' | sort -V | tail -1)
+
+if [[ -n "$YAML_PATH" ]]; then
+  YAML_TOTAL=$(grep -c '^  - id:' "$YAML_PATH" || echo 0)
+
+  if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
+    QA_JSON=$(node "$SCRIPT_DIR/resolve-qa-labels.js" "${RESOLVE_ARGS[@]}" --json) || true
+    TC_TOTAL=$RESOLVED_COUNT
+  else
+    QA_JSON=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --json) || true
+    TC_TOTAL=$YAML_TOTAL
+  fi
+
+  if [[ -n "$QA_JSON" ]]; then
+    if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
+      FILTER_ARGS_JSON=$(printf '%s\n' "${RESOLVE_ARGS[@]}" | jq -R . | jq -s .)
+    else
+      FILTER_ARGS_JSON='[]'
+    fi
+
+    BLOCK1_JSON=$(jq -n \
+      --argjson tc_total "$TC_TOTAL" \
+      --argjson yaml_total "$YAML_TOTAL" \
+      --arg mode "$REPORT_MODE" \
+      --arg resolved_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+      --argjson filter_args "$FILTER_ARGS_JSON" \
+      --argjson groups "$(echo "$QA_JSON" | jq '.groups')" \
+      --argjson total_assisted "$(echo "$QA_JSON" | jq '.total_assisted')" \
+      --argjson total_manual "$(echo "$QA_JSON" | jq '.total_manual')" \
+      '{tc_total: $tc_total, yaml_total: $yaml_total, mode: $mode, resolved_at: $resolved_at, filter_args: $filter_args, groups: $groups, total_assisted: $total_assisted, total_manual: $total_manual}'
+    )
+
+    echo "" >> "$REPORT_FILE"
+    echo "++RESOLVED_JSON_START++" >> "$REPORT_FILE"
+    echo "$BLOCK1_JSON" >> "$REPORT_FILE"
+    echo "++RESOLVED_JSON_END++" >> "$REPORT_FILE"
+  fi
+fi
+
 echo "Report output: $RELATIVE_REPORT"
 echo ""
 
@@ -311,39 +400,65 @@ PASSING_COUNT=$(grep -oE '[0-9]+ passing' "$REPORT_FILE" | tail -1 | grep -oE '[
 FAILING_COUNT=$(grep -oE '[0-9]+ failing' "$REPORT_FILE" | tail -1 | grep -oE '[0-9]+' || true)
 TOTAL_COUNT=$(( ${PASSING_COUNT:-0} + ${FAILING_COUNT:-0} ))
 
-# ── Re-run command (on failure) ───────────────────────────────────────────────
+# ── Extract failed IDs (for Block 2 JSON) ─────────────────────────────
+
+FAILED_IDS=$(grep -A1 '^[[:space:]]*[0-9][0-9]*)[[:space:]]' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u || true)
+
+# ── Re-run command and Block 2 JSON ──────────────────────────────────
 
 {
   echo ""
   echo "Results: ${TOTAL_COUNT} total, ${PASSING_COUNT:-0} passing, ${FAILING_COUNT:-0} failing"
   echo "Report complete: $RELATIVE_REPORT"
 
-  if [[ $FINAL_EXIT -ne 0 ]]; then
-    FAILED_IDS=$(grep -A1 '^[[:space:]]*[0-9][0-9]*)[[:space:]]' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u || true)
-    if [[ -n "$FAILED_IDS" ]]; then
-      RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
-      RERUN_CMD="./scripts/run-integration-tests.sh"
-      if [[ ${#LABEL_FILTERS[@]} -gt 0 ]]; then
-        for label in "${LABEL_FILTERS[@]}"; do
-          RERUN_CMD="$RERUN_CMD --label \"$label\""
-        done
-      fi
-      if [[ ${#EXCLUDE_LABELS[@]} -gt 0 ]]; then
-        for exclude in "${EXCLUDE_LABELS[@]}"; do
-          RERUN_CMD="$RERUN_CMD --exclude-label \"$exclude\""
-        done
-      fi
-      [[ "$ASSISTED_ONLY" == true ]] && RERUN_CMD="$RERUN_CMD --assisted"
-      [[ "$EXCLUDE_ASSISTED" == true ]] && RERUN_CMD="$RERUN_CMD --exclude-assisted"
-      [[ "$CONFIG_AUTOMATED" == true ]] && RERUN_CMD="$RERUN_CMD --automated"
-      [[ "$CONFIG_EXTENSIONS" == true ]] && RERUN_CMD="$RERUN_CMD --with-extensions"
-      [[ "$USE_OVERRIDES" == true ]] && RERUN_CMD="$RERUN_CMD --use-overrides"
-      echo ""
-      echo ""
-      echo "Re-run failed tests:"
-      echo "  $RERUN_CMD --grep \"$RERUN_PATTERN\""
+  if [[ $FINAL_EXIT -ne 0 && -n "$FAILED_IDS" ]]; then
+    RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
+    RERUN_CMD="./scripts/run-integration-tests.sh"
+    if [[ ${#LABEL_FILTERS[@]} -gt 0 ]]; then
+      for label in "${LABEL_FILTERS[@]}"; do
+        RERUN_CMD="$RERUN_CMD --label \"$label\""
+      done
     fi
+    if [[ ${#EXCLUDE_LABELS[@]} -gt 0 ]]; then
+      for exclude in "${EXCLUDE_LABELS[@]}"; do
+        RERUN_CMD="$RERUN_CMD --exclude-label \"$exclude\""
+      done
+    fi
+    if [[ ${#FEATURE_FILTERS[@]} -gt 0 ]]; then
+      for feature in "${FEATURE_FILTERS[@]}"; do
+        RERUN_CMD="$RERUN_CMD --feature \"$feature\""
+      done
+    fi
+    if [[ ${#EXCLUDE_FEATURES[@]} -gt 0 ]]; then
+      for exclude in "${EXCLUDE_FEATURES[@]}"; do
+        RERUN_CMD="$RERUN_CMD --exclude-feature \"$exclude\""
+      done
+    fi
+    [[ "$ASSISTED_ONLY" == true ]] && RERUN_CMD="$RERUN_CMD --assisted"
+    [[ "$EXCLUDE_ASSISTED" == true ]] && RERUN_CMD="$RERUN_CMD --exclude-assisted"
+    [[ "$CONFIG_AUTOMATED" == true ]] && RERUN_CMD="$RERUN_CMD --automated"
+    [[ "$CONFIG_EXTENSIONS" == true ]] && RERUN_CMD="$RERUN_CMD --with-extensions"
+    [[ "$USE_OVERRIDES" == true ]] && RERUN_CMD="$RERUN_CMD --use-overrides"
+    echo ""
+    echo ""
+    echo "Re-run failed tests:"
+    echo "  $RERUN_CMD --grep \"$RERUN_PATTERN\""
   fi
+
+  # Block 2: Results JSON (post-run)
+  FAILED_IDS_JSON=$(echo "$FAILED_IDS" | jq -R -s 'map(select(length > 0))' 2>/dev/null || echo '[]')
+  BLOCK2_JSON=$(jq -n \
+    --argjson passing "${PASSING_COUNT:-0}" \
+    --argjson failing "${FAILING_COUNT:-0}" \
+    --argjson total "$TOTAL_COUNT" \
+    --argjson failed_ids "$FAILED_IDS_JSON" \
+    --arg report_complete_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    '{passing: $passing, failing: $failing, total: $total, failed_ids: $failed_ids, report_complete_at: $report_complete_at}'
+  )
+  echo ""
+  echo "++RESULTS_JSON_START++"
+  echo "$BLOCK2_JSON"
+  echo "++RESULTS_JSON_END++"
 } | tee -a "$REPORT_FILE"
 
 exit $FINAL_EXIT

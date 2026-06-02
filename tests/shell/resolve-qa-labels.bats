@@ -54,6 +54,37 @@ write_yaml() {
   [[ "$output" =~ "Cannot read YAML" ]]
 }
 
+@test "resolve-qa-labels: --feature without value (no next arg) exits 1" {
+  run node "$REAL_SCRIPT" --feature
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --feature without value (next arg is flag) exits 1" {
+  run node "$REAL_SCRIPT" --feature --assisted
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --feature with value accepted" {
+  local yml="$TEST_TEMP_DIR/nonexistent.yaml"
+  run node "$REAL_SCRIPT" --feature context-menus --yaml "$yml"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "Cannot read YAML" ]]
+}
+
+@test "resolve-qa-labels: --exclude-feature without value (no next arg) exits 1" {
+  run node "$REAL_SCRIPT" --exclude-feature
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--exclude-feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --exclude-feature without value (next arg is flag) exits 1" {
+  run node "$REAL_SCRIPT" --exclude-feature --automated-only
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--exclude-feature requires a value" ]]
+}
+
 @test "resolve-qa-labels: --exclude-label without value exits 1" {
   run node "$REAL_SCRIPT" --exclude-label
   [[ "$status" -eq 1 ]]
@@ -735,9 +766,71 @@ EOF
   [[ "$output" == "beta-001" ]]
 }
 
-@test "resolve-qa-labels: filter empty results" {
+@test "resolve-qa-labels: filter --feature matches exact feature slug" {
   setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --label nonexistent
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha
+  [[ "$status" -eq 0 ]]
+  echo "$output" | grep -q "alpha-001"
+  echo "$output" | grep -q "alpha-002"
+  echo "$output" | grep -q "alpha-003"
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 3 ]]
+}
+
+@test "resolve-qa-labels: filter multiple --feature flags as union" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --feature Beta
+  [[ "$status" -eq 0 ]]
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 5 ]]
+}
+
+@test "resolve-qa-labels: filter --exclude-feature" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --exclude-feature Beta
+  [[ "$status" -eq 0 ]]
+  echo "$output" | grep -q "alpha-001"
+  echo "$output" | grep -q "alpha-002"
+  echo "$output" | grep -q "alpha-003"
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 3 ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --label combined (AND intersection)" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --label cursor
+  [[ "$status" -eq 0 ]]
+  # Only alpha-003 has both feature Alpha AND label cursor
+  [[ "$output" == "alpha-003" ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --automated-only combined" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Beta --automated-only
+  [[ "$status" -eq 0 ]]
+  # Only beta-001 has feature Beta AND automated:true
+  [[ "$output" == "beta-001" ]]
+}
+
+@test "resolve-qa-labels: filter --exclude-feature with --label combined" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --exclude-feature Alpha --label cursor
+  [[ "$status" -eq 0 ]]
+  # beta-001 has label cursor and is NOT Alpha
+  [[ "$output" == "beta-001" ]]
+}
+
+@test "resolve-qa-labels: filter feature empty results" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Nonexistent
+  [[ "$status" -eq 0 ]]
+  [[ -z "$output" ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --exclude-feature" {
+  setup_filter_yaml
+  # Include all Alpha, exclude Alpha → empty
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --exclude-feature Alpha
   [[ "$status" -eq 0 ]]
   [[ -z "$output" ]]
 }

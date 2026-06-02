@@ -8,10 +8,12 @@ const path = require('node:path');
 
 const args = process.argv.slice(2);
 const labelFilters = [];
+const featureFilters = [];
 let assistedOnly = false;
 let excludeAssisted = false;
 let automatedOnly = false;
 const excludeLabels = [];
+const excludeFeatures = [];
 let jsonOutput = false;
 let yamlPath = '';
 
@@ -19,6 +21,7 @@ const printUsage = (exitCode = 2) => {
   process.stderr.write(
     'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
       '                          [--automated-only] [--exclude-label <name>]...\n' +
+      '                          [--feature <slug>]... [--exclude-feature <slug>]...\n' +
       '                          [--json] [--yaml <path>]\n',
   );
   process.exit(exitCode);
@@ -49,6 +52,20 @@ for (let i = 0; i < args.length; i++) {
         process.exit(1);
       }
       excludeLabels.push(args[++i]);
+      break;
+    case '--feature':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --feature requires a value\n');
+        process.exit(1);
+      }
+      featureFilters.push(args[++i]);
+      break;
+    case '--exclude-feature':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --exclude-feature requires a value\n');
+        process.exit(1);
+      }
+      excludeFeatures.push(args[++i]);
       break;
     case '--json':
       jsonOutput = true;
@@ -233,6 +250,8 @@ finalizeCurrent();
 const filterTc = (tc) => {
   if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
   if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
+  if (featureFilters.length > 0 && !featureFilters.includes(tc.feature)) return false;
+  if (excludeFeatures.length > 0 && excludeFeatures.includes(tc.feature)) return false;
   if (automatedOnly && tc.automated !== 'true') return false;
   if (assistedOnly && tc.automated !== 'assisted') return false;
   if (excludeAssisted && tc.automated === 'assisted') return false;
@@ -260,7 +279,6 @@ if (jsonOutput) {
 
   for (const prefix of sortedPrefixes) {
     const tcList = groups[prefix];
-    const featureCounts = {};
     const reasonCounts = {};
     let automatedCount = 0;
     let assistedCount = 0;
@@ -296,8 +314,6 @@ if (jsonOutput) {
         requiresExtensions = true;
       }
 
-      featureCounts[tc.feature] = (featureCounts[tc.feature] || 0) + 1;
-
       if (tc.automated === 'true') {
         automatedCount++;
       } else if (tc.automated === 'assisted') {
@@ -315,18 +331,11 @@ if (jsonOutput) {
     totalAssisted += assistedCount;
     totalManual += manualCount;
 
-    let mostCommon = 'Uncategorized';
-    let maxCount = 0;
-    for (const [feat, count] of Object.entries(featureCounts)) {
-      if (count > maxCount) {
-        maxCount = count;
-        mostCommon = feat;
-      }
-    }
+    const feature = tcList.length > 0 ? tcList[0].feature : 'Uncategorized';
 
     resultGroups.push({
       prefix,
-      feature: mostCommon,
+      feature: feature,
       automated: automatedCount,
       assisted: assistedCount,
       manual: manualCount,
