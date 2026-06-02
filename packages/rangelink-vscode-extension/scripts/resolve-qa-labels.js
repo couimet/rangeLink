@@ -12,7 +12,6 @@ let assistedOnly = false;
 let excludeAssisted = false;
 let automatedOnly = false;
 const excludeLabels = [];
-let outputFormat = 'lines';
 let jsonOutput = false;
 let yamlPath = '';
 
@@ -20,7 +19,7 @@ const printUsage = (exitCode = 2) => {
   process.stderr.write(
     'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
       '                          [--automated-only] [--exclude-label <name>]...\n' +
-      '                          [--json] [--format csv|lines] [--yaml <path>]\n',
+      '                          [--json] [--yaml <path>]\n',
   );
   process.exit(exitCode);
 };
@@ -53,17 +52,6 @@ for (let i = 0; i < args.length; i++) {
       break;
     case '--json':
       jsonOutput = true;
-      break;
-    case '--format':
-      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
-        process.stderr.write('Error: --format requires a value\n');
-        process.exit(1);
-      }
-      outputFormat = args[++i];
-      if (outputFormat !== 'csv' && outputFormat !== 'lines') {
-        process.stderr.write("Error: --format must be 'csv' or 'lines'\n");
-        process.exit(1);
-      }
       break;
     case '--yaml':
       if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
@@ -368,10 +356,6 @@ const matching = testCases.filter((tc) => {
 
 const ids = matching.map((tc) => tc.id);
 
-if (outputFormat === 'csv') {
-  process.stdout.write(ids.join(', '));
-} else {
-  for (const id of ids) {
-    process.stdout.write(`${id}\n`);
-  }
+for (const id of ids) {
+  process.stdout.write(`${id}\n`);
 }

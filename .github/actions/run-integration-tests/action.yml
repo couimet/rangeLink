@@ -14,6 +14,9 @@ outputs:
   int-failed:
     description: 'Number of integration tests failed'
     value: ${{ steps.stats.outputs.int-failed }}
+  int-total:
+    description: 'Total integration tests exercised (passing + failed)'
+    value: ${{ steps.stats.outputs.int-total }}
 
 runs:
   using: 'composite'

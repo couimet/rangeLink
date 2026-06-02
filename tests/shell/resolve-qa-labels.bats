@@ -743,25 +743,7 @@ EOF
 # Output format
 # ════════════════════════════════════════════════════════════════════
 
-@test "resolve-qa-labels: format csv outputs comma-separated" {
-  yml="$TEST_TEMP_DIR/format-csv.yaml"
-  cat > "$yml" <<'EOF'
-test_cases:
-  - id: first-001
-    feature: Test
-    scenario: First
-    automated: true
-  - id: second-001
-    feature: Test
-    scenario: Second
-    automated: true
-EOF
-  run node "$REAL_SCRIPT" --yaml "$yml" --format csv
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "first-001, second-001" ]]
-}
-
-@test "resolve-qa-labels: format lines outputs one per line (default)" {
+@test "resolve-qa-labels: outputs one ID per line" {
   yml="$TEST_TEMP_DIR/format-lines.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
@@ -782,32 +764,4 @@ EOF
   second=$(echo "$output" | sed -n '2p')
   [[ "$first" == "first-001" ]]
   [[ "$second" == "second-001" ]]
-}
-
-@test "resolve-qa-labels: format lines explicit" {
-  yml="$TEST_TEMP_DIR/format-lines-explicit.yaml"
-  cat > "$yml" <<'EOF'
-test_cases:
-  - id: only-001
-    feature: Test
-    scenario: Only
-    automated: true
-EOF
-  run node "$REAL_SCRIPT" --yaml "$yml" --format lines
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "only-001" ]]
-}
-
-@test "resolve-qa-labels: filter with format csv" {
-  setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --automated-only --format csv
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "alpha-001, beta-001" ]]
-}
-
-@test "resolve-qa-labels: empty results with format csv" {
-  setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --label nonexistent --format csv
-  [[ "$status" -eq 0 ]]
-  [[ -z "$output" ]]
 }

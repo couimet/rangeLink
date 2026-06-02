@@ -15,12 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
 
     steps:
-      - name: Record start time
-        run: echo "TEST_JOB_START=$(date +%s)" >> "$GITHUB_ENV"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -40,12 +36,6 @@ jobs:
         id: run-tests
         uses: ./.github/actions/run-tests
 
-      - name: Run integration tests (VS Code extension host)
-        id: run-integration-tests
-        uses: ./.github/actions/run-integration-tests
-        with:
-          mode: automated
-
       - name: Check TODOs/FIXMEs
         uses: ./.github/actions/check-todos
         with:
@@ -53,21 +43,7 @@ jobs:
           # For pushes to main: just count current TODOs
           base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}
 
-      - name: Post CI summary comment
-        if: always() && github.event_name == 'pull_request'
-        continue-on-error: true
-        uses: ./.github/actions/post-pr-ci-summary
-        with:
-          title: 'CI / Test & Validate — run summary'
-          unit-passed: ${{ steps.run-tests.outputs.unit-passed }}
-          unit-total: ${{ steps.run-tests.outputs.unit-total }}
-          int-passing: ${{ steps.run-integration-tests.outputs.int-passing }}
-          int-failed: ${{ steps.run-integration-tests.outputs.int-failed }}
-          report-file: '/tmp/test-report-automated.txt'
-          label-filter: ''
-          job-start: ${{ env.TEST_JOB_START }}
-
-  test-with-extensions:
+  integration-tests:
     name: Integration Tests (${{ matrix.mode }})
     runs-on: ubuntu-latest
     permissions:
@@ -76,6 +52,11 @@ jobs:
     strategy:
       matrix:
         include:
+          - mode: automated
+            action-mode: automated
+            summary-title: 'CI / Integration Tests (automated) — run summary'
+            label-filter: ''
+            report-file: '/tmp/test-report-automated.txt'
           - mode: with extensions
             action-mode: extensions
             summary-title: 'CI / Integration Tests (with extensions) — run summary'
@@ -116,6 +97,7 @@ jobs:
           unit-total: ''
           int-passing: ${{ steps.run-integration-tests.outputs.int-passing }}
           int-failed: ${{ steps.run-integration-tests.outputs.int-failed }}
+          int-total: ${{ steps.run-integration-tests.outputs.int-total }}
           report-file: ${{ matrix.report-file }}
           label-filter: ${{ matrix.label-filter }}
           job-start: ${{ env.JOB_START }}
