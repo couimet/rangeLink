@@ -111,14 +111,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$USE_OVERRIDES" == true ]]; then
-  if [[ "$CONFIG_EXTENSIONS" != true ]]; then
-    echo "Error: --use-overrides requires --with-extensions" >&2
-    exit 1
-  fi
-  LABEL_FILTERS+=("needs-override")
-else
-  EXCLUDE_LABELS+=("needs-override")
+if [[ "$USE_OVERRIDES" == true && "$CONFIG_EXTENSIONS" != true ]]; then
+  echo "Error: --use-overrides requires --with-extensions" >&2
+  exit 1
 fi
 
 if [[ "$SHOW_HELP" == true ]]; then
@@ -169,6 +164,14 @@ else
 fi
 
 QA_SKIP="$HAS_FILTER"
+
+# Apply override label rules after MODE/QA_SKIP detection so default excludes
+# don't affect reporting or QA validation.
+if [[ "$USE_OVERRIDES" == true ]]; then
+  LABEL_FILTERS+=("needs-override")
+elif [[ "$CONFIG_EXTENSIONS" == true ]]; then
+  EXCLUDE_LABELS+=("needs-override")
+fi
 
 # ── Resolve TC IDs from QA YAML ───────────────────────────────────────────────
 
