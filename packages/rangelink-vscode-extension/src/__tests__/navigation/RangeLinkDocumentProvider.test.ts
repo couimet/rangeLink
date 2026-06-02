@@ -2,9 +2,6 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { ParsedLink } from 'rangelink-core-ts';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
-// Namespace import enables jest.spyOn for findLinksInText without jest.mock() hoisting.
-// With CommonJS transform (ts-jest), the production code's named import resolves through
-// the same module object, so spying here intercepts calls in the provider under test.
 import * as rangelinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

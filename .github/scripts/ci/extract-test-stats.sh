@@ -64,7 +64,9 @@ case "$MODE" in
     INT_PASSING="${INT_PASSING:-0}"
     INT_FAILED=$(perl -nle 'print $1 if /(\d+)(?= failing)/' "$OUTPUT_FILE" | tail -1)
     INT_FAILED="${INT_FAILED:-0}"
+    INT_TOTAL=$(( INT_PASSING + INT_FAILED ))
     echo "int-passing=${INT_PASSING}"
     echo "int-failed=${INT_FAILED}"
+    echo "int-total=${INT_TOTAL}"
     ;;
 esac

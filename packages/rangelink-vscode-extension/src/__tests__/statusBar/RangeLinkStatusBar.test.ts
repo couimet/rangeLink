@@ -1,6 +1,14 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+import {
+  buildJumpMenuItem,
+  MENU_ITEM_GO_TO_LINK,
+  MENU_ITEM_SEPARATOR,
+  MENU_ITEM_UNBIND,
+  MENU_ITEM_UNBOUND,
+  MENU_ITEM_VERSION_INFO,
+} from '../../__integration-tests__/helpers/menuConstants';
 import type { Bookmark } from '../../bookmarks';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
@@ -24,7 +32,6 @@ import {
   spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
-
 /**
  * Semantic constant for when user dismisses QuickPick (Escape or click outside).
  * VSCode's showQuickPick returns undefined in this case.
@@ -226,7 +233,7 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledTimes(1);
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+          MENU_ITEM_UNBOUND,
           { label: 'AI Assistants', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '    $(arrow-right) Claude Code Chat',
@@ -248,16 +255,12 @@ describe('RangeLinkStatusBar', () => {
               isActive: false,
             },
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(link-external) Go to Link',
-            itemKind: 'command',
-            command: 'rangelink.goToRangeLink',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_GO_TO_LINK,
+          MENU_ITEM_SEPARATOR,
           { label: 'Bookmarks', itemKind: 'info' },
           { label: '    No bookmarks saved', itemKind: 'info' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
           {
             label: '    $(add) Save Selection as Bookmark',
             itemKind: 'command',
@@ -268,12 +271,8 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.bookmark.manage',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(info) Show Version Info',
-            itemKind: 'command',
-            command: 'rangelink.showVersion',
-          },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_VERSION_INFO,
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -293,16 +292,12 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No destinations available', itemKind: 'info' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(link-external) Go to Link',
-            itemKind: 'command',
-            command: 'rangelink.goToRangeLink',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_GO_TO_LINK,
+          MENU_ITEM_SEPARATOR,
           { label: 'Bookmarks', itemKind: 'info' },
           { label: '    No bookmarks saved', itemKind: 'info' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
           {
             label: '    $(add) Save Selection as Bookmark',
             itemKind: 'command',
@@ -313,12 +308,8 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.bookmark.manage',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(info) Show Version Info',
-            itemKind: 'command',
-            command: 'rangelink.showVersion',
-          },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_VERSION_INFO,
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -344,27 +335,14 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          {
-            label: '$(arrow-right) Jump to Bound Destination',
-            description: '→ Terminal ("zsh")',
-            itemKind: 'command',
-            command: 'rangelink.jumpToBoundDestination',
-          },
-          {
-            label: '$(close) Unbind Destination',
-            itemKind: 'command',
-            command: 'rangelink.unbindDestination',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(link-external) Go to Link',
-            itemKind: 'command',
-            command: 'rangelink.goToRangeLink',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          buildJumpMenuItem('→ Terminal ("zsh")'),
+          MENU_ITEM_UNBIND,
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_GO_TO_LINK,
+          MENU_ITEM_SEPARATOR,
           { label: 'Bookmarks', itemKind: 'info' },
           { label: '    No bookmarks saved', itemKind: 'info' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
           {
             label: '    $(add) Save Selection as Bookmark',
             itemKind: 'command',
@@ -375,12 +353,8 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.bookmark.manage',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(info) Show Version Info',
-            itemKind: 'command',
-            command: 'rangelink.showVersion',
-          },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_VERSION_INFO,
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -407,27 +381,14 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          {
-            label: '$(arrow-right) Jump to Bound Destination',
-            description: '→ Text Editor ("Untitled-2") · Tab Group 2',
-            itemKind: 'command',
-            command: 'rangelink.jumpToBoundDestination',
-          },
-          {
-            label: '$(close) Unbind Destination',
-            itemKind: 'command',
-            command: 'rangelink.unbindDestination',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(link-external) Go to Link',
-            itemKind: 'command',
-            command: 'rangelink.goToRangeLink',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          buildJumpMenuItem('→ Text Editor ("Untitled-2") · Tab Group 2'),
+          MENU_ITEM_UNBIND,
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_GO_TO_LINK,
+          MENU_ITEM_SEPARATOR,
           { label: 'Bookmarks', itemKind: 'info' },
           { label: '    No bookmarks saved', itemKind: 'info' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
           {
             label: '    $(add) Save Selection as Bookmark',
             itemKind: 'command',
@@ -438,12 +399,8 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.bookmark.manage',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(info) Show Version Info',
-            itemKind: 'command',
-            command: 'rangelink.showVersion',
-          },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_VERSION_INFO,
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -479,7 +436,7 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+          MENU_ITEM_UNBOUND,
           { label: 'Terminals', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '    $(arrow-right) Terminal',
@@ -493,13 +450,9 @@ describe('RangeLinkStatusBar', () => {
               isActive: false,
             },
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(link-external) Go to Link',
-            itemKind: 'command',
-            command: 'rangelink.goToRangeLink',
-          },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_GO_TO_LINK,
+          MENU_ITEM_SEPARATOR,
           { label: 'Bookmarks', itemKind: 'info' },
           {
             label: '    $(bookmark) CLAUDE.md Instructions',
@@ -511,7 +464,7 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'bookmark',
             bookmarkId: 'bookmark-2',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          MENU_ITEM_SEPARATOR,
           {
             label: '    $(add) Save Selection as Bookmark',
             itemKind: 'command',
@@ -522,12 +475,8 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.bookmark.manage',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
-          {
-            label: '$(info) Show Version Info',
-            itemKind: 'command',
-            command: 'rangelink.showVersion',
-          },
+          MENU_ITEM_SEPARATOR,
+          MENU_ITEM_VERSION_INFO,
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -1146,10 +1095,10 @@ describe('RangeLinkStatusBar', () => {
       ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
         { label: 'Bookmarks', itemKind: 'info' },
         { label: '    No bookmarks saved', itemKind: 'info' },
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
         {
           label: '    $(add) Save Selection as Bookmark',
           itemKind: 'command',
@@ -1160,7 +1109,7 @@ describe('RangeLinkStatusBar', () => {
           itemKind: 'command',
           command: 'rangelink.bookmark.manage',
         },
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
       ]);
     });
 
@@ -1179,7 +1128,7 @@ describe('RangeLinkStatusBar', () => {
       ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
         { label: 'Bookmarks', itemKind: 'info' },
         {
           label: '    $(bookmark) CLAUDE.md Instructions',
@@ -1191,7 +1140,7 @@ describe('RangeLinkStatusBar', () => {
           itemKind: 'bookmark',
           bookmarkId: 'bookmark-2',
         },
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
         {
           label: '    $(add) Save Selection as Bookmark',
           itemKind: 'command',
@@ -1202,7 +1151,7 @@ describe('RangeLinkStatusBar', () => {
           itemKind: 'command',
           command: 'rangelink.bookmark.manage',
         },
-        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        MENU_ITEM_SEPARATOR,
       ]);
     });
 

@@ -3,13 +3,8 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import {
-  assertToastLogged,
-  getLogCapture,
-  getWorkspaceRoot,
-  openEditor,
-  standardSuite,
-} from '../helpers';
+import { CMD_HANDLE_FILE_PATH_CLICK } from '../../constants/commandIds';
+import { getWorkspaceRoot, openEditor, standardSuite } from '../helpers';
 
 const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 
@@ -17,7 +12,7 @@ standardSuite('File Path Navigation', (ss) => {
   test('clickable-file-paths-010: handleFilePathClick opens the file in the active editor', async () => {
     const testFileUri = ss.createWorkspaceFile('filepath', '// rangelink file path nav test\n');
 
-    await vscode.commands.executeCommand('rangelink.handleFilePathClick', {
+    await vscode.commands.executeCommand(CMD_HANDLE_FILE_PATH_CLICK, {
       filePath: testFileUri.fsPath,
     });
 
@@ -36,10 +31,9 @@ standardSuite('File Path Navigation', (ss) => {
 
     const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fp-011');
+    ss.expectToastMessages([{ level: 'warning', message: `Cannot find file: ${nonExistentPath}` }]);
 
-    void vscode.commands.executeCommand('rangelink.handleFilePathClick', {
+    void vscode.commands.executeCommand(CMD_HANDLE_FILE_PATH_CLICK, {
       filePath: nonExistentPath,
     });
 
@@ -51,11 +45,5 @@ standardSuite('File Path Navigation', (ss) => {
       editorBefore,
       `Expected active editor to remain ${editorBefore} but got ${editorAfter}`,
     );
-
-    const lines = logCapture.getLinesSince('before-fp-011');
-    assertToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${nonExistentPath}`,
-    });
   });
 });

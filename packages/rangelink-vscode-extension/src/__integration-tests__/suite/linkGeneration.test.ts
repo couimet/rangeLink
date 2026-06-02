@@ -4,6 +4,7 @@ import { NoOpLogger } from 'barebone-logger';
 import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { CMD_COPY_LINK_ONLY_RELATIVE } from '../../constants/commandIds';
 import { standardSuite, waitForHumanVerdict } from '../helpers';
 
 const LOGGER = new NoOpLogger();
@@ -16,7 +17,8 @@ standardSuite('Link Generation', (ss) => {
 
     editor.selection = new vscode.Selection(new vscode.Position(19, 0), new vscode.Position(20, 0));
 
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    ss.expectStatusBarMessages(['✓ RangeLink: RangeLink copied to clipboard']);
+    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.ok(

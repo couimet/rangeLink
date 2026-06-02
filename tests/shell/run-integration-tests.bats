@@ -43,7 +43,15 @@ if [[ "$*" == *"resolve-qa-labels.js"* ]]; then
     echo "resolve-qa-labels error" >&2
     exit "${STUB_NODE_EXIT}"
   fi
-  printf '%s' "${STUB_RESOLVED_IDS:-}"
+  if [[ "$*" == *"--json"* ]]; then
+    if [[ -n "${STUB_RESOLVED_IDS:-}" ]]; then
+      echo "${STUB_RESOLVED_IDS:-}" | jq -R -s 'split("\n") | map(select(length > 0)) | group_by(. | sub("-\\d{3}$";"")) | map({prefix: .[0] | sub("-\\d{3}$";""), feature: (.[0] | sub("-\\d{3}$";"")), total: length, automated: length, assisted: 0, manual: 0, ids: .}) | {groups: ., total_assisted: 0, total_manual: 0}'
+    else
+      echo '{"groups":[],"total_assisted":0,"total_manual":0}'
+    fi
+  else
+    printf '%s' "${STUB_RESOLVED_IDS:-}"
+  fi
   exit 0
 fi
 if [[ "$*" == *"setup-integration-test-settings.js"* ]]; then
@@ -90,6 +98,8 @@ ENDOFSTUB
   [[ "$output" == *"Usage:"* ]]
   [[ "$output" == *"--automated"* ]]
   [[ "$output" == *"--exclude-label"* ]]
+  [[ "$output" == *"--feature"* ]]
+  [[ "$output" == *"--exclude-feature"* ]]
   [[ "$output" == *"--exclude-assisted"* ]]
   [[ "$output" == *"--help"* ]]
 }
@@ -148,6 +158,26 @@ ENDOFSTUB
   [[ "$output" == *"Error: --exclude-label requires a label name argument"* ]]
 }
 
+@test "--feature without value: exits 1 with error" {
+  stub_dir
+  make_passive_stub "pnpm"
+  make_passive_stub "git"
+
+  run "$SCRIPT" --feature
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Error: --feature requires a feature slug argument"* ]]
+}
+
+@test "--exclude-feature without value: exits 1 with error" {
+  stub_dir
+  make_passive_stub "pnpm"
+  make_passive_stub "git"
+
+  run "$SCRIPT" --exclude-feature
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Error: --exclude-feature requires a feature slug argument"* ]]
+}
+
 # ── Single flag: MODE and config derivation ───────────────────────────────────
 
 @test "bare invocation: MODE=all, default config, QA validator runs" {
@@ -187,12 +217,12 @@ ENDOFSTUB
 
 @test "--with-extensions: MODE=with-extensions, extensions config, calls setup" {
   setup_mocks
-  export STUB_RESOLVED_IDS=""
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions.txt" | head -1)
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      with-extensions" "$REPORT"
 
@@ -294,6 +324,56 @@ ENDOFSTUB
   NODE_ARGS=$(cat "$TEST_TEMP_DIR/node-args")
   [[ "$NODE_ARGS" == *"slow"* ]]
   [[ "$NODE_ARGS" == *"flaky"* ]]
+}
+
+# ── --feature / --exclude-feature ────────────────────────────────────────────────
+
+@test "--feature: passes through to resolve-qa-labels.js" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'cm-001\ncm-002'
+
+  run "$SCRIPT" --feature context-menus
+  [ "$status" -eq 0 ]
+
+  grep -q "\-\-feature" "$TEST_TEMP_DIR/node-args"
+  grep -q "context-menus" "$TEST_TEMP_DIR/node-args"
+}
+
+@test "repeated --feature: passes all to resolve-qa-labels.js" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'cm-001\nlp-001'
+
+  run "$SCRIPT" --feature context-menus --feature link-generation
+  [ "$status" -eq 0 ]
+
+  NODE_ARGS=$(cat "$TEST_TEMP_DIR/node-args")
+  [[ "$NODE_ARGS" == *"context-menus"* ]]
+  [[ "$NODE_ARGS" == *"link-generation"* ]]
+}
+
+@test "--exclude-feature: passes through to resolve-qa-labels.js" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'tc-001\ntc-002'
+
+  run "$SCRIPT" --exclude-feature custom-ai-assistants
+  [ "$status" -eq 0 ]
+
+  grep -q "\-\-exclude-feature" "$TEST_TEMP_DIR/node-args"
+  grep -q "custom-ai-assistants" "$TEST_TEMP_DIR/node-args"
+}
+
+@test "--feature + --label: both passed to resolve-qa-labels.js" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'cm-001'
+
+  run "$SCRIPT" --feature context-menus --label explorer
+  [ "$status" -eq 0 ]
+
+  NODE_ARGS=$(cat "$TEST_TEMP_DIR/node-args")
+  [[ "$NODE_ARGS" == *"--feature"* ]]
+  [[ "$NODE_ARGS" == *"context-menus"* ]]
+  [[ "$NODE_ARGS" == *"--label"* ]]
+  [[ "$NODE_ARGS" == *"explorer"* ]]
 }
 
 # ── --assisted / --exclude-assisted ───────────────────────────────────────────
@@ -415,13 +495,14 @@ ENDOFSTUB
   find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | grep -q .
 }
 
-@test "report file: --with-extensions creates test-run-*-with-extensions.txt" {
+@test "report file: --with-extensions creates test-run-*-with-extensions-grep-*.txt" {
   setup_mocks
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions.txt" | grep -q .
+  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | grep -q .
 }
 
 @test "report file: --grep creates test-run-*-grep-<slug>.txt" {
@@ -544,6 +625,7 @@ ENDOFSTUB
 
 @test "QA validator: runs for --with-extensions" {
   setup_mocks
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
@@ -650,6 +732,23 @@ ENDOFSTUB
   ! grep -q "Re-run failed tests:" "$REPORT"
 }
 
+@test "re-run: preserves --feature and --exclude-feature flags" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'cm-001'
+  STUB_VSCODE_EXIT=1
+  VSCODE_OUTPUT="$(printf '  1 failing\n\n  1) cm-001:\n     Error: test\n')"
+
+  run "$SCRIPT" --feature context-menus --exclude-feature link-generation
+  [ "$status" -eq 1 ]
+
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
+  grep -q "Re-run failed tests:" "$REPORT"
+  grep -q "\-\-feature" "$REPORT"
+  grep -q "context-menus" "$REPORT"
+  grep -q "\-\-exclude-feature" "$REPORT"
+  grep -q "link-generation" "$REPORT"
+}
+
 # ── --with-extensions: setup integration test settings ─────────────────────────
 
 @test "--with-extensions: does NOT call setup without flag" {
@@ -714,6 +813,26 @@ ENDOFSTUB
   export STUB_RESOLVED_IDS=$'auto-001'
 
   run "$SCRIPT" --exclude-assisted
+  [ "$status" -eq 0 ]
+
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
+}
+
+@test "QA validator: skipped for --feature alone" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'cm-001'
+
+  run "$SCRIPT" --feature context-menus
+  [ "$status" -eq 0 ]
+
+  ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"
+}
+
+@test "QA validator: skipped for --exclude-feature alone" {
+  setup_mocks
+  export STUB_RESOLVED_IDS=$'tc-001'
+
+  run "$SCRIPT" --exclude-feature custom-ai-assistants
   [ "$status" -eq 0 ]
 
   ! grep -q "validate:qa-coverage" "$TEST_TEMP_DIR/pnpm-args"

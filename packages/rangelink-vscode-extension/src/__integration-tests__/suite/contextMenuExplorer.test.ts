@@ -7,10 +7,8 @@ import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
-  assertFnLogged,
   assertNoSetContextLogged,
   assertSetContextLogged,
-  assertStatusBarMsgLogged,
   assertTerminalBufferEquals,
   getLogCapture,
   standardSuite,
@@ -30,6 +28,10 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-001');
@@ -52,8 +54,9 @@ standardSuite('Context Menus — Explorer', (ss) => {
       uriSource: 'context-menu',
       filePath: uri.fsPath,
     });
-    assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log('✓ Absolute path landed in bound terminal buffer (pty capture verified content)');
   });
@@ -67,6 +70,10 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-002');
@@ -89,8 +96,9 @@ standardSuite('Context Menus — Explorer', (ss) => {
       uriSource: 'context-menu',
       filePath: relativePath,
     });
-    assertClipboardWriteLogged(lines, { textLength: relativePath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log(
       '✓ Workspace-relative path landed in bound terminal buffer (pty capture verified content)',
@@ -100,6 +108,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
   test('[assisted] context-menus-explorer-003: Explorer "Bind Here" opens the file and binds it as text editor destination', async () => {
     const uri = await ss.createAndOpenFile('ctxmenu-exp-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fn}")`]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-003');
@@ -116,12 +125,6 @@ standardSuite('Context Menus — Explorer', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-003');
 
-    assertFnLogged(lines, { fn: 'BindToTextEditorCommand.executeWithUri' });
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Text Editor ("${fn}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Explorer "Bind Here" committed a text-editor binding with correct displayName');
@@ -135,6 +138,10 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-004")',
+      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-exp-004")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-004');
@@ -152,16 +159,14 @@ standardSuite('Context Menus — Explorer', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-004');
 
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
     ss.log('✓ Explorer "Unbind" fired the unbind path; context key flipped to false');
   });
 
   test('[assisted] context-menus-explorer-005: Explorer "Unbind" is hidden when no destination is bound', async () => {
+    ss.expectStatusBarMessages([]);
+
     const uri = await ss.createAndOpenFile('ctxmenu-exp-005', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
 

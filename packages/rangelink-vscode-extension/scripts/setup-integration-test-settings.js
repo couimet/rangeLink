@@ -58,11 +58,6 @@ const settings = {
       extensionName: 'Dummy AI (Focus-Fail)',
       focusAndPasteCommands: ['dummyAi.focusFail'],
     },
-    {
-      extensionId: 'github.copilot-chat',
-      extensionName: 'Copilot Override',
-      insertCommands: ['dummyAi.insertText'],
-    },
   ],
 };
 
@@ -77,7 +72,24 @@ try {
   }
 }
 
+if (process.argv.includes('--use-overrides')) {
+  settings['rangelink.customAiAssistants'].push({
+    extensionId: 'github.copilot-chat',
+    extensionName: 'Copilot Override',
+    insertCommands: ['dummyAi.insertText'],
+  });
+  settings['rangelink.customAiAssistants'].push({
+    extensionId: 'google.geminicodeassist',
+    extensionName: 'Gemini Override (Misconfigured)',
+    focusCommands: ['dummyAi.focusPanel'],
+  });
+}
+
 const merged = { ...existing, ...settings };
 fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2));
 
-console.log(`[setup-integration-test-settings] Wrote ${SETTINGS_FILE}`);
+const assistantCount = settings['rangelink.customAiAssistants'].length;
+console.log(
+  `[setup-integration-test-settings] Wrote ${SETTINGS_FILE} with ${assistantCount} custom AI assistant(s)`,
+);
+console.log(`CUSTOM_AI_COUNT=${assistantCount}`);

@@ -6,9 +6,7 @@ import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
-  assertFnLogged,
   assertSetContextLogged,
-  assertStatusBarMsgLogged,
   assertTerminalBufferEquals,
   getLogCapture,
   standardSuite,
@@ -27,6 +25,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-001")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-001")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-001');
@@ -49,8 +52,9 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
       uriSource: 'context-menu',
       filePath: uri.fsPath,
     });
-    assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log(
       '✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)',
@@ -66,6 +70,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-002")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-002")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-002');
@@ -88,8 +97,9 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
       uriSource: 'context-menu',
       filePath: relativePath,
     });
-    assertClipboardWriteLogged(lines, { textLength: relativePath.length });
-    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
     ss.log(
       '✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)',
@@ -99,6 +109,8 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
   test('[assisted] context-menus-editor-tab-003: Editor tab "Bind Here" binds that editor as text editor destination', async () => {
     const uri = await ss.createAndOpenFile('ctxmenu-tab-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
+
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fn}")`]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-003');
@@ -115,12 +127,6 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-tab-003');
 
-    assertFnLogged(lines, { fn: 'BindToTextEditorCommand.executeWithUri' });
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Bound to Text Editor ("${fn}")`,
-    });
-
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
@@ -134,6 +140,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-004")',
+      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-tab-004")',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-004');
@@ -150,10 +161,6 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     );
 
     const lines = logCapture.getLinesSince('before-ctxmenu-tab-004');
-
-    assertStatusBarMsgLogged(lines, {
-      message: `✓ RangeLink: Unbound from Terminal ("${terminalName}")`,
-    });
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 

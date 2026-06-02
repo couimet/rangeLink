@@ -11,11 +11,13 @@ import { resetRangelinkSettings } from './settingsHelpers';
 import { SsContextImpl, type SsContext } from './ssContext';
 import { disposeAllTerminals } from './terminalHelpers';
 import { activateExtension, settle } from './testEnv';
+import type { TestWindow } from './testWindow';
 
 export const standardSuite = (name: string, fn: (ss: SsContext) => void): void => {
   suite(name, () => {
     const log = createLogger(name);
     const ss = new SsContextImpl(log);
+    let testWindow: TestWindow;
 
     suiteSetup(async () => {
       await activateExtension();
@@ -30,7 +32,15 @@ export const standardSuite = (name: string, fn: (ss: SsContext) => void): void =
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await closeAllEditors();
       disposeAllTerminals();
+      await ss.clearDummyAi();
       await settle();
+      testWindow = ss.beginTest();
+    });
+
+    teardown(async () => {
+      testWindow.verify();
+      await settle();
+      await ss.clearDummyAi();
     });
 
     suiteTeardown(async () => {

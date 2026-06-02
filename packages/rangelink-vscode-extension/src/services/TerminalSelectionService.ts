@@ -12,7 +12,7 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, PasteContentType, type TerminalPasteResult } from '../types';
 import { applySmartPadding, formatMessage } from '../utils';
 
-import type { ClipboardRouter } from './ClipboardRouter';
+import type { SendRouter } from './SendRouter';
 
 /**
  * Handles terminal selection pasting, the R-L bridge in terminal context,
@@ -24,12 +24,10 @@ export class TerminalSelectionService {
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
     private readonly clipboardPreserver: ClipboardPreserver,
-    private readonly clipboardRouter: ClipboardRouter,
+    private readonly sendRouter: SendRouter,
     private readonly logger: Logger,
   ) {}
 
-  // Clipboard roundtrip can be revisited if microsoft/vscode#188173 ships a Terminal.selection API,
-  // but adopting it would raise our minimum VSCode engine version.
   async pasteTerminalSelectionToDestination(): Promise<TerminalPasteResult> {
     const logCtx = { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' };
 
@@ -84,8 +82,8 @@ export class TerminalSelectionService {
       `Read ${terminalText.length} chars from terminal selection`,
     );
 
-    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-    if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
+    const resolved = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolved) return { outcome: 'picker-cancelled' };
 
     const paddingMode = this.configReader.getPaddingMode(
       SETTING_SMART_PADDING_PASTE_CONTENT,
@@ -94,21 +92,19 @@ export class TerminalSelectionService {
 
     const paddedText = applySmartPadding(terminalText, paddingMode);
 
-    await this.clipboardRouter.copyAndSendToDestination({
+    await this.sendRouter.sendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior,
       },
       content: {
         clipboard: paddedText,
         send: paddedText,
       },
       strategies: {
-        sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
+        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
-      contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
+      contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
       fnName: 'pasteTerminalSelectionToDestination',
     });
 

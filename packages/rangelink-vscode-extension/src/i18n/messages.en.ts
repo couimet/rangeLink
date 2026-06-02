@@ -28,11 +28,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED]: 'Failed to delete bookmark',
   [MessageCode.BOOKMARK_MANAGE_PLACEHOLDER]: 'Select a bookmark to manage',
   [MessageCode.BOOKMARK_MANAGE_TITLE]: 'Manage Bookmarks',
-  [MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND]: 'Bound editor closed. Unbound.',
 
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
+  [MessageCode.CONTENT_NAME_BOOKMARK]: 'Bookmark',
   [MessageCode.CONTENT_NAME_FILE_PATH]: 'File path',
   [MessageCode.CONTENT_NAME_PORTABLE_RANGELINK]: 'Portable RangeLink',
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
@@ -48,6 +48,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.DESTINATION_GROUP_FILES]: 'Files',
   [MessageCode.DESTINATION_GROUP_TERMINALS]: 'Terminals',
   [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
+  [MessageCode.DESTINATION_TEXT_EDITOR_DISPLAY_FORMAT]: 'Text Editor ("{name}")',
 
   [MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED]:
     'Could not open "{fileName}". Try again or choose another file.',
@@ -78,6 +79,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
     'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
   [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'Failed to generate {linkTypeName}',
+  [MessageCode.ERROR_LINK_TYPE_NAME_PORTABLE]: 'portable link',
+  [MessageCode.ERROR_LINK_TYPE_NAME_REGULAR]: 'link',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'No active editor',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]: 'No active terminal. Open a terminal and try again.',
@@ -149,13 +152,17 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_NEW_VERSION_NOTIFICATION]: 'RangeLink updated to v{version}. See what changed!',
   [MessageCode.INFO_NEW_VERSION_SKIP_BUTTON]: 'Skip for this version',
   [MessageCode.INFO_NEW_VERSION_WHATS_NEW_BUTTON]: "What's New",
+  [MessageCode.INFO_OPERATION_ABORTED_DIRTY_BUFFER]:
+    'Operation cancelled — file has unsaved changes.',
   [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'RangeLink: No bound destination. Choose below to bind and paste',
-  [MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED]:
-    'Selected text copied to clipboard. Cannot paste to same file.',
+  [MessageCode.INFO_SELF_PASTE_FILE_PATH_BLOCKED_BY_SELECTION]:
+    'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
   [MessageCode.INFO_SELF_PASTE_LINK_SKIPPED]:
-    'RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links.',
+    'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+  [MessageCode.INFO_SELF_PASTE_SELECTED_TEXT_BLOCKED_BY_SELECTION]:
+    'Cannot paste when bound editor has an active selection.',
   [MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP]:
     'Terminal text pasted to destination. Tip: Use R-V directly for terminal selections.',
   [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
@@ -171,13 +178,15 @@ export const messagesEn: Record<MessageCode, string> = {
     'Switch from {currentDestination} to {newDestination}',
   [MessageCode.SMART_BIND_CONFIRM_YES_REPLACE]: 'Yes, replace',
 
-  [MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED]:
-    'Destination binding removed (terminal closed)',
   [MessageCode.STATUS_BAR_DESTINATION_BOUND]: 'Bound to {destinationName}',
   [MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND]: 'No destination bound',
   [MessageCode.STATUS_BAR_DESTINATION_REBOUND]:
     'Unbound {previousDestination}, now bound to {newDestination}',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: 'Unbound from {destinationName}',
+  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED]:
+    'Unbound from {destinationName} — editor closed',
+  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED]:
+    'Unbound from {destinationName} — terminal closed',
   [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
   [MessageCode.STATUS_BAR_ITEM_TOOLTIP_BOUND]: 'RangeLink — {destinationName}',
   [MessageCode.STATUS_BAR_ITEM_TOOLTIP_UNBOUND]: 'RangeLink — no destination bound',
@@ -190,7 +199,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: 'Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: 'Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '{linkTypeName} copied to clipboard',
-  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]: '{statusMessage} & sent to {destinationName}',
+  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]: '{linkTypeName} sent to {destinationName}',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',
@@ -236,9 +245,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS]: 'Multiple files match: {path}',
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'Cannot find file: {path}',
   [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]:
-    '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',
+    'Could not send to editor. Make sure the bound editor is visible and focused.',
   [MessageCode.WARN_PASTE_FAILED_TERMINAL]:
-    '{statusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.',
+    'Could not send to terminal. Terminal may be closed or not accepting input.',
   [MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS]:
     'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',
 

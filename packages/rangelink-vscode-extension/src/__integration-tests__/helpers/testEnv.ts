@@ -31,6 +31,18 @@ export const getExtensionVersion = (): string => {
 export const settle = (ms: number = SETTLE_MS): Promise<void> =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+export const dismissQuickPick = async (): Promise<void> => {
+  await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+};
+
+const acceptQuickInput = async (): Promise<void> => {
+  await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+};
+
+export const pasteIntoQuickInput = async (): Promise<void> => {
+  await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+};
+
 export const waitForExtensionActive = async (
   extensionId: string,
   log: (msg: string) => void,
@@ -69,7 +81,7 @@ export const openAndDismiss = async (command: string): Promise<void> => {
   const deadline = Date.now() + POLL_TIMEOUT_MS;
   // Retry dismissal until the command resolves — the picker may be slow to render on loaded CI.
   for (;;) {
-    await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+    await dismissQuickPick();
     const done = await Promise.race([
       promise.then(() => true),
       settle(POLL_INTERVAL_MS).then(() => false),
@@ -78,6 +90,42 @@ export const openAndDismiss = async (command: string): Promise<void> => {
     if (Date.now() >= deadline) {
       throw new Error(
         `openAndDismiss: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`,
+      );
+    }
+  }
+  await promise;
+  await settle();
+};
+
+/**
+ * Open a QuickPick or InputBox via command and accept it (press Enter).
+ * Mirrors `openAndDismiss` but accepts instead of dismissing.
+ *
+ * @param command - The VS Code command to execute (opens the QuickPick/InputBox).
+ * @param preAccept - Optional callback run after the InputBox opens but before accepting.
+ *                    Use for programmatic clipboard paste (`editor.action.clipboardPasteAction`).
+ */
+export const openAndAccept = async (
+  command: string,
+  preAccept?: () => Promise<void>,
+): Promise<void> => {
+  const promise = vscode.commands.executeCommand(command);
+  await settle();
+  if (preAccept !== undefined) {
+    await preAccept();
+    await settle();
+  }
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  for (;;) {
+    await acceptQuickInput();
+    const done = await Promise.race([
+      promise.then(() => true),
+      settle(POLL_INTERVAL_MS).then(() => false),
+    ]);
+    if (done) break;
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `openAndAccept: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`,
       );
     }
   }

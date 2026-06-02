@@ -70,8 +70,12 @@ describe('isCursorIDEDetected', () => {
       // Should only log once for appName detection
       expect(mockLogger.debug).toHaveBeenCalledTimes(1);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ detectionMethod: 'appName' }),
-        expect.any(String),
+        {
+          fn: 'isCursorIDEDetected',
+          appName: 'Cursor',
+          detectionMethod: 'appName',
+        },
+        'Cursor IDE detected via appName',
       );
     });
   });
@@ -116,10 +120,12 @@ describe('isCursorIDEDetected', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
+          fn: 'isCursorIDEDetected',
           extensionIds: ['cursor.ai', 'cursor.chat'],
-        }),
-        expect.any(String),
+          detectionMethod: 'extensions',
+        },
+        'Cursor IDE detected via Cursor-specific extensions',
       );
     });
 
@@ -182,8 +188,12 @@ describe('isCursorIDEDetected', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ detectionMethod: 'appName' }),
-        expect.any(String),
+        {
+          fn: 'isCursorIDEDetected',
+          appName: 'Cursor',
+          detectionMethod: 'appName',
+        },
+        'Cursor IDE detected via appName',
       );
     });
 
@@ -197,8 +207,12 @@ describe('isCursorIDEDetected', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ detectionMethod: 'extensions' }),
-        expect.any(String),
+        {
+          fn: 'isCursorIDEDetected',
+          extensionIds: ['cursor.ai'],
+          detectionMethod: 'extensions',
+        },
+        'Cursor IDE detected via Cursor-specific extensions',
       );
     });
   });

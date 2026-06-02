@@ -5,7 +5,7 @@ import type { BindSuccessInfo } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
 import type { BindOptions } from '../../types';
-import { ExtensionResult, MessageCode } from '../../types';
+import { ExtensionResult } from '../../types';
 import {
   createMockDestinationManager,
   createMockDestinationPicker,
@@ -16,13 +16,13 @@ import {
 
 describe('BindToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
-    expect(messagesEn[MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]).toBe(
+    expect(messagesEn['INFO_BIND_QUICK_PICK_PLACEHOLDER']).toBe(
       'RangeLink: Choose a destination to bind to',
     );
   });
 
   it('no-destinations message explains how to resolve the situation', () => {
-    expect(messagesEn[MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]).toBe(
+    expect(messagesEn['INFO_BIND_NO_DESTINATIONS_AVAILABLE']).toBe(
       'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
     );
   });

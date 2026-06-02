@@ -4,11 +4,16 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_OPEN_STATUS_BAR_MENU,
+} from '../../constants/commandIds';
 import {
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
+  getQuickPickLines,
   getWorkspaceRoot,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
@@ -26,7 +31,8 @@ standardSuite('File Picker', (ss) => {
   test('file-picker-001: bound file appears first with bound badge', async () => {
     const uriA = await ss.createAndOpenFile('fp-001-a', 'line 1\nline 2\n', vscode.ViewColumn.One);
     const fnA = path.basename(uriA.fsPath);
-    await vscode.commands.executeCommand('rangelink.bindToTextEditorHere');
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnA}")`]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
     const uriB = await ss.createAndOpenFile('fp-001-b', 'other file\n', vscode.ViewColumn.Two);
     const fnB = path.basename(uriB.fsPath);
@@ -288,9 +294,7 @@ standardSuite('File Picker', (ss) => {
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-006');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(
       quickPickEntries.length >= 2,
       `Expected at least 2 showQuickPick entries (primary + secondary) but got ${quickPickEntries.length}`,
@@ -367,9 +371,7 @@ standardSuite('File Picker', (ss) => {
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-007');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(
       quickPickEntries.length >= 2,
       `Expected at least 2 showQuickPick entries but got ${quickPickEntries.length}`,
@@ -417,9 +419,7 @@ standardSuite('File Picker', (ss) => {
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-008');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(
       quickPickEntries.length >= 3,
       `Expected at least 3 showQuickPick entries (primary → secondary → primary reopened) but got ${quickPickEntries.length}`,
@@ -483,9 +483,7 @@ standardSuite('File Picker', (ss) => {
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-010');
-    const quickPickEntries = lines.filter(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const quickPickEntries = getQuickPickLines(lines);
     assert.ok(quickPickEntries.length >= 2, 'Expected at least 2 showQuickPick entries');
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);

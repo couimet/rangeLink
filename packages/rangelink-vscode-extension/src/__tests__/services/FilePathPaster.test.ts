@@ -2,7 +2,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { FilePathPaster, getReferencePath } from '../../services/FilePathPaster';
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
-import { DestinationBehavior, DirtyBufferWarningResult, PathFormat } from '../../types';
+import { DirtyBufferWarningResult, PathFormat } from '../../types';
 import {
   createMockConfigReader,
   createMockDestinationManager,
@@ -63,30 +63,29 @@ describe('FilePathPaster', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockShowErrorMessage: jest.Mock;
   let formatMessageSpy: jest.SpyInstance;
-  let mockClipboardRouter: {
-    resolveDestinationBehavior: jest.Mock;
-    copyAndSendToDestination: jest.Mock;
+  let mockSendRouter: {
+    resolveDestination: jest.Mock;
+    sendToDestination: jest.Mock;
   };
-
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockConfigReader = createMockConfigReader();
-    mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+    mockShowErrorMessage = jest.fn().mockResolvedValue(false);
     mockAdapter = createMockVscodeAdapter({
       windowOptions: {
         showErrorMessage: mockShowErrorMessage,
       },
     });
     mockDestinationManager = createMockDestinationManager({ isBound: false });
-    mockClipboardRouter = {
-      resolveDestinationBehavior: jest.fn(),
-      copyAndSendToDestination: jest.fn(),
+    mockSendRouter = {
+      resolveDestination: jest.fn(),
+      sendToDestination: jest.fn(),
     };
     paster = new FilePathPaster(
       mockAdapter,
       mockDestinationManager,
       mockConfigReader,
-      mockClipboardRouter as any,
+      mockSendRouter as any,
       mockLogger,
     );
     formatMessageSpy = spyOnFormatMessage();
@@ -109,11 +108,11 @@ describe('FilePathPaster', () => {
     it('delegates to pasteFilePath when active editor exists', async () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(uri);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await paster.pasteCurrentFilePathToDestination(PathFormat.Absolute);
 
-      expect(mockClipboardRouter.resolveDestinationBehavior).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.resolveDestination).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -125,11 +124,11 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
     });
 
     it('sends file path to destination when resolved', async () => {
@@ -139,29 +138,29 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
         control: {
           contentType: 'Text',
-          destinationBehavior: 'bound-destination',
         },
         content: {
           clipboard: ' /workspace/src/file.ts ',
           send: ' /workspace/src/file.ts ',
           sourceUri: uri,
+          sourceViewColumn: undefined,
         },
         strategies: {
           sendFn: expect.any(Function) as unknown,
           isEligibleFn: expect.any(Function) as unknown,
         },
-        contentName: 'File path',
+        contentNameCode: 'CONTENT_NAME_FILE_PATH',
         fnName: 'pasteFilePath',
+        selfPastePolicy: 'block-on-editor-selection',
+        writeClipboardOnSelfPasteBlock: true,
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -181,9 +180,7 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
@@ -212,7 +209,7 @@ describe('FilePathPaster', () => {
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
     });
 
     it('aborts when handleDirtyBufferWarning returns SaveFailed', async () => {
@@ -225,7 +222,7 @@ describe('FilePathPaster', () => {
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.resolveDestinationBehavior).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
     });
 
     it('proceeds when handleDirtyBufferWarning returns SaveAndContinue', async () => {
@@ -235,13 +232,11 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
     });
 
     it('proceeds when handleDirtyBufferWarning returns ContinueAnyway', async () => {
@@ -251,13 +246,11 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
     });
 
     it('passes document, configReader, and R-F message codes to handleDirtyBufferWarning', async () => {
@@ -284,14 +277,12 @@ describe('FilePathPaster', () => {
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       const warningSpy = jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning');
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(warningSpy).not.toHaveBeenCalled();
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -54,22 +54,53 @@ write_yaml() {
   [[ "$output" =~ "Cannot read YAML" ]]
 }
 
+@test "resolve-qa-labels: --feature without value (no next arg) exits 1" {
+  run node "$REAL_SCRIPT" --feature
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --feature without value (next arg is flag) exits 1" {
+  run node "$REAL_SCRIPT" --feature --assisted
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --feature with value accepted" {
+  local yml="$TEST_TEMP_DIR/nonexistent.yaml"
+  run node "$REAL_SCRIPT" --feature context-menus --yaml "$yml"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "Cannot read YAML" ]]
+}
+
+@test "resolve-qa-labels: --exclude-feature without value (no next arg) exits 1" {
+  run node "$REAL_SCRIPT" --exclude-feature
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--exclude-feature requires a value" ]]
+}
+
+@test "resolve-qa-labels: --exclude-feature without value (next arg is flag) exits 1" {
+  run node "$REAL_SCRIPT" --exclude-feature --automated-only
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "--exclude-feature requires a value" ]]
+}
+
 @test "resolve-qa-labels: --exclude-label without value exits 1" {
   run node "$REAL_SCRIPT" --exclude-label
   [[ "$status" -eq 1 ]]
   [[ "$output" =~ "--exclude-label requires a value" ]]
 }
 
-@test "resolve-qa-labels: --format without value exits 1" {
+@test "resolve-qa-labels: --format is an unknown option" {
   run node "$REAL_SCRIPT" --format
   [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "--format requires a value" ]]
+  [[ "$output" =~ "Unknown option: --format" ]]
 }
 
-@test "resolve-qa-labels: --format with invalid value exits 1" {
+@test "resolve-qa-labels: --format with value is an unknown option" {
   run node "$REAL_SCRIPT" --format tsv
   [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "--format must be" ]]
+  [[ "$output" =~ "Unknown option: --format" ]]
 }
 
 @test "resolve-qa-labels: --yaml without value exits 1" {
@@ -107,8 +138,6 @@ EOF
 # ════════════════════════════════════════════════════════════════════
 
 @test "resolve-qa-labels: --yaml with nonexistent file exits 1" {
-  run node "$REAL_SCRIPT" --yarn /nonexistent/path.yaml --json
-  # Wrong: --yarn is unknown option; use --yaml
   run node "$REAL_SCRIPT" --yaml /nonexistent/path.yaml
   [[ "$status" -eq 1 ]]
   [[ "$output" =~ "Cannot read YAML" ]]
@@ -280,23 +309,20 @@ EOF
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   const groups = d.groups;
-  // Should have 2 groups: first and second (third is a prefix, along with first/second)
-  // first-001 → prefix 'first', second-002 → prefix 'second', third-003 → prefix 'third'
-  // All have nonAutomated > 0 (first-001 is true, wait no - automated: 'true' means automated: true)
-  // first-001: automated: \"true\" → parsed as 'true' → automated === 'true' → NOT automated in JSON terms...
-  // Actually in JSON output, first-001 has automated: 'true' so it stays in group, contributes to featureCounts, but NOT to assisted/manual. So nonAutomated = 0 for 'first' → SKIPPED.
-  // second-002: automated: 'assisted' → nonAutomated += 1
-  // third-003: automated: 'false' → cursor TC label → goes to cursorTcs → skipped from group
-  // So only 'second' group should appear
-  if (groups.length !== 1) process.exit(1);
-  if (groups[0].prefix !== 'second') process.exit(2);
-  if (groups[0].assisted !== 1) process.exit(3);
-  if (groups[0].manual !== 0) process.exit(4);
+  // first-001 → prefix 'first', automated: true → automated=1, total=1
+  // second-002 → prefix 'second', automated: assisted → assisted=1, total=1
+  // third-003 → prefix 'third', automated: false + cursor label → cursor_tcs
+  if (groups.length !== 2) process.exit(1);
+  if (groups[0].prefix !== 'first') process.exit(2);
+  if (groups[0].automated !== 1) process.exit(3);
+  if (groups[0].total !== 1) process.exit(4);
+  if (groups[1].prefix !== 'second') process.exit(5);
+  if (groups[1].assisted !== 1) process.exit(6);
+  if (groups[1].total !== 1) process.exit(7);
   // cursor_tcs should have third-003
-  if (d.cursor_tcs.length !== 1) process.exit(5);
-  if (d.cursor_tcs[0].id !== 'third-003') process.exit(6);
-  if (d.cursor_tcs[0].automated !== false) process.exit(7);  // boolean false
-  // requires-extensions from third-003 but group is skipped, so no requires_extensions in output
+  if (d.cursor_tcs.length !== 1) process.exit(8);
+  if (d.cursor_tcs[0].id !== 'third-003') process.exit(9);
+  if (d.cursor_tcs[0].automated !== false) process.exit(10);  // boolean false
 " <<< "$output"
 }
 
@@ -411,8 +437,8 @@ if (g.reasons['Reason 3'] !== 1) process.exit(11);
 " <<< "$output"
 }
 
-@test "resolve-qa-labels: JSON skips groups with nonAutomated === 0" {
-  yml="$TEST_TEMP_DIR/json-skip-zero.yaml"
+@test "resolve-qa-labels: JSON includes groups with only automated TCs" {
+  yml="$TEST_TEMP_DIR/json-auto-only.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
   - id: auto-001
@@ -428,9 +454,14 @@ EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
-  if (d.groups.length !== 0) process.exit(1);
-  if (d.total_assisted !== 0) process.exit(2);
-  if (d.total_manual !== 0) process.exit(3);
+  if (d.groups.length !== 1) process.exit(1);
+  if (d.groups[0].prefix !== 'auto') process.exit(2);
+  if (d.groups[0].automated !== 2) process.exit(3);
+  if (d.groups[0].assisted !== 0) process.exit(4);
+  if (d.groups[0].manual !== 0) process.exit(5);
+  if (d.groups[0].total !== 2) process.exit(6);
+  if (d.total_assisted !== 0) process.exit(7);
+  if (d.total_manual !== 0) process.exit(8);
 " <<< "$output"
 }
 
@@ -520,7 +551,10 @@ EOF
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   if (d.cursor_tcs.length !== 0) process.exit(1);  // NOT extracted
-  if (d.groups.length !== 0) process.exit(2);      // nonAutomated = 0 → skipped
+  if (d.groups.length !== 1) process.exit(2);      // group appears with automated count
+  if (d.groups[0].prefix !== 'cursor-auto') process.exit(3);
+  if (d.groups[0].automated !== 1) process.exit(4);
+  if (d.groups[0].total !== 1) process.exit(5);
 " <<< "$output"
 }
 
@@ -732,9 +766,71 @@ EOF
   [[ "$output" == "beta-001" ]]
 }
 
-@test "resolve-qa-labels: filter empty results" {
+@test "resolve-qa-labels: filter --feature matches exact feature slug" {
   setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --label nonexistent
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha
+  [[ "$status" -eq 0 ]]
+  echo "$output" | grep -q "alpha-001"
+  echo "$output" | grep -q "alpha-002"
+  echo "$output" | grep -q "alpha-003"
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 3 ]]
+}
+
+@test "resolve-qa-labels: filter multiple --feature flags as union" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --feature Beta
+  [[ "$status" -eq 0 ]]
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 5 ]]
+}
+
+@test "resolve-qa-labels: filter --exclude-feature" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --exclude-feature Beta
+  [[ "$status" -eq 0 ]]
+  echo "$output" | grep -q "alpha-001"
+  echo "$output" | grep -q "alpha-002"
+  echo "$output" | grep -q "alpha-003"
+  lines=$(echo "$output" | wc -l | tr -d ' ')
+  [[ "$lines" -eq 3 ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --label combined (AND intersection)" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --label cursor
+  [[ "$status" -eq 0 ]]
+  # Only alpha-003 has both feature Alpha AND label cursor
+  [[ "$output" == "alpha-003" ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --automated-only combined" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Beta --automated-only
+  [[ "$status" -eq 0 ]]
+  # Only beta-001 has feature Beta AND automated:true
+  [[ "$output" == "beta-001" ]]
+}
+
+@test "resolve-qa-labels: filter --exclude-feature with --label combined" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --exclude-feature Alpha --label cursor
+  [[ "$status" -eq 0 ]]
+  # beta-001 has label cursor and is NOT Alpha
+  [[ "$output" == "beta-001" ]]
+}
+
+@test "resolve-qa-labels: filter feature empty results" {
+  setup_filter_yaml
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Nonexistent
+  [[ "$status" -eq 0 ]]
+  [[ -z "$output" ]]
+}
+
+@test "resolve-qa-labels: filter --feature with --exclude-feature" {
+  setup_filter_yaml
+  # Include all Alpha, exclude Alpha → empty
+  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --feature Alpha --exclude-feature Alpha
   [[ "$status" -eq 0 ]]
   [[ -z "$output" ]]
 }
@@ -743,25 +839,7 @@ EOF
 # Output format
 # ════════════════════════════════════════════════════════════════════
 
-@test "resolve-qa-labels: format csv outputs comma-separated" {
-  yml="$TEST_TEMP_DIR/format-csv.yaml"
-  cat > "$yml" <<'EOF'
-test_cases:
-  - id: first-001
-    feature: Test
-    scenario: First
-    automated: true
-  - id: second-001
-    feature: Test
-    scenario: Second
-    automated: true
-EOF
-  run node "$REAL_SCRIPT" --yaml "$yml" --format csv
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "first-001, second-001" ]]
-}
-
-@test "resolve-qa-labels: format lines outputs one per line (default)" {
+@test "resolve-qa-labels: outputs one ID per line" {
   yml="$TEST_TEMP_DIR/format-lines.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
@@ -782,32 +860,4 @@ EOF
   second=$(echo "$output" | sed -n '2p')
   [[ "$first" == "first-001" ]]
   [[ "$second" == "second-001" ]]
-}
-
-@test "resolve-qa-labels: format lines explicit" {
-  yml="$TEST_TEMP_DIR/format-lines-explicit.yaml"
-  cat > "$yml" <<'EOF'
-test_cases:
-  - id: only-001
-    feature: Test
-    scenario: Only
-    automated: true
-EOF
-  run node "$REAL_SCRIPT" --yaml "$yml" --format lines
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "only-001" ]]
-}
-
-@test "resolve-qa-labels: filter with format csv" {
-  setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --automated-only --format csv
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "alpha-001, beta-001" ]]
-}
-
-@test "resolve-qa-labels: empty results with format csv" {
-  setup_filter_yaml
-  run node "$REAL_SCRIPT" --yaml "$FILTER_YAML" --label nonexistent --format csv
-  [[ "$status" -eq 0 ]]
-  [[ -z "$output" ]]
 }

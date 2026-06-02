@@ -2,24 +2,43 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_CUSTOM_AI_BY_ID } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_CUSTOM_AI_BY_ID,
+  CMD_BIND_TO_DESTINATION,
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
+  CMD_COPY_LINK_RELATIVE,
+} from '../../constants/commandIds';
 import {
   assertClipboardChanged,
   assertClipboardPreservationRan,
   assertClipboardRestored,
-  assertToastLogged,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
   standardSuite,
+  waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
-const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 7;
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
+
+const getExpectedCustomAssistantsCount = (): number => {
+  const raw = process.env.RANGELINK_CUSTOM_AI_COUNT;
+  if (raw === undefined) {
+    throw new Error(
+      'RANGELINK_CUSTOM_AI_COUNT env var is not set — the test runner must export this via setup-integration-test-settings.js',
+    );
+  }
+  const count = parseInt(raw, 10);
+  if (isNaN(count)) {
+    throw new Error(`RANGELINK_CUSTOM_AI_COUNT must be a valid number, got: ${raw}`);
+  }
+  return count;
+};
 
 standardSuite('Custom AI Assistants', (_ss) => {
   test('custom-ai-assistant-001: three-tier config is parsed and logged at activation', () => {
+    const expectedCount = getExpectedCustomAssistantsCount();
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -32,8 +51,8 @@ standardSuite('Custom AI Assistants', (_ss) => {
       'Expected parseCustomAiAssistants INFO log showing loaded custom AI assistants — if missing, the rangelink.customAiAssistants setting may not be configured in the test workspace',
     );
     assert.ok(
-      parseLogLine.includes(`"count":${EXPECTED_CUSTOM_ASSISTANTS_COUNT}`),
-      `Expected ${EXPECTED_CUSTOM_ASSISTANTS_COUNT} custom AI assistants loaded but got: ${parseLogLine}`,
+      parseLogLine.includes(`"count":${expectedCount}`),
+      `Expected ${expectedCount} custom AI assistants loaded but got: ${parseLogLine}`,
     );
     assert.ok(
       parseLogLine.includes('rangelink.dummy-ai-extension'),
@@ -258,14 +277,14 @@ standardSuite('Custom AI Assistants — Destination Picker', (ss) => {
 });
 
 standardSuite('Custom AI Assistants — Cold Start', (ss) => {
-  teardown(async () => {
-    await vscode.commands.executeCommand('dummyAi.clearAll');
-  });
-
   test('custom-ai-assistant-017: Tier 1 direct insert works when panel is not yet visible', async () => {
     await ss.createAndOpenFile('__rl-test-cold-start', 'cold start test');
     await ss.settle();
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+    ]);
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
     });
@@ -274,16 +293,8 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     logCapture.mark('before-cold-start');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-cold-start');
-
-    const directInsertLog = lines.find(
-      (line) =>
-        line.includes('DirectInsertFactory.insert') && line.includes('Direct insert succeeded'),
-    );
-    assert.ok(directInsertLog, 'Expected DirectInsertFactory.insert success log');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -310,14 +321,14 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand('dummyAi.getText');
   });
 
-  teardown(async () => {
-    await vscode.commands.executeCommand('dummyAi.clearAll');
-  });
-
   test('custom-ai-assistant-010: Tier 1 direct insert delivers text to dummy textarea', async () => {
     await ss.createAndOpenFile('__rl-test-tier1', 'hello world\nline two\nline three');
     await ss.settle();
 
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+    ]);
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
     });
@@ -326,16 +337,8 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     logCapture.mark('before-tier1-paste');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-tier1-paste');
-
-    const directInsertLog = lines.find(
-      (line) =>
-        line.includes('DirectInsertFactory.insert') && line.includes('Direct insert succeeded'),
-    );
-    assert.ok(directInsertLog, 'Expected DirectInsertFactory.insert success log');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -355,6 +358,10 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
   });
 
   test('custom-ai-assistant-011: Tier 1 clipboard isolation — sentinel preserved', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+    ]);
     await ss.createAndOpenFile('__rl-test-tier1-clip', 'clipboard test');
     await ss.settle();
 
@@ -367,7 +374,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     logCapture.mark('before-tier1-clip');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
     assertClipboardPreservationRan(logCapture, 'before-tier1-clip', 'R-L');
@@ -380,6 +387,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
   });
 
   test('custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Tier 3)',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use.' },
+    ]);
     await ss.createAndOpenFile('__rl-test-tier3', 'tier three test');
     await ss.settle();
 
@@ -392,34 +406,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     logCapture.mark('before-tier3-paste');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-tier3-paste');
-
-    assertToastLogged(lines, {
-      type: 'info',
-      message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use.',
-    });
-
-    const manualPasteLog = lines.find(
-      (line) =>
-        line.includes('ManualPasteInsertFactory.insert') &&
-        line.includes('Link ready for manual paste'),
-    );
-    assert.ok(manualPasteLog, 'Expected ManualPasteInsertFactory success log');
 
     const clipboardContent = await assertClipboardChanged(
       'Tier 3 clipboard should NOT be restored — link must stay for manual paste',
     );
     assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
-
-    const skipRestoreLog = lines.find(
-      (line) =>
-        line.includes('withClipboardPreservation') &&
-        line.includes('Clipboard restoration skipped'),
-    );
-    assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -435,6 +428,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
   });
 
   test('custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Fallback)',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Fallback) to use.' },
+    ]);
     await ss.createAndOpenFile('__rl-test-fallback', 'fallback test');
     await ss.settle();
 
@@ -447,43 +447,13 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     logCapture.mark('before-fallback-paste');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-fallback-paste');
-
-    const tier2SkipLog = lines.find(
-      (line) =>
-        line.includes('resolveFocusTier') &&
-        line.includes('focusAndPasteCommands') &&
-        line.includes('no registered commands'),
-    );
-    assert.ok(tier2SkipLog, 'Expected Tier 2 skip log — nonexistent.paste not registered');
-
-    const tier3ResolveLog = lines.find(
-      (line) =>
-        line.includes('resolveFocusTier') &&
-        line.includes('focusCommands') &&
-        line.includes('dummyAi.focusPanel'),
-    );
-    assert.ok(tier3ResolveLog, 'Expected resolution to focusCommands tier via dummyAi.focusPanel');
-
-    assertToastLogged(lines, {
-      type: 'info',
-      message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Fallback) to use.',
-    });
 
     const clipboardContent = await assertClipboardChanged(
       'Fallback→Tier 3 clipboard should NOT be restored — link must stay for manual paste',
     );
     assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
-
-    const skipRestoreLog = lines.find(
-      (line) =>
-        line.includes('withClipboardPreservation') &&
-        line.includes('Clipboard restoration skipped'),
-    );
-    assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log for fallback→focusCommands');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -499,6 +469,10 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
   });
 
   test('custom-ai-assistant-014: ${content} template delivers text via insertWithArgs', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Dummy AI (Template)',
+      '✓ RangeLink: RangeLink sent to Dummy AI (Template)',
+    ]);
     await ss.createAndOpenFile('__rl-test-template', 'template test content');
     await ss.settle();
 
@@ -510,16 +484,8 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     logCapture.mark('before-template-paste');
 
     await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-template-paste');
-
-    const insertLog = lines.find(
-      (line) =>
-        line.includes('DirectInsertFactory.insert') && line.includes('dummyAi.insertWithArgs'),
-    );
-    assert.ok(insertLog, 'Expected DirectInsertFactory success log for dummyAi.insertWithArgs');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -532,6 +498,97 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
 
     ss.log(
       '✓ ${content} template interpolation delivered text to dummy textarea via insertWithArgs',
+    );
+  });
+});
+
+standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
+  test('custom-ai-assistant-018: Copilot Chat override routes content to Dummy AI via setup-integration-test-settings', async () => {
+    await ss.createAndOpenFile('__rl-test-copilot-override', 'copilot override test');
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to GitHub Copilot Chat',
+      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+    ]);
+    await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
+    await ss.settle();
+
+    await vscode.commands.executeCommand('editor.action.selectAll');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+      | { tier1: string; tier2: string }
+      | undefined;
+    assert.ok(textResult, 'Expected dummyAi.getText to return a result');
+    assert.ok(
+      textResult!.tier1.length > 0,
+      'Expected tier1 textarea to contain the link (Copilot override should route to Dummy AI)',
+    );
+    assert.strictEqual(
+      textResult!.tier2,
+      '',
+      'Expected tier2 textarea to be empty (no cross-contamination)',
+    );
+
+    ss.log('✓ Copilot override routes content to Dummy AI Tier 1');
+  });
+
+  test('[assisted] custom-ai-assistant-019: misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast', async () => {
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Gemini Code Assist',
+      '✓ RangeLink: RangeLink copied to clipboard',
+    ]);
+    ss.expectToastMessages([
+      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.' },
+    ]);
+    await ss.createAndOpenFile('__rl-test-gemini-override', 'gemini override test');
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
+      extensionId: 'google.geminicodeassist',
+    });
+
+    await writeClipboardSentinel();
+
+    await vscode.commands.executeCommand('editor.action.selectAll');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const clipboardContent = await assertClipboardChanged(
+      'Gemini override clipboard should NOT be restored — link must stay for manual paste',
+    );
+    assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
+
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+      | { tier1: string; tier2: string }
+      | undefined;
+    assert.ok(textResult, 'Expected dummyAi.getText to return a result');
+    assert.strictEqual(
+      textResult!.tier1,
+      '',
+      'Expected tier1 to be empty (focusCommands-only, no direct insert)',
+    );
+
+    const verdict = await waitForHumanVerdict(
+      'custom-ai-assistant-019',
+      `Clipboard content:\n\n${clipboardContent}\n\nDoes this look like a valid RangeLink?`,
+      [
+        '1. Read the clipboard content shown above',
+        '2. Verify it looks like a valid RangeLink with file path and line/column references',
+        '3. Verify the toast says "Paste (Cmd/Ctrl+V) in Gemini Code Assist to use."',
+        '4. Click PASS if everything looks correct, FAIL otherwise',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported clipboard content was not a valid RangeLink',
+    );
+
+    ss.log(
+      '✓ Misconfigured override (focusCommands-only) leaves link in clipboard, human confirmed',
     );
   });
 });

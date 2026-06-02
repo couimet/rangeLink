@@ -6,5 +6,5 @@
  * - compareEditorsByUri: Compare editors by document URI
  */
 
-export { compareTerminalsByProcessId } from './compareTerminalsByProcessId';
-export { compareEditorsByUri } from './compareEditorsByUri';
+export * from './compareTerminalsByProcessId';
+export * from './compareEditorsByUri';

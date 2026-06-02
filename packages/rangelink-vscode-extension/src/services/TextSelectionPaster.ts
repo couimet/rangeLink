@@ -7,10 +7,10 @@ import {
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { MessageCode, PasteContentType } from '../types';
-import { applySmartPadding, formatMessage } from '../utils';
+import { applySmartPadding } from '../utils';
 
-import type { ClipboardRouter } from './ClipboardRouter';
 import type { SelectionValidator } from './SelectionValidator';
+import type { SendRouter } from './SendRouter';
 
 /**
  * Pastes the current editor text selection to the bound destination.
@@ -20,13 +20,11 @@ export class TextSelectionPaster {
   constructor(
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
-    private readonly clipboardRouter: ClipboardRouter,
+    private readonly sendRouter: SendRouter,
     private readonly selectionValidator: SelectionValidator,
     private readonly logger: Logger,
   ) {}
 
-  // No dirty-buffer warning: R-V sends the in-memory selection text, so
-  // stale-on-disk is not a concern (unlike R-L/R-C/R-F which reference files by path).
   async pasteSelectedTextToDestination(): Promise<void> {
     const logCtx = { fn: 'TextSelectionPaster.pasteSelectedTextToDestination' };
 
@@ -50,28 +48,28 @@ export class TextSelectionPaster {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
-    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-    if (destinationBehavior === undefined) return;
+    const resolved = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolved) return;
 
     const paddedContent = applySmartPadding(content, paddingMode);
 
-    await this.clipboardRouter.copyAndSendToDestination({
+    await this.sendRouter.sendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior,
       },
       content: {
         clipboard: paddedContent,
         send: paddedContent,
         sourceUri: editor.document.uri,
+        sourceViewColumn: editor.viewColumn,
       },
       strategies: {
-        sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage),
+        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
         isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
       },
-      contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
+      contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
       fnName: 'pasteSelectedTextToDestination',
+      selfPastePolicy: 'block-on-editor-selection',
     });
   }
 }

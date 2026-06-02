@@ -2,13 +2,7 @@ import assert from 'node:assert';
 
 import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 
-import {
-  assertToastLogged,
-  clearEditorSelection,
-  getLogCapture,
-  navigateViaHandleLinkClick,
-  standardSuite,
-} from '../helpers';
+import { clearEditorSelection, navigateViaHandleLinkClick, standardSuite } from '../helpers';
 
 standardSuite('Navigation Precision', (ss) => {
   const NAV_TEST_LINE_COUNT = 25;
@@ -24,8 +18,7 @@ standardSuite('Navigation Precision', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-nav-001');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${testFilename} @ 10` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -44,12 +37,6 @@ standardSuite('Navigation Precision', (ss) => {
       },
       { anchorLine: 9, anchorChar: 0, activeLine: 9, activeChar: lineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-nav-001');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 10`,
-    });
   });
 
   test('full-line-navigation-002: #L10-L15 navigates to range — anchor (9,0), active at end of line 15', async () => {
@@ -63,8 +50,7 @@ standardSuite('Navigation Precision', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-nav-002');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${testFilename} @ 10-15` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -83,12 +69,6 @@ standardSuite('Navigation Precision', (ss) => {
       },
       { anchorLine: 9, anchorChar: 0, activeLine: 14, activeChar: endLineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-nav-002');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 10-15`,
-    });
   });
 
   test('char-navigation-001: #L10C5 navigates to cursor position (9,4)', async () => {
@@ -102,8 +82,7 @@ standardSuite('Navigation Precision', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-char-001');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${testFilename} @ 10:5` }]);
 
     await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
@@ -117,12 +96,6 @@ standardSuite('Navigation Precision', (ss) => {
       },
       { anchorLine: 9, anchorChar: 4, activeLine: 9, activeChar: 5 },
     );
-
-    const lines = logCapture.getLinesSince('before-char-001');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 10:5`,
-    });
   });
 
   test('char-navigation-002: #L10C5-L15C10 navigates to range (9,4)→(14,9)', async () => {
@@ -136,8 +109,9 @@ standardSuite('Navigation Precision', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-char-002');
+    ss.expectToastMessages([
+      { level: 'info', message: `Navigated to ${testFilename} @ 10:5-15:10` },
+    ]);
 
     await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
@@ -151,11 +125,5 @@ standardSuite('Navigation Precision', (ss) => {
       },
       { anchorLine: 9, anchorChar: 4, activeLine: 14, activeChar: 9 },
     );
-
-    const lines = logCapture.getLinesSince('before-char-002');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${testFilename} @ 10:5-15:10`,
-    });
   });
 });

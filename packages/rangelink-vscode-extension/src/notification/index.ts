@@ -1,1 +1,1 @@
-export { ReleaseNotifier } from './ReleaseNotifier';
+export * from './ReleaseNotifier';

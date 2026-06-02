@@ -9,6 +9,13 @@ import { createAndBindCapturingTerminal, createCapturingTerminal } from './captu
 import { cleanupFiles, createAndOpenFile, createWorkspaceFile, openEditor } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
+import {
+  TEST_START_MARKER,
+  TestWindowImpl,
+  type ModalDialogExpectation,
+  type TestWindow,
+  type ToastExpectation,
+} from './testWindow';
 
 export type CreateTerminalOptions =
   | Omit<vscode.TerminalOptions, 'name'>
@@ -32,22 +39,55 @@ export interface SsContext {
   ) => Promise<vscode.Uri>;
   settle: (ms?: number) => Promise<void>;
   getLogCapture: () => LogCapture;
+  /**
+   * Mark the test start in the log capture and reset expectations.
+   * Returns a TestWindow that verifies all test-window assertions in teardown.
+   */
+  beginTest: () => TestWindow;
+  /**
+   * Declare the exact sequence of status bar messages this test expects (with resolved
+   * placeholders), in the order they should appear. The teardown hook verifies the
+   * sequence exactly — no missing, no extras, correct order. Default is empty (any
+   * unexpected message fails).
+   */
+  expectStatusBarMessages: (messages: string[]) => void;
+  /**
+   * Declare the exact sequence of fire-and-forget toasts (info/warning/error notifications
+   * without action buttons) this test expects, in the order they should appear. Default is
+   * empty (any unexpected toast fails).
+   */
+  expectToastMessages: (toasts: ToastExpectation[]) => void;
+  /**
+   * Declare the exact sequence of modal dialogs (toasts with action buttons) this test
+   * expects, in the order they should appear. Designed for assisted tests where a human
+   * clicks the buttons, but the test verifies dialog content programmatically. Default is
+   * empty (any unexpected dialog fails).
+   */
+  expectModalDialogs: (dialogs: ModalDialogExpectation[]) => void;
   openEditor: (uri: vscode.Uri, viewColumn?: vscode.ViewColumn) => Promise<vscode.TextEditor>;
   waitForExtensionActive: (extensionId: string, timeoutMs?: number) => Promise<void>;
   trackFileUri: (uri: vscode.Uri) => void;
+  clearDummyAi: () => Promise<void>;
 }
 
 export class SsContextImpl implements SsContext {
   private tmpFileUris: vscode.Uri[] = [];
   private tmpTerminals: vscode.Terminal[] = [];
   private suiteLog: (msg: string) => void;
+  private expectedStatusBarMessages: string[] = [];
+  private expectedToasts: ToastExpectation[] = [];
+  private expectedDialogs: ModalDialogExpectation[] = [];
 
   constructor(suiteLog: (msg: string) => void) {
     this.suiteLog = suiteLog;
     teardown(async () => {
-      for (const t of this.tmpTerminals.splice(0)) {
-        t.dispose();
-      }
+      // Terminal disposal is deferred to standardSuite setup (next test), which
+      // calls disposeAllTerminals() + CMD_UNBIND_DESTINATION before beginTest().
+      // Disposing here would fire onDidCloseTerminal during the observation window
+      // and leak status bar messages into verify().
+      // File deletion is safe here: fs.unlinkSync does not trigger editor-close events.
+      // Only editor close (closeAllEditors, in setup) can fire onDidCloseTextDocument.
+      this.tmpTerminals.splice(0);
       cleanupFiles(this.tmpFileUris);
       this.tmpFileUris.splice(0);
       await this.settle();
@@ -115,6 +155,31 @@ export class SsContextImpl implements SsContext {
     return getLogCapture();
   }
 
+  beginTest(): TestWindow {
+    getLogCapture().mark(TEST_START_MARKER);
+    this.expectedStatusBarMessages = [];
+    this.expectedToasts = [];
+    this.expectedDialogs = [];
+    return new TestWindowImpl(
+      TEST_START_MARKER,
+      () => this.expectedStatusBarMessages,
+      () => this.expectedToasts,
+      () => this.expectedDialogs,
+    );
+  }
+
+  expectStatusBarMessages(messages: string[]): void {
+    this.expectedStatusBarMessages.push(...messages);
+  }
+
+  expectToastMessages(toasts: ToastExpectation[]): void {
+    this.expectedToasts.push(...toasts);
+  }
+
+  expectModalDialogs(dialogs: ModalDialogExpectation[]): void {
+    this.expectedDialogs.push(...dialogs);
+  }
+
   async openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {
     return openEditor(uri, viewColumn);
   }
@@ -125,5 +190,9 @@ export class SsContextImpl implements SsContext {
 
   trackFileUri(uri: vscode.Uri): void {
     this.tmpFileUris.push(uri);
+  }
+
+  async clearDummyAi(): Promise<void> {
+    await vscode.commands.executeCommand('dummyAi.clearAll');
   }
 }

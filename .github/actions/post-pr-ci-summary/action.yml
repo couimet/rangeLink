@@ -21,6 +21,10 @@ inputs:
     description: 'Number of integration tests failed (empty if N/A)'
     required: false
     default: ''
+  int-total:
+    description: 'Total integration tests exercised (passing + failed; empty if N/A)'
+    required: false
+    default: ''
   report-file:
     description: 'Path to the test report file for re-run command extraction'
     required: false
@@ -47,18 +51,19 @@ runs:
         ELAPSED=$(( NOW - ${{ inputs.job-start }} ))
         DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
 
-        # Latest QA YAML
-        QA_YAML=$(find packages/rangelink-vscode-extension/qa -name 'qa-test-cases-*.yaml' | sort -V | tail -1)
-
-        # Extract TC IDs exercised
+        # Extract resolved TC data from report file JSON blocks (single source of truth)
         LABEL_FILTER="${{ inputs.label-filter }}"
-        RESOLVE_ARGS=(--automated-only --yaml "$QA_YAML" --format csv)
-        if [ -n "$LABEL_FILTER" ]; then
-          RESOLVE_ARGS+=(--label "$LABEL_FILTER")
-        else
-          RESOLVE_ARGS+=(--exclude-label requires-extensions)
+        RESOLVED_JSON="{}"
+        if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
+          RESOLVED_JSON=$(sed -n '/++RESOLVED_JSON_START++/,/++RESOLVED_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
+          RESULTS_JSON=$(sed -n '/++RESULTS_JSON_START++/,/++RESULTS_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
         fi
-        TC_IDS=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js "${RESOLVE_ARGS[@]}")
+        if [ -z "$RESOLVED_JSON" ]; then
+          RESOLVED_JSON="{}"
+        fi
+        TC_TOTAL=$(echo "$RESOLVED_JSON" | jq -r '.tc_total // 0')
+        FEATURE_COUNT=$(echo "$RESOLVED_JSON" | jq -r '.groups | length')
+        FEATURE_TABLE=$(echo "$RESOLVED_JSON" | jq -r '.groups | group_by(.feature) | map("| \(.[0].feature) | \(map(.total) | add) | \(map(.ids[]) | join(", ")) |") | join("\n")')
 
         # Determine pass/fail
         PASS=true
@@ -84,11 +89,12 @@ runs:
           TABLE="${TABLE}"$'\n'"| Unit tests | Ran in Test &amp; Validate job |"
         fi
 
-        if [ -n "${{ inputs.int-passing }}" ]; then
-          TABLE="${TABLE}"$'\n'"| Integration tests passing | ${{ inputs.int-passing }} |"
-        fi
-        if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
-          TABLE="${TABLE}"$'\n'"| Integration tests failed | ${{ inputs.int-failed }} |"
+        if [ -n "${{ inputs.int-total }}" ] && [ "${{ inputs.int-total }}" != "0" ]; then
+          INT_CELL="${{ inputs.int-passing }}/${{ inputs.int-total }} passed"
+          if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
+            INT_CELL="${INT_CELL} (${{ inputs.int-failed }} failed)"
+          fi
+          TABLE="${TABLE}"$'\n'"| Integration tests | ${INT_CELL} |"
         fi
 
         # Detect missing test report (runner crash before producing stats)
@@ -114,8 +120,11 @@ runs:
         # Prepend title with icon
         TABLE="### ${ICON} ${{ inputs.title }}"$'\n'"${TABLE}"
 
-        TABLE="${TABLE}"$'\n'"| QA TC IDs exercised | ${TC_IDS} |"
+        TABLE="${TABLE}"$'\n'"| QA TC IDs | ${TC_TOTAL} exercised across ${FEATURE_COUNT} features |"
         TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
+
+        # Collapsible feature breakdown
+        TABLE="${TABLE}"$'\n\n'"<details>"$'\n'"<summary>Feature breakdown</summary>"$'\n\n'"| Feature | TCs | IDs |"$'\n'"|---|---|---|"$'\n'"${FEATURE_TABLE}"$'\n\n'"</details>"
 
         # Extract re-run command from test report
         BODY="$TABLE"

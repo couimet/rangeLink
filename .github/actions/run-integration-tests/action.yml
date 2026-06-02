@@ -1,5 +1,11 @@
 name: 'Run Integration Tests'
-description: 'Run pnpm test:release:automated (VS Code extension host tests via @vscode/test-cli) under Xvfb — excludes assisted and extension-requiring tests'
+description: 'Run pnpm integration tests under Xvfb — parametrized by mode (automated, extensions, overrides)'
+
+inputs:
+  mode:
+    description: 'Test mode — automated, extensions, or overrides'
+    required: true
+    default: 'automated'
 
 outputs:
   int-passing:
@@ -8,22 +14,67 @@ outputs:
   int-failed:
     description: 'Number of integration tests failed'
     value: ${{ steps.stats.outputs.int-failed }}
+  int-total:
+    description: 'Total integration tests exercised (passing + failed)'
+    value: ${{ steps.stats.outputs.int-total }}
 
 runs:
   using: 'composite'
   steps:
+    - name: Derive mode-specific configuration
+      shell: bash
+      run: |
+        case "${{ inputs.mode }}" in
+          automated)
+            echo "PNPM_SCRIPT=test:release:automated" >> "$GITHUB_ENV"
+            echo "CLI_FLAGS=" >> "$GITHUB_ENV"
+            echo "REPORT_FILE=/tmp/test-report-automated.txt" >> "$GITHUB_ENV"
+            echo "ARTIFACT_NAME=test-report-automated" >> "$GITHUB_ENV"
+            echo "CACHE_EXTENSIONS=false" >> "$GITHUB_ENV"
+            ;;
+          extensions)
+            echo "PNPM_SCRIPT=test:release:with-extensions" >> "$GITHUB_ENV"
+            echo "CLI_FLAGS=--exclude-assisted --exclude-label cursor" >> "$GITHUB_ENV"
+            echo "REPORT_FILE=/tmp/test-report-with-extensions.txt" >> "$GITHUB_ENV"
+            echo "ARTIFACT_NAME=test-report-with-extensions" >> "$GITHUB_ENV"
+            echo "CACHE_EXTENSIONS=true" >> "$GITHUB_ENV"
+            ;;
+          overrides)
+            echo "PNPM_SCRIPT=test:release:with-extensions" >> "$GITHUB_ENV"
+            echo "CLI_FLAGS=--use-overrides --exclude-assisted --exclude-label cursor" >> "$GITHUB_ENV"
+            echo "REPORT_FILE=/tmp/test-report-with-overrides.txt" >> "$GITHUB_ENV"
+            echo "ARTIFACT_NAME=test-report-with-overrides" >> "$GITHUB_ENV"
+            echo "CACHE_EXTENSIONS=true" >> "$GITHUB_ENV"
+            ;;
+          *)
+            echo "Error: unknown mode '${{ inputs.mode }}' — expected automated, extensions, or overrides" >&2
+            exit 1
+            ;;
+        esac
+
     - name: Install Xvfb and VS Code native dependencies
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 libasound2t64
+        ALSA_PKG=$(apt-cache show libasound2t64 >/dev/null 2>&1 && echo libasound2t64 || echo libasound2)
+        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 "$ALSA_PKG"
 
     - name: Cache VS Code test binary
       uses: actions/cache@v4
       with:
-        path: ~/.vscode-test
+        path: |
+          ~/.vscode-test
+          !~/.vscode-test/extensions
         key: vscode-test-${{ runner.os }}-stable
         restore-keys: vscode-test-${{ runner.os }}-
+
+    - name: Cache VS Code marketplace extensions
+      if: env.CACHE_EXTENSIONS == 'true'
+      uses: actions/cache@v4
+      with:
+        path: ~/.vscode-test/extensions
+        key: vscode-extensions-${{ runner.os }}-${{ hashFiles('packages/rangelink-vscode-extension/.vscode-test.with-extensions.mjs') }}
+        restore-keys: vscode-extensions-${{ runner.os }}-
 
     - name: Run integration tests under Xvfb
       id: run
@@ -31,19 +82,19 @@ runs:
       run: |
         set -o pipefail
         xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" \
-          pnpm test:release:automated 2>&1 | tee /tmp/test-report-automated.txt
+          pnpm $PNPM_SCRIPT $CLI_FLAGS 2>&1 | tee "$REPORT_FILE"
 
     - name: Extract integration test stats
       id: stats
       if: always()
       shell: bash
       run: |
-        "$GITHUB_ACTION_PATH/../../scripts/ci/extract-test-stats.sh" --mode mocha /tmp/test-report-automated.txt >> "$GITHUB_OUTPUT"
+        "$GITHUB_ACTION_PATH/../../scripts/ci/extract-test-stats.sh" --mode mocha "$REPORT_FILE" >> "$GITHUB_OUTPUT"
 
     - name: Upload test report artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-report-automated
-        path: /tmp/test-report-automated.txt
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.REPORT_FILE }}
         retention-days: 30

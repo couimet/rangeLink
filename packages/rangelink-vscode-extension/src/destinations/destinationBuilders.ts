@@ -231,6 +231,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
     displayName: `Text Editor ("${resourceName}")`,
     focusCapability: context.factories.focusCapability.createEditorCapability(uri, viewColumn),
     eligibilityChecker: context.factories.eligibilityChecker.createContentEligibilityChecker(),
+    editorHasActiveSelection: () => context.ideAdapter.editorHasActiveSelection(uri, viewColumn),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
       resourceName,
     }),

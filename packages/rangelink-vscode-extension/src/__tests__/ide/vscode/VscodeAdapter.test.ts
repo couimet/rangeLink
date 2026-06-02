@@ -494,13 +494,19 @@ describe('VscodeAdapter', () => {
               label: '$(arrow-right) Jump to Bound Destination',
               description: '→ Terminal ("bash")',
               itemKind: 'command',
+              command: 'rangelink.jumpToDestination',
             },
-            { label: '$(close) Unbind Destination', itemKind: 'command' },
+            {
+              label: '$(close) Unbind Destination',
+              itemKind: 'command',
+              command: 'rangelink.unbindDestination',
+            },
             { label: '', kind: QUICK_PICK_SEPARATOR_KIND },
             {
               label: '$(link-external) Go to Link',
               detail: 'Navigate to a RangeLink',
               itemKind: 'command',
+              command: 'rangelink.goToLink',
             },
             { label: 'No destinations available', itemKind: 'info' },
           ],
@@ -2660,6 +2666,28 @@ describe('VscodeAdapter', () => {
       });
     });
 
+    describe('getActiveEditorViewColumn', () => {
+      it('should return viewColumn when editor is active', () => {
+        const mockEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file.ts') }),
+          viewColumn: 1,
+        });
+        mockVSCode.window.activeTextEditor = mockEditor;
+
+        const result = adapter.getActiveEditorViewColumn();
+
+        expect(result).toBe(1);
+      });
+
+      it('should return undefined when no editor is active', () => {
+        mockVSCode.window.activeTextEditor = undefined;
+
+        const result = adapter.getActiveEditorViewColumn();
+
+        expect(result).toBeUndefined();
+      });
+    });
+
     describe('visibleTextEditors', () => {
       it('should return array of visible editors', () => {
         const mockEditor1 = createMockEditor({
@@ -3273,6 +3301,80 @@ describe('VscodeAdapter', () => {
       });
 
       const result = adapter.hasVisibleEditorAt(mockUri as any, 1);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('editorHasActiveSelection', () => {
+    const TEST_URI = { toString: () => 'file:///test.ts' };
+    const OTHER_URI = { toString: () => 'file:///other.ts' };
+
+    const editorWithSelection = (viewColumn: number) =>
+      ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: false } }) as any;
+
+    const editorWithoutSelection = (viewColumn: number) =>
+      ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: true } }) as any;
+
+    const editorWithOtherUri = (viewColumn: number) =>
+      ({ document: { uri: OTHER_URI }, viewColumn, selection: { isEmpty: false } }) as any;
+
+    it('returns true when matching editor has non-empty selection', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [editorWithSelection(1)],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when matching editor has empty selection', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [editorWithoutSelection(1)],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any);
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false when no editors match URI', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any);
+
+      expect(result).toBe(false);
+    });
+
+    it('scopes to viewColumn when provided — returns true for matching column', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [editorWithSelection(2), editorWithSelection(1)],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any, 1);
+
+      expect(result).toBe(true);
+    });
+
+    it('scopes to viewColumn when provided — returns false for non-matching column', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [editorWithSelection(2)],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any, 1);
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false when viewColumn is provided but no editors exist at that URI', () => {
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [editorWithOtherUri(1)],
+      });
+
+      const result = adapter.editorHasActiveSelection(TEST_URI as any, 1);
 
       expect(result).toBe(false);
     });

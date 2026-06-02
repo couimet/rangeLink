@@ -51,6 +51,7 @@ export interface EditorDestinationParams {
   readonly displayName: string;
   readonly focusCapability: FocusCapability;
   readonly eligibilityChecker: EligibilityChecker;
+  readonly editorHasActiveSelection: () => boolean;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
   readonly logger: Logger;
@@ -122,6 +123,9 @@ export interface ComposablePasteDestinationConfig {
 
   /** Check if destination is currently available for pasting */
   readonly isAvailable: () => Promise<boolean>;
+
+  /** Check if the destination editor has an active (non-empty) selection (editor destinations only) */
+  readonly editorHasActiveSelection?: () => boolean;
 
   /** Success message for jump command (i18n formatted string) */
   readonly jumpSuccessMessage: string;
@@ -200,6 +204,7 @@ export class ComposablePasteDestination implements PasteDestination {
   private readonly focusCapability: FocusCapability;
   private readonly eligibilityChecker: EligibilityChecker;
   private readonly isAvailableFn: () => Promise<boolean>;
+  private readonly editorHasActiveSelectionFn?: () => boolean;
   private readonly jumpSuccessMessage: string;
   private readonly loggingDetails: Record<string, unknown>;
   private readonly logger: Logger;
@@ -214,6 +219,7 @@ export class ComposablePasteDestination implements PasteDestination {
     this.focusCapability = config.focusCapability;
     this.eligibilityChecker = config.eligibilityChecker;
     this.isAvailableFn = config.isAvailable;
+    this.editorHasActiveSelectionFn = config.editorHasActiveSelection;
     this.jumpSuccessMessage = config.jumpSuccessMessage;
     this.loggingDetails = config.loggingDetails;
     this.logger = config.logger;
@@ -419,6 +425,18 @@ export class ComposablePasteDestination implements PasteDestination {
     return this.loggingDetails;
   }
 
+  get rawLabel(): string {
+    if (this.resource.kind === 'terminal') {
+      const name = this.loggingDetails.terminalName;
+      return typeof name === 'string' ? name : this.displayName;
+    }
+    if (this.resource.kind === 'editor') {
+      const name = this.loggingDetails.editorName;
+      return typeof name === 'string' ? name : this.displayName;
+    }
+    return this.displayName;
+  }
+
   /**
    * Get the URI of the destination resource (for text-editor destinations).
    *
@@ -432,6 +450,17 @@ export class ComposablePasteDestination implements PasteDestination {
       return this.resource.uri;
     }
     return undefined;
+  }
+
+  getDestinationViewColumn(): vscode.ViewColumn | undefined {
+    if (this.resource.kind === 'editor') {
+      return this.resource.viewColumn;
+    }
+    return undefined;
+  }
+
+  editorHasActiveSelection(): boolean {
+    return this.editorHasActiveSelectionFn?.() ?? false;
   }
 
   /**
@@ -506,6 +535,7 @@ export class ComposablePasteDestination implements PasteDestination {
       focusCapability: params.focusCapability,
       eligibilityChecker: params.eligibilityChecker,
       isAvailable: async () => true,
+      editorHasActiveSelection: params.editorHasActiveSelection,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
       logger: params.logger,

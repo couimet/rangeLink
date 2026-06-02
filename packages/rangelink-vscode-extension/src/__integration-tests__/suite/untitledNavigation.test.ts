@@ -4,15 +4,9 @@ import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
-import {
-  assertNoToastLogged,
-  assertToastLogged,
-  clearEditorSelection,
-  getLogCapture,
-  openUntitledDoc,
-  standardSuite,
-} from '../helpers';
+import { clearEditorSelection, openUntitledDoc, standardSuite } from '../helpers';
 
 /**
  * Navigate to a RangeLink targeting an untitled file.
@@ -60,7 +54,7 @@ const navigateToUntitledLink = (
     });
 
     Promise.resolve(
-      vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed }),
+      vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed }),
     ).catch((error: unknown) => {
       clearTimeout(overallTimeout);
       if (stableTimer) clearTimeout(stableTimer);
@@ -92,8 +86,7 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-001');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${untitledDisplayName} @ 5` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -110,20 +103,6 @@ standardSuite('Untitled File Navigation', (ss) => {
       },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-001');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${untitledDisplayName} @ 5`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${untitledDisplayName}`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'error',
-      message: `Failed to navigate to ${untitledDisplayName}`,
-    });
   });
 
   // untitled-navigation-002: Navigate to line range in untitled file
@@ -132,8 +111,9 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-002');
+    ss.expectToastMessages([
+      { level: 'info', message: `Navigated to ${untitledDisplayName} @ 3-7` },
+    ]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -150,16 +130,6 @@ standardSuite('Untitled File Navigation', (ss) => {
       },
       { anchorLine: 2, anchorChar: 0, activeLine: 6, activeChar: endLineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-002');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${untitledDisplayName} @ 3-7`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${untitledDisplayName}`,
-    });
   });
 
   // untitled-navigation-003: Navigate to untitled file that is not open shows warning
@@ -169,26 +139,15 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-003');
+    ss.expectToastMessages([{ level: 'warning', message: `Cannot find file: ${fakeName}` }]);
 
     // Fire-and-forget: showWarningMessage blocks awaiting user dismissal.
     // The log entry is written before the blocking await, so settle + log check works.
-    vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', {
+    vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, {
       linkText,
       parsed: parseResult.value,
     });
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-003');
-    assertToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${fakeName}`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${fakeName} @ 1`,
-    });
   });
 
   // untitled-navigation-004: Character-precision navigation in untitled file
@@ -197,8 +156,9 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-004');
+    ss.expectToastMessages([
+      { level: 'info', message: `Navigated to ${untitledDisplayName} @ 5:10-5:20` },
+    ]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -214,16 +174,6 @@ standardSuite('Untitled File Navigation', (ss) => {
       },
       { anchorLine: 4, anchorChar: 9, activeLine: 4, activeChar: 19 },
     );
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-004');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${untitledDisplayName} @ 5:10-5:20`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${untitledDisplayName}`,
-    });
   });
 
   // untitled-navigation-005: Line clamping in untitled file
@@ -232,8 +182,12 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-005');
+    ss.expectToastMessages([
+      {
+        level: 'warning',
+        message: `Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
+      },
+    ]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -251,16 +205,6 @@ standardSuite('Untitled File Navigation', (ss) => {
       },
       { anchorLine: lastLine, anchorChar: 0, activeLine: lastLine, activeChar: lastLineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-005');
-    assertToastLogged(lines, {
-      type: 'warning',
-      message: `Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'error',
-      message: `Failed to navigate to ${untitledDisplayName}`,
-    });
   });
 
   // untitled-navigation-006: Case-insensitive untitled name matching
@@ -270,8 +214,7 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-untitled-nav-006');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${lowercaseName} @ 5` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -288,15 +231,5 @@ standardSuite('Untitled File Navigation', (ss) => {
       },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-untitled-nav-006');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${lowercaseName} @ 5`,
-    });
-    assertNoToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${untitledDisplayName}`,
-    });
   });
 });

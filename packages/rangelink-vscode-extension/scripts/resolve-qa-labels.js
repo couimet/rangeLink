@@ -8,11 +8,12 @@ const path = require('node:path');
 
 const args = process.argv.slice(2);
 const labelFilters = [];
+const featureFilters = [];
 let assistedOnly = false;
 let excludeAssisted = false;
 let automatedOnly = false;
 const excludeLabels = [];
-let outputFormat = 'lines';
+const excludeFeatures = [];
 let jsonOutput = false;
 let yamlPath = '';
 
@@ -20,7 +21,8 @@ const printUsage = (exitCode = 2) => {
   process.stderr.write(
     'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
       '                          [--automated-only] [--exclude-label <name>]...\n' +
-      '                          [--json] [--format csv|lines] [--yaml <path>]\n',
+      '                          [--feature <slug>]... [--exclude-feature <slug>]...\n' +
+      '                          [--json] [--yaml <path>]\n',
   );
   process.exit(exitCode);
 };
@@ -51,19 +53,22 @@ for (let i = 0; i < args.length; i++) {
       }
       excludeLabels.push(args[++i]);
       break;
+    case '--feature':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --feature requires a value\n');
+        process.exit(1);
+      }
+      featureFilters.push(args[++i]);
+      break;
+    case '--exclude-feature':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --exclude-feature requires a value\n');
+        process.exit(1);
+      }
+      excludeFeatures.push(args[++i]);
+      break;
     case '--json':
       jsonOutput = true;
-      break;
-    case '--format':
-      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
-        process.stderr.write('Error: --format requires a value\n');
-        process.exit(1);
-      }
-      outputFormat = args[++i];
-      if (outputFormat !== 'csv' && outputFormat !== 'lines') {
-        process.stderr.write("Error: --format must be 'csv' or 'lines'\n");
-        process.exit(1);
-      }
       break;
     case '--yaml':
       if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
@@ -240,7 +245,20 @@ for (const rawLine of lines) {
 
 finalizeCurrent();
 
-// ── JSON output (ungrouped, unfiltered) ────────────────────────────────────────
+// ── Shared filter ──────────────────────────────────────────────────────────────
+
+const filterTc = (tc) => {
+  if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
+  if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
+  if (featureFilters.length > 0 && !featureFilters.includes(tc.feature)) return false;
+  if (excludeFeatures.length > 0 && excludeFeatures.includes(tc.feature)) return false;
+  if (automatedOnly && tc.automated !== 'true') return false;
+  if (assistedOnly && tc.automated !== 'assisted') return false;
+  if (excludeAssisted && tc.automated === 'assisted') return false;
+  return true;
+};
+
+// ── JSON output ────────────────────────────────────────────────
 
 if (jsonOutput) {
   const groups = {};
@@ -249,7 +267,7 @@ if (jsonOutput) {
   let totalAssisted = 0;
   let totalManual = 0;
 
-  for (const tc of testCases) {
+  for (const tc of testCases.filter(filterTc)) {
     const m = tc.id.match(/^(.*?)-\d{3}$/);
     const prefix = m ? m[1] : tc.id;
     (groups[prefix] ??= []).push(tc);
@@ -261,8 +279,8 @@ if (jsonOutput) {
 
   for (const prefix of sortedPrefixes) {
     const tcList = groups[prefix];
-    const featureCounts = {};
     const reasonCounts = {};
+    let automatedCount = 0;
     let assistedCount = 0;
     let manualCount = 0;
     let requiresExtensions = false;
@@ -296,9 +314,9 @@ if (jsonOutput) {
         requiresExtensions = true;
       }
 
-      featureCounts[tc.feature] = (featureCounts[tc.feature] || 0) + 1;
-
-      if (tc.automated === 'assisted') {
+      if (tc.automated === 'true') {
+        automatedCount++;
+      } else if (tc.automated === 'assisted') {
         assistedCount++;
       } else if (tc.automated === 'false') {
         manualCount++;
@@ -307,28 +325,24 @@ if (jsonOutput) {
       }
     }
 
-    const nonAutomated = assistedCount + manualCount;
-    if (nonAutomated === 0) continue;
+    const total = automatedCount + assistedCount + manualCount;
+    if (total === 0) continue;
 
     totalAssisted += assistedCount;
     totalManual += manualCount;
 
-    let mostCommon = 'Uncategorized';
-    let maxCount = 0;
-    for (const [feat, count] of Object.entries(featureCounts)) {
-      if (count > maxCount) {
-        maxCount = count;
-        mostCommon = feat;
-      }
-    }
+    const feature = tcList.length > 0 ? tcList[0].feature : 'Uncategorized';
+    const ids = tcList.map((tc) => tc.id);
 
     resultGroups.push({
       prefix,
-      feature: mostCommon,
+      feature: feature,
+      automated: automatedCount,
       assisted: assistedCount,
       manual: manualCount,
-      total: nonAutomated,
+      total,
       requires_extensions: requiresExtensions,
+      ids,
       ...(Object.keys(reasonCounts).length > 0 ? { reasons: reasonCounts } : {}),
     });
   }
@@ -357,21 +371,10 @@ if (jsonOutput) {
 
 // ── Filter and output ─────────────────────────────────────────────────────────
 
-const matching = testCases.filter((tc) => {
-  if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
-  if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
-  if (automatedOnly && tc.automated !== 'true') return false;
-  if (assistedOnly && tc.automated !== 'assisted') return false;
-  if (excludeAssisted && tc.automated === 'assisted') return false;
-  return true;
-});
+const matching = testCases.filter(filterTc);
 
 const ids = matching.map((tc) => tc.id);
 
-if (outputFormat === 'csv') {
-  process.stdout.write(ids.join(', '));
-} else {
-  for (const id of ids) {
-    process.stdout.write(`${id}\n`);
-  }
+for (const id of ids) {
+  process.stdout.write(`${id}\n`);
 }

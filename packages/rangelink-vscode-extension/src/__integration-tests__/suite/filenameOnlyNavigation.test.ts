@@ -7,9 +7,7 @@ import * as vscode from 'vscode';
 
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 import {
-  assertToastLogged,
   clearEditorSelection,
-  getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
   standardSuite,
@@ -71,8 +69,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fallback-001');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${uniqueFilename} @ 5` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -91,12 +88,6 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
       },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-fallback-001');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${uniqueFilename} @ 5`,
-    });
   });
 
   test('filename-fallback-navigation-002: bare filename with multiple matches shows ambiguity warning', async () => {
@@ -104,8 +95,9 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fallback-002');
+    ss.expectToastMessages([
+      { level: 'warning', message: `Multiple files match: ${duplicateFilename}` },
+    ]);
 
     // VscodeAdapter logs the message before awaiting showWarningMessage. The notification
     // itself never auto-dismisses in the test host, so we fire-and-forget the command and
@@ -115,12 +107,6 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
       parsed: parseResult.value,
     });
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-fallback-002');
-    assertToastLogged(lines, {
-      type: 'warning',
-      message: `Multiple files match: ${duplicateFilename}`,
-    });
   });
 
   test('filename-fallback-navigation-003: bare filename with no matches shows file-not-found warning', async () => {
@@ -129,8 +115,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fallback-003');
+    ss.expectToastMessages([{ level: 'warning', message: `Cannot find file: ${missingFilename}` }]);
 
     // Same fire-and-forget pattern as TC-002 — the warning log is written before
     // showWarningMessage is awaited, so settle() is sufficient.
@@ -139,12 +124,6 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
       parsed: parseResult.value,
     });
     await ss.settle();
-
-    const lines = logCapture.getLinesSince('before-fallback-003');
-    assertToastLogged(lines, {
-      type: 'warning',
-      message: `Cannot find file: ${missingFilename}`,
-    });
   });
 
   test('filename-fallback-navigation-004: path with directory separators uses standard resolution', async () => {
@@ -152,8 +131,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fallback-004');
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativeFilePath} @ 10` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -172,11 +150,5 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
       },
       { anchorLine: 9, anchorChar: 0, activeLine: 9, activeChar: lineLength },
     );
-
-    const lines = logCapture.getLinesSince('before-fallback-004');
-    assertToastLogged(lines, {
-      type: 'info',
-      message: `Navigated to ${relativeFilePath} @ 10`,
-    });
   });
 });

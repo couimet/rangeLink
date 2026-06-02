@@ -1,7 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
-import { DestinationBehavior } from '../../types';
 import {
   createMockClipboardPreserver,
   createMockConfigReader,
@@ -22,9 +21,9 @@ describe('TerminalSelectionService', () => {
   let mockShowErrorMessage: jest.Mock;
   let mockShowInformationMessage: jest.Mock;
   let formatMessageSpy: jest.SpyInstance;
-  let mockClipboardRouter: {
-    resolveDestinationBehavior: jest.Mock;
-    copyAndSendToDestination: jest.Mock;
+  let mockSendRouter: {
+    resolveDestination: jest.Mock;
+    sendToDestination: jest.Mock;
   };
 
   beforeEach(() => {
@@ -40,16 +39,16 @@ describe('TerminalSelectionService', () => {
       },
     });
     mockDestinationManager = createMockDestinationManager({ isBound: false });
-    mockClipboardRouter = {
-      resolveDestinationBehavior: jest.fn(),
-      copyAndSendToDestination: jest.fn(),
+    mockSendRouter = {
+      resolveDestination: jest.fn(),
+      sendToDestination: jest.fn(),
     };
     service = new TerminalSelectionService(
       mockAdapter,
       mockDestinationManager,
       mockConfigReader,
       mockPreserver,
-      mockClipboardRouter as any,
+      mockSendRouter as any,
       mockLogger,
     );
     formatMessageSpy = spyOnFormatMessage();
@@ -128,35 +127,32 @@ describe('TerminalSelectionService', () => {
       );
     });
 
-    it('returns picker-cancelled when resolveDestinationBehavior returns undefined', async () => {
+    it('returns picker-cancelled when resolveDestination returns undefined', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockPreserver.preserve.mockResolvedValue('selected text');
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       const result = await service.pasteTerminalSelectionToDestination();
 
       expect(result).toStrictEqual({ outcome: 'picker-cancelled' });
-      expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
     });
 
     it('sends content to destination and returns success', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockPreserver.preserve.mockResolvedValue('selected text');
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
       mockConfigReader.getPaddingMode.mockReturnValue('both');
 
       const result = await service.pasteTerminalSelectionToDestination();
 
       expect(result).toStrictEqual({ outcome: 'success' });
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockClipboardRouter.copyAndSendToDestination).toHaveBeenCalledWith({
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
         control: {
           contentType: 'Text',
-          destinationBehavior: 'bound-destination',
         },
         content: {
           clipboard: ' selected text ',
@@ -166,7 +162,7 @@ describe('TerminalSelectionService', () => {
           sendFn: expect.any(Function) as unknown,
           isEligibleFn: expect.any(Function) as unknown,
         },
-        contentName: 'Selected text',
+        contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
         fnName: 'pasteTerminalSelectionToDestination',
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -184,9 +180,7 @@ describe('TerminalSelectionService', () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockPreserver.preserve.mockResolvedValue('text');
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(
-        DestinationBehavior.BoundDestination,
-      );
+      mockSendRouter.resolveDestination.mockResolvedValue(true);
 
       await service.terminalLinkBridge();
 

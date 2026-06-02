@@ -5,7 +5,7 @@ import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_WARN_ON_DIRTY_BUFFER, SETTING_WARN_ON_DIRTY_BUFFER } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { DirtyBufferWarningResult } from '../types';
+import { DirtyBufferWarningResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { DirtyBufferMessageCodes } from './types';
@@ -79,7 +79,7 @@ export const handleDirtyBufferWarning = async (
       const saved = await document.save();
       if (!saved) {
         logger.warn({ fn }, 'Save operation failed or was cancelled');
-        ideAdapter.showWarningMessage(formatMessage(messageCodes.saveFailed));
+        void ideAdapter.showWarningMessage(formatMessage(messageCodes.saveFailed));
         return DirtyBufferWarningResult.SaveFailed;
       }
       logger.debug({ fn }, 'Document saved successfully');
@@ -90,6 +90,9 @@ export const handleDirtyBufferWarning = async (
       return result;
     case DirtyBufferWarningResult.Dismissed:
       logger.debug({ fn }, 'User dismissed warning, aborting');
+      void ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_OPERATION_ABORTED_DIRTY_BUFFER),
+      );
       return result;
     default: {
       const exhaustiveCheck: never = result;
