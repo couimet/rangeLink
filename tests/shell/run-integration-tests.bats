@@ -187,12 +187,12 @@ ENDOFSTUB
 
 @test "--with-extensions: MODE=with-extensions, extensions config, calls setup" {
   setup_mocks
-  export STUB_RESOLVED_IDS=""
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions.txt" | head -1)
+  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      with-extensions" "$REPORT"
 
@@ -415,13 +415,14 @@ ENDOFSTUB
   find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | grep -q .
 }
 
-@test "report file: --with-extensions creates test-run-*-with-extensions.txt" {
+@test "report file: --with-extensions creates test-run-*-with-extensions-grep-*.txt" {
   setup_mocks
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions.txt" | grep -q .
+  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | grep -q .
 }
 
 @test "report file: --grep creates test-run-*-grep-<slug>.txt" {
@@ -544,6 +545,7 @@ ENDOFSTUB
 
 @test "QA validator: runs for --with-extensions" {
   setup_mocks
+  export STUB_RESOLVED_IDS=$'dummy-001'
 
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]

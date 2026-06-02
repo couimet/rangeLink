@@ -60,16 +60,16 @@ write_yaml() {
   [[ "$output" =~ "--exclude-label requires a value" ]]
 }
 
-@test "resolve-qa-labels: --format without value exits 1" {
+@test "resolve-qa-labels: --format is an unknown option" {
   run node "$REAL_SCRIPT" --format
   [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "--format requires a value" ]]
+  [[ "$output" =~ "Unknown option: --format" ]]
 }
 
-@test "resolve-qa-labels: --format with invalid value exits 1" {
+@test "resolve-qa-labels: --format with value is an unknown option" {
   run node "$REAL_SCRIPT" --format tsv
   [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "--format must be" ]]
+  [[ "$output" =~ "Unknown option: --format" ]]
 }
 
 @test "resolve-qa-labels: --yaml without value exits 1" {
@@ -280,23 +280,20 @@ EOF
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   const groups = d.groups;
-  // Should have 2 groups: first and second (third is a prefix, along with first/second)
-  // first-001 → prefix 'first', second-002 → prefix 'second', third-003 → prefix 'third'
-  // All have nonAutomated > 0 (first-001 is true, wait no - automated: 'true' means automated: true)
-  // first-001: automated: \"true\" → parsed as 'true' → automated === 'true' → NOT automated in JSON terms...
-  // Actually in JSON output, first-001 has automated: 'true' so it stays in group, contributes to featureCounts, but NOT to assisted/manual. So nonAutomated = 0 for 'first' → SKIPPED.
-  // second-002: automated: 'assisted' → nonAutomated += 1
-  // third-003: automated: 'false' → cursor TC label → goes to cursorTcs → skipped from group
-  // So only 'second' group should appear
-  if (groups.length !== 1) process.exit(1);
-  if (groups[0].prefix !== 'second') process.exit(2);
-  if (groups[0].assisted !== 1) process.exit(3);
-  if (groups[0].manual !== 0) process.exit(4);
+  // first-001 → prefix 'first', automated: true → automated=1, total=1
+  // second-002 → prefix 'second', automated: assisted → assisted=1, total=1
+  // third-003 → prefix 'third', automated: false + cursor label → cursor_tcs
+  if (groups.length !== 2) process.exit(1);
+  if (groups[0].prefix !== 'first') process.exit(2);
+  if (groups[0].automated !== 1) process.exit(3);
+  if (groups[0].total !== 1) process.exit(4);
+  if (groups[1].prefix !== 'second') process.exit(5);
+  if (groups[1].assisted !== 1) process.exit(6);
+  if (groups[1].total !== 1) process.exit(7);
   // cursor_tcs should have third-003
-  if (d.cursor_tcs.length !== 1) process.exit(5);
-  if (d.cursor_tcs[0].id !== 'third-003') process.exit(6);
-  if (d.cursor_tcs[0].automated !== false) process.exit(7);  // boolean false
-  // requires-extensions from third-003 but group is skipped, so no requires_extensions in output
+  if (d.cursor_tcs.length !== 1) process.exit(8);
+  if (d.cursor_tcs[0].id !== 'third-003') process.exit(9);
+  if (d.cursor_tcs[0].automated !== false) process.exit(10);  // boolean false
 " <<< "$output"
 }
 
@@ -411,8 +408,8 @@ if (g.reasons['Reason 3'] !== 1) process.exit(11);
 " <<< "$output"
 }
 
-@test "resolve-qa-labels: JSON skips groups with nonAutomated === 0" {
-  yml="$TEST_TEMP_DIR/json-skip-zero.yaml"
+@test "resolve-qa-labels: JSON includes groups with only automated TCs" {
+  yml="$TEST_TEMP_DIR/json-auto-only.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
   - id: auto-001
@@ -428,9 +425,14 @@ EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
-  if (d.groups.length !== 0) process.exit(1);
-  if (d.total_assisted !== 0) process.exit(2);
-  if (d.total_manual !== 0) process.exit(3);
+  if (d.groups.length !== 1) process.exit(1);
+  if (d.groups[0].prefix !== 'auto') process.exit(2);
+  if (d.groups[0].automated !== 2) process.exit(3);
+  if (d.groups[0].assisted !== 0) process.exit(4);
+  if (d.groups[0].manual !== 0) process.exit(5);
+  if (d.groups[0].total !== 2) process.exit(6);
+  if (d.total_assisted !== 0) process.exit(7);
+  if (d.total_manual !== 0) process.exit(8);
 " <<< "$output"
 }
 
@@ -520,7 +522,10 @@ EOF
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   if (d.cursor_tcs.length !== 0) process.exit(1);  // NOT extracted
-  if (d.groups.length !== 0) process.exit(2);      // nonAutomated = 0 → skipped
+  if (d.groups.length !== 1) process.exit(2);      // group appears with automated count
+  if (d.groups[0].prefix !== 'cursor-auto') process.exit(3);
+  if (d.groups[0].automated !== 1) process.exit(4);
+  if (d.groups[0].total !== 1) process.exit(5);
 " <<< "$output"
 }
 

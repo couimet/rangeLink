@@ -275,7 +275,7 @@ if [[ "$CONFIG_EXTENSIONS" == true ]]; then
   fi
   SETUP_OUTPUT=$($SETUP_CMD)
   echo "$SETUP_OUTPUT"
-  CUSTOM_AI_COUNT=$(echo "$SETUP_OUTPUT" | grep -oE 'CUSTOM_AI_COUNT=[0-9]+' | cut -d= -f2)
+  CUSTOM_AI_COUNT=$(echo "$SETUP_OUTPUT" | grep -oE 'CUSTOM_AI_COUNT=[0-9]+' | cut -d= -f2 || true)
   if [[ -n "$CUSTOM_AI_COUNT" ]]; then
     export RANGELINK_CUSTOM_AI_COUNT="$CUSTOM_AI_COUNT"
     echo "Exported RANGELINK_CUSTOM_AI_COUNT=$CUSTOM_AI_COUNT"

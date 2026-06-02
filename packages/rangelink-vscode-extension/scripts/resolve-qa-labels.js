@@ -228,7 +228,18 @@ for (const rawLine of lines) {
 
 finalizeCurrent();
 
-// ── JSON output (ungrouped, unfiltered) ────────────────────────────────────────
+// ── Shared filter ──────────────────────────────────────────────────────────────
+
+const filterTc = (tc) => {
+  if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
+  if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
+  if (automatedOnly && tc.automated !== 'true') return false;
+  if (assistedOnly && tc.automated !== 'assisted') return false;
+  if (excludeAssisted && tc.automated === 'assisted') return false;
+  return true;
+};
+
+// ── JSON output ────────────────────────────────────────────────
 
 if (jsonOutput) {
   const groups = {};
@@ -237,7 +248,7 @@ if (jsonOutput) {
   let totalAssisted = 0;
   let totalManual = 0;
 
-  for (const tc of testCases) {
+  for (const tc of testCases.filter(filterTc)) {
     const m = tc.id.match(/^(.*?)-\d{3}$/);
     const prefix = m ? m[1] : tc.id;
     (groups[prefix] ??= []).push(tc);
@@ -251,6 +262,7 @@ if (jsonOutput) {
     const tcList = groups[prefix];
     const featureCounts = {};
     const reasonCounts = {};
+    let automatedCount = 0;
     let assistedCount = 0;
     let manualCount = 0;
     let requiresExtensions = false;
@@ -286,7 +298,9 @@ if (jsonOutput) {
 
       featureCounts[tc.feature] = (featureCounts[tc.feature] || 0) + 1;
 
-      if (tc.automated === 'assisted') {
+      if (tc.automated === 'true') {
+        automatedCount++;
+      } else if (tc.automated === 'assisted') {
         assistedCount++;
       } else if (tc.automated === 'false') {
         manualCount++;
@@ -295,8 +309,8 @@ if (jsonOutput) {
       }
     }
 
-    const nonAutomated = assistedCount + manualCount;
-    if (nonAutomated === 0) continue;
+    const total = automatedCount + assistedCount + manualCount;
+    if (total === 0) continue;
 
     totalAssisted += assistedCount;
     totalManual += manualCount;
@@ -313,9 +327,10 @@ if (jsonOutput) {
     resultGroups.push({
       prefix,
       feature: mostCommon,
+      automated: automatedCount,
       assisted: assistedCount,
       manual: manualCount,
-      total: nonAutomated,
+      total,
       requires_extensions: requiresExtensions,
       ...(Object.keys(reasonCounts).length > 0 ? { reasons: reasonCounts } : {}),
     });
@@ -345,14 +360,7 @@ if (jsonOutput) {
 
 // ── Filter and output ─────────────────────────────────────────────────────────
 
-const matching = testCases.filter((tc) => {
-  if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
-  if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
-  if (automatedOnly && tc.automated !== 'true') return false;
-  if (assistedOnly && tc.automated !== 'assisted') return false;
-  if (excludeAssisted && tc.automated === 'assisted') return false;
-  return true;
-});
+const matching = testCases.filter(filterTc);
 
 const ids = matching.map((tc) => tc.id);
 
