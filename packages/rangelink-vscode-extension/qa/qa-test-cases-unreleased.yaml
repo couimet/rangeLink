@@ -1991,6 +1991,15 @@ test_cases:
     expected_result: 'Bound to GitHub Copilot Chat, content arrives in Dummy AI Tier 1 textarea; Tier 2 is empty (no cross-contamination)'
     automated: true
 
+  - id: custom-ai-assistant-019
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'Custom AI Assistants — Override Fallback'
+    scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast — human verifies'
+    expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears, human confirms clipboard content is a valid RangeLink'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section — Built-in AI Assistants
   # ---------------------------------------------------------------------------

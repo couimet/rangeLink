@@ -44,6 +44,32 @@ teardown() {
   [[ "$status" -eq 0 ]]
 }
 
+@test "--override-copilot is a valid flag" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --override-copilot --help
+  [[ "$status" -eq 0 ]]
+}
+
+@test "--exclude-label is a valid flag" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --exclude-label some-label --help
+  [[ "$status" -eq 0 ]]
+}
+
+@test "--exclude-label without name errors" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --exclude-label
+  [[ "$status" -eq 1 ]]
+  [[ "$output" == *"Error"* ]]
+}
+
+@test "--assisted is a valid flag" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --assisted --help
+  [[ "$status" -eq 0 ]]
+}
+
+@test "--with-extensions is a valid flag" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --with-extensions --help
+  [[ "$status" -eq 0 ]]
+}
+
 # ── Test count extraction ─────────────────────────────────────────────────────
 
 @test "extracts passing count from Mocha output" {
