@@ -31,9 +31,7 @@ const getExpectedCustomAssistantsCount = (): number => {
   }
   const count = parseInt(raw, 10);
   if (isNaN(count)) {
-    throw new Error(
-      `RANGELINK_CUSTOM_AI_COUNT must be a valid number, got: ${raw}`,
-    );
+    throw new Error(`RANGELINK_CUSTOM_AI_COUNT must be a valid number, got: ${raw}`);
   }
   return count;
 };
