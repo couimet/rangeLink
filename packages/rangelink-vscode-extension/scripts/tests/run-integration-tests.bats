@@ -44,9 +44,15 @@ teardown() {
   [[ "$status" -eq 0 ]]
 }
 
-@test "--override-copilot is a valid flag" {
-  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --override-copilot --help
+@test "--use-overrides is a valid flag" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --with-extensions --use-overrides --help
   [[ "$status" -eq 0 ]]
+}
+
+@test "--use-overrides without --with-extensions errors" {
+  run bash "$BATS_TEST_DIRNAME/../run-integration-tests.sh" --use-overrides --help
+  [[ "$status" -eq 1 ]]
+  [[ "$output" == *"--use-overrides requires --with-extensions"* ]]
 }
 
 @test "--exclude-label is a valid flag" {

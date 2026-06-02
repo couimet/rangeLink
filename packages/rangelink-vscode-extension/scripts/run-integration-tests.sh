@@ -27,7 +27,7 @@ cd "$PACKAGE_ROOT"
 
 CONFIG_AUTOMATED=false
 CONFIG_EXTENSIONS=false
-CONFIG_COPILOT_OVERRIDE=false
+USE_OVERRIDES=false
 GREP_PATTERN=""
 LABEL_FILTERS=()
 EXCLUDE_LABELS=()
@@ -58,8 +58,8 @@ while [[ $# -gt 0 ]]; do
       CONFIG_EXTENSIONS=true
       shift
       ;;
-    --override-copilot)
-      CONFIG_COPILOT_OVERRIDE=true
+    --use-overrides)
+      USE_OVERRIDES=true
       shift
       ;;
     --grep)
@@ -111,13 +111,23 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ "$USE_OVERRIDES" == true ]]; then
+  if [[ "$CONFIG_EXTENSIONS" != true ]]; then
+    echo "Error: --use-overrides requires --with-extensions" >&2
+    exit 1
+  fi
+  LABEL_FILTERS+=("needs-override")
+else
+  EXCLUDE_LABELS+=("needs-override")
+fi
+
 if [[ "$SHOW_HELP" == true ]]; then
   echo "Usage: ./scripts/run-integration-tests.sh [flags]"
   echo ""
   echo "Flags:"
   echo "  --automated              Use automated config (20s timeout, excludes assisted)"
   echo "  --with-extensions        Use with-extensions config + install marketplace extensions"
-  echo "  --override-copilot       Route Copilot Chat to Dummy AI (local dev without Copilot)"
+  echo "  --use-overrides          Configure AI assistant overrides and run only needs-override tests (requires --with-extensions)"
   echo "  --grep <pattern>         Mocha grep filter (AND-combined with resolved label IDs)"
   echo "  --label <name>           Include TCs with this QA YAML label (repeatable, OR within labels)"
   echo "  --exclude-label <name>   Exclude TCs with this QA YAML label (repeatable)"
@@ -130,7 +140,7 @@ if [[ "$SHOW_HELP" == true ]]; then
   echo "  ./scripts/run-integration-tests.sh --label clipboard --assisted"
   echo "  ./scripts/run-integration-tests.sh --automated --exclude-label requires-extensions"
   echo "  ./scripts/run-integration-tests.sh --with-extensions --grep \"claude-code-001\""
-  echo "  ./scripts/run-integration-tests.sh --with-extensions --override-copilot --exclude-label needs-real-copilot"
+  echo "  ./scripts/run-integration-tests.sh --with-extensions --use-overrides"
   exit 0
 fi
 
@@ -257,8 +267,8 @@ pnpm test:release:prepare
 
 if [[ "$CONFIG_EXTENSIONS" == true ]]; then
   SETUP_CMD="node $SCRIPT_DIR/setup-integration-test-settings.js --suffix -with-ext"
-  if [[ "$CONFIG_COPILOT_OVERRIDE" == true ]]; then
-    SETUP_CMD="$SETUP_CMD --copilot-override"
+  if [[ "$USE_OVERRIDES" == true ]]; then
+    SETUP_CMD="$SETUP_CMD --use-overrides"
   fi
   SETUP_OUTPUT=$($SETUP_CMD)
   echo "$SETUP_OUTPUT"
@@ -324,7 +334,7 @@ TOTAL_COUNT=$(( ${PASSING_COUNT:-0} + ${FAILING_COUNT:-0} ))
       [[ "$EXCLUDE_ASSISTED" == true ]] && RERUN_CMD="$RERUN_CMD --exclude-assisted"
       [[ "$CONFIG_AUTOMATED" == true ]] && RERUN_CMD="$RERUN_CMD --automated"
       [[ "$CONFIG_EXTENSIONS" == true ]] && RERUN_CMD="$RERUN_CMD --with-extensions"
-      [[ "$CONFIG_COPILOT_OVERRIDE" == true ]] && RERUN_CMD="$RERUN_CMD --override-copilot"
+      [[ "$USE_OVERRIDES" == true ]] && RERUN_CMD="$RERUN_CMD --use-overrides"
       echo ""
       echo ""
       echo "Re-run failed tests:"

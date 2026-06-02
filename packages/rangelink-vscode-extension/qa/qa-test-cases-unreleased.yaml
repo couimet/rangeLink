@@ -1986,6 +1986,7 @@ test_cases:
     labels:
       - clipboard
       - requires-extensions
+      - needs-override
     feature: 'Custom AI Assistants — Copilot Override'
     scenario: 'Copilot Chat override routes content to Dummy AI via setup-integration-test-settings'
     expected_result: 'Bound to GitHub Copilot Chat, content arrives in Dummy AI Tier 1 textarea; Tier 2 is empty (no cross-contamination)'
@@ -1995,6 +1996,7 @@ test_cases:
     labels:
       - clipboard
       - requires-extensions
+      - needs-override
     feature: 'Custom AI Assistants — Override Fallback'
     scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast — human verifies'
     expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears, human confirms clipboard content is a valid RangeLink'
@@ -2057,8 +2059,6 @@ test_cases:
     non_automatable_reason: ide-specific
 
   - id: github-copilot-chat-001
-    labels:
-      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'GitHub Copilot Chat appears in destination picker when available'
     expected_result: '"GitHub Copilot Chat" is listed in the AI Assistants group of the destination picker'
@@ -2067,7 +2067,6 @@ test_cases:
   - id: github-copilot-chat-002
     labels:
       - clipboard
-      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Binding to GitHub Copilot Chat and sending a link delivers content to chat'
     expected_result: 'GitHub Copilot Chat opens and contains the RangeLink and selected code snippet'
@@ -2153,7 +2152,6 @@ test_cases:
   - id: github-copilot-chat-003
     labels:
       - clipboard
-      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Cold panel paste verification — content arrives in GitHub Copilot Chat input after a single R-L since bind'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show paste command succeeded with a post-paste delay. Single clipboard write architecture: no double-write.'
@@ -2162,7 +2160,6 @@ test_cases:
   - id: github-copilot-chat-004
     labels:
       - clipboard
-      - needs-real-copilot
     feature: 'Built-in AI Assistants'
     scenario: 'Warm panel paste verification — content arrives in GitHub Copilot Chat input on second R-L without cold-start refocus signals'
     expected_result: 'Content arrives in GitHub Copilot Chat input. Logs show no cold-start refocus signals. Paste command succeeds with minimal delay.'

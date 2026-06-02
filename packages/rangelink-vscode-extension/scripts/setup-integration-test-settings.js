@@ -72,7 +72,7 @@ try {
   }
 }
 
-if (process.argv.includes('--copilot-override')) {
+if (process.argv.includes('--use-overrides')) {
   settings['rangelink.customAiAssistants'].push({
     extensionId: 'github.copilot-chat',
     extensionName: 'Copilot Override',
