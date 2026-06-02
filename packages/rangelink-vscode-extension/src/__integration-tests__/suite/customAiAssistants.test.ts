@@ -29,7 +29,13 @@ const getExpectedCustomAssistantsCount = (): number => {
       'RANGELINK_CUSTOM_AI_COUNT env var is not set — the test runner must export this via setup-integration-test-settings.js',
     );
   }
-  return parseInt(raw, 10);
+  const count = parseInt(raw, 10);
+  if (isNaN(count)) {
+    throw new Error(
+      `RANGELINK_CUSTOM_AI_COUNT must be a valid number, got: ${raw}`,
+    );
+  }
+  return count;
 };
 
 standardSuite('Custom AI Assistants', (_ss) => {
