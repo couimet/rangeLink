@@ -332,6 +332,7 @@ if (jsonOutput) {
     totalManual += manualCount;
 
     const feature = tcList.length > 0 ? tcList[0].feature : 'Uncategorized';
+    const ids = tcList.map((tc) => tc.id);
 
     resultGroups.push({
       prefix,
@@ -341,6 +342,7 @@ if (jsonOutput) {
       manual: manualCount,
       total,
       requires_extensions: requiresExtensions,
+      ids,
       ...(Object.keys(reasonCounts).length > 0 ? { reasons: reasonCounts } : {}),
     });
   }

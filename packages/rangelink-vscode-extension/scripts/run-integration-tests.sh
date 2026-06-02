@@ -446,7 +446,7 @@ FAILED_IDS=$(grep -A1 '^[[:space:]]*[0-9][0-9]*)[[:space:]]' "$REPORT_FILE" | gr
   fi
 
   # Block 2: Results JSON (post-run)
-  FAILED_IDS_JSON=$(echo "$FAILED_IDS" | jq -R -s 'map(select(length > 0))' 2>/dev/null || echo '[]')
+  FAILED_IDS_JSON=$(echo "$FAILED_IDS" | jq -R -s 'split("\n") | map(select(length > 0))' 2>/dev/null || echo '[]')
   BLOCK2_JSON=$(jq -n \
     --argjson passing "${PASSING_COUNT:-0}" \
     --argjson failing "${FAILING_COUNT:-0}" \
