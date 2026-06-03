@@ -467,6 +467,32 @@ EOF
 exit 1
 SCRIPT
   chmod +x "$BIN_DIR/node"
+  # Override jq mock to return 0 for length against the fallback {"groups":[]}
+  cat > "$BIN_DIR/jq" <<'SCRIPT'
+#!/usr/bin/env bash
+stdin=$(cat)
+if [[ "$1" == "-r" ]]; then
+  filter="$2"
+else
+  filter="$1"
+fi
+case "$filter" in
+  length)
+    if echo "$stdin" | grep -q '^\[\]$'; then
+      echo "0"
+    else
+      echo "3"
+    fi
+    ;;
+  *group_by*)
+    echo '[]'
+    ;;
+  *)
+    echo "0"
+    ;;
+esac
+SCRIPT
+  chmod +x "$BIN_DIR/jq"
   run_script --title "Test" --job-start "1700000040"
   [[ "$status" -eq 0 ]]
   # Falls back to {"groups":[]}, so 0 features

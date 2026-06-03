@@ -323,7 +323,16 @@ if [[ -n "$YAML_PATH" ]]; then
   fi
 
   if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
-    FILTER_ARGS_JSON=$(printf '%s\n' "${RESOLVE_ARGS[@]}" | jq -R . | jq -s .)
+    # Translate internal CI flags to CLI-compatible flags for the reproduction command
+    REPRO_ARGS=()
+    for arg in "${RESOLVE_ARGS[@]}"; do
+      if [[ "$arg" == "--automated-only" ]]; then
+        REPRO_ARGS+=("--automated")
+      else
+        REPRO_ARGS+=("$arg")
+      fi
+    done
+    FILTER_ARGS_JSON=$(printf '%s\n' "${REPRO_ARGS[@]}" | jq -R . | jq -s .)
   else
     FILTER_ARGS_JSON='[]'
   fi

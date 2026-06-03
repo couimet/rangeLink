@@ -143,6 +143,7 @@ DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
 
 # Extract tc_total from embedded RESOLVED_JSON block; resolve feature breakdown dynamically
 TC_TOTAL=0
+RESOLVED_JSON=""
 if [[ -n "$REPORT_FILE" && -f "$REPORT_FILE" ]]; then
   RESOLVED_JSON=$(sed -n '/++RESOLVED_JSON_START++/,/++RESOLVED_JSON_END++/p' "$REPORT_FILE" | sed '1d;$d')
   TC_TOTAL=$(echo "$RESOLVED_JSON" | jq -r '.tc_total // 0')
