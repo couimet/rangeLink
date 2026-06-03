@@ -61,7 +61,11 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     logger.warn({ fn: 'activate', error }, 'Release notification failed');
   });
 
-  return { logCapture, releaseNotifier };
+  return {
+    logCapture,
+    releaseNotifier,
+    getContextKeyValues: () => services.contextKeyService.getLastSetValues(),
+  };
 }
 
 /**

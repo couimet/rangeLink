@@ -549,6 +549,20 @@ export class VscodeAdapter
   }
 
   /**
+   * Set a VS Code context key value.
+   *
+   * Wraps the `setContext` command with dedicated logging so callers don't need
+   * to log context-key changes themselves.
+   */
+  setContext(key: string, value: unknown): void {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.setContext', key, value },
+      `Setting context key: ${key} = ${value}`,
+    );
+    void this.ideInstance.commands.executeCommand('setContext', key, value);
+  }
+
+  /**
    * Get all available commands in VSCode.
    *
    * Used for feature detection (e.g., checking if chat commands exist).

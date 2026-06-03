@@ -43,6 +43,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
@@ -91,6 +92,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cc-004', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -136,6 +138,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cc-005', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -205,6 +208,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: RangeLink sent to Gemini Code Assist',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
@@ -255,6 +259,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: RangeLink sent to Gemini Code Assist',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -302,6 +307,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to Gemini Code Assist',
       '✓ RangeLink: RangeLink sent to Gemini Code Assist',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -371,6 +377,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('ghc-002', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);
@@ -419,6 +426,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('ghc-003', 'line 1\nline 2\nline 3\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -464,6 +472,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('ghc-004', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -531,6 +540,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
@@ -555,6 +565,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-012', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
@@ -595,6 +606,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Cursor AI Assistant',
       '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
@@ -619,6 +631,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
       '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-014', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
@@ -652,6 +665,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     const fileUri = ss.createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
@@ -675,6 +689,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-016', 'line 1\nline 2\nline 3\nline 4\n');
     const editor = await ss.openEditor(fileUri);
@@ -712,6 +727,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
     ]);
@@ -741,6 +757,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
       '✓ RangeLink: RangeLink sent to Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-018', 'line 1\nline 2\nline 3\nline 4\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -753,11 +770,16 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
+    const RAPID_SEND_INTERVAL_MS = 50;
+
     await withClipboardSentinel('before-018-rapid', 'R-L', async () => {
       await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
 
-      // Second send: lines 3-4, fired immediately without waiting for first to complete
-      editor.selection = new vscode.Selection(2, 0, 3, 6);
+      // Simulate realistic delay between rapid keypresses
+      await new Promise<void>((resolve) => setTimeout(resolve, RAPID_SEND_INTERVAL_MS));
+
+      const focusedEditor = await vscode.window.showTextDocument(doc);
+      focusedEditor.selection = new vscode.Selection(2, 0, 3, 6);
       await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
       await ss.settle();
     });
@@ -881,6 +903,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       '✓ RangeLink: Bound to Claude Code Chat',
       '✓ RangeLink: Focused Claude Code Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
@@ -1008,6 +1031,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: Focused Gemini Code Assist',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gc-006');

@@ -2179,6 +2179,68 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('setContext', () => {
+    it('should set context key to true via executeCommand', () => {
+      adapter.setContext('myExt.someFlag', true);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'myExt.someFlag',
+        true,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: true },
+        'Setting context key: myExt.someFlag = true',
+      );
+    });
+
+    it('should set context key to false via executeCommand', () => {
+      adapter.setContext('myExt.someFlag', false);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'myExt.someFlag',
+        false,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: false },
+        'Setting context key: myExt.someFlag = false',
+      );
+    });
+
+    it('should set context key to string value', () => {
+      adapter.setContext('myExt.otherFlag', 'someValue');
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'myExt.otherFlag',
+        'someValue',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.setContext',
+          key: 'myExt.otherFlag',
+          value: 'someValue',
+        },
+        'Setting context key: myExt.otherFlag = someValue',
+      );
+    });
+
+    it('should set context key to undefined', () => {
+      adapter.setContext('myExt.someFlag', undefined);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'myExt.someFlag',
+        undefined,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: undefined },
+        'Setting context key: myExt.someFlag = undefined',
+      );
+    });
+  });
+
   describe('getCommands', () => {
     it('should return commands from VSCode API', async () => {
       const commands = ['workbench.action.files.save', 'editor.action.formatDocument'];

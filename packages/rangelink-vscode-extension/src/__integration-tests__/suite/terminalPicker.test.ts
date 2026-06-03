@@ -26,6 +26,8 @@ const FILE_OVERFLOW_THRESHOLD = 5;
 
 standardSuite('Terminal Picker', (ss) => {
   test('terminal-picker-001: active terminal is marked with active badge', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     const t1 = await ss.createTerminal('rl-tp-001-a');
     await ss.createTerminal('rl-tp-001-b');
     t1.show(true);
@@ -75,6 +77,7 @@ standardSuite('Terminal Picker', (ss) => {
 
   test('terminal-picker-002: bound terminal is marked with bound badge', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-002")']);
+    ss.expectContextKeys({ 'rangelink.isBound': true, 'rangelink.isActiveTerminalBindable': true });
 
     await ss.createTerminal('rl-tp-002');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -127,6 +130,11 @@ standardSuite('Terminal Picker', (ss) => {
 
   test('terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-003")']);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
     const t = await ss.createTerminal('rl-tp-003');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     t.show(true);
@@ -168,6 +176,7 @@ standardSuite('Terminal Picker', (ss) => {
 
   test('terminal-picker-004: bound terminal always appears first in the list', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-004-b")']);
+    ss.expectContextKeys({ 'rangelink.isBound': true, 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-tp-004-b');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -217,6 +226,7 @@ standardSuite('Terminal Picker', (ss) => {
 
   test('terminal-picker-005: active non-bound terminal appears second', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-tp-005-a")']);
+    ss.expectContextKeys({ 'rangelink.isBound': true, 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-tp-005-a');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -267,6 +277,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     await ss.createTerminal('rl-tp-007-a');
     await ss.createTerminal('rl-tp-007-b');
 
@@ -319,6 +331,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-008: overflow shows "More terminals..." when exceeding maxInline', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-tp-008-${i}`);
     }
@@ -380,6 +394,7 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('[assisted] terminal-picker-009: selecting "More terminals..." opens secondary full picker', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-tp-009-${i}`);
     }
@@ -443,6 +458,7 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('[assisted] terminal-picker-010: escaping secondary picker returns to parent destination picker', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-tp-010-${i}`);
     }
@@ -480,6 +496,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-011: maxInline setting changes overflow threshold', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     const config = vscode.workspace.getConfiguration();
     await config.update('rangelink.terminalPicker.maxInline', 2, vscode.ConfigurationTarget.Global);
     ss.log('set rangelink.terminalPicker.maxInline to 2');
@@ -543,6 +561,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-012: terminal picker appears inline in R-M menu when unbound', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     await ss.createTerminal('rl-tp-012');
 
     const logCapture = getLogCapture();
@@ -585,6 +605,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-013: terminal picker appears inline in R-D destination picker', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     await ss.createTerminal('rl-tp-013');
 
     const logCapture = getLogCapture();
@@ -622,6 +644,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-014: extension-managed pty terminal is filtered out of R-D picker', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     const writeEmitter = new vscode.EventEmitter<string>();
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,
@@ -667,6 +691,8 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await ss.createTerminal(`rl-btd-013-${i}`);
     }
@@ -738,6 +764,7 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-016: R-D picker omits terminal section when the only open terminal is a pty', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': false });
     const writeEmitter = new vscode.EventEmitter<string>();
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,
@@ -770,6 +797,7 @@ standardSuite('Terminal Picker', (ss) => {
   });
 
   test('terminal-picker-015: context-menu "Bind Here" on pty terminal shows error notification', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': false });
     const writeEmitter = new vscode.EventEmitter<string>();
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,

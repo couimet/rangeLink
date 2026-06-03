@@ -64,6 +64,12 @@ export interface SsContext {
    * empty (any unexpected dialog fails).
    */
   expectModalDialogs: (dialogs: ModalDialogExpectation[]) => void;
+  /**
+   * Declare non-default context key values expected at the end of this test.
+   * Keys not specified default to false. Multiple calls merge (later calls override
+   * earlier keys).
+   */
+  expectContextKeys: (keys: Record<string, unknown>) => void;
   openEditor: (uri: vscode.Uri, viewColumn?: vscode.ViewColumn) => Promise<vscode.TextEditor>;
   waitForExtensionActive: (extensionId: string, timeoutMs?: number) => Promise<void>;
   trackFileUri: (uri: vscode.Uri) => void;
@@ -77,6 +83,7 @@ export class SsContextImpl implements SsContext {
   private expectedStatusBarMessages: string[] = [];
   private expectedToasts: ToastExpectation[] = [];
   private expectedDialogs: ModalDialogExpectation[] = [];
+  private expectedContextKeys: Record<string, unknown> = {};
 
   constructor(suiteLog: (msg: string) => void) {
     this.suiteLog = suiteLog;
@@ -160,11 +167,13 @@ export class SsContextImpl implements SsContext {
     this.expectedStatusBarMessages = [];
     this.expectedToasts = [];
     this.expectedDialogs = [];
+    this.expectedContextKeys = {};
     return new TestWindowImpl(
       TEST_START_MARKER,
       () => this.expectedStatusBarMessages,
       () => this.expectedToasts,
       () => this.expectedDialogs,
+      () => this.expectedContextKeys,
     );
   }
 
@@ -178,6 +187,10 @@ export class SsContextImpl implements SsContext {
 
   expectModalDialogs(dialogs: ModalDialogExpectation[]): void {
     this.expectedDialogs.push(...dialogs);
+  }
+
+  expectContextKeys(keys: Record<string, unknown>): void {
+    Object.assign(this.expectedContextKeys, keys);
   }
 
   async openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {

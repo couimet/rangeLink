@@ -46,6 +46,7 @@ standardSuite('Core Send Commands', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
     const destEditor = await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
@@ -85,6 +86,7 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 1)',
       '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const CSC_R_L_003_LINE_COUNT = 10;
     const { uri: fileUri } = ss.createContentFile(
@@ -128,6 +130,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-r-c-001-dest")',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     const fileUri = ss.createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
 
     const capturing: CapturingTerminal =
@@ -160,6 +167,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-r-l-004-dest")',
       '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-004-dest")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     const fileUri = ss.createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
 
     const capturing: CapturingTerminal =
@@ -187,6 +199,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-r-c-002-dest")',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     const fileUri = ss.createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
 
     const capturing: CapturingTerminal =
@@ -226,6 +243,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-sts-001-dest")',
       '✓ RangeLink: Selected text sent to Terminal ("csc-sts-001-dest")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const srcTerminal = await ss.createTerminal('csc-sts-001-src');
 
@@ -247,6 +269,7 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('send-terminal-selection-003: R-V with no text selected in terminal shows error message', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('csc-sts-003');
 
     // On macOS, terminal.copySelection leaves the clipboard unchanged when nothing
@@ -263,6 +286,7 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('[assisted] send-terminal-selection-004: R-V with no bound destination opens destination picker', async () => {
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     const MARKER = 'rl-sts-004-marker';
 
     const srcTerminal = await ss.createTerminal('csc-sts-004-src');
@@ -344,6 +368,11 @@ standardSuite('Core Send Commands', (ss) => {
       await ss.createAndBindCapturingTerminal('csc-sts-006-dest');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-sts-006-dest")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectToastMessages([{ level: 'error', message: 'No active editor' }]);
 
     const logCapture = getLogCapture();
@@ -364,6 +393,11 @@ standardSuite('Core Send Commands', (ss) => {
       await ss.createAndBindCapturingTerminal('csc-sts-007-dest');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-sts-007-dest")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectToastMessages([{ level: 'error', message: 'No active editor' }]);
 
     const logCapture = getLogCapture();
@@ -387,6 +421,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-r-l-001-dest")',
       '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-001-dest")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = ss.createWorkspaceFile(
       'csc-r-l-001',
@@ -412,6 +451,11 @@ standardSuite('Core Send Commands', (ss) => {
       '✓ RangeLink: Bound to Terminal ("csc-fullline-001-dest")',
       '✓ RangeLink: RangeLink sent to Terminal ("csc-fullline-001-dest")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const capturing: CapturingTerminal =
       await ss.createAndBindCapturingTerminal('csc-fullline-001-dest');

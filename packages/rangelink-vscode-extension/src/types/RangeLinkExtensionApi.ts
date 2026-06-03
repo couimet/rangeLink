@@ -8,4 +8,5 @@ import type { ReleaseNotifier } from '../notification';
 export interface RangeLinkExtensionApi {
   readonly logCapture: LogCapture;
   readonly releaseNotifier: ReleaseNotifier;
+  readonly getContextKeyValues: () => Record<string, unknown>;
 }

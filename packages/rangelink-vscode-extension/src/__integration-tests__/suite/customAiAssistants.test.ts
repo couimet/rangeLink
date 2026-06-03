@@ -334,6 +334,7 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 1)',
       '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
     });
@@ -378,6 +379,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 1)',
       '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
     });
@@ -411,6 +413,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 1)',
       '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-tier1-clip', 'clipboard test');
     await ss.settle();
 
@@ -432,6 +435,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 3)',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use.' },
     ]);
@@ -470,6 +474,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Fallback)',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Fallback) to use.' },
     ]);
@@ -508,6 +513,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Template)',
       '✓ RangeLink: RangeLink sent to Dummy AI (Template)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-template', 'template test content');
     await ss.settle();
 
@@ -546,6 +552,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
     await ss.settle();
 
@@ -575,6 +582,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.' },
     ]);

@@ -8,6 +8,8 @@
  */
 
 export const CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE = 'rangelink.isActiveTerminalBindable';
+export const CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION =
+  'rangelink.isActiveTerminalPasteDestination';
 export const CONTEXT_IS_BOUND = 'rangelink.isBound';
 
 // Keep entries sorted alphabetically by constant name.

@@ -98,17 +98,37 @@ export const assertClipboardPreservationDidNotRun = (markName: string): void => 
   );
 };
 
+const PRIOR_CLIPBOARD_DIAG_MAX_LEN = 200;
+
+const buildPriorClipboardDiagNote = (
+  priorClipboard: string,
+  clipboardAfterAction: string,
+): string => {
+  const snippet =
+    priorClipboard.length > PRIOR_CLIPBOARD_DIAG_MAX_LEN
+      ? `${priorClipboard.substring(0, PRIOR_CLIPBOARD_DIAG_MAX_LEN)}…`
+      : priorClipboard;
+
+  if (priorClipboard === clipboardAfterAction) {
+    return `\nClipboard unchanged from prior value "${snippet}" — test action may not have written to clipboard.`;
+  }
+  return `\nPrior clipboard (before sentinel write): "${snippet}"`;
+};
+
 export const assertClipboardEquals = async (
   operationLabel: string,
   fn: () => Promise<void>,
   expected: string,
   marker?: string,
 ): Promise<string> => {
+  const priorClipboard = await vscode.env.clipboard.readText();
   const clipboard = await withClipboardChanged(operationLabel, fn, marker);
+  const priorNote = buildPriorClipboardDiagNote(priorClipboard, clipboard);
+
   assert.strictEqual(
     clipboard,
     expected,
-    `Expected clipboard to equal "${expected}", got: "${clipboard}"`,
+    `Expected clipboard to equal "${expected}", got: "${clipboard}"${priorNote}`,
   );
   return clipboard;
 };
@@ -118,12 +138,15 @@ export const assertClipboardEqualsGeneratedLink = async (
   fn: () => Promise<void>,
   marker: string,
 ): Promise<{ clipboard: string; generatedLink: string }> => {
+  const priorClipboard = await vscode.env.clipboard.readText();
   const clipboard = await withClipboardChanged(operationLabel, fn, marker);
   const generatedLink = getGeneratedLink(marker);
+  const priorNote = buildPriorClipboardDiagNote(priorClipboard, clipboard);
+
   assert.strictEqual(
     clipboard,
     generatedLink,
-    `Expected clipboard to equal generated link "${generatedLink}", got: "${clipboard}"`,
+    `Expected clipboard to equal generated link "${generatedLink}", got: "${clipboard}"${priorNote}`,
   );
   return { clipboard, generatedLink };
 };

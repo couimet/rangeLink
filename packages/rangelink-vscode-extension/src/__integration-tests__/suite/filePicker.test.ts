@@ -32,6 +32,7 @@ standardSuite('File Picker', (ss) => {
     const uriA = await ss.createAndOpenFile('fp-001-a', 'line 1\nline 2\n', vscode.ViewColumn.One);
     const fnA = path.basename(uriA.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnA}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
     const uriB = await ss.createAndOpenFile('fp-001-b', 'other file\n', vscode.ViewColumn.Two);

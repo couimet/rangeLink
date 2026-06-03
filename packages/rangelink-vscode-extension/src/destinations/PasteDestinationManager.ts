@@ -2,7 +2,6 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { CONTEXT_IS_BOUND } from '../constants';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -99,8 +98,6 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.setupTextDocumentCloseListener();
     // Warn when bound editor appears in multiple tab groups
     this.setupMultiColumnGuardListener();
-
-    void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
   }
 
   /**
@@ -609,24 +606,20 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   /**
    * Update internal state when binding a new destination.
-   * Centralizes state mutation and context key management.
    *
    * @param destination - The destination to bind
    */
   private async setBoundDestination(destination: PasteDestination): Promise<void> {
     this.boundDestination = destination;
-    await this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, true);
     this._onDidChangeBoundDestinationEmitter.fire(this.getBoundDestinationInfo()!);
   }
 
   /**
    * Clear internal state when unbinding.
-   * Centralizes state mutation and context key management.
    */
   private clearBoundDestination(): void {
     this.boundDestination = undefined;
     this.isInDuplicateTabState = false;
-    void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
     this._onDidChangeBoundDestinationEmitter.fire(undefined);
   }
 

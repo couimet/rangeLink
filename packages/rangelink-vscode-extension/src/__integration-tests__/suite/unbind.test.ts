@@ -22,6 +22,7 @@ standardSuite('Unbind Destination', (ss) => {
       '✓ RangeLink: Unbound from Terminal ("rl-unbind-test")',
       '✓ RangeLink: RangeLink copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const fileUri = ss.createWorkspaceFile('unbind-001', 'line 1 content\nline 2 content\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -54,6 +55,7 @@ standardSuite('Unbind Destination', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-unbind-004-test")',
       '✓ RangeLink: Unbound from Terminal ("rl-unbind-004-test")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     await ss.createTerminal('rl-unbind-004-test');
 
@@ -89,6 +91,7 @@ standardSuite('Unbind Destination', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-unbind-006-test")',
       '✓ RangeLink: Unbound from Terminal ("rl-unbind-006-test")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     await ss.createTerminal('rl-unbind-006-test');
 

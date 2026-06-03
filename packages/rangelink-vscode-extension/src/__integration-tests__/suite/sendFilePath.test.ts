@@ -32,6 +32,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     const fileUri = ss.createWorkspaceFile('sfp-001', 'content\n');
     await openEditor(fileUri);
@@ -61,6 +66,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = ss.createWorkspaceFile('sfp-002', 'content\n');
     await openEditor(fileUri);
@@ -90,6 +100,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -133,6 +148,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -179,6 +199,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     const sourceUri = createFileAt('__rl-test-source with spaces.ts', 'content\n');
     ss.trackFileUri(sourceUri);
 
@@ -241,6 +262,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
     ss.trackFileUri(fileUri);
@@ -308,6 +334,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await assertClipboardEquals(
       'Send File Path — self-paste with no selection should write path to clipboard',
       async () => {
@@ -333,6 +360,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-picker-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-picker-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = ss.createWorkspaceFile('sfp-009', 'content\n');
     await openEditor(fileUri);
@@ -375,6 +407,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = ss.createWorkspaceFile('sfp-010', 'content\n');
     await openEditor(fileUri);
@@ -404,6 +441,11 @@ standardSuite('Send File Path', (ss) => {
       '✓ RangeLink: Bound to Terminal ("sfp-test")',
       '✓ RangeLink: File path sent to Terminal ("sfp-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const fileUri = ss.createWorkspaceFile('sfp-011', 'content\n');
     await openEditor(fileUri);
@@ -438,6 +480,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -504,6 +547,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await assertClipboardEquals(
       'Send File Path — self-paste absolute path should write path to clipboard',
       async () => {
@@ -542,6 +586,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       '✓ RangeLink: File path copied to clipboard',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       {
         level: 'info',
@@ -595,6 +640,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await ss.settle();
@@ -625,6 +671,7 @@ standardSuite('Send File Path', (ss) => {
     await ss.settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectStatusBarMessages([
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
