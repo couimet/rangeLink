@@ -32,11 +32,10 @@ export const extractSentLink = (lines: string[]): string | undefined => {
  * send-to-destination. Returns the full link string (path + anchor), or
  * undefined if the log line is missing or the link cannot be parsed.
  *
- * When `smartPad` is set, the returned link is space-padded to match the
- * clipboard/terminal content produced by the smartPadding settings. Tests
- * that assert clipboard or terminal content against the generated link
- * should use `{ smartPad: 'both' }` to avoid manual wrapping at each
- * call site.
+ * When `smartPad` is set, the returned link is space-padded to match
+ * destination content (terminal buffer, editor text) produced by the
+ * smartPadding settings. Clipboard assertions should NOT use this
+ * option — the clipboard always contains raw (unpadded) content.
  */
 export const extractGeneratedLink = (
   lines: string[],

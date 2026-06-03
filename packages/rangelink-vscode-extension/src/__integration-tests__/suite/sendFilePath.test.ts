@@ -212,7 +212,7 @@ standardSuite('Send File Path', (ss) => {
     ss.log('✓ Text editor destination receives auto-quoted path (spaces → single quotes)');
   });
 
-  test('send-file-path-007: clipboard and terminal both receive the quoted path (single clipboard write)', async () => {
+  test('send-file-path-007: clipboard and terminal both receive the quoted path (clipboard.preserve=never)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -256,10 +256,10 @@ standardSuite('Send File Path', (ss) => {
       clipboard.includes(relativePath),
       `Expected clipboard to include the file path, got: ${JSON.stringify(clipboard)}`,
     );
-    ss.log('✓ Both terminal and clipboard receive the quoted path (single clipboard write)');
+    ss.log('✓ Both terminal and clipboard receive the quoted path');
   });
 
-  test('send-file-path-008: self-paste with no selection inserts path at cursor and shows normal feedback', async () => {
+  test('send-file-path-008: self-paste with no selection inserts path at cursor and shows normal feedback (clipboard.preserve=never)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -289,7 +289,7 @@ standardSuite('Send File Path', (ss) => {
         await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
         await ss.settle();
       },
-      ` ${relativePath} `,
+      `${relativePath}`,
       'before-sfp-008',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -460,7 +460,7 @@ standardSuite('Send File Path', (ss) => {
     ss.log('✓ Bound editor brought to foreground and received exact file path');
   });
 
-  test('send-file-path-013: same file, same column, no selection — absolute path inserted at cursor', async () => {
+  test('send-file-path-013: same file, same column, no selection — absolute path inserted at cursor (clipboard.preserve=never)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -485,7 +485,7 @@ standardSuite('Send File Path', (ss) => {
         await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
         await ss.settle();
       },
-      ` ${fileUri.fsPath} `,
+      `${fileUri.fsPath}`,
       'before-sfp-013',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
@@ -498,7 +498,7 @@ standardSuite('Send File Path', (ss) => {
     ss.log('✓ Same file, no selection: absolute path inserted at cursor, normal feedback');
   });
 
-  test('send-file-path-014: same file, same column, with active selection — blocked with toast and clipboard copy', async () => {
+  test('send-file-path-014: same file, same column, with active selection — blocked with toast and clipboard copy (clipboard.preserve=never)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -530,7 +530,7 @@ standardSuite('Send File Path', (ss) => {
         await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
         await ss.settle();
       },
-      ` ${vscode.workspace.asRelativePath(fileUri, false)} `,
+      `${vscode.workspace.asRelativePath(fileUri, false)}`,
       'before-sfp-014',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);

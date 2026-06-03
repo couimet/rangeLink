@@ -616,16 +616,16 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'Clipboard always contains the unquoted path regardless of destination type'
-    expected_result: 'Clipboard contains unquoted path. Terminal received quoted version.'
+    scenario: 'Clipboard and terminal both receive the quoted path (clipboard.preserve=never)'
+    expected_result: 'Clipboard contains the quoted path. Terminal received quoted version.'
     automated: true
 
   - id: send-file-path-008
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
-    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor (clipboard.preserve=never)'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor". Uses clipboard.preserve=never.'
     automated: true
 
   - id: send-file-path-009

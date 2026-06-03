@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 
 import { getLogCapture } from './getLogCapture';
 import { getGeneratedLink } from './logHelpers';
-import type { SmartPadOptions } from './logHelpers';
 
 export const CLIPBOARD_SENTINEL = 'rangelink-test-sentinel-value';
 
@@ -117,10 +116,9 @@ export const assertClipboardEqualsGeneratedLink = async (
   operationLabel: string,
   fn: () => Promise<void>,
   marker: string,
-  options?: SmartPadOptions,
 ): Promise<{ clipboard: string; generatedLink: string }> => {
   const clipboard = await withClipboardChanged(operationLabel, fn, marker);
-  const generatedLink = getGeneratedLink(marker, options);
+  const generatedLink = getGeneratedLink(marker);
   assert.strictEqual(
     clipboard,
     generatedLink,
