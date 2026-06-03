@@ -664,7 +664,7 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'Cmd+R Cmd+Shift+F to same file (same column, no selection) inserts absolute path at cursor'
+    scenario: 'Cmd+R Cmd+Shift+F to same file (same column, no selection) inserts absolute path at cursor (clipboard.preserve=never)'
     expected_result: 'Absolute file path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
@@ -672,7 +672,7 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'R-F blocked when bound editor has active selection'
+    scenario: 'R-F blocked when bound editor has active selection (clipboard.preserve=never for assertion)'
     expected_result: 'Toast warns. Status bar "File path copied to clipboard". Clipboard has path. Editor unchanged.'
     automated: true
 
