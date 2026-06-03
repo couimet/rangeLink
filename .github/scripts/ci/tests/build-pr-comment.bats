@@ -103,12 +103,14 @@ run_script() {
   [[ "$output" == *"Usage:"* ]]
 }
 
-@test "branches 3, 41, 42: both required args present produces valid output with duration and feature breakdown" {
+@test "branches 3, 41, 42: both required args present produces valid output with duration, reproduction command, and feature breakdown" {
   run_script --title "Test Run" --job-start "1700000040"
   [[ "$status" -eq 0 ]]
   [[ "$output" == *"Test Run"* ]]
-  [[ "$output" == *"Duration"* ]]
+  [[ "$output" == *"Duration:"* ]]
   [[ "$output" == *"1m 0s"* ]]
+  [[ "$output" == *"Reproduce locally:"* ]]
+  [[ "$output" == *"pnpm test:release"* ]]
   [[ "$output" == *"<details>"* ]]
   [[ "$output" == *"Feature breakdown"* ]]
   [[ "$output" == *"Link Navigation"* ]]
@@ -284,14 +286,14 @@ EOF
 @test "branch 19: --unit-total not set omits unit tests row" {
   run_script --title "Test" --job-start "1700000040"
   [[ "$status" -eq 0 ]]
-  [[ "$output" != *"Unit tests passed"* ]]
+  [[ "$output" != *"Unit tests:"* ]]
 }
 
 @test "branch 20: --unit-total set includes unit tests row" {
   run_script --title "Test" --job-start "1700000040" --unit-total "50" --unit-passed "50"
   [[ "$status" -eq 0 ]]
-  [[ "$output" == *"Unit tests passed"* ]]
-  [[ "$output" == *"50 / 50"* ]]
+  [[ "$output" == *"Unit tests:"* ]]
+  [[ "$output" == *"50 / 50 passed"* ]]
 }
 
 # ── Label-filter row (L168-170) ─────────────────────────────────────────────
@@ -323,18 +325,25 @@ EOF
   [[ "$output" != *"Integration tests"* ]]
 }
 
-@test "branch 26: --int-total non-zero with no failures shows N/N passed" {
-  run_script --title "Test" --job-start "1700000040" --int-total "5" --int-passing "5"
+@test "branch 26: --artifact-url produces direct artifact link instead of Actions run URL" {
+  run_script --title "Test" --job-start "1700000040" --artifact-url "https://github.com/owner/repo/actions/runs/99999/artifacts/12345"
   [[ "$status" -eq 0 ]]
-  [[ "$output" == *"Integration tests"* ]]
-  [[ "$output" == *"5/5 passed"* ]]
+  [[ "$output" == *"View report & artifacts"* ]]
+  [[ "$output" == *"https://github.com/owner/repo/actions/runs/99999/artifacts/12345"* ]]
+  [[ "$output" != *"https://github.com/owner/repo/actions/runs/12345"* ]]
 }
 
-@test "branch 27: --int-total non-zero with failures shows N/N passed (M failed)" {
-  run_script --title "Test" --job-start "1700000040" --int-total "5" --int-passing "3" --int-failed "2"
+@test "branch 27: filter_args in report produce correct reproduction command" {
+  REPORT_FILE="$TEST_DIR/report.txt"
+  cat > "$REPORT_FILE" <<'EOF'
+++RESOLVED_JSON_START++
+{"tc_total":5,"filter_args":["--automated-only","--exclude-label","requires-extensions"]}
+++RESOLVED_JSON_END++
+EOF
+  run_script --title "Test" --job-start "1700000040" --report-file "$REPORT_FILE"
   [[ "$status" -eq 0 ]]
-  [[ "$output" == *"Integration tests"* ]]
-  [[ "$output" == *"3/5 passed (2 failed)"* ]]
+  [[ "$output" == *"Reproduce locally:"* ]]
+  [[ "$output" == *"./scripts/run-integration-tests.sh --automated-only --exclude-label requires-extensions"* ]]
 }
 
 # ── Missing integration report detection (L180-186) ──────────────────────────

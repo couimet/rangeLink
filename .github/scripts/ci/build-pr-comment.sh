@@ -19,6 +19,7 @@ usage() {
   echo "  --int-total     Total integration tests exercised (default: '')" >&2
   echo "  --report-file   Path to the test report file (default: '')" >&2
   echo "  --label-filter  TC ID label filter (default: '')" >&2
+  echo "  --artifact-url  Direct URL to the report artifact (default: '')" >&2
   echo "  --job-start     Epoch seconds when CI job started (required)" >&2
   exit 2
 }
@@ -31,6 +32,7 @@ INT_FAILED=""
 INT_TOTAL=""
 REPORT_FILE=""
 LABEL_FILTER=""
+ARTIFACT_URL=""
 JOB_START=""
 
 while [[ $# -gt 0 ]]; do
@@ -107,6 +109,14 @@ while [[ $# -gt 0 ]]; do
       JOB_START="$2"
       shift 2
       ;;
+    --artifact-url)
+      if [[ $# -lt 2 || "$2" == -* ]]; then
+        echo "Error: --artifact-url requires a value" >&2
+        usage
+      fi
+      ARTIFACT_URL="$2"
+      shift 2
+      ;;
     -*)
       usage
       ;;
@@ -154,32 +164,26 @@ if [[ -n "$INT_FAILED" && "$INT_FAILED" != "0" ]]; then
   PASS=false
 fi
 
-# Build table body (title with icon is prepended after pass/fail is finalized)
-TABLE="| | |"
-TABLE="${TABLE}"$'\n'"|---|---|"
-TABLE="${TABLE}"$'\n'"| Duration | ${DURATION_STR} |"
+# Build reproduction command from resolved filter args (always shown)
+REPRO_CMD="pnpm test:release"
+if [[ -n "$FILTER_ARGS_RAW" ]]; then
+  REPRO_CMD="./scripts/run-integration-tests.sh $FILTER_ARGS_RAW"
+fi
+
+# Build summary body with key-value pairs
+LINES="**Duration:** ${DURATION_STR}"
 
 if [[ -n "$UNIT_TOTAL" ]]; then
-  TABLE="${TABLE}"$'\n'"| Unit tests passed | ${UNIT_PASSED} / ${UNIT_TOTAL} |"
-fi
-
-if [[ "$LABEL_FILTER" = "requires-extensions" ]]; then
-  TABLE="${TABLE}"$'\n'"| Unit tests | Ran in Test &amp; Validate job |"
-fi
-
-if [[ -n "$INT_TOTAL" && "$INT_TOTAL" != "0" ]]; then
-  INT_CELL="${INT_PASSING}/${INT_TOTAL} passed"
-  if [[ -n "$INT_FAILED" && "$INT_FAILED" != "0" ]]; then
-    INT_CELL="${INT_CELL} (${INT_FAILED} failed)"
-  fi
-  TABLE="${TABLE}"$'\n'"| Integration tests | ${INT_CELL} |"
+  LINES="${LINES}"$'\n\n'"**Unit tests:** ${UNIT_PASSED} / ${UNIT_TOTAL} passed"
+elif [[ "$LABEL_FILTER" = "requires-extensions" ]]; then
+  LINES="${LINES}"$'\n\n'"**Unit tests:** Ran in separate Test &amp; Validate job"
 fi
 
 # Detect missing test report (runner crash before producing stats)
 if { [[ -z "$INT_PASSING" || "$INT_PASSING" = "0" ]]; } && { [[ -z "$INT_FAILED" || "$INT_FAILED" = "0" ]]; }; then
   if [[ -n "$REPORT_FILE" ]] && { [[ ! -f "$REPORT_FILE" ]] || ! grep -qE '[0-9]+ (passing|failing)' "$REPORT_FILE" 2>/dev/null; }; then
     MISSING_INT_REPORT=true
-    TABLE="${TABLE}"$'\n'"| \342\232\240\357\270\217 Integration test report missing | Runner may have crashed |"
+    LINES="${LINES}"$'\n\n'"\342\232\240\357\270\217 **Integration test report missing:** Runner may have crashed"
   fi
 fi
 
@@ -193,20 +197,28 @@ else
   ICON=$'\342\235\214'
 fi
 
-# Prepend title with icon
-BODY="### ${ICON} ${TITLE}"$'\n'"${TABLE}"
+# Build body: title + summary lines
+BODY="### ${ICON} ${TITLE}"$'\n\n'"${LINES}"
 
-BODY="${BODY}"$'\n'"| QA TC IDs | ${TC_TOTAL} exercised across ${FEATURE_COUNT} features |"
-BODY="${BODY}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
+BODY="${BODY}"$'\n\n'"**QA TC IDs:** ${TC_TOTAL} exercised across ${FEATURE_COUNT} features"
+
+# Report link (prefer direct artifact URL when provided)
+if [[ -n "$ARTIFACT_URL" ]]; then
+  BODY="${BODY}"$'\n\n'"**Report:** [View report & artifacts](${ARTIFACT_URL})"
+else
+  BODY="${BODY}"$'\n\n'"**Report:** [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+fi
+
+# Reproduction command
+BODY="${BODY}"$'\n\n'"**Reproduce locally:** \`${REPRO_CMD}\`"
 
 # Collapsible feature breakdown
 BODY="${BODY}"$'\n\n'"<details>"$'\n'"<summary>Feature breakdown</summary>"$'\n\n'"| Feature | TCs | IDs |"$'\n'"|---|---|---|"$'\n'"${FEATURE_TABLE}"$'\n\n'"</details>"
 
-# Extract re-run command from test report
+# Re-run failed tests section (only when there are failures)
 if [[ -n "$REPORT_FILE" && -f "$REPORT_FILE" ]]; then
   RE_RUN=$(sed -n '/^Re-run failed tests:/,$p' "$REPORT_FILE" | tail -n +2 | sed 's/^  //')
   if [[ -n "$RE_RUN" ]]; then
-    # Suppress re-run block when failures dominate passing
     INT_FAILED_NUM="${INT_FAILED:-0}"
     INT_PASSING_NUM="${INT_PASSING:-0}"
     if [[ "$INT_FAILED_NUM" -gt "$INT_PASSING_NUM" ]] 2>/dev/null; then

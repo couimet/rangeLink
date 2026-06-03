@@ -33,6 +33,10 @@ inputs:
     description: "TC ID label filter — 'requires-extensions' for with-extensions job, empty for all automated without that label"
     required: false
     default: ''
+  artifact-url:
+    description: 'Direct URL to the report artifact (empty to link to Actions run page)'
+    required: false
+    default: ''
   job-start:
     description: 'Epoch seconds when the CI job started (from date +%s)'
     required: true
@@ -55,6 +59,7 @@ runs:
           --int-total "${{ inputs.int-total }}" \
           --report-file "${{ inputs.report-file }}" \
           --label-filter "${{ inputs.label-filter }}" \
+          --artifact-url "${{ inputs.artifact-url }}" \
           --job-start "${{ inputs.job-start }}" \
           > "$COMMENT_BODY"
     - name: Post PR CI summary
