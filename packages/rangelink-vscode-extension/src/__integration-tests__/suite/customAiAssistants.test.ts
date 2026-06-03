@@ -398,7 +398,6 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
         await ss.settle();
       },
       'before-tier3-paste',
-      { smartPad: 'both' },
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
@@ -437,7 +436,6 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
         await ss.settle();
       },
       'before-fallback-paste',
-      { smartPad: 'both' },
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
@@ -543,7 +541,6 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
         await ss.settle();
       },
       'before-gemini-override',
-      { smartPad: 'both' },
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as

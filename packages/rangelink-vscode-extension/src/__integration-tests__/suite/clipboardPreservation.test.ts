@@ -77,7 +77,6 @@ standardSuite('Clipboard Preservation', (ss) => {
         await ss.settle();
       },
       'before-006',
-      { smartPad: 'both' },
     );
     assertTerminalBufferContains(capturing.getCapturedText(), 'clipboard');
     assertTerminalBufferContainsGeneratedLink(capturing, 'before-006');
@@ -366,7 +365,6 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
         await ss.settle();
       },
       'before-010',
-      { smartPad: 'both' },
     );
 
     assertLogContains(
@@ -406,7 +404,6 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
         await ss.settle();
       },
       'before-022',
-      { smartPad: 'both' },
     );
 
     assertLogContains(
