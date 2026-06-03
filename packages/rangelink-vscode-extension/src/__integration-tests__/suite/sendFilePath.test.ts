@@ -230,15 +230,19 @@ standardSuite('Send File Path', (ss) => {
 
     capturing.clearCaptured();
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-007');
-
-    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await ss.settle();
-
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
-    const clipboard = await vscode.env.clipboard.readText();
-    const lines = logCapture.getLinesSince('before-007');
+
+    await assertClipboardEquals(
+      'Send File Path — clipboard receives quoted path',
+      async () => {
+        await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+        await ss.settle();
+      },
+      `'${relativePath}'`,
+      'before-sfp-007',
+    );
+
+    const lines = getLogCapture().getLinesSince('before-sfp-007');
     assertFilePathLogged(lines, {
       pathFormat: 'workspace-relative',
       uriSource: 'command-palette',
