@@ -33,6 +33,10 @@ inputs:
     description: "TC ID label filter — 'requires-extensions' for with-extensions job, empty for all automated without that label"
     required: false
     default: ''
+  artifact-url:
+    description: 'Direct URL to the report artifact (empty to link to Actions run page)'
+    required: false
+    default: ''
   job-start:
     description: 'Epoch seconds when the CI job started (from date +%s)'
     required: true
@@ -40,114 +44,38 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Build PR comment body
+      id: build
+      shell: bash
+      run: |
+        COMMENT_BODY="$(mktemp "${RUNNER_TEMP:-/tmp}/pr-comment-body.XXXXXX.md")"
+        echo "COMMENT_BODY=$COMMENT_BODY" >> "$GITHUB_ENV"
+        .github/scripts/ci/build-pr-comment.sh \
+          --title "${{ inputs.title }}" \
+          --unit-passed "${{ inputs.unit-passed }}" \
+          --unit-total "${{ inputs.unit-total }}" \
+          --int-passing "${{ inputs.int-passing }}" \
+          --int-failed "${{ inputs.int-failed }}" \
+          --int-total "${{ inputs.int-total }}" \
+          --report-file "${{ inputs.report-file }}" \
+          --label-filter "${{ inputs.label-filter }}" \
+          --artifact-url "${{ inputs.artifact-url }}" \
+          --job-start "${{ inputs.job-start }}" \
+          > "$COMMENT_BODY"
     - name: Post PR CI summary
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        # Duration
-        NOW=$(date +%s)
-        ELAPSED=$(( NOW - ${{ inputs.job-start }} ))
-        DURATION_STR="$(( ELAPSED / 60 ))m $(( ELAPSED % 60 ))s"
-
-        # Extract resolved TC data from report file JSON blocks (single source of truth)
-        LABEL_FILTER="${{ inputs.label-filter }}"
-        RESOLVED_JSON="{}"
-        if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
-          RESOLVED_JSON=$(sed -n '/++RESOLVED_JSON_START++/,/++RESOLVED_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
-          RESULTS_JSON=$(sed -n '/++RESULTS_JSON_START++/,/++RESULTS_JSON_END++/p' "${{ inputs.report-file }}" | sed '1d;$d')
-        fi
-        if [ -z "$RESOLVED_JSON" ]; then
-          RESOLVED_JSON="{}"
-        fi
-        TC_TOTAL=$(echo "$RESOLVED_JSON" | jq -r '.tc_total // 0')
-        FEATURE_COUNT=$(echo "$RESOLVED_JSON" | jq -r '.groups | length')
-        FEATURE_TABLE=$(echo "$RESOLVED_JSON" | jq -r '.groups | group_by(.feature) | map("| \(.[0].feature) | \(map(.total) | add) | \(map(.ids[]) | join(", ")) |") | join("\n")')
-
-        # Determine pass/fail
-        PASS=true
-        MISSING_INT_REPORT=false
-        if [ -n "${{ inputs.unit-total }}" ] && [ "${{ inputs.unit-passed }}" != "${{ inputs.unit-total }}" ]; then
-          PASS=false
-        fi
-        if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
-          PASS=false
-        fi
+        BODY=$(cat "$COMMENT_BODY")
         JOB_KEY=$(echo "${{ inputs.title }}" | sed 's/ — run summary$//')
 
-        # Build table body (title with icon is prepended after pass/fail is finalized)
-        TABLE="| | |"
-        TABLE="${TABLE}"$'\n'"|---|---|"
-        TABLE="${TABLE}"$'\n'"| Duration | ${DURATION_STR} |"
-
-        if [ -n "${{ inputs.unit-total }}" ]; then
-          TABLE="${TABLE}"$'\n'"| Unit tests passed | ${{ inputs.unit-passed }} / ${{ inputs.unit-total }} |"
-        fi
-
-        if [ "$LABEL_FILTER" = "requires-extensions" ]; then
-          TABLE="${TABLE}"$'\n'"| Unit tests | Ran in Test &amp; Validate job |"
-        fi
-
-        if [ -n "${{ inputs.int-total }}" ] && [ "${{ inputs.int-total }}" != "0" ]; then
-          INT_CELL="${{ inputs.int-passing }}/${{ inputs.int-total }} passed"
-          if [ -n "${{ inputs.int-failed }}" ] && [ "${{ inputs.int-failed }}" != "0" ]; then
-            INT_CELL="${INT_CELL} (${{ inputs.int-failed }} failed)"
-          fi
-          TABLE="${TABLE}"$'\n'"| Integration tests | ${INT_CELL} |"
-        fi
-
-        # Detect missing test report (runner crash before producing stats)
-        INT_PASSING="${{ inputs.int-passing }}"
-        INT_FAILED="${{ inputs.int-failed }}"
-        if { [ -z "$INT_PASSING" ] || [ "$INT_PASSING" = "0" ]; } && { [ -z "$INT_FAILED" ] || [ "$INT_FAILED" = "0" ]; }; then
-          if [ -n "${{ inputs.report-file }}" ] && { [ ! -f "${{ inputs.report-file }}" ] || ! grep -qE '[0-9]+ (passing|failing)' "${{ inputs.report-file }}" 2>/dev/null; }; then
-            MISSING_INT_REPORT=true
-            TABLE="${TABLE}"$'\n'"| ⚠️ Integration test report missing | Runner may have crashed |"
-          fi
-        fi
-
-        # Finalize pass/fail and icon after report check
-        if [ "$MISSING_INT_REPORT" = "true" ]; then
-          PASS=false
-        fi
-        if [ "$PASS" = "true" ]; then
-          ICON="✅"
-        else
-          ICON="❌"
-        fi
-
-        # Prepend title with icon
-        TABLE="### ${ICON} ${{ inputs.title }}"$'\n'"${TABLE}"
-
-        TABLE="${TABLE}"$'\n'"| QA TC IDs | ${TC_TOTAL} exercised across ${FEATURE_COUNT} features |"
-        TABLE="${TABLE}"$'\n'"| Report | [View run & artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
-
-        # Collapsible feature breakdown
-        TABLE="${TABLE}"$'\n\n'"<details>"$'\n'"<summary>Feature breakdown</summary>"$'\n\n'"| Feature | TCs | IDs |"$'\n'"|---|---|---|"$'\n'"${FEATURE_TABLE}"$'\n\n'"</details>"
-
-        # Extract re-run command from test report
-        BODY="$TABLE"
-        if [ -n "${{ inputs.report-file }}" ] && [ -f "${{ inputs.report-file }}" ]; then
-          RE_RUN=$(sed -n '/^Re-run failed tests:/,$p' "${{ inputs.report-file }}" | tail -n +2 | sed 's/^  //')
-          if [ -n "$RE_RUN" ]; then
-            # Suppress re-run block when failures dominate passing
-            INT_FAILED_NUM="${INT_FAILED:-0}"
-            INT_PASSING_NUM="${INT_PASSING:-0}"
-            if [ "$INT_FAILED_NUM" -gt "$INT_PASSING_NUM" ] 2>/dev/null; then
-              BODY="${BODY}"$'\n\n'"${INT_FAILED_NUM} tests failed — re-run the full suite with \`pnpm test:release:automated\`"
-            else
-              BODY="${BODY}"$'\n\n'"To re-run failed tests:"$'\n'"\`\`\`"$'\n'"${RE_RUN}"$'\n'"\`\`\`"
-            fi
-          fi
-        fi
-
-        # Post the comment
         RESPONSE=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
           -f body="$BODY")
         NEW_COMMENT_ID=$(echo "$RESPONSE" | jq -r '.id')
 
-        # Minimize previous successful comments from this job
+        PASS=$(grep -q '^### ✅' "$COMMENT_BODY" && echo true || echo false)
         if [ "$PASS" = "true" ] && [ -n "$NEW_COMMENT_ID" ] && [ "$NEW_COMMENT_ID" != "null" ]; then
           PREV_NODES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
             --jq ".[] | select(.id != ${NEW_COMMENT_ID}) | select(.body | startswith(\"### ✅ ${JOB_KEY}\")) | .node_id" 2>/dev/null || true)
