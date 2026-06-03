@@ -317,37 +317,39 @@ if [[ -n "$YAML_PATH" ]]; then
   YAML_TOTAL=$(grep -c '^  - id:' "$YAML_PATH" || echo 0)
 
   if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
-    QA_JSON=$(node "$SCRIPT_DIR/resolve-qa-labels.js" "${RESOLVE_ARGS[@]}" --json) || true
     TC_TOTAL=$RESOLVED_COUNT
   else
-    QA_JSON=$(node "$SCRIPT_DIR/resolve-qa-labels.js" --json) || true
     TC_TOTAL=$YAML_TOTAL
   fi
 
-  if [[ -n "$QA_JSON" ]]; then
-    if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
-      FILTER_ARGS_JSON=$(printf '%s\n' "${RESOLVE_ARGS[@]}" | jq -R . | jq -s .)
-    else
-      FILTER_ARGS_JSON='[]'
-    fi
-
-    BLOCK1_JSON=$(jq -n \
-      --argjson tc_total "$TC_TOTAL" \
-      --argjson yaml_total "$YAML_TOTAL" \
-      --arg mode "$REPORT_MODE" \
-      --arg resolved_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-      --argjson filter_args "$FILTER_ARGS_JSON" \
-      --argjson groups "$(echo "$QA_JSON" | jq '.groups')" \
-      --argjson total_assisted "$(echo "$QA_JSON" | jq '.total_assisted')" \
-      --argjson total_manual "$(echo "$QA_JSON" | jq '.total_manual')" \
-      '{tc_total: $tc_total, yaml_total: $yaml_total, mode: $mode, resolved_at: $resolved_at, filter_args: $filter_args, groups: $groups, total_assisted: $total_assisted, total_manual: $total_manual}'
-    )
-
-    echo "" >> "$REPORT_FILE"
-    echo "++RESOLVED_JSON_START++" >> "$REPORT_FILE"
-    echo "$BLOCK1_JSON" >> "$REPORT_FILE"
-    echo "++RESOLVED_JSON_END++" >> "$REPORT_FILE"
+  if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
+    # Translate internal CI flags to CLI-compatible flags for the reproduction command
+    REPRO_ARGS=()
+    for arg in "${RESOLVE_ARGS[@]}"; do
+      if [[ "$arg" == "--automated-only" ]]; then
+        REPRO_ARGS+=("--automated")
+      else
+        REPRO_ARGS+=("$arg")
+      fi
+    done
+    FILTER_ARGS_JSON=$(printf '%s\n' "${REPRO_ARGS[@]}" | jq -R . | jq -s .)
+  else
+    FILTER_ARGS_JSON='[]'
   fi
+
+  BLOCK1_JSON=$(jq -n \
+    --argjson tc_total "$TC_TOTAL" \
+    --argjson yaml_total "$YAML_TOTAL" \
+    --arg mode "$REPORT_MODE" \
+    --arg resolved_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    --argjson filter_args "$FILTER_ARGS_JSON" \
+    '{tc_total: $tc_total, yaml_total: $yaml_total, mode: $mode, resolved_at: $resolved_at, filter_args: $filter_args}'
+  )
+
+  echo "" | tee -a "$REPORT_FILE"
+  echo "++RESOLVED_JSON_START++" | tee -a "$REPORT_FILE"
+  echo "$BLOCK1_JSON" | tee -a "$REPORT_FILE"
+  echo "++RESOLVED_JSON_END++" | tee -a "$REPORT_FILE"
 fi
 
 echo "Report output: $RELATIVE_REPORT"

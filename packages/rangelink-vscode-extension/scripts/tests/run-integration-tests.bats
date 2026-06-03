@@ -137,3 +137,47 @@ teardown() {
 # Report file naming is verified indirectly by the argument parsing tests
 # above — the script's naming is simple variable interpolation that can't be
 # meaningfully tested without running a full integration test suite through it.
+
+# ── RESOLVED_JSON stdout output ──────────────────────────────────────────────
+
+@test "outputs ++RESOLVED_JSON_START++ block to stdout" {
+  PKG_DIR="$TEST_DIR/pkg"
+  mkdir -p "$PKG_DIR/scripts" "$PKG_DIR/qa/output"
+
+  # Copy the actual script to a mock package structure
+  cp "$BATS_TEST_DIRNAME/../run-integration-tests.sh" "$PKG_DIR/scripts/run-integration-tests.sh"
+  chmod +x "$PKG_DIR/scripts/run-integration-tests.sh"
+
+  # Create stub resolve-qa-labels.js that outputs a TC ID
+  cat > "$PKG_DIR/scripts/resolve-qa-labels.js" <<'JS'
+#!/usr/bin/env node
+console.log('test-feature-001');
+JS
+  chmod +x "$PKG_DIR/scripts/resolve-qa-labels.js"
+
+  # Create a minimal QA YAML file so the script finds one
+  cat > "$PKG_DIR/qa/qa-test-cases-unreleased.yaml" <<'YAML'
+test_cases:
+  - id: test-feature-001
+    feature: test-feature
+    scenario: Test case
+    automated: true
+YAML
+
+  # Initialize a git repo so 'git rev-parse --show-toplevel' works
+  (
+    cd "$PKG_DIR" || exit 1
+    git init 2>/dev/null
+    git add -A 2>/dev/null
+    git -c user.name="T" -c user.email="t@t" commit -m "init" --no-gpg-sign 2>/dev/null
+  )
+
+  # Run the script with --automated to go through the label-resolution and
+  # report-generation path. The script will eventually fail (pnpm is not
+  # available in the mock environment), but the RESOLVED_JSON block is
+  # written to stdout via tee -a before that point.
+  run bash "$PKG_DIR/scripts/run-integration-tests.sh" --automated
+
+  [[ "$output" == *"++RESOLVED_JSON_START++"* ]]
+  [[ "$output" == *"++RESOLVED_JSON_END++"* ]]
+}
