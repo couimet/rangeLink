@@ -95,6 +95,15 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [ "${lines[1]}" = "int-failed=5" ]
 }
 
+@test "mocha: outputs 0 for all stats when 0 passing and 0 failing" {
+  # ETIMEDOUT/crash scenario — report file contains explicit zero counts
+  run "$SCRIPT" --mode mocha "$FIXTURES/mocha-zero-zero.txt"
+  [ "$status" -eq 0 ]
+  [ "${lines[0]}" = "int-passing=0" ]
+  [ "${lines[1]}" = "int-failed=0" ]
+  [ "${lines[2]}" = "int-total=0" ]
+}
+
 @test "mocha: empty file defaults to 0" {
   touch "$TEST_TEMP_DIR/empty.txt"
   run "$SCRIPT" --mode mocha "$TEST_TEMP_DIR/empty.txt"
