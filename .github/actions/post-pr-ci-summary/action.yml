@@ -44,6 +44,8 @@ runs:
       id: build
       shell: bash
       run: |
+        COMMENT_BODY="$(mktemp "${RUNNER_TEMP:-/tmp}/pr-comment-body.XXXXXX.md")"
+        echo "COMMENT_BODY=$COMMENT_BODY" >> "$GITHUB_ENV"
         .github/scripts/ci/build-pr-comment.sh \
           --title "${{ inputs.title }}" \
           --unit-passed "${{ inputs.unit-passed }}" \
@@ -54,21 +56,21 @@ runs:
           --report-file "${{ inputs.report-file }}" \
           --label-filter "${{ inputs.label-filter }}" \
           --job-start "${{ inputs.job-start }}" \
-          > /tmp/pr-comment-body.md
+          > "$COMMENT_BODY"
     - name: Post PR CI summary
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        BODY=$(cat /tmp/pr-comment-body.md)
+        BODY=$(cat "$COMMENT_BODY")
         JOB_KEY=$(echo "${{ inputs.title }}" | sed 's/ — run summary$//')
 
         RESPONSE=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
           -f body="$BODY")
         NEW_COMMENT_ID=$(echo "$RESPONSE" | jq -r '.id')
 
-        PASS=$(grep -q '^### ✅' /tmp/pr-comment-body.md && echo true || echo false)
+        PASS=$(grep -q '^### ✅' "$COMMENT_BODY" && echo true || echo false)
         if [ "$PASS" = "true" ] && [ -n "$NEW_COMMENT_ID" ] && [ "$NEW_COMMENT_ID" != "null" ]; then
           PREV_NODES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
             --jq ".[] | select(.id != ${NEW_COMMENT_ID}) | select(.body | startswith(\"### ✅ ${JOB_KEY}\")) | .node_id" 2>/dev/null || true)

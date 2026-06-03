@@ -38,11 +38,17 @@ case "$filter" in
     extracted=$(echo "$stdin" | grep -o '"tc_total":[0-9]*' | grep -o '[0-9]*$')
     echo "${extracted:-0}"
     ;;
-  *group_by*)
-    printf '| Link Navigation | 5 | link-navigation-001, link-navigation-002 |\n| Smart Padding | 3 | smart-padding-001, smart-padding-002 |\n'
+  *filter_args*)
+    echo "$stdin" | grep -o '\[[^]]*\]' | tr -d '[]"' | tr ',' ' ' | head -1
     ;;
-  *groups*)
+  *group_by*)
+    echo '[{}]'
+    ;;
+  length)
     echo "3"
+    ;;
+  *map*)
+    printf '| Link Navigation | 5 | link-navigation-001, link-navigation-002 |\n| Smart Padding | 3 | smart-padding-001, smart-padding-002 |\n'
     ;;
   *)
     echo "0"
@@ -174,7 +180,7 @@ EOF
   [[ "$output" == *"0 exercised across 3 features"* ]]
 }
 
-# ── Label filter (L141-144) ──────────────────────────────────────────────────
+# ── Label filter / filter_args (L141-147) ─────────────────────────────────────
 
 @test "branch 11: no --label-filter shows 0 exercised across N features" {
   run_script --title "Test" --job-start "1700000040"
@@ -189,11 +195,42 @@ EOF
   [[ "$output" != *"Ran in Test"* ]]
 }
 
-@test "branch 12: --label-filter set calls resolve-qa-labels and shows feature count" {
-  run_script --title "Test" --job-start "1700000040" --label-filter "requires-extensions"
+@test "branch 12: filter_args from report RESOLVED_JSON are passed to resolve-qa-labels.js" {
+  # Override node mock to capture args
+  cat > "$BIN_DIR/node" <<'SCRIPT'
+#!/usr/bin/env bash
+echo "$*" > "$(dirname "$(dirname "$0")")/node-resolve-args"
+cat <<'JSON'
+{"groups":[{"prefix":"link-navigation","feature":"Link Navigation","automated":3,"assisted":1,"manual":1,"total":5,"requires_extensions":false,"ids":["link-navigation-001","link-navigation-002","link-navigation-003","link-navigation-004","link-navigation-005"]},{"prefix":"smart-padding","feature":"Smart Padding","automated":2,"assisted":0,"manual":1,"total":3,"requires_extensions":false,"ids":["smart-padding-001","smart-padding-002","smart-padding-003"]}]}
+JSON
+exit 0
+SCRIPT
+  chmod +x "$BIN_DIR/node"
+
+  # Create report with filter_args in RESOLVED_JSON
+  REPORT_FILE="$TEST_DIR/report.txt"
+  cat > "$REPORT_FILE" <<'EOF'
+++RESOLVED_JSON_START++
+{"tc_total":2,"filter_args":["--automated-only","--exclude-label","requires-extensions"]}
+++RESOLVED_JSON_END++
+EOF
+
+  run_script --title "Test" --job-start "1700000040" \
+    --label-filter "requires-extensions" \
+    --report-file "$REPORT_FILE"
   [[ "$status" -eq 0 ]]
-  # resolve-qa-labels ran successfully via mock, groups are counted
-  [[ "$output" == *"3 features"* ]]
+
+  # filter_args from report (not --label-filter) should be forwarded
+  [[ "$(cat "$TEST_DIR/node-resolve-args")" == *"--automated-only"* ]]
+  [[ "$(cat "$TEST_DIR/node-resolve-args")" == *"--exclude-label"* ]]
+  [[ "$(cat "$TEST_DIR/node-resolve-args")" == *"requires-extensions"* ]]
+  [[ "$(cat "$TEST_DIR/node-resolve-args")" == *"--json"* ]]
+
+  # --label-filter is NOT passed to resolve-qa-labels.js
+  [[ "$(cat "$TEST_DIR/node-resolve-args")" != *"--label-filter"* ]]
+
+  # Verify output still contains feature breakdown
+  [[ "$output" == *"2 exercised across 3 features"* ]]
   [[ "$output" == *"Link Navigation"* ]]
 }
 

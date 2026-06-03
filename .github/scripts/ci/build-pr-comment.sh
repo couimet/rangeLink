@@ -138,13 +138,11 @@ if [[ -n "$REPORT_FILE" && -f "$REPORT_FILE" ]]; then
   TC_TOTAL=$(echo "$RESOLVED_JSON" | jq -r '.tc_total // 0')
 fi
 
-RESOLVE_FLAGS=""
-if [[ -n "$LABEL_FILTER" ]]; then
-  RESOLVE_FLAGS="--label $LABEL_FILTER"
-fi
-QA_JSON=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js $RESOLVE_FLAGS --json 2>/dev/null || echo '{"groups":[]}')
-FEATURE_COUNT=$(echo "$QA_JSON" | jq '.groups | length')
-FEATURE_TABLE=$(echo "$QA_JSON" | jq -r '.groups // [] | group_by(.feature) | map("| \(.[0].feature) | \(map(.total) | add) | \(map(.ids[]) | join(", ")) |") | join("\n")')
+FILTER_ARGS_RAW=$(echo "$RESOLVED_JSON" | jq -r '.filter_args // [] | join(" ")' 2>/dev/null || echo '')
+QA_JSON=$(node packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js $FILTER_ARGS_RAW --json 2>/dev/null || echo '{"groups":[]}')
+FEATURE_GROUPS=$(echo "$QA_JSON" | jq '.groups // [] | group_by(.feature)')
+FEATURE_COUNT=$(echo "$FEATURE_GROUPS" | jq 'length')
+FEATURE_TABLE=$(echo "$FEATURE_GROUPS" | jq -r 'map("| \(.[0].feature) | \(map(.total) | add) | \(map(.ids[]) | join(", ")) |") | join("\n")')
 
 # Determine pass/fail
 PASS=true
