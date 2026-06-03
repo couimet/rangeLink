@@ -11,6 +11,7 @@ import {
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
 } from '../../constants/commandIds';
 import {
+  assertClipboardEquals,
   assertFilePathLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
@@ -21,7 +22,6 @@ import {
   openEditor,
   openSourceWithSelection,
   standardSuite,
-  writeClipboardSentinel,
 } from '../helpers';
 
 standardSuite('Send File Path', (ss) => {
@@ -283,17 +283,14 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
-    await writeClipboardSentinel();
-
-    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await ss.settle();
-
-    const clipboard = await vscode.env.clipboard.readText();
-    const expectedPadded = ` ${relativePath} `;
-    assert.strictEqual(
-      clipboard,
-      expectedPadded,
-      `Expected clipboard to contain smart-padded path "${JSON.stringify(expectedPadded)}" after send, got: ${JSON.stringify(clipboard)}`,
+    await assertClipboardEquals(
+      'Send File Path — self-paste with no selection should write path to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+        await ss.settle();
+      },
+      ` ${relativePath} `,
+      'before-sfp-008',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const expectedContent = ` ${relativePath} original content\n`;
@@ -482,20 +479,17 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
-    await writeClipboardSentinel();
-
-    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
-    await ss.settle();
-
-    const absolutePath = fileUri.fsPath;
-    const clipboard = await vscode.env.clipboard.readText();
-    assert.strictEqual(
-      clipboard,
-      ` ${absolutePath} `,
-      `Expected clipboard to contain absolute path "${JSON.stringify(` ${absolutePath} `)}", got: ${JSON.stringify(clipboard)}`,
+    await assertClipboardEquals(
+      'Send File Path — self-paste absolute path should write path to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE);
+        await ss.settle();
+      },
+      ` ${fileUri.fsPath} `,
+      'before-sfp-013',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    const expectedContent = `line 1\n ${absolutePath} line 2\n`;
+    const expectedContent = `line 1\n ${fileUri.fsPath} line 2\n`;
     assert.strictEqual(
       doc.getText(),
       expectedContent,
@@ -530,17 +524,14 @@ standardSuite('Send File Path', (ss) => {
           'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
       },
     ]);
-    await writeClipboardSentinel();
-
-    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
-    await ss.settle();
-
-    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
-    const clipboard = await vscode.env.clipboard.readText();
-    assert.strictEqual(
-      clipboard,
-      ` ${relativePath} `,
-      `Expected clipboard to contain path "${JSON.stringify(` ${relativePath} `)}" after blocked self-paste, got: ${JSON.stringify(clipboard)}`,
+    await assertClipboardEquals(
+      'Send File Path — blocked self-paste should copy path to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+        await ss.settle();
+      },
+      ` ${vscode.workspace.asRelativePath(fileUri, false)} `,
+      'before-sfp-014',
     );
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.strictEqual(

@@ -9,15 +9,12 @@ import {
   CMD_COPY_LINK_RELATIVE,
 } from '../../constants/commandIds';
 import {
-  assertClipboardChanged,
-  assertClipboardPreservationRan,
-  assertClipboardRestored,
+  assertClipboardEqualsGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
   standardSuite,
-  waitForHumanVerdict,
-  writeClipboardSentinel,
+  withClipboardSentinel,
 } from '../helpers';
 
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
@@ -369,19 +366,11 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       extensionId: 'rangelink.dummy-ai-extension',
     });
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-tier1-clip');
-
-    await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    assertClipboardPreservationRan(logCapture, 'before-tier1-clip', 'R-L');
-
-    await assertClipboardRestored(
-      'Tier 1 should not disturb clipboard — outer preserve restores sentinel',
-    );
+    await withClipboardSentinel('before-tier1-clip', 'R-L', async () => {
+      await vscode.commands.executeCommand('editor.action.selectAll');
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
 
     ss.log('✓ Tier 1 clipboard isolation — sentinel preserved after R-L');
   });
@@ -401,18 +390,16 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       extensionId: 'rangelink.dummy-ai-extension-tier3',
     });
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-tier3-paste');
-
-    await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    const clipboardContent = await assertClipboardChanged(
+    await assertClipboardEqualsGeneratedLink(
       'Tier 3 clipboard should NOT be restored — link must stay for manual paste',
+      async () => {
+        await vscode.commands.executeCommand('editor.action.selectAll');
+        await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+        await ss.settle();
+      },
+      'before-tier3-paste',
+      { smartPad: 'both' },
     );
-    assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -442,18 +429,16 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       extensionId: 'rangelink.dummy-ai-extension-fallback',
     });
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-fallback-paste');
-
-    await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    const clipboardContent = await assertClipboardChanged(
+    await assertClipboardEqualsGeneratedLink(
       'Fallback→Tier 3 clipboard should NOT be restored — link must stay for manual paste',
+      async () => {
+        await vscode.commands.executeCommand('editor.action.selectAll');
+        await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+        await ss.settle();
+      },
+      'before-fallback-paste',
+      { smartPad: 'both' },
     );
-    assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -535,7 +520,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     ss.log('✓ Copilot override routes content to Dummy AI Tier 1');
   });
 
-  test('[assisted] custom-ai-assistant-019: misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast', async () => {
+  test('custom-ai-assistant-019: misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast', async () => {
     ss.expectStatusBarMessages([
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: RangeLink copied to clipboard',
@@ -550,16 +535,16 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       extensionId: 'google.geminicodeassist',
     });
 
-    await writeClipboardSentinel();
-
-    await vscode.commands.executeCommand('editor.action.selectAll');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    const clipboardContent = await assertClipboardChanged(
+    await assertClipboardEqualsGeneratedLink(
       'Gemini override clipboard should NOT be restored — link must stay for manual paste',
+      async () => {
+        await vscode.commands.executeCommand('editor.action.selectAll');
+        await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+        await ss.settle();
+      },
+      'before-gemini-override',
+      { smartPad: 'both' },
     );
-    assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
       | { tier1: string; tier2: string }
@@ -569,22 +554,6 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       textResult!.tier1,
       '',
       'Expected tier1 to be empty (focusCommands-only, no direct insert)',
-    );
-
-    const verdict = await waitForHumanVerdict(
-      'custom-ai-assistant-019',
-      `Clipboard content:\n\n${clipboardContent}\n\nDoes this look like a valid RangeLink?`,
-      [
-        '1. Read the clipboard content shown above',
-        '2. Verify it looks like a valid RangeLink with file path and line/column references',
-        '3. Verify the toast says "Paste (Cmd/Ctrl+V) in Gemini Code Assist to use."',
-        '4. Click PASS if everything looks correct, FAIL otherwise',
-      ],
-    );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported clipboard content was not a valid RangeLink',
     );
 
     ss.log(

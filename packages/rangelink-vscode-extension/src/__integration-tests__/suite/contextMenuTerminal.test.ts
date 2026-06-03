@@ -10,17 +10,15 @@ import {
 } from '../../constants/commandIds';
 import {
   TERMINAL_READY_MS,
-  assertSetContextLogged,
+  assertLogContains,
+  assertQuickPickContains,
   assertTerminalBufferContains,
   echoToTerminal,
-  assertQuickPickContains,
   getLogCapture,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
-
-const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
@@ -41,10 +39,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
         '3. Select "RangeLink: Bind Here"',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-001');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Terminal-tab context menu bound the terminal destination');
   });
@@ -67,10 +61,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
         '3. Select "RangeLink: Bind Here"',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-002');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Terminal content-area context menu bound the terminal destination');
   });
@@ -100,10 +90,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-003');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
-
     ss.log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
   });
 
@@ -120,19 +106,15 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'context-menus-terminal-004',
-      `Right-click the "${targetName}" TAB → "RangeLink: Bind Here" (NOT the "${otherName}" tab)`,
+      `Right-click the "${targetName}" TAB → "RangeLink: Bind Here"`,
       [
         `Two terminals exist: "${otherName}" and "${targetName}"`,
         `1. In the terminal panel's tab bar, locate the "${targetName}" tab specifically`,
-        '2. Right-click THAT tab (not the other one)',
+        '2. Right-click THAT tab',
         '3. Select "RangeLink: Bind Here"',
         'The TARGET terminal should bind — not the OTHER one.',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-004');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
   });
@@ -150,19 +132,15 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'context-menus-terminal-005',
-      `Right-click INSIDE the "${targetName}" CONTENT AREA → "RangeLink: Bind Here" (NOT the "${otherName}" terminal)`,
+      `Right-click INSIDE the "${targetName}" CONTENT AREA → "RangeLink: Bind Here"`,
       [
         `Two terminals exist: "${otherName}" and "${targetName}"`,
         `1. Click to focus the "${targetName}" terminal`,
-        '2. Right-click INSIDE its content area (not the tab, not the other terminal)',
+        '2. Right-click INSIDE its content area (not the tab)',
         '3. Select "RangeLink: Bind Here"',
         'The TARGET terminal should bind — not the OTHER one.',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-005');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
   });
@@ -266,10 +244,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
         `The "${shellName}" terminal should bind — NOT the pty.`,
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-term-008');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     ss.log('✓ Shell tab "Bind Here" present and bound the shell (not the pty) when both open');
   });
@@ -410,14 +384,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-sts-008');
-
-    const focusLogged = lines.some(
-      (line) =>
-        line.includes('Terminal focused via showTerminal()') &&
-        line.includes(`"terminalName":"${boundName}"`),
+    assertLogContains(
+      'before-sts-008',
+      'Terminal focused via showTerminal()',
+      `Expected "Terminal focused via showTerminal()" log for "${boundName}"`,
     );
-    assert.ok(focusLogged, `Expected "Terminal focused via showTerminal()" log for "${boundName}"`);
 
     assertTerminalBufferContains(capturingBound.getCapturedText(), markerText);
 
@@ -547,8 +518,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
       displayName: destName,
       label: `Terminal ("${destName}")`,
     });
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);
 

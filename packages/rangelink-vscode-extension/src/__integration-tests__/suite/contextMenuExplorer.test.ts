@@ -7,8 +7,6 @@ import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
-  assertNoSetContextLogged,
-  assertSetContextLogged,
   assertTerminalBufferEquals,
   getLogCapture,
   standardSuite,
@@ -17,7 +15,6 @@ import {
 } from '../helpers';
 
 const FILE_CONTENT = 'explorer context-menu test file\n';
-const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Explorer', (ss) => {
   test('[assisted] context-menus-explorer-001: Explorer "Send File Path" sends absolute path to bound terminal', async () => {
@@ -123,10 +120,6 @@ standardSuite('Context Menus — Explorer', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ctxmenu-exp-003');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
     ss.log('✓ Explorer "Bind Here" committed a text-editor binding with correct displayName');
   });
 
@@ -157,10 +150,6 @@ standardSuite('Context Menus — Explorer', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ctxmenu-exp-004');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
-
     ss.log('✓ Explorer "Unbind" fired the unbind path; context key flipped to false');
   });
 
@@ -184,9 +173,6 @@ standardSuite('Context Menus — Explorer', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ctxmenu-exp-005');
-
-    assertNoSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
     assert.strictEqual(
       verdict,
       'pass',

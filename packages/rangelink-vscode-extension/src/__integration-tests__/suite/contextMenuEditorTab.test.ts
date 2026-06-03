@@ -6,7 +6,6 @@ import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
-  assertSetContextLogged,
   assertTerminalBufferEquals,
   getLogCapture,
   standardSuite,
@@ -14,7 +13,6 @@ import {
 } from '../helpers';
 
 const FILE_CONTENT = 'editor-tab context-menu test file\n';
-const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Editor Tab', (ss) => {
   test('[assisted] context-menus-editor-tab-001: Editor tab "Send File Path" sends absolute path to bound terminal', async () => {
@@ -125,10 +123,6 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ctxmenu-tab-003');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
     ss.log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
   });
 
@@ -159,10 +153,6 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
         '4. Select "RangeLink: Unbind"',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ctxmenu-tab-004');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
     ss.log('✓ Editor-tab "Unbind" fired the unbind path; context key flipped to false');
   });

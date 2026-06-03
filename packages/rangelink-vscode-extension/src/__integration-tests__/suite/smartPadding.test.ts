@@ -15,6 +15,7 @@ import {
   assertTerminalBufferEquals,
   cleanupFiles,
   echoToTerminal,
+  getGeneratedLink,
   getWorkspaceRoot,
   openEditor,
   openUntitledDoc,
@@ -386,9 +387,10 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
 
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
+    const logCapture = ss.getLogCapture();
+    logCapture.mark('before-pad-009');
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-
     const textResult = (await vscode.commands.executeCommand(DUMMY_AI_GET_TEXT_COMMAND)) as
       | { tier1: string; tier2: string }
       | undefined;
@@ -402,6 +404,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
       '',
       'Expected tier2 textarea to be empty (no cross-contamination)',
     );
+
+    const generatedLink = getGeneratedLink('before-pad-009', { smartPad: 'both' });
+    assert.strictEqual(generatedLink, textResult!.tier1);
 
     ss.log('✓ smart-padding-009: padded RangeLink sent to Dummy AI (programmatic verification)');
   });

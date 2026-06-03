@@ -1,6 +1,13 @@
+import assert from 'node:assert';
 import { Console } from 'node:console';
 
+import { getLogCapture } from './getLogCapture';
+
 const nodeConsole = new Console(process.stdout, process.stderr);
+
+export type SmartPadMode = 'both' | 'before' | 'after';
+
+export type SmartPadOptions = { smartPad?: SmartPadMode };
 
 export const createLogger = (suiteName: string): ((msg: string) => void) => {
   const prefix = `[RL-integ:${suiteName}]`;
@@ -33,7 +40,7 @@ export const extractSentLink = (lines: string[]): string | undefined => {
  */
 export const extractGeneratedLink = (
   lines: string[],
-  options?: { smartPad?: 'both' | 'before' | 'after' },
+  options?: SmartPadOptions,
 ): string | undefined => {
   const generatedLog = lines.find((l) => l.includes('Generated link:'));
   if (!generatedLog) return undefined;
@@ -45,4 +52,17 @@ export const extractGeneratedLink = (
   if (smartPad === 'both') return ` ${link} `;
   if (smartPad === 'before') return ` ${link}`;
   return `${link} `;
+};
+
+export const getGeneratedLink = (marker: string, options?: SmartPadOptions): string => {
+  const lines = getLogCapture().getLinesSince(marker);
+  const link = extractGeneratedLink(lines, options);
+  assert.ok(link, 'Expected "Generated link:" log line');
+  return link!;
+};
+
+export const assertLogContains = (marker: string, substring: string, context?: string): void => {
+  const lines = getLogCapture().getLinesSince(marker);
+  const found = lines.find((l) => l.includes(substring));
+  assert.ok(found, context ?? `Expected log containing "${substring}"`);
 };

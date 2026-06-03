@@ -5,7 +5,7 @@ import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { CMD_COPY_LINK_ONLY_RELATIVE } from '../../constants/commandIds';
-import { standardSuite, waitForHumanVerdict } from '../helpers';
+import { assertClipboardEqualsGeneratedLink, standardSuite, waitForHumanVerdict } from '../helpers';
 
 const LOGGER = new NoOpLogger();
 
@@ -18,18 +18,27 @@ standardSuite('Link Generation', (ss) => {
     editor.selection = new vscode.Selection(new vscode.Position(19, 0), new vscode.Position(20, 0));
 
     ss.expectStatusBarMessages(['✓ RangeLink: RangeLink copied to clipboard']);
-    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    const clipboard = await vscode.env.clipboard.readText();
+    const { generatedLink } = await assertClipboardEqualsGeneratedLink(
+      'R-C should copy full-line link to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+        await ss.settle();
+      },
+      'before-full-line-001',
+    );
 
     assert.ok(
-      clipboard.includes('#L20'),
-      `Expected clipboard to contain #L20 but got: ${clipboard}`,
+      generatedLink.includes('#L20'),
+      `Expected link to contain #L20, got: ${generatedLink}`,
     );
     assert.ok(
-      !clipboard.includes('#L20-L21'),
-      `Expected no #L20-L21 in clipboard but got: ${clipboard}`,
+      !generatedLink.includes('#L20-L21'),
+      `Expected no #L20-L21 in link but got: ${generatedLink}`,
     );
-    assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
+    assert.ok(
+      !generatedLink.includes('#L21'),
+      `Expected no #L21 in link but got: ${generatedLink}`,
+    );
   });
 
   test('wrapped-link-navigation-baseline: detects plain link (src/foo.ts#L5)', () => {

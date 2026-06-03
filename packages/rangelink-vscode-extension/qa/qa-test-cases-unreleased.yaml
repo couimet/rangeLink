@@ -2170,9 +2170,9 @@ test_cases:
       - needs-override
       - override-fallback
     feature: 'custom-ai-assistants'
-    scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast — human verifies'
-    expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears, human confirms clipboard content is a valid RangeLink'
-    automated: assisted
+    scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast'
+    expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Built-in AI Assistants

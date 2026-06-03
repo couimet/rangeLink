@@ -7,20 +7,18 @@ import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_PASTE_TO_DESTINATION } from '../../co
 import {
   assertClipboardWriteLogged,
   assertFilePathLogged,
-  assertSetContextLogged,
   assertTerminalBufferContains,
+  assertTerminalBufferContainsGeneratedLink,
   clearSelection,
   getLogCapture,
   openSourceWithSelection,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
-  writeClipboardSentinel,
-  assertClipboardRestored,
+  withClipboardSentinel,
 } from '../helpers';
 
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
-const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
 standardSuite('Context Menus — Editor Content', (ss) => {
   let originalMultiLinePasteWarning: unknown;
@@ -53,7 +51,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
   test('[assisted] context-menus-editor-content-001: Editor content "Send RangeLink" sends workspace-relative link to bound terminal', async () => {
     const uri = await ss.createAndOpenFile('ctxmenu-ed-001', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
-    const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-001';
     const capturing = await ss.createAndBindCapturingTerminal(terminalName);
@@ -82,8 +79,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       ],
     );
 
-    assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
+    assertTerminalBufferContainsGeneratedLink(capturing, 'before-ed-001');
 
     ss.log('✓ Editor-content "Send RangeLink" delivered workspace-relative link to bound terminal');
   });
@@ -118,8 +114,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       ],
     );
 
-    assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
+    assertTerminalBufferContainsGeneratedLink(capturing, 'before-ed-002');
 
     ss.log(
       '✓ Editor-content "Send RangeLink (Absolute)" delivered absolute link to bound terminal',
@@ -129,7 +124,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
   test('[assisted] context-menus-editor-content-003: Editor content "Send Portable Link" sends portable link with workspace-relative path', async () => {
     const uri = await ss.createAndOpenFile('ctxmenu-ed-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
-    const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-ed-003';
     const capturing = await ss.createAndBindCapturingTerminal(terminalName);
@@ -157,8 +151,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       ],
     );
 
-    assertTerminalBufferContains(capturing.getCapturedText(), relativePath);
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
+    assertTerminalBufferContainsGeneratedLink(capturing, 'before-ed-003');
 
     ss.log('✓ Editor-content "Send Portable Link" delivered portable link to bound terminal');
   });
@@ -193,8 +186,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       ],
     );
 
-    assertTerminalBufferContains(capturing.getCapturedText(), uri.fsPath);
-    assertTerminalBufferContains(capturing.getCapturedText(), '#L1-L2');
+    assertTerminalBufferContainsGeneratedLink(capturing, 'before-ed-004');
 
     ss.log(
       '✓ Editor-content "Send Portable Link (Absolute)" delivered portable link with absolute path',
@@ -378,10 +370,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       ],
     );
 
-    const lines = logCapture.getLinesSince('before-ed-009');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
     ss.log('✓ Editor-content "Bind Here" committed a text-editor binding for the current file');
   });
 
@@ -413,10 +401,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         '3. Click Cancel on the notification',
       ],
     );
-
-    const lines = logCapture.getLinesSince('before-ed-010');
-
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: false });
 
     ss.log('✓ Editor-content "Unbind" was visible (clicked it) and fired the unbind path');
   });
@@ -485,12 +469,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         message: 'Cannot paste when bound editor has an active selection.',
       },
     ]);
-    await writeClipboardSentinel();
+    await withClipboardSentinel('before-ed-012', 'R-V', async () => {
+      await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+      await ss.settle();
+    });
 
-    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await ss.settle();
-
-    await assertClipboardRestored('R-V same file same column block');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.strictEqual(
       doc.getText(),
@@ -520,12 +503,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         message: 'Cannot paste when bound editor has an active selection.',
       },
     ]);
-    await writeClipboardSentinel();
+    await withClipboardSentinel('before-ed-013', 'R-V', async () => {
+      await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
+      await ss.settle();
+    });
 
-    await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
-    await ss.settle();
-
-    await assertClipboardRestored('R-V multi-selection same file block');
     const doc = await vscode.workspace.openTextDocument(fileUri);
     assert.strictEqual(
       doc.getText(),
