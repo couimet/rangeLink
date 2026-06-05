@@ -10,4 +10,5 @@ export type PasteSendOutcome =
       destinationKind: DestinationKind;
       clipboardWritten: boolean;
       toastMessage: string;
-    };
+    }
+  | { kind: 'clipboard-preservation-failed' };

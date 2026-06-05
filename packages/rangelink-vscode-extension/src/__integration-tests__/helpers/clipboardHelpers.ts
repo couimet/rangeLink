@@ -32,11 +32,11 @@ export const assertClipboardRestored = async (context: string): Promise<void> =>
 
 export const assertClipboardPreservationRan = (markName: string, operationLabel: string): void => {
   const lines = getLogCapture().getLinesSince(markName);
-  const savedIdx = lines.findIndex((l) => l.includes('Clipboard saved'));
+  const savedIdx = lines.findIndex((l) => l.includes('Clipboard current value read and saved'));
   const restoredIdx = lines.findIndex((l) => l.includes('Clipboard restored'));
   assert.ok(
     savedIdx >= 0,
-    'Expected "Clipboard saved" log entry — preservation must read clipboard',
+    'Expected "Clipboard current value read and saved" log entry — preservation must read clipboard',
   );
   assert.ok(
     restoredIdx > savedIdx,
@@ -86,9 +86,9 @@ export const withClipboardChanged = async (
 export const assertClipboardPreservationDidNotRun = (markName: string): void => {
   const lines = getLogCapture().getLinesSince(markName);
   assert.strictEqual(
-    lines.find((l) => l.includes('Clipboard saved')),
+    lines.find((l) => l.includes('Clipboard current value read and saved')),
     undefined,
-    'Expected no "Clipboard saved" — no operation ran',
+    'Expected no "Clipboard current value read and saved" — no operation ran',
   );
   assert.strictEqual(
     lines.find((l) => l.includes('Clipboard restored')),

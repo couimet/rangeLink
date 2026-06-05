@@ -1,6 +1,5 @@
 export * from './aiAssistants';
 export * from './applySmartPadding';
-export * from './clipboardPreservation';
 export * from './convertRangeLinkPosition';
 export * from './createIsoTimestamp';
 export * from './destinationKindGuards';
@@ -20,3 +19,4 @@ export * from './isWritableScheme';
 export * from './registerWithLogging';
 export * from './resolveWorkspacePath';
 export * from './toInputSelection';
+export * from './validateTerminalDefined';

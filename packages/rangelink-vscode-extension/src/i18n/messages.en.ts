@@ -224,6 +224,9 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.UNKNOWN_FILENAME_FALLBACK]: 'Unknown',
 
+  [MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED]:
+    'Clipboard preservation failed. Content was not sent.',
+
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER]:
     'File has unsaved changes. The AI tool may read stale content from disk.',
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_CONTINUE]: 'Send Anyway',

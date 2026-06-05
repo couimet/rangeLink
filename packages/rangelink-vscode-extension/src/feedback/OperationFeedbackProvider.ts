@@ -66,6 +66,11 @@ export class OperationFeedbackProvider {
         }
         break;
       }
+      case 'clipboard-preservation-failed': {
+        const errorMsg = formatMessage(MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED);
+        void this.vscodeAdapter.showWarningMessage(errorMsg);
+        break;
+      }
       default: {
         const _exhaustiveCheck: never = outcome;
         throw new RangeLinkExtensionError({

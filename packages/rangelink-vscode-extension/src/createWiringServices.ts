@@ -3,7 +3,7 @@ import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
-import { DefaultClipboardPreserver } from './clipboard';
+import { ClipboardService } from './clipboard';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
@@ -94,8 +94,8 @@ export const createWiringServices = (
   const bookmarksStore = new BookmarksStore(context.globalState, logger);
   logger.debug({ fn: 'createWiringServices' }, 'Bookmarks store initialized');
 
-  const clipboardPreserver = new DefaultClipboardPreserver(ideAdapter, configReader, logger);
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);
+  const clipboardService = new ClipboardService(ideAdapter, configReader, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, clipboardService, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
   const registry = new DestinationRegistry(
     focusCapabilityFactory,
@@ -162,7 +162,7 @@ export const createWiringServices = (
     ideAdapter,
     destinationManager,
     destinationPicker,
-    clipboardPreserver,
+    clipboardService,
     feedbackProvider,
     logger,
   );
@@ -170,7 +170,7 @@ export const createWiringServices = (
     ideAdapter,
     destinationManager,
     configReader,
-    clipboardPreserver,
+    clipboardService,
     sendRouter,
     logger,
   );

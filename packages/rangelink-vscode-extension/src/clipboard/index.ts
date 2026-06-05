@@ -1,2 +1,1 @@
-export * from './ClipboardPreserver';
-export * from './DefaultClipboardPreserver';
+export * from './ClipboardService';

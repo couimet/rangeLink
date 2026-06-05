@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
 
-import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
+import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { ConfigReader } from '../config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -23,7 +23,7 @@ export class TerminalSelectionService {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
-    private readonly clipboardPreserver: ClipboardPreserver,
+    private readonly clipboardService: ClipboardService,
     private readonly sendRouter: SendRouter,
     private readonly logger: Logger,
   ) {}
