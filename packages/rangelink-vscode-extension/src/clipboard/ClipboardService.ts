@@ -172,7 +172,12 @@ export class ClipboardService {
     }
   }
 
-  private async restoreClipboard(prior: string, logCtxInput: LoggingContext): Promise<void> {
+  /**
+   * Best-effort clipboard restore. Failures are logged but not thrown —
+   * restoration is never the primary operation, so callers need not check
+   * a return value.
+   */
+  async restoreClipboard(prior: string, logCtxInput: LoggingContext): Promise<void> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::restoreClipboard` };
 
     try {
