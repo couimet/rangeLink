@@ -1,13 +1,13 @@
+import type { Logger, LoggingContext } from 'barebone-logger';
+import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import type { Logger, LoggingContext } from 'barebone-logger';
-import { RangeLinkError, Result } from 'rangelink-core-ts';
-
-import { BehaviourAfterPaste } from '../types';
 import type { ClipboardService } from '../clipboard/ClipboardService';
-import type { SendTextToTerminalOptions } from '../types';
-import type { TerminalPasteAdapter } from '../ide/TerminalPasteAdapter';
 import { VSCODE_CMD_TERMINAL_PASTE } from '../constants';
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import type { TerminalPasteAdapter } from '../ide/TerminalPasteAdapter';
+import type { SendTextToTerminalOptions } from '../types';
+import { BehaviourAfterPaste } from '../types';
 import { validateTerminalDefined } from '../utils';
 
 /**
@@ -29,8 +29,11 @@ export class TerminalPasteService {
     content: string,
     terminal: vscode.Terminal,
     options?: SendTextToTerminalOptions,
-  ): Promise<Result<void, RangeLinkError>> {
-    const logCtx: LoggingContext = { fn: 'TerminalPasteService.pasteIntoTerminal', terminalName: terminal?.name };
+  ): Promise<Result<void, RangeLinkExtensionError>> {
+    const logCtx: LoggingContext = {
+      fn: 'TerminalPasteService.pasteIntoTerminal',
+      terminalName: terminal?.name,
+    };
 
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
@@ -38,7 +41,7 @@ export class TerminalPasteService {
         { ...logCtx, error: validationResult.error },
         'Terminal paste failed - terminal not defined',
       );
-      return validationResult as unknown as Result<void, RangeLinkError>;
+      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
     }
 
     const stageResult = await this.clipboardService.stage(content, async () => {

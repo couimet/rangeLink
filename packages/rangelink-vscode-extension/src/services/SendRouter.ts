@@ -63,17 +63,13 @@ export class SendRouter {
           { fn: 'SendRouter.sendToDestination', error: routeResult.error },
           'Clipboard routing failed',
         );
-        this.feedbackProvider.provideSendFeedback(
-          this.buildPasteContext(options),
-          { kind: 'clipboard-preservation-failed' },
-        );
+        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), {
+          kind: 'clipboard-preservation-failed',
+        });
         return;
       }
       if (outcome !== undefined) {
-        this.feedbackProvider.provideSendFeedback(
-          this.buildPasteContext(options),
-          outcome,
-        );
+        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), outcome);
       }
     } else {
       await this.executeSend(options);

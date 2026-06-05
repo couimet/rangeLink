@@ -1,15 +1,17 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
-import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
+import { Result } from 'rangelink-core-ts';
 
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_CLIPBOARD_PRESERVE } from '../constants/settingDefaults';
 import { SETTING_CLIPBOARD_PRESERVE } from '../constants/settingKeys';
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { ClipboardProvider } from '../ide/ClipboardProvider';
 
 /**
  * Central clipboard lifecycle management.
  *
- * Returns Result<T, RangeLinkError> for all public methods. Every
+ * Returns Result<T, RangeLinkExtensionError> for all public methods. Every
  * bail-out logs before returning — private helpers own both the log and
  * the error Result, so callers never need to log clipboard failures.
  */
@@ -28,7 +30,7 @@ export class ClipboardService {
    * The clipboard acts as a transport: stage loads it with content,
    * the callback consumes it, and the original value is restored afterward.
    */
-  async stage<T>(text: string, fn: () => Promise<T>): Promise<Result<T, RangeLinkError>> {
+  async stage<T>(text: string, fn: () => Promise<T>): Promise<Result<T, RangeLinkExtensionError>> {
     return this.withClipboardPipeline(fn, { fn: 'ClipboardService::stage' }, { textToWrite: text });
   }
 
@@ -46,7 +48,7 @@ export class ClipboardService {
   async route<T>(
     fn: () => Promise<T>,
     shouldRestore?: () => boolean,
-  ): Promise<Result<T, RangeLinkError>> {
+  ): Promise<Result<T, RangeLinkExtensionError>> {
     const logCtx: LoggingContext = { fn: 'ClipboardService::route' };
 
     const mode = this.configReader.getWithDefault(
@@ -64,6 +66,63 @@ export class ClipboardService {
     return this.withClipboardPipeline(fn, logCtx, { shouldRestore });
   }
 
+  /**
+   * Capture clipboard content produced by an external writer, optionally
+   * threading the producer's return value back to the caller.
+   *
+   * Saves the prior clipboard, runs producer (which writes to clipboard
+   * externally — e.g. a VS Code terminal copy command), reads the result,
+   * restores the prior value, and returns both the captured text and the
+   * producer's return value.
+   *
+   * Restoration always happens in a finally block regardless of producer
+   * or read outcome.
+   */
+  async capture<T>(
+    producer: () => Promise<T>,
+    logCtxInput: LoggingContext,
+  ): Promise<Result<{ clipboard: string; produced: T }, RangeLinkExtensionError>> {
+    const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::capture` };
+
+    const priorResult = await this.read(logCtx);
+    if (!priorResult.success)
+      return priorResult as unknown as Result<
+        { clipboard: string; produced: T },
+        RangeLinkExtensionError
+      >;
+
+    try {
+      let produced: T;
+      try {
+        produced = await producer();
+      } catch (producerError) {
+        this.logger.error(
+          { ...logCtx, error: producerError },
+          'Producer callback threw during capture',
+        );
+        return Result.err(
+          new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED,
+            message: 'The producer callback threw an error',
+            functionName: logCtx.fn,
+            details: { error: producerError },
+          }),
+        );
+      }
+
+      const readResult = await this.read(logCtx);
+      if (!readResult.success)
+        return readResult as unknown as Result<
+          { clipboard: string; produced: T },
+          RangeLinkExtensionError
+        >;
+
+      return Result.ok({ clipboard: readResult.value, produced });
+    } finally {
+      await this.restoreClipboard(priorResult.value, logCtx);
+    }
+  }
+
   private async withClipboardPipeline<T>(
     fn: () => Promise<T>,
     logCtx: LoggingContext,
@@ -71,13 +130,13 @@ export class ClipboardService {
       textToWrite?: string;
       shouldRestore?: () => boolean;
     },
-  ): Promise<Result<T, RangeLinkError>> {
+  ): Promise<Result<T, RangeLinkExtensionError>> {
     const priorResult = await this.read(logCtx);
-    if (!priorResult.success) return priorResult as unknown as Result<T, RangeLinkError>;
+    if (!priorResult.success) return priorResult as unknown as Result<T, RangeLinkExtensionError>;
 
     if (options?.textToWrite !== undefined) {
       const writeResult = await this.write(options.textToWrite, logCtx);
-      if (!writeResult.success) return writeResult as unknown as Result<T, RangeLinkError>;
+      if (!writeResult.success) return writeResult as unknown as Result<T, RangeLinkExtensionError>;
     }
 
     const fnResult = await this.executeFn(fn, logCtx);
@@ -102,7 +161,7 @@ export class ClipboardService {
    * save-restore. Use directly only when you need to orchestrate
    * save/restore manually.
    */
-  async read(logCtxInput: LoggingContext): Promise<Result<string, RangeLinkError>> {
+  async read(logCtxInput: LoggingContext): Promise<Result<string, RangeLinkExtensionError>> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::read` };
 
     try {
@@ -115,8 +174,8 @@ export class ClipboardService {
     } catch (err) {
       this.logger.error({ ...logCtx, error: err }, 'Clipboard read failed');
       return Result.err(
-        new RangeLinkError({
-          code: RangeLinkErrorCodes.CLIPBOARD_READ_FAILED,
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.CLIPBOARD_READ_FAILED,
           message: 'Failed to read clipboard',
           functionName: logCtx.fn,
           details: { error: err },
@@ -132,7 +191,10 @@ export class ClipboardService {
    * save-restore. Use directly only when you need to orchestrate
    * save/restore manually.
    */
-  async write(text: string, logCtxInput: LoggingContext): Promise<Result<void, RangeLinkError>> {
+  async write(
+    text: string,
+    logCtxInput: LoggingContext,
+  ): Promise<Result<void, RangeLinkExtensionError>> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::write` };
 
     try {
@@ -142,8 +204,8 @@ export class ClipboardService {
     } catch (err) {
       this.logger.error({ ...logCtx, error: err }, 'Clipboard write failed');
       return Result.err(
-        new RangeLinkError({
-          code: RangeLinkErrorCodes.CLIPBOARD_STAGE_WRITE_FAILED,
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.CLIPBOARD_STAGE_WRITE_FAILED,
           message: 'Failed to write text to clipboard',
           functionName: logCtx.fn,
           details: { error: err },
@@ -155,14 +217,14 @@ export class ClipboardService {
   private async executeFn<T>(
     fn: () => Promise<T>,
     logCtx: LoggingContext,
-  ): Promise<Result<T, RangeLinkError>> {
+  ): Promise<Result<T, RangeLinkExtensionError>> {
     try {
       return Result.ok(await fn());
     } catch (fnError) {
       this.logger.error({ ...logCtx, error: fnError }, 'Callback threw');
       return Result.err(
-        new RangeLinkError({
-          code: RangeLinkErrorCodes.CLIPBOARD_FN_EXECUTION_FAILED,
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.CLIPBOARD_FN_EXECUTION_FAILED,
           message: 'The callback threw an error',
           functionName: logCtx.fn,
           details: { error: fnError },

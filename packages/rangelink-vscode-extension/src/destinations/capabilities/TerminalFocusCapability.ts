@@ -22,14 +22,15 @@ export class TerminalFocusCapability implements FocusCapability {
   ) {}
 
   async focus(context: LoggingContext): Promise<FocusResult> {
-    const logCtx: LoggingContext = { ...context, terminalName: this.terminal.name, fn: `${context.fn}::focus` };
+    const logCtx: LoggingContext = {
+      ...context,
+      terminalName: this.terminal.name,
+      fn: `${context.fn}::focus`,
+    };
 
     const showResult = this.ideAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
     if (!showResult.success) {
-      this.logger.warn(
-        { ...logCtx, error: showResult.error },
-        'Failed to focus terminal',
-      );
+      this.logger.warn({ ...logCtx, error: showResult.error }, 'Failed to focus terminal');
       return Result.err({
         reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
         cause: showResult.error,

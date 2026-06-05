@@ -1,4 +1,4 @@
-import { SharedErrorCodes } from 'rangelink-core-ts';
+import { RangeLinkSpecificCodes, SharedErrorCodes } from 'rangelink-core-ts';
 
 /**
  * Extension-specific error codes for rangelink-vscode-extension.
@@ -51,7 +51,10 @@ export enum RangeLinkExtensionSpecificCodes {
  * Union type of all extension error codes.
  * Combines extension-specific codes with shared error codes.
  */
-export type RangeLinkExtensionErrorCodes = RangeLinkExtensionSpecificCodes | SharedErrorCodes;
+export type RangeLinkExtensionErrorCodes =
+  | RangeLinkExtensionSpecificCodes
+  | RangeLinkSpecificCodes
+  | SharedErrorCodes;
 
 /**
  * Merged error codes object.
@@ -59,5 +62,6 @@ export type RangeLinkExtensionErrorCodes = RangeLinkExtensionSpecificCodes | Sha
  */
 export const RangeLinkExtensionErrorCodes = {
   ...RangeLinkExtensionSpecificCodes,
+  ...RangeLinkSpecificCodes,
   ...SharedErrorCodes,
 };

@@ -357,14 +357,15 @@ export class VscodeAdapter
     terminal: vscode.Terminal,
     focusType: TerminalFocusType,
   ): Result<void, RangeLinkExtensionError> {
-    const logCtx: LoggingContext = { fn: 'VscodeAdapter.showTerminal', terminalName: terminal?.name, focusType };
+    const logCtx: LoggingContext = {
+      fn: 'VscodeAdapter.showTerminal',
+      terminalName: terminal?.name,
+      focusType,
+    };
 
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
-      this.logger.error(
-        { ...logCtx, error: validationResult.error },
-        'Terminal validation failed',
-      );
+      this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal validation failed');
       return validationResult as unknown as Result<void, RangeLinkExtensionError>;
     }
 
