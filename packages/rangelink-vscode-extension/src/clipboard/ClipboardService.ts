@@ -21,34 +21,33 @@ export class ClipboardService {
   ) {}
 
   /**
-   * Save the current clipboard, run fn, then restore the original content.
-   * Always saves/restores — no config gating.
-   */
-  async borrow<T>(fn: () => Promise<T>): Promise<Result<T, RangeLinkError>> {
-    return this.withClipboardPipeline(fn, { fn: 'ClipboardService::borrow' });
-  }
-
-  /**
-   * Save the current clipboard, write text to the clipboard, run fn
-   * (which typically reads the clipboard via Cmd+V), then restore the
+   * Write content to the clipboard, run fn (which typically reads the
+   * clipboard back — e.g. a terminal paste command), then restore the
    * prior clipboard content.
+   *
+   * The clipboard acts as a transport: stage loads it with content,
+   * the callback consumes it, and the original value is restored afterward.
    */
   async stage<T>(text: string, fn: () => Promise<T>): Promise<Result<T, RangeLinkError>> {
     return this.withClipboardPipeline(fn, { fn: 'ClipboardService::stage' }, { textToWrite: text });
   }
 
   /**
-   * Config-gated clipboard preservation.
+   * Config-gated clipboard transport.
    *
    * When rangelink.clipboard.preserve is 'always': saves clipboard before
    * fn, restores afterward (unless shouldRestore returns false).
    * When 'never': calls fn directly with no clipboard interaction.
+   *
+   * The clipboard is a route, not a destination — content passes through
+   * it on the way to the bound destination. This method is the single
+   * entry point for all R-* command send flows via SendRouter.
    */
-  async preserve<T>(
+  async route<T>(
     fn: () => Promise<T>,
     shouldRestore?: () => boolean,
   ): Promise<Result<T, RangeLinkError>> {
-    const logCtx: LoggingContext = { fn: 'ClipboardService::preserve' };
+    const logCtx: LoggingContext = { fn: 'ClipboardService::route' };
 
     const mode = this.configReader.getWithDefault(
       SETTING_CLIPBOARD_PRESERVE,
@@ -58,7 +57,7 @@ export class ClipboardService {
     logCtx.mode = mode;
 
     if (mode === 'never') {
-      this.logger.debug(logCtx, 'Preservation disabled');
+      this.logger.debug(logCtx, 'Clipboard preservation disabled; executing directly');
       return this.executeFn(fn, logCtx);
     }
 
@@ -99,9 +98,9 @@ export class ClipboardService {
   /**
    * Primitive clipboard read operation.
    *
-   * Prefer {@link borrow} / {@link stage} / {@link preserve} for workflows
-   * that need automatic save-restore. Use directly only when you need to
-   * orchestrate save/restore manually.
+   * Prefer {@link stage} / {@link route} for workflows that need automatic
+   * save-restore. Use directly only when you need to orchestrate
+   * save/restore manually.
    */
   async read(logCtxInput: LoggingContext): Promise<Result<string, RangeLinkError>> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::read` };
@@ -129,9 +128,9 @@ export class ClipboardService {
   /**
    * Primitive clipboard write operation.
    *
-   * Prefer {@link borrow} / {@link stage} / {@link preserve} for workflows
-   * that need automatic save-restore. Use directly only when you need to
-   * orchestrate save/restore manually.
+   * Prefer {@link stage} / {@link route} for workflows that need automatic
+   * save-restore. Use directly only when you need to orchestrate
+   * save/restore manually.
    */
   async write(text: string, logCtxInput: LoggingContext): Promise<Result<void, RangeLinkError>> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::write` };

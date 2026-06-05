@@ -49,19 +49,19 @@ export class SendRouter {
    * Handles clipboard preservation, eligibility, self-paste detection, and feedback.
    */
   async sendToDestination<T>(options: SendOptions<T>): Promise<void> {
-    const shouldPreserve = this.destinationManager.isBound();
-    if (shouldPreserve) {
+    const shouldRoute = this.destinationManager.isBound();
+    if (shouldRoute) {
       let outcome: PasteSendOutcome | undefined;
-      const preserveResult = await this.clipboardService.preserve(
+      const routeResult = await this.clipboardService.route(
         async () => {
           outcome = await this.executeSend(options);
         },
         () => this.shouldRestoreClipboard(outcome),
       );
-      if (!preserveResult.success) {
+      if (!routeResult.success) {
         this.logger.error(
-          { fn: 'SendRouter.sendToDestination', error: preserveResult.error },
-          'Clipboard preservation failed',
+          { fn: 'SendRouter.sendToDestination', error: routeResult.error },
+          'Clipboard routing failed',
         );
         this.feedbackProvider.provideSendFeedback(
           this.buildPasteContext(options),

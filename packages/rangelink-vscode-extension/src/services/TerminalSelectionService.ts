@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { ConfigReader } from '../config/ConfigReader';
@@ -29,7 +29,7 @@ export class TerminalSelectionService {
   ) {}
 
   async pasteTerminalSelectionToDestination(): Promise<TerminalPasteResult> {
-    const logCtx = { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' };
+    const logCtx : LoggingContext = { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' };
 
     const activeTerminal = this.ideAdapter.activeTerminal;
     if (!activeTerminal) {
@@ -62,13 +62,13 @@ export class TerminalSelectionService {
         return { outcome: 'copy-command-failed', error };
       }
       this.logger.error(
-        { ...logCtx, terminalName: activeTerminal.name, error },
+        { ...logCtx, error: readResult.error },
         'readTextFromClipboard() threw',
       );
       this.ideAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED),
       );
-      return { outcome: 'clipboard-read-failed', error };
+      return { outcome: 'clipboard-read-failed', error: readResult.error };
     }
 
     if (!terminalText) {
