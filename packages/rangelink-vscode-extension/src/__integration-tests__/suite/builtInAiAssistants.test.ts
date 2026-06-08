@@ -884,9 +884,16 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
+    const INVALID_DELAY_MS = 100;
+    const INVALID_INTERVAL_MS = 400;
+
     // Set invalid config: delay (100) <= interval (400)
-    await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
-    await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
+    await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+    await config.update(
+      'coldRefocusIntervalMs',
+      INVALID_INTERVAL_MS,
+      vscode.ConfigurationTarget.Workspace,
+    );
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -902,7 +909,11 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     const ccCtx = parseLogContext(
       ccLines.find((l) => {
         const c = parseLogContext(l);
-        return c?.fn === 'claudeCode.getColdRefocus' && c.totalMs === 100 && c.intervalMs === 400;
+        return (
+          c?.fn === 'claudeCode.getColdRefocus' &&
+          c.totalMs === INVALID_DELAY_MS &&
+          c.intervalMs === INVALID_INTERVAL_MS
+        );
       }) ?? '',
     );
     assert.ok(ccCtx, 'Expected claudeCode.getColdRefocus warning with totalMs=100, intervalMs=400');
@@ -1014,7 +1025,11 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     const gcCtx = parseLogContext(
       gcLines.find((l) => {
         const c = parseLogContext(l);
-        return c?.fn === 'gemini.getColdRefocus' && c.totalMs === 100 && c.intervalMs === 400;
+        return (
+          c?.fn === 'gemini.getColdRefocus' &&
+          c.totalMs === INVALID_DELAY_MS &&
+          c.intervalMs === INVALID_INTERVAL_MS
+        );
       }) ?? '',
     );
     assert.ok(gcCtx, 'Expected gemini.getColdRefocus warning with totalMs=100, intervalMs=400');
