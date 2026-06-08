@@ -16,6 +16,7 @@ import {
   standardSuite,
   withClipboardSentinel,
 } from '../helpers';
+import { parseLogContext } from '../helpers/logBasedUiAssertions';
 
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
 
@@ -39,21 +40,27 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const parseLogLine = allLines.find(
-      (line) => line.includes('parseCustomAiAssistants') && line.includes('Loaded'),
-    );
+    const parseLogLine = allLines.find((line) => {
+      const ctx = parseLogContext(line);
+      return ctx?.fn === 'parseCustomAiAssistants';
+    });
 
     assert.ok(
       parseLogLine,
       'Expected parseCustomAiAssistants INFO log showing loaded custom AI assistants — if missing, the rangelink.customAiAssistants setting may not be configured in the test workspace',
     );
-    assert.ok(
-      parseLogLine.includes(`"count":${expectedCount}`),
-      `Expected ${expectedCount} custom AI assistants loaded but got: ${parseLogLine}`,
+
+    const rawCtx = parseLogContext(parseLogLine!);
+    const count = rawCtx?.count as number;
+    const ids = rawCtx?.ids as string[];
+    assert.strictEqual(
+      count,
+      expectedCount,
+      `Expected ${expectedCount} custom AI assistants loaded but got count: ${count}`,
     );
     assert.ok(
-      parseLogLine.includes('rangelink.dummy-ai-extension'),
-      `Expected log to mention 'rangelink.dummy-ai-extension' extensionId but got: ${parseLogLine}`,
+      ids.includes('rangelink.dummy-ai-extension'),
+      `Expected log to mention 'rangelink.dummy-ai-extension' extensionId but got ids: ${JSON.stringify(ids)}`,
     );
   });
 
@@ -61,9 +68,12 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const registrationLogs = allLines.filter(
-      (line) => line.includes('Registering builder for destination') && line.includes('custom-ai:'),
-    );
+    const registrationLogs = allLines.filter((line) => {
+      const ctx = parseLogContext(line);
+      return (
+        ctx?.fn === 'DestinationRegistry.register' && String(ctx?.kind).startsWith('custom-ai:')
+      );
+    });
 
     assert.strictEqual(
       registrationLogs.length,
@@ -71,27 +81,63 @@ standardSuite('Custom AI Assistants', (_ss) => {
       `Expected ${EXPECTED_CUSTOM_AI_REGISTRATIONS} custom AI registrations but found ${registrationLogs.length}: ${registrationLogs.join('\n')}`,
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension"')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension'
+        );
+      }),
       'Expected registration for Tier 1 (rangelink.dummy-ai-extension)',
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-tier2')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier2'
+        );
+      }),
       'Expected registration for Tier 2 (rangelink.dummy-ai-extension-tier2)',
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-tier3')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier3'
+        );
+      }),
       'Expected registration for Tier 3 (rangelink.dummy-ai-extension-tier3)',
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-template')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template'
+        );
+      }),
       'Expected registration for Template (rangelink.dummy-ai-extension-template)',
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-fallback')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-fallback'
+        );
+      }),
       'Expected registration for Fallback (rangelink.dummy-ai-extension-fallback)',
     );
     assert.ok(
-      registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension-focus-fail')),
+      registrationLogs.some((l) => {
+        const ctx = parseLogContext(l);
+        return (
+          ctx?.fn === 'DestinationRegistry.register' &&
+          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-focus-fail'
+        );
+      }),
       'Expected registration for Focus-Fail (rangelink.dummy-ai-extension-focus-fail)',
     );
   });
@@ -113,11 +159,13 @@ standardSuite('Custom AI Assistants', (_ss) => {
 
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
-    const registrationLog = allLines.find(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('custom-ai:rangelink.dummy-ai-extension"'),
-    );
+    const registrationLog = allLines.find((line) => {
+      const ctx = parseLogContext(line);
+      return (
+        ctx?.fn === 'DestinationRegistry.register' &&
+        ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension'
+      );
+    });
     assert.ok(
       registrationLog,
       'Expected Tier 1 entry (rangelink.dummy-ai-extension) to be registered as a destination kind',
@@ -143,11 +191,13 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const registrationLog = allLines.find(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('custom-ai:rangelink.dummy-ai-extension-template'),
-    );
+    const registrationLog = allLines.find((line) => {
+      const ctx = parseLogContext(line);
+      return (
+        ctx?.fn === 'DestinationRegistry.register' &&
+        ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template'
+      );
+    });
 
     assert.ok(
       registrationLog,
@@ -162,11 +212,10 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const copilotRegistrations = allLines.filter(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('"kind":"github-copilot-chat"'),
-    );
+    const copilotRegistrations = allLines.filter((line) => {
+      const ctx = parseLogContext(line);
+      return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'github-copilot-chat';
+    });
     assert.strictEqual(
       copilotRegistrations.length,
       EXPECTED_GITHUB_COPILOT_CHAT_REGISTRATION_COUNT,
@@ -178,18 +227,18 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const copilotRegistration = allLines.find(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('"kind":"github-copilot-chat"'),
-    );
+    const copilotRegistration = allLines.find((line) => {
+      const ctx = parseLogContext(line);
+      return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'github-copilot-chat';
+    });
     assert.ok(copilotRegistration, 'Expected github-copilot-chat registration log');
 
-    const noSeparateCustomRegistration = allLines.filter(
-      (line) =>
-        line.includes('Registering builder for destination') &&
-        line.includes('custom-ai:github.copilot-chat'),
-    );
+    const noSeparateCustomRegistration = allLines.filter((line) => {
+      const ctx = parseLogContext(line);
+      return (
+        ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:github.copilot-chat'
+      );
+    });
     assert.strictEqual(
       noSeparateCustomRegistration.length,
       EXPECTED_NO_CUSTOM_AI_COPILOT_REGISTRATIONS,
@@ -201,17 +250,20 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
-    const parseLog = allLines.find(
-      (line) => line.includes('parseCustomAiAssistants') && line.includes('Loaded'),
-    );
+    const parseLog = allLines.find((line) => {
+      const ctx = parseLogContext(line);
+      return ctx?.fn === 'parseCustomAiAssistants';
+    });
 
     assert.ok(
       parseLog,
       'Expected parseCustomAiAssistants to load assistants with insertCommands configured as plain strings',
     );
+    const rawCtx2 = parseLogContext(parseLog!);
+    const ids = rawCtx2?.ids as string[];
     assert.ok(
-      parseLog.includes('rangelink.dummy-ai-extension'),
-      `Expected loaded assistant to include rangelink.dummy-ai-extension but got: ${parseLog}`,
+      ids.includes('rangelink.dummy-ai-extension'),
+      `Expected loaded assistant to include rangelink.dummy-ai-extension but got ids: ${JSON.stringify(ids)}`,
     );
   });
 });

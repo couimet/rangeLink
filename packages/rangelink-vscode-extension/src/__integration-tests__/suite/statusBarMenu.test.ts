@@ -27,6 +27,7 @@ import {
   MENU_ITEM_UNBOUND,
   MENU_ITEM_VERSION_INFO,
   openAndDismiss,
+  parseLogContext,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -243,9 +244,10 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const lines = logCapture.getLinesSince('before-009');
     // "Executing command" is logged by VscodeAdapter before awaiting ShowVersionCommand.execute(),
     // so it lands in the capture regardless of when the human dismisses the version notification.
-    const commandDispatchLog = lines.find(
-      (l) => l.includes('Executing command') && l.includes(CMD_SHOW_VERSION),
-    );
+    const commandDispatchLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return ctx?.fn === 'VscodeAdapter.executeCommand' && ctx?.command === CMD_SHOW_VERSION;
+    });
     assert.ok(commandDispatchLog, 'Expected command dispatch log for Show Version Info');
 
     assert.strictEqual(

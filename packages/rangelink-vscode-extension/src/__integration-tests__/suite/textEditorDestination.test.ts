@@ -13,6 +13,7 @@ import {
   getGeneratedLink,
   getLogCapture,
   openSourceWithSelection,
+  parseLogContext,
   standardSuite,
 } from '../helpers';
 
@@ -139,9 +140,14 @@ standardSuite('Text Editor Destination', (ss) => {
 
     const lines = logCapture.getLinesSince('before-htl-001');
 
-    const hiddenTabLog = lines.find((l) =>
-      l.includes('Editor hidden behind other tabs at bound viewColumn'),
-    );
+    const hiddenTabLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor hidden behind other tabs at bound viewColumn') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(
       hiddenTabLog,
       'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
@@ -199,9 +205,14 @@ standardSuite('Text Editor Destination', (ss) => {
 
     const lines = logCapture.getLinesSince('before-htl-002');
 
-    const hiddenTabLog = lines.find((l) =>
-      l.includes('Editor hidden behind other tabs at bound viewColumn'),
-    );
+    const hiddenTabLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor hidden behind other tabs at bound viewColumn') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(
       hiddenTabLog,
       'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
@@ -399,9 +410,14 @@ standardSuite('Text Editor Destination', (ss) => {
     await ss.settle();
 
     const linesSinceClose = logCapture.getLinesSince('before-dtg-004-close');
-    const stateCleared = linesSinceClose.some((l) =>
-      l.includes('Bound file no longer in multiple editor groups — duplicate state cleared'),
-    );
+    const stateCleared = linesSinceClose.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Bound file no longer in multiple editor groups — duplicate state cleared') &&
+        ctx?.fn === 'PasteDestinationManager.onDidChangeTabs' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(stateCleared, 'Expected state-cleared log after closing the duplicate tab');
 
     // Re-open dest in col 2 to re-enter duplicate state.
@@ -476,9 +492,14 @@ standardSuite('Text Editor Destination', (ss) => {
     await ss.settle();
 
     const lines = logCapture.getLinesSince('before-svc-001');
-    const movedLog = lines.some((l) =>
-      l.includes('Editor moved to different viewColumn, following it'),
-    );
+    const movedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor moved to different viewColumn, following it') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(movedLog, 'Expected "Editor moved to different viewColumn" log but none found');
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();

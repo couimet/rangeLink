@@ -15,6 +15,7 @@ import {
   withClipboardRestored,
   withClipboardSentinel,
 } from '../helpers';
+import { parseLogContext } from '../helpers/logBasedUiAssertions';
 
 standardSuite('Dirty Buffer Warning', (ss) => {
   test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
@@ -91,23 +92,23 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
     const lines = logCapture.getLinesSince('before-008');
-    const disabledLog = lines.find(
+    const disabledLog = lines.some(
       (l) =>
-        l.includes('handleDirtyBufferWarning') &&
+        parseLogContext(l)?.fn === 'handleDirtyBufferWarning' &&
         l.includes('Document has unsaved changes but warning is disabled by setting'),
     );
     assert.ok(
       disabledLog,
       'Expected "disabled by setting" log — setting should short-circuit the dialog',
     );
-    const dialogLog = lines.find(
+    const dialogLogged = lines.some(
       (l) =>
-        l.includes('handleDirtyBufferWarning') &&
+        parseLogContext(l)?.fn === 'handleDirtyBufferWarning' &&
         l.includes('Document has unsaved changes, showing warning'),
     );
     assert.strictEqual(
-      dialogLog,
-      undefined,
+      dialogLogged,
+      false,
       'Expected no dialog log — setting should bypass the dialog',
     );
   });
@@ -146,12 +147,8 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
     const lines = logCapture.getLinesSince('before-clean-rf');
-    const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
-    assert.strictEqual(
-      warningLog,
-      undefined,
-      'Expected no dirty buffer warning log for clean file',
-    );
+    const warningLogged = lines.some((l) => parseLogContext(l)?.fn === 'handleDirtyBufferWarning');
+    assert.strictEqual(warningLogged, false, 'Expected no dirty buffer warning log for clean file');
   });
 
   test('[assisted] dirty-buffer-warning-018: warnOnDirtyBuffer=false — R-L sends link to bound destination without warning dialog', async () => {
@@ -191,9 +188,9 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     });
 
     const lines = logCapture.getLinesSince('before-018');
-    const disabledLog = lines.find(
+    const disabledLog = lines.some(
       (l) =>
-        l.includes('handleDirtyBufferWarning') &&
+        parseLogContext(l)?.fn === 'handleDirtyBufferWarning' &&
         l.includes('Document has unsaved changes but warning is disabled by setting'),
     );
     assert.ok(
@@ -240,9 +237,9 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     });
 
     const lines = logCapture.getLinesSince('before-006');
-    const disabledLog = lines.find(
+    const disabledLog = lines.some(
       (l) =>
-        l.includes('handleDirtyBufferWarning') &&
+        parseLogContext(l)?.fn === 'handleDirtyBufferWarning' &&
         l.includes('Document has unsaved changes but warning is disabled by setting'),
     );
     assert.ok(
@@ -250,14 +247,14 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       'Expected "disabled by setting" log — warnOnDirtyBuffer=false must short-circuit the dialog',
     );
 
-    const dialogLog = lines.find(
+    const dialogLogged = lines.some(
       (l) =>
-        l.includes('handleDirtyBufferWarning') &&
+        parseLogContext(l)?.fn === 'handleDirtyBufferWarning' &&
         l.includes('Document has unsaved changes, showing warning'),
     );
     assert.strictEqual(
-      dialogLog,
-      undefined,
+      dialogLogged,
+      false,
       'Expected no dialog log — setting should bypass dialog',
     );
 
@@ -289,10 +286,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
 
     const lines = getLogCapture().getLinesSince('before-019');
-    const warningLog = lines.find((l) => l.includes('handleDirtyBufferWarning'));
+    const warningLogged = lines.some((l) => parseLogContext(l)?.fn === 'handleDirtyBufferWarning');
     assert.strictEqual(
-      warningLog,
-      undefined,
+      warningLogged,
+      false,
       'Expected no dirty buffer warning log for clean file — Clean early-return must not emit logs',
     );
   });
@@ -1022,26 +1019,26 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
       const lines = logCapture.getLinesSince('before-023');
 
-      const reReadLog = lines.find((l) =>
-        l.includes(
-          'Re-read selections after Save & Continue to account for possible format-on-save shifts',
-        ),
-      );
+      const reReadLine = lines.find((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'generateLinkFromSelection' && l.includes('Re-read selections');
+      });
       assert.ok(
-        reReadLog,
+        reReadLine,
         'Expected LinkGenerator to log the post-save re-read — the fix path was not taken',
       );
 
-      const preMatch = reReadLog.match(/"preSaveSelections":(\[[^\]]*\])/);
-      const postMatch = reReadLog.match(/"postSaveSelections":(\[[^\]]*\])/);
-      assert.ok(preMatch && postMatch, `Expected pre/post selections in log, got: ${reReadLog}`);
-
-      const preSelections = JSON.parse(preMatch[1]) as Array<{
-        end: { line: number; char: number };
-      }>;
-      const postSelections = JSON.parse(postMatch[1]) as Array<{
-        end: { line: number; char: number };
-      }>;
+      const reReadCtx = parseLogContext(reReadLine!);
+      const preSelections = reReadCtx?.preSaveSelections as
+        | Array<{ end: { line: number; char: number } }>
+        | undefined;
+      const postSelections = reReadCtx?.postSaveSelections as
+        | Array<{ end: { line: number; char: number } }>
+        | undefined;
+      assert.ok(
+        preSelections !== undefined && postSelections !== undefined,
+        `Expected pre/post selections in log, got: ${reReadLine}`,
+      );
 
       assert.strictEqual(
         preSelections[0].end.char,

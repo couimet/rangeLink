@@ -388,6 +388,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
     const logCapture = ss.getLogCapture();
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteLink', 'both', vscode.ConfigurationTarget.Global);
     logCapture.mark('before-pad-009');
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();

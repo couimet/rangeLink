@@ -79,6 +79,18 @@ describe('TerminalInsertFactory', () => {
       terminal2,
     );
 
+    expect(mockLogger.info).toHaveBeenCalledTimes(2);
+    expect(mockLogger.info).toHaveBeenNthCalledWith(
+      1,
+      { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 1' },
+      'Terminal paste succeeded',
+    );
+    expect(mockLogger.info).toHaveBeenNthCalledWith(
+      2,
+      { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 2' },
+      'Terminal paste succeeded',
+    );
+
     expect(mockLogger.error).not.toHaveBeenCalled();
   });
 });

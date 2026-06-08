@@ -23,11 +23,11 @@ import {
 } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
   assertClipboardEqualsGeneratedLink,
-  assertLogContains,
   assertPasteCommandSucceeded,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
+  parseLogContext,
   standardSuite,
   waitForHumanVerdict,
   withClipboardSentinel,
@@ -898,11 +898,14 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
     await ss.settle();
 
-    assertLogContains(
-      'before-cc-007',
-      'coldStartDelayMs must be greater than coldRefocusIntervalMs',
-      'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
+    const ccLines = getLogCapture().getLinesSince('before-cc-007');
+    const ccCtx = parseLogContext(
+      ccLines.find((l) => {
+        const c = parseLogContext(l);
+        return c?.fn === 'claudeCode.getColdRefocus' && c.totalMs === 100 && c.intervalMs === 400;
+      }) ?? '',
     );
+    assert.ok(ccCtx, 'Expected claudeCode.getColdRefocus warning with totalMs=100, intervalMs=400');
 
     ss.log('✓ claude-code-007 — invalid config triggers fallback to defaults');
   });
@@ -1007,16 +1010,14 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
     await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-gc-006');
-    const warningLog = lines.find(
-      (line) =>
-        line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs') &&
-        line.includes('using defaults'),
+    const gcLines = getLogCapture().getLinesSince('before-gc-006');
+    const gcCtx = parseLogContext(
+      gcLines.find((l) => {
+        const c = parseLogContext(l);
+        return c?.fn === 'gemini.getColdRefocus' && c.totalMs === 100 && c.intervalMs === 400;
+      }) ?? '',
     );
-    assert.ok(
-      warningLog,
-      'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
-    );
+    assert.ok(gcCtx, 'Expected gemini.getColdRefocus warning with totalMs=100, intervalMs=400');
 
     ss.log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
   });

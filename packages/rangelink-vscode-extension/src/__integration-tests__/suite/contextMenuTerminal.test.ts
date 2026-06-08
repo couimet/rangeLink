@@ -10,11 +10,11 @@ import {
 } from '../../constants/commandIds';
 import {
   TERMINAL_READY_MS,
-  assertLogContains,
   assertQuickPickContains,
   assertTerminalBufferContains,
   echoToTerminal,
   getLogCapture,
+  parseLogContext,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -384,11 +384,12 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    assertLogContains(
-      'before-sts-008',
-      'Terminal focused via showTerminal()',
-      `Expected "Terminal focused via showTerminal()" log for "${boundName}"`,
-    );
+    const stsLines = getLogCapture().getLinesSince('before-sts-008');
+    const focusLogged = stsLines.some((l) => {
+      const ctx = parseLogContext(l);
+      return ctx?.fn !== undefined && l.includes('Terminal focused via showTerminal()');
+    });
+    assert.ok(focusLogged, `Expected "Terminal focused via showTerminal()" log for "${boundName}"`);
 
     assertTerminalBufferContains(capturingBound.getCapturedText(), markerText);
 

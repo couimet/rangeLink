@@ -59,9 +59,3 @@ export const getGeneratedLink = (marker: string, options?: SmartPadOptions): str
   assert.ok(link, 'Expected "Generated link:" log line');
   return link!;
 };
-
-export const assertLogContains = (marker: string, substring: string, context?: string): void => {
-  const lines = getLogCapture().getLinesSince(marker);
-  const found = lines.find((l) => l.includes(substring));
-  assert.ok(found, context ?? `Expected log containing "${substring}"`);
-};

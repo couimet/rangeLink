@@ -12,6 +12,7 @@ import {
   clearSelection,
   getLogCapture,
   openSourceWithSelection,
+  parseLogContext,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
@@ -441,8 +442,8 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       'pass',
       'Human reported selection-dependent items WERE visible without a selection — the `when: editorHasSelection` clause is not working',
     );
-    const pasteFired = lines.some((line) =>
-      line.includes('"fn":"VscodeAdapter.writeTextToClipboard"'),
+    const pasteFired = lines.some(
+      (line) => parseLogContext(line)?.fn === 'VscodeAdapter.writeTextToClipboard',
     );
     assert.ok(
       !pasteFired,

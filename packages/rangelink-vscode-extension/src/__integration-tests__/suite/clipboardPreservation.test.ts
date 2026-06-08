@@ -17,10 +17,11 @@ import {
   TERMINAL_READY_MS,
   assertClipboardEqualsGeneratedLink,
   assertClipboardPreservedAndTerminalLink,
-  assertLogContains,
   assertTerminalBufferContains,
   assertTerminalBufferContainsGeneratedLink,
+  getLogCapture,
   openAndDismiss,
+  parseLogContext,
   standardSuite,
   withClipboardChanged,
   withClipboardSentinel,
@@ -367,11 +368,12 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
       'before-010',
     );
 
-    assertLogContains(
-      'before-010',
-      'Focus failed, cannot paste link',
-      'Expected "Focus failed, cannot paste link" log — the focus command should have thrown',
-    );
+    const cbpLines010 = getLogCapture().getLinesSince('before-010');
+    const focusFailed010 = cbpLines010.some((l) => {
+      const ctx = parseLogContext(l);
+      return ctx?.fn === 'ComposablePasteDestination.pasteLink' && ctx?.reason !== undefined;
+    });
+    assert.ok(focusFailed010, 'Expected focus failure log with reason field');
     ss.log(
       '✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste',
     );
@@ -406,11 +408,12 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
       'before-022',
     );
 
-    assertLogContains(
-      'before-022',
-      'Focus failed, cannot paste link',
-      'Expected "Focus failed, cannot paste link" log — the focus command should have thrown',
-    );
+    const cbpLines022 = getLogCapture().getLinesSince('before-022');
+    const focusFailed022 = cbpLines022.some((l) => {
+      const ctx = parseLogContext(l);
+      return ctx?.fn === 'ComposablePasteDestination.pasteLink' && ctx?.reason !== undefined;
+    });
+    assert.ok(focusFailed022, 'Expected focus failure log with reason field');
     ss.log(
       '✓ Clipboard not restored after focus failure — portable link stays in clipboard for manual paste. Portable content type shown in status bar and toast.',
     );

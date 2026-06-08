@@ -21,6 +21,7 @@ import {
   openAndDismiss,
   openEditor,
   openSourceWithSelection,
+  parseLogContext,
   standardSuite,
 } from '../helpers';
 
@@ -109,9 +110,15 @@ standardSuite('Send File Path', (ss) => {
       uriSource: 'command-palette',
       filePath: relativePath,
     });
-    const quotedLog = lines.find(
-      (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
-    );
+    const quotedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Quoted path for unsafe characters') &&
+        ctx?.fn === 'FilePathPaster.pasteFilePath' &&
+        ctx?.before === relativePath &&
+        ctx?.after === `'${relativePath}'`
+      );
+    });
     assert.ok(
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted before terminal send',
@@ -146,9 +153,15 @@ standardSuite('Send File Path', (ss) => {
       uriSource: 'command-palette',
       filePath: relativePath,
     });
-    const quotedLog = lines.find(
-      (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
-    );
+    const quotedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Quoted path for unsafe characters') &&
+        ctx?.fn === 'FilePathPaster.pasteFilePath' &&
+        ctx?.before === relativePath &&
+        ctx?.after === `'${relativePath}'`
+      );
+    });
     assert.ok(
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with parentheses must be quoted before terminal send',
@@ -196,9 +209,15 @@ standardSuite('Send File Path', (ss) => {
       uriSource: 'command-palette',
       filePath: relativePath,
     });
-    const quotedLog = lines.find(
-      (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
-    );
+    const quotedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Quoted path for unsafe characters') &&
+        ctx?.fn === 'FilePathPaster.pasteFilePath' &&
+        ctx?.before === relativePath &&
+        ctx?.after === `'${relativePath}'`
+      );
+    });
     assert.ok(
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted for text editor destination',
@@ -248,9 +267,15 @@ standardSuite('Send File Path', (ss) => {
       uriSource: 'command-palette',
       filePath: relativePath,
     });
-    const quotedLog = lines.find(
-      (l) => l.includes('Quoted path for unsafe characters') && l.includes(relativePath),
-    );
+    const quotedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Quoted path for unsafe characters') &&
+        ctx?.fn === 'FilePathPaster.pasteFilePath' &&
+        ctx?.before === relativePath &&
+        ctx?.after === `'${relativePath}'`
+      );
+    });
     assert.ok(
       quotedLog,
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted for terminal safety',

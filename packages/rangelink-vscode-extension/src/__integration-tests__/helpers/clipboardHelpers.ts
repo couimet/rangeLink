@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import { getLogCapture } from './getLogCapture';
+import { parseLogContext } from './logBasedUiAssertions';
 import { getGeneratedLink } from './logHelpers';
 
 export const CLIPBOARD_SENTINEL = 'rangelink-test-sentinel-value';
@@ -32,8 +33,8 @@ export const assertClipboardRestored = async (context: string): Promise<void> =>
 
 export const assertClipboardPreservationRan = (markName: string, operationLabel: string): void => {
   const lines = getLogCapture().getLinesSince(markName);
-  const savedIdx = lines.findIndex((l) => l.includes('Clipboard current value read and saved'));
-  const restoredIdx = lines.findIndex((l) => l.includes('Clipboard restored'));
+  const savedIdx = lines.findIndex((l) => parseLogContext(l)?.fn.endsWith('::read'));
+  const restoredIdx = lines.findIndex((l) => parseLogContext(l)?.fn.endsWith('::restoreClipboard'));
   assert.ok(
     savedIdx >= 0,
     'Expected "Clipboard current value read and saved" log entry — preservation must read clipboard',
@@ -86,12 +87,12 @@ export const withClipboardChanged = async (
 export const assertClipboardPreservationDidNotRun = (markName: string): void => {
   const lines = getLogCapture().getLinesSince(markName);
   assert.strictEqual(
-    lines.find((l) => l.includes('Clipboard current value read and saved')),
+    lines.find((l) => parseLogContext(l)?.fn.endsWith('::read')),
     undefined,
     'Expected no "Clipboard current value read and saved" — no operation ran',
   );
   assert.strictEqual(
-    lines.find((l) => l.includes('Clipboard restored')),
+    lines.find((l) => parseLogContext(l)?.fn.endsWith('::restoreClipboard')),
     undefined,
     'Expected no "Clipboard restored" — no operation ran',
   );

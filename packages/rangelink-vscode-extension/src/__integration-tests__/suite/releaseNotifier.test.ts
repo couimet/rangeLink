@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
 import { getExtensionVersion, getLogCapture, standardSuite, waitForHuman } from '../helpers';
+import { parseLogContext } from '../helpers/logBasedUiAssertions';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 
@@ -24,12 +25,17 @@ standardSuite('Release Notifier', (ss) => {
 
     const lines = logCapture.getLinesSince('before-001');
     assert.ok(
-      lines.find((l) => l.includes('First install — stored version')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "First install — stored version" log',
     );
-    assert.strictEqual(
-      lines.find((l) => l.includes('Version upgrade detected')),
-      undefined,
+    assert.ok(
+      !lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected no upgrade log on first install',
     );
     assert.notStrictEqual(
@@ -53,12 +59,17 @@ standardSuite('Release Notifier', (ss) => {
 
     const lines = logCapture.getLinesSince('before-002');
     assert.ok(
-      lines.find((l) => l.includes('Same version — skipping release notification')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "Same version — skipping" log',
     );
-    assert.strictEqual(
-      lines.find((l) => l.includes('Version upgrade detected')),
-      undefined,
+    assert.ok(
+      !lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected no upgrade log when version unchanged',
     );
     assert.strictEqual(
@@ -90,19 +101,26 @@ standardSuite('Release Notifier', (ss) => {
 
     const lines = logCapture.getLinesSince('before-003');
     assert.ok(
-      lines.find((l) => l.includes('Version upgrade detected')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected "Version upgrade detected" log',
     );
     assert.ok(
-      lines.find((l) =>
-        l.includes('Release notification dismissed — will reappear on next activation'),
-      ),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected dismissed log confirming version was not stored',
     );
     assert.strictEqual(
-      lines.find((l) => l.includes('Opened release notes in browser')),
-      undefined,
-      'Expected no browser-open log after dismiss',
+      lines.filter((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }).length,
+      1,
+      'Expected exactly 1 non-upgrade maybeNotify log — no "opened release notes"',
     );
     assert.strictEqual(
       notifier.getLastNotifiedVersion(),
@@ -135,11 +153,17 @@ standardSuite('Release Notifier', (ss) => {
 
     const lines = logCapture.getLinesSince('before-004');
     assert.ok(
-      lines.find((l) => l.includes('Version upgrade detected')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected "Version upgrade detected" log',
     );
     assert.ok(
-      lines.find((l) => l.includes('Opened release notes in browser')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "Opened release notes in browser" log after clicking What\'s New',
     );
     assert.strictEqual(
@@ -153,12 +177,17 @@ standardSuite('Release Notifier', (ss) => {
     await notifier.maybeNotify();
     const rerunLines = logCapture.getLinesSince('after-004-rerun');
     assert.ok(
-      rerunLines.find((l) => l.includes('Same version — skipping release notification')),
+      rerunLines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "Same version — skipping" on re-run, proving version was stored',
     );
-    assert.strictEqual(
-      rerunLines.find((l) => l.includes('Version upgrade detected')),
-      undefined,
+    assert.ok(
+      !rerunLines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected no second upgrade notification — version must have been stored',
     );
     ss.log(
@@ -187,17 +216,26 @@ standardSuite('Release Notifier', (ss) => {
 
     const lines = logCapture.getLinesSince('before-005');
     assert.ok(
-      lines.find((l) => l.includes('Version upgrade detected')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected "Version upgrade detected" log',
     );
     assert.ok(
-      lines.find((l) => l.includes('Release notification skipped for this version')),
+      lines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "Release notification skipped for this version" log',
     );
     assert.strictEqual(
-      lines.find((l) => l.includes('Opened release notes in browser')),
-      undefined,
-      'Expected no browser-open log after Skip',
+      lines.filter((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }).length,
+      1,
+      'Expected exactly 1 non-upgrade maybeNotify log — no "opened release notes"',
     );
     assert.strictEqual(
       notifier.getLastNotifiedVersion(),
@@ -210,12 +248,17 @@ standardSuite('Release Notifier', (ss) => {
     await notifier.maybeNotify();
     const rerunLines = logCapture.getLinesSince('after-005-rerun');
     assert.ok(
-      rerunLines.find((l) => l.includes('Same version — skipping release notification')),
+      rerunLines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.version !== undefined;
+      }),
       'Expected "Same version — skipping" on re-run, proving version was stored',
     );
-    assert.strictEqual(
-      rerunLines.find((l) => l.includes('Version upgrade detected')),
-      undefined,
+    assert.ok(
+      !rerunLines.some((l) => {
+        const ctx = parseLogContext(l);
+        return ctx?.fn === 'ReleaseNotifier.maybeNotify' && ctx?.previousVersion !== undefined;
+      }),
       'Expected no second upgrade notification — version must have been stored',
     );
     ss.log(

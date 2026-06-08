@@ -260,9 +260,11 @@ if [[ ${#RESOLVE_ARGS[@]} -gt 0 ]]; then
   echo "Filter resolved ${RESOLVED_COUNT} test(s)"
 
   if [[ -n "$GREP_PATTERN" ]]; then
+    ORIGINAL_GREP="$GREP_PATTERN"
     RESOLVED_GREP=$(echo "$RESOLVED_IDS" | paste -sd '|' -)
     GREP_PATTERN="^(?=.*(${RESOLVED_GREP}))(?=.*(${GREP_PATTERN}))"
   else
+    ORIGINAL_GREP=""
     GREP_PATTERN=$(echo "$RESOLVED_IDS" | paste -sd '|' -)
   fi
   echo ""
@@ -281,8 +283,9 @@ OUTPUT_DIR="$PACKAGE_ROOT/qa/output"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
 
-if [[ -n "$GREP_PATTERN" ]]; then
-  PATTERN_SLUG=$(echo "$GREP_PATTERN" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//' | cut -c1-80)
+SLUG_SOURCE="${ORIGINAL_GREP:-$GREP_PATTERN}"
+if [[ -n "$SLUG_SOURCE" ]]; then
+  PATTERN_SLUG=$(echo "$SLUG_SOURCE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//' | cut -c1-80)
   if [[ "$REPORT_MODE" == "grep" ]]; then
     REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
   else
