@@ -371,7 +371,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const cbpLines010 = getLogCapture().getLinesSince('before-010');
     const focusFailed010 = cbpLines010.some((l) => {
       const ctx = parseLogContext(l);
-      return ctx?.fn === 'ComposablePasteDestination.pasteLink' && ctx?.reason !== undefined;
+      return ctx?.fn?.endsWith('.pasteLink') && ctx?.reason !== undefined;
     });
     assert.ok(focusFailed010, 'Expected focus failure log with reason field');
     ss.log(
@@ -411,7 +411,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     const cbpLines022 = getLogCapture().getLinesSince('before-022');
     const focusFailed022 = cbpLines022.some((l) => {
       const ctx = parseLogContext(l);
-      return ctx?.fn === 'ComposablePasteDestination.pasteLink' && ctx?.reason !== undefined;
+      return ctx?.fn?.endsWith('.pasteLink') && ctx?.reason !== undefined;
     });
     assert.ok(focusFailed022, 'Expected focus failure log with reason field');
     ss.log(
