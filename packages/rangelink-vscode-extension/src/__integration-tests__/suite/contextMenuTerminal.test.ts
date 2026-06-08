@@ -26,6 +26,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.createTerminal(terminalName);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-001")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-001');
@@ -48,6 +53,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.createTerminal(terminalName);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-002")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-002');
@@ -75,6 +85,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")',
       '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-term-003")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-003');
@@ -100,6 +111,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.createTerminal(targetName);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-004-TARGET")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-004');
@@ -126,6 +142,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.createTerminal(targetName);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-005-TARGET")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-005');
@@ -229,6 +250,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-008-shell")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-008');
@@ -257,25 +283,27 @@ standardSuite('Context Menus — Terminal', (ss) => {
       open: () => {},
       close: () => writeEmitter.dispose(),
     };
-    await ss.createTerminal(ptyName, { pty });
     const shellTerminal = await ss.createTerminal(shellName);
-    shellTerminal.show(true);
+    const ptyTerminal = await ss.createTerminal(ptyName, { pty });
+    ptyTerminal.show(true);
     await ss.settle();
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, shellTerminal);
     await ss.settle();
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-009-shell")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': false,
+      'rangelink.isBound': true,
+    });
 
     const verdict = await waitForHumanVerdict(
       'context-menus-terminal-009',
-      `The shell is bound. Right-click inside the pty terminal content area. Is "RangeLink: Unbind" PRESENT and "RangeLink: Bind Here" ABSENT?`,
+      `Right-click inside the "${ptyName}" pty terminal content area. Is "RangeLink: Unbind" PRESENT and "RangeLink: Bind Here" ABSENT?`,
       [
-        `1. The "${shellName}" shell is now bound as the destination`,
-        `2. Click the "${ptyName}" pty terminal to focus it`,
-        '3. Right-click INSIDE the pty content area',
-        '4. PASS if "RangeLink: Unbind" IS in the menu AND "RangeLink: Bind Here" is NOT',
-        '5. FAIL if either condition is violated',
+        '1. Right-click INSIDE the pty terminal content area',
+        '2. PASS if "RangeLink: Unbind" IS in the menu AND "RangeLink: Bind Here" is NOT',
+        '3. FAIL if either condition is violated',
       ],
     );
     assert.strictEqual(
@@ -315,6 +343,10 @@ standardSuite('Context Menus — Terminal', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${editorFn}")`,
       `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`,
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-005');
@@ -365,6 +397,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")',
       '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-008');
@@ -407,6 +444,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-009")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-009');
@@ -449,6 +491,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sts-010")',
       '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-010');
@@ -494,6 +541,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST")',
       '✓ RangeLink: Selected text sent to Terminal ("rl-sts-011-DEST")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-011');
@@ -541,6 +593,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-012")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-012');
@@ -592,6 +649,10 @@ standardSuite('Context Menus — Terminal', (ss) => {
       '✓ RangeLink: Bound to Dummy AI (Tier 1)',
       '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-013');

@@ -25,6 +25,7 @@ export const createMockWiringServices = (): jest.Mocked<WiringServices> =>
       getBoundDestination: jest.fn(),
       dispose: jest.fn(),
     },
+    contextKeyService: { dispose: jest.fn() },
     statusBar: { openMenu: jest.fn(), dispose: jest.fn() },
     linkGenerator: {
       createLink: jest.fn(),

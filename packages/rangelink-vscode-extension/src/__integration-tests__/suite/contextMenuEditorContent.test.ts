@@ -64,6 +64,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-001")',
       '✓ RangeLink: RangeLink sent to Terminal ("rl-ctxmenu-ed-001")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-001');
@@ -100,6 +105,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-002")',
       '✓ RangeLink: RangeLink sent to Terminal ("rl-ctxmenu-ed-002")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-002');
@@ -137,6 +147,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-003")',
       '✓ RangeLink: Portable RangeLink sent to Terminal ("rl-ctxmenu-ed-003")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-003');
@@ -172,6 +187,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-004")',
       '✓ RangeLink: Portable RangeLink sent to Terminal ("rl-ctxmenu-ed-004")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-004');
@@ -209,6 +229,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-005")',
       '✓ RangeLink: Selected text sent to Terminal ("rl-ctxmenu-ed-005")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-005');
@@ -280,6 +305,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-007")',
       '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-ed-007")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-007');
@@ -323,6 +353,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-008")',
       '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-ed-008")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-008');
@@ -358,6 +393,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     const fn = path.basename(uri.fsPath);
 
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fn}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-009');
@@ -388,6 +424,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-010")',
       '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-ed-010")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-010');
@@ -418,6 +455,11 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-ed-011")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-011');
@@ -470,6 +512,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         message: 'Cannot paste when bound editor has an active selection.',
       },
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     await withClipboardSentinel('before-ed-012', 'R-V', async () => {
       await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
       await ss.settle();
@@ -498,6 +541,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       {
         level: 'info',
@@ -546,6 +590,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();

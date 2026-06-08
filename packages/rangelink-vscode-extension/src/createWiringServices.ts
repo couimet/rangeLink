@@ -18,6 +18,7 @@ import {
 import { ConfigReader, DelimiterCache } from './config';
 import type { CustomAiAssistantConfig } from './config/parseCustomAiAssistants';
 import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
+import { ContextKeyService } from './contextKeys';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
@@ -50,6 +51,7 @@ export interface WiringServices {
   logger: Logger;
   availabilityService: DestinationAvailabilityService;
   destinationManager: PasteDestinationManager;
+  contextKeyService: ContextKeyService;
   statusBar: RangeLinkStatusBar;
   linkGenerator: LinkGenerator;
   textSelectionPaster: TextSelectionPaster;
@@ -121,6 +123,7 @@ export const createWiringServices = (
   );
   const destinationPicker = new DestinationPicker(ideAdapter, availabilityService, logger);
   const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
+  const contextKeyService = new ContextKeyService(ideAdapter, destinationManager, logger);
 
   const bindToTerminalCommand = new BindToTerminalCommand(
     ideAdapter,
@@ -251,6 +254,7 @@ export const createWiringServices = (
     logger,
     availabilityService,
     destinationManager,
+    contextKeyService,
     statusBar,
     linkGenerator,
     textSelectionPaster,

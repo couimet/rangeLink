@@ -53,7 +53,6 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../constants';
 import * as destinationBuildersModule from '../destinations/destinationBuilders';
-import * as wireActiveTerminalBindabilityContextModule from '../destinations/wireActiveTerminalBindabilityContext';
 import { wireSubscriptions } from '../wireSubscriptions';
 
 import {
@@ -122,16 +121,10 @@ const DOCUMENT_SELECTOR = [{ scheme: 'file' }, { scheme: 'untitled' }];
 describe('wireSubscriptions', () => {
   let registrar: ReturnType<typeof createMockSubscriptionRegistrar>;
   let services: ReturnType<typeof createMockWiringServices>;
-  let wireActiveTerminalBindabilityContextSpy: jest.SpyInstance;
-  let activeTerminalBindabilityDisposable: { dispose: jest.Mock };
 
   beforeEach(() => {
     registrar = createMockSubscriptionRegistrar();
     services = createMockWiringServices();
-    activeTerminalBindabilityDisposable = { dispose: jest.fn() };
-    wireActiveTerminalBindabilityContextSpy = jest
-      .spyOn(wireActiveTerminalBindabilityContextModule, 'wireActiveTerminalBindabilityContext')
-      .mockReturnValue(activeTerminalBindabilityDisposable);
     wireSubscriptions(registrar, services);
   });
 
@@ -159,19 +152,12 @@ describe('wireSubscriptions', () => {
     expect(calls[1][0]).toStrictEqual(DOCUMENT_SELECTOR);
   });
 
-  it('pushes disposables: delimiterCache, statusBar, destinationManager, and active terminal bindability context', () => {
+  it('pushes disposables: delimiterCache, statusBar, destinationManager, and ContextKeyService', () => {
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(1, services.delimiterCache);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(2, services.statusBar);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.destinationManager);
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(4, services.contextKeyService);
     expect(registrar.pushDisposable).toHaveBeenCalledTimes(4);
-    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(
-      4,
-      activeTerminalBindabilityDisposable,
-    );
-    expect(wireActiveTerminalBindabilityContextSpy).toHaveBeenCalledTimes(1);
-    expect(wireActiveTerminalBindabilityContextSpy).toHaveReturnedWith(
-      activeTerminalBindabilityDisposable,
-    );
   });
 
   describe('closure delegation', () => {

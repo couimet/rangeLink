@@ -56,6 +56,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     const editor = await ss.openEditor(testFileUri);
 
@@ -74,9 +79,9 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 
     await waitForHuman(
       'dirty-buffer-warning-008',
-      'R-F on dirty file with warnOnDirtyBuffer=false → NO dialog, then pick terminal',
+      'R-F on dirty file with warnOnDirtyBuffer=false',
       [
-        'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
+        'Press Cmd+R Cmd+F to send the file path.',
         'When the destination picker appears, select "dirty-buffer-test" terminal.',
       ],
     );
@@ -120,6 +125,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     const cleanUri = ss.createWorkspaceFile('clean-rf', 'clean content\n');
 
@@ -130,14 +140,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     logCapture.mark('before-clean-rf');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'dirty-buffer-warning-009',
-      'R-F on clean file → NO dialog, then pick terminal',
-      [
-        'Press Cmd+R Cmd+F — confirm the dirty buffer dialog does NOT appear.',
-        'When the destination picker appears, select "dirty-buffer-test" terminal.',
-      ],
-    );
+    await waitForHuman('dirty-buffer-warning-009', 'R-F on clean file, then pick terminal', [
+      'Press Cmd+R Cmd+F to send the file path.',
+      'When the destination picker appears, select "dirty-buffer-test" terminal.',
+    ]);
 
     await ss.settle();
 
@@ -156,6 +162,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     const testFileUri = ss.createWorkspaceFile('dirty', 'const x = 1;\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
@@ -178,10 +189,10 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     await withClipboardSentinel('before-018', 'R-L', async () => {
       await waitForHuman(
         'dirty-buffer-warning-018-dispatch',
-        'R-L on dirty file with warnOnDirtyBuffer=false → confirm NO dialog appears',
+        'R-L on dirty file with warnOnDirtyBuffer=false',
         [
           'Click in the editor and select some text (the first word is fine).',
-          'Press Cmd+R Cmd+L (Send RangeLink) — confirm the dirty buffer dialog does NOT appear.',
+          'Press Cmd+R Cmd+L (Send RangeLink).',
         ],
       );
       await ss.settle();
@@ -211,6 +222,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     const testFileUri = ss.createWorkspaceFile('dirty', 'const x = 1;\n');
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
@@ -299,6 +315,11 @@ standardSuite('Dirty Buffer Warning', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     const capturing = await ss.createAndBindCapturingTerminal('dirty-buffer-test');
 
     const cleanUri = ss.createWorkspaceFile('clean-rl-007', 'line 1\nline 2\nline 3\nline 4\n');
@@ -320,6 +341,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     const testFileUri = ss.createWorkspaceFile('dirty-dialog', 'original content\n');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("dirty-buffer-test")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     ss.expectModalDialogs([
       {
@@ -377,6 +403,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -420,6 +451,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
   test('[assisted] dirty-buffer-warning-005: R-L dismiss aborts link generation, terminal unchanged', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("dirty-buffer-test")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -597,6 +633,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -643,6 +684,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -727,6 +773,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -771,6 +822,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -814,6 +870,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -860,6 +921,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -903,6 +969,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
   test('[assisted] dirty-buffer-warning-022: R-L dismiss aborts link generation', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("dirty-buffer-test")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',
@@ -960,6 +1031,11 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
       '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
       '✓ RangeLink: RangeLink sent to Terminal ("dirty-buffer-test")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     ss.expectModalDialogs([
       {
         level: 'warning',

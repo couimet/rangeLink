@@ -37,6 +37,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
     await ss.createTerminal('rl-btd-004');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-004")']);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-004');
@@ -82,6 +87,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
     const fnB = path.basename(uriB.fsPath);
 
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnB}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-005');
@@ -119,6 +125,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
   test('bind-to-destination-006: selecting a built-in AI assistant destination binds it and shows success toast', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
     await ss.settle();
@@ -133,6 +140,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
     const terminalB = await ss.createTerminal('rl-btd-007-b');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-007-a")']);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': false,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-007');
@@ -169,6 +181,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-btd-008-a")',
       '✓ RangeLink: Unbound Terminal ("rl-btd-008-a"), now bound to Terminal ("rl-btd-008-b")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
@@ -193,6 +210,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
     await ss.createTerminal('rl-btd-009-b');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-009-a")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': false,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
@@ -220,6 +242,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
   test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-010")']);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
 
     await ss.createTerminal('rl-btd-010');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -240,6 +267,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
   test('bind-to-destination-011: re-binding same built-in AI assistant shows already-bound message', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat']);
     ss.expectToastMessages([{ level: 'info', message: 'Already bound to GitHub Copilot Chat' }]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     // First bind — success toast
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
@@ -261,6 +289,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
       '✓ RangeLink: Bound to GitHub Copilot Chat',
       '✓ RangeLink: Unbound GitHub Copilot Chat, now bound to Dummy AI (Tier 3)',
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-012');
@@ -319,6 +348,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
     const fnB = path.basename(fileB.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fnB}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR, fileB);
     await ss.settle();

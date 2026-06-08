@@ -96,6 +96,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
 
   test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-menu-test")']);
+    ss.expectContextKeys({
+      'rangelink.isBound': true,
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+    });
     await ss.createTerminal('rl-menu-test');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -150,6 +155,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sbm-007")',
       '✓ RangeLink: Unbound from Terminal ("rl-sbm-007")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-sbm-007');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -264,6 +270,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
 
   test('status-bar-appearance-001: status bar appearance updates to bound state after bind', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sba-001")']);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
     await ss.createTerminal('rl-sba-001');
 
     const logCapture = getLogCapture();
@@ -288,6 +299,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sba-002")',
       '✓ RangeLink: Unbound from Terminal ("rl-sba-002")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-sba-002');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -313,6 +325,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-sba-003")',
       '✓ RangeLink: Unbound from Terminal ("rl-sba-003")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     const terminalName = 'rl-sba-003';
     await ss.createTerminal(terminalName);
 

@@ -29,6 +29,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")',
       '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-001');
@@ -71,6 +76,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")',
       '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")',
     ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-002');
@@ -106,6 +116,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const uri = await ss.createAndOpenFile('ctxmenu-exp-003', FILE_CONTENT);
     const fn = path.basename(uri.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${fn}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-003');
@@ -135,6 +146,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
       '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-004")',
       '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-exp-004")',
     ]);
+    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-004');

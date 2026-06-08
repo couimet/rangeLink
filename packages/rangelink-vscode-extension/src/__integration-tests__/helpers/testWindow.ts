@@ -1,5 +1,14 @@
 import assert from 'node:assert';
 
+import * as vscode from 'vscode';
+
+import {
+  CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
+  CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
+  CONTEXT_IS_BOUND,
+} from '../../constants/contextKeys';
+import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
+
 import { getLogCapture } from './getLogCapture';
 import { parseLogContext } from './logBasedUiAssertions';
 
@@ -18,6 +27,20 @@ const MODAL_DIALOG_FNS = [
   'VscodeAdapter.showInformationMessage',
   'VscodeAdapter.showWarningMessage',
 ];
+
+const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
+
+const KNOWN_CONTEXT_KEYS = [
+  CONTEXT_IS_BOUND,
+  CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
+  CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
+] as const;
+
+const DEFAULT_CONTEXT_KEY_VALUES: Record<string, unknown> = {
+  [CONTEXT_IS_BOUND]: false,
+  [CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE]: false,
+  [CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION]: false,
+};
 
 export const TEST_START_MARKER = 'test-start';
 
@@ -41,23 +64,27 @@ export class TestWindowImpl implements TestWindow {
   private getExpectedStatusBarMessages: () => string[];
   private getExpectedToasts: () => ToastExpectation[];
   private getExpectedDialogs: () => ModalDialogExpectation[];
+  private getExpectedContextKeys: () => Record<string, unknown>;
 
   constructor(
     marker: string,
     getExpectedStatusBarMessages: () => string[],
     getExpectedToasts: () => ToastExpectation[],
     getExpectedDialogs: () => ModalDialogExpectation[],
+    getExpectedContextKeys: () => Record<string, unknown>,
   ) {
     this.marker = marker;
     this.getExpectedStatusBarMessages = getExpectedStatusBarMessages;
     this.getExpectedToasts = getExpectedToasts;
     this.getExpectedDialogs = getExpectedDialogs;
+    this.getExpectedContextKeys = getExpectedContextKeys;
   }
 
   verify(): void {
     this.verifyStatusBarMessages();
     this.verifyToastMessages();
     this.verifyModalDialogs();
+    this.verifyContextKeys();
   }
 
   private verifyStatusBarMessages(): void {
@@ -173,6 +200,24 @@ export class TestWindowImpl implements TestWindow {
       expected,
       actual,
     });
+  }
+
+  private verifyContextKeys(): void {
+    const ext = vscode.extensions.getExtension<RangeLinkExtensionApi>(EXTENSION_ID);
+    const values = ext?.exports?.getContextKeyValues();
+    assert.ok(values, 'Extension must export getContextKeyValues for context key verification');
+
+    const expected = this.getExpectedContextKeys();
+    for (const key of KNOWN_CONTEXT_KEYS) {
+      const actualValue: unknown = key in values ? values[key] : undefined;
+      const expectedValue: unknown =
+        key in expected ? expected[key] : DEFAULT_CONTEXT_KEY_VALUES[key];
+      assert.strictEqual(
+        actualValue,
+        expectedValue,
+        `Context key "${key}": expected ${JSON.stringify(expectedValue)} but got ${JSON.stringify(actualValue)}`,
+      );
+    }
   }
 
   private fnToToastLevel(fn: string): ToastExpectation['level'] {

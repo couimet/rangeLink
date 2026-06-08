@@ -42,38 +42,6 @@ import {
 } from '../helpers';
 
 /**
- * Validates setContext calls: only expected keys were set, each with expected final value.
- * Uses "last value" semantics to handle bind->unbind sequences correctly.
- *
- * @param expectedKeyValues - Record of expected context keys and their final values
- *   - Bind success: { 'rangelink.isBound': true }
- *   - Unbind success: { 'rangelink.isBound': false }
- *   - Bind failure: { 'rangelink.isBound': false } (unchanged from constructor initialization)
- */
-const expectContextKeys = (
-  mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>,
-  expectedKeyValues: Record<string, unknown>,
-): void => {
-  const setContextCalls = (mockVscode.commands.executeCommand as jest.Mock).mock.calls.filter(
-    (call: unknown[]) => call[0] === 'setContext',
-  );
-
-  const lastValues = new Map<string, unknown>();
-  for (const call of setContextCalls) {
-    lastValues.set(call[1] as string, call[2]);
-  }
-
-  const expectedKeys = Object.keys(expectedKeyValues);
-  const actualKeys = [...lastValues.keys()];
-  const unexpectedKeys = actualKeys.filter((key) => !expectedKeys.includes(key));
-  expect(unexpectedKeys).toStrictEqual([]);
-
-  for (const [key, expectedValue] of Object.entries(expectedKeyValues)) {
-    expect(lastValues.get(key)).toBe(expectedValue);
-  }
-};
-
-/**
  * Helper to assert QuickPick was called with confirmation dialog for smart bind.
  * Validates that items contain expected labels and that placeholder is present.
  */
@@ -261,7 +229,6 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Terminal ("bash")"',
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should show info message when binding same terminal twice', async () => {
@@ -352,7 +319,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Bound to Cursor AI Assistant',
         2000,
       );
-      expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.commitBind',
@@ -382,7 +348,6 @@ describe('PasteDestinationManager', () => {
         'Cannot bind Cursor AI Assistant - not running in Cursor IDE',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail when claude-code not available', async () => {
@@ -402,7 +367,6 @@ describe('PasteDestinationManager', () => {
         'Cannot bind Claude Code - extension not installed or not active',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to claude-code when available', async () => {
@@ -424,7 +388,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Bound to Claude Code Chat',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.commitBind',
@@ -454,7 +417,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Bound to Gemini Code Assist',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.commitBind',
@@ -482,7 +444,6 @@ describe('PasteDestinationManager', () => {
         'Cannot bind Gemini Code Assist - extension not installed or not active',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to github-copilot-chat when available', async () => {
@@ -504,7 +465,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Bound to GitHub Copilot Chat',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.commitBind',
@@ -532,7 +492,6 @@ describe('PasteDestinationManager', () => {
         'Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should show info message when binding same chat destination twice', async () => {
@@ -617,7 +576,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Bound to Acme Spark AI',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should show ERROR_CUSTOM_AI_NOT_AVAILABLE when custom AI assistant is not available', async () => {
@@ -645,7 +603,6 @@ describe('PasteDestinationManager', () => {
         `Cannot bind ${DISPLAY_NAME} - extension not installed or not active`,
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
   });
 
@@ -688,7 +645,6 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Text Editor ("file.ts")"',
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should fail to bind text editor when file is closed', async () => {
@@ -733,7 +689,6 @@ describe('PasteDestinationManager', () => {
         'Could not open "gone.ts". Try again or choose another file.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to background tab by bringing it to foreground', async () => {
@@ -829,7 +784,6 @@ describe('PasteDestinationManager', () => {
         '"file.ts" opened in a different editor group. Try again or choose another file.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail to bind text editor to read-only scheme', async () => {
@@ -862,7 +816,6 @@ describe('PasteDestinationManager', () => {
         'Cannot bind to read-only editor (git)',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail to bind text editor to binary file', async () => {
@@ -896,7 +849,6 @@ describe('PasteDestinationManager', () => {
         `Cannot bind to ${testFileName} - binary file`,
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
   });
 
@@ -1215,7 +1167,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from Terminal ("bash")',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind chat destination successfully', async () => {
@@ -1240,7 +1191,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from Cursor AI Assistant',
         2000,
       );
-      expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
 
       localManager.dispose();
     });
@@ -1266,7 +1216,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from GitHub Copilot Chat',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind claude-code successfully', async () => {
@@ -1290,7 +1239,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from Claude Code Chat',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind gemini-code-assist successfully', async () => {
@@ -1314,7 +1262,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from Gemini Code Assist',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind text-editor successfully', async () => {
@@ -1346,7 +1293,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink: Unbound from Text Editor ("file.ts")',
         2000,
       );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should handle unbind when nothing bound', () => {

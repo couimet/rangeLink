@@ -39,6 +39,7 @@ standardSuite('Text Editor Destination', (ss) => {
           'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
       },
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
     await ss.settle();
@@ -83,6 +84,7 @@ standardSuite('Text Editor Destination', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ted-002');
@@ -110,6 +112,7 @@ standardSuite('Text Editor Destination', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -175,6 +178,7 @@ standardSuite('Text Editor Destination', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const destEditor = await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(destUri),
@@ -234,6 +238,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const destUri = ss.createWorkspaceFile('dtg-001-dest', 'destination file\n');
     const destBasename = path.basename(destUri.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
     const triggerUri = ss.createWorkspaceFile('dtg-001-trigger', '');
 
@@ -269,6 +274,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const destUri = ss.createWorkspaceFile('dtg-002-dest', 'destination file\n');
     const destBasename = path.basename(destUri.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
     const trigger1Uri = ss.createWorkspaceFile('dtg-002-trigger1', '');
     const trigger2Uri = ss.createWorkspaceFile('dtg-002-trigger2', '');
@@ -310,6 +316,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const destUri = ss.createWorkspaceFile('dtg-003-dest', 'ANCHOR\n');
     const destBasename = path.basename(destUri.fsPath);
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
       {
@@ -367,6 +374,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const trigger3Uri = ss.createWorkspaceFile('dtg-004-trigger3', '');
 
     ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
       { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
       { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
@@ -448,6 +456,7 @@ standardSuite('Text Editor Destination', (ss) => {
       `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
       `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
     ]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
