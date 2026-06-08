@@ -778,6 +778,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       // Simulate realistic delay between rapid keypresses
       await new Promise<void>((resolve) => setTimeout(resolve, RAPID_SEND_INTERVAL_MS));
 
+      // Re-focus editor; the first send shifted focus to the AI assistant panel
       const focusedEditor = await vscode.window.showTextDocument(doc);
       focusedEditor.selection = new vscode.Selection(2, 0, 3, 6);
       await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
