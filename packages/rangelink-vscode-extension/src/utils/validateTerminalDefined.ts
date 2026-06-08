@@ -12,6 +12,7 @@ export const validateTerminalDefined = (
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
         message: 'Terminal reference is not defined',
+        functionName: 'validateTerminalDefined',
       }),
     );
   }

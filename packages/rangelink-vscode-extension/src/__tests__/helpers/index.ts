@@ -63,6 +63,7 @@ export * from './createMockTabGroups';
 export * from './createMockTerminal';
 export * from './createMockTerminalComposablePasteDestination';
 export * from './createMockTerminalPasteDestination';
+export * from './createMockTerminalPasteService';
 export * from './createMockText';
 export * from './createMockUntitledUri';
 export * from './createMockUri';

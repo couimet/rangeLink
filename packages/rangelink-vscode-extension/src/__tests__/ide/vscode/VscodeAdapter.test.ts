@@ -858,41 +858,42 @@ describe('VscodeAdapter', () => {
     it('should call terminal.show(false) with StealFocus', () => {
       const mockTerminal = createMockTerminal();
 
-      adapter.showTerminal(mockTerminal, TerminalFocusType.StealFocus);
+      const result = adapter.showTerminal(mockTerminal, TerminalFocusType.StealFocus);
 
+      expect(result).toBeOk();
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
       expect(mockTerminal.show).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', () => {
+    it('should return TERMINAL_NOT_DEFINED error when terminal is undefined', () => {
       const undefinedTerminal = undefined as any;
 
-      expect(() =>
-        adapter.showTerminal(undefinedTerminal, TerminalFocusType.StealFocus),
-      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+      const result = adapter.showTerminal(undefinedTerminal, TerminalFocusType.StealFocus);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.showTerminal',
+        functionName: 'validateTerminalDefined',
       });
     });
 
-    it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
+    it('should return TERMINAL_NOT_DEFINED error when terminal is null', () => {
       const nullTerminal = null as any;
 
-      expect(() =>
-        adapter.showTerminal(nullTerminal, TerminalFocusType.StealFocus),
-      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+      const result = adapter.showTerminal(nullTerminal, TerminalFocusType.StealFocus);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.showTerminal',
+        functionName: 'validateTerminalDefined',
       });
     });
 
-    it('should throw UNKNOWN_FOCUS_TYPE for invalid focus type', () => {
+    it('should return UNKNOWN_FOCUS_TYPE error for invalid focus type', () => {
       const mockTerminal = createMockTerminal();
       const invalidFocusType = 'invalid-focus-type' as any;
 
-      expect(() =>
-        adapter.showTerminal(mockTerminal, invalidFocusType),
-      ).toThrowRangeLinkExtensionError('UNKNOWN_FOCUS_TYPE', {
+      const result = adapter.showTerminal(mockTerminal, invalidFocusType);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('UNKNOWN_FOCUS_TYPE', {
         message: 'Unknown focus type: invalid-focus-type',
         functionName: 'VscodeAdapter.showTerminal',
         details: { focusType: 'invalid-focus-type' },
@@ -906,78 +907,42 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.getTerminalName(mockTerminal);
 
-      expect(result).toBe(terminalName);
+      expect(result).toBeOkWith((value: string) => {
+        expect(value).toBe(terminalName);
+      });
     });
 
     it('should return different terminal names', () => {
       const mockTerminal1 = createMockTerminal({ name: 'zsh' });
       const mockTerminal2 = createMockTerminal({ name: 'powershell' });
 
-      expect(adapter.getTerminalName(mockTerminal1)).toBe('zsh');
-      expect(adapter.getTerminalName(mockTerminal2)).toBe('powershell');
-    });
-
-    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', () => {
-      const undefinedTerminal = undefined as any;
-
-      expect(() => adapter.getTerminalName(undefinedTerminal)).toThrowRangeLinkExtensionError(
-        'TERMINAL_NOT_DEFINED',
-        {
-          message: 'Terminal reference is not defined',
-          functionName: 'VscodeAdapter.getTerminalName',
-        },
-      );
-    });
-
-    it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
-      const nullTerminal = null as any;
-
-      expect(() => adapter.getTerminalName(nullTerminal)).toThrowRangeLinkExtensionError(
-        'TERMINAL_NOT_DEFINED',
-        {
-          message: 'Terminal reference is not defined',
-          functionName: 'VscodeAdapter.getTerminalName',
-        },
-      );
-    });
-  });
-
-  describe('pasteIntoTerminal', () => {
-    it('should show terminal and execute paste command', async () => {
-      const mockTerminal = createMockTerminal({ name: 'my-terminal' });
-      const executeCommandSpy = jest.spyOn(adapter, 'executeCommand');
-
-      await adapter.pasteIntoTerminal(mockTerminal);
-
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.paste');
-      expect(executeCommandSpy).toHaveBeenCalledTimes(1);
-      expect(mockTerminal.sendText).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: 'my-terminal' },
-        'Executing terminal paste command',
-      );
-    });
-
-    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', async () => {
-      const undefinedTerminal = undefined as any;
-
-      await expect(async () =>
-        adapter.pasteIntoTerminal(undefinedTerminal),
-      ).toThrowRangeLinkExtensionErrorAsync('TERMINAL_NOT_DEFINED', {
-        message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.pasteIntoTerminal',
+      expect(adapter.getTerminalName(mockTerminal1)).toBeOkWith((value: string) => {
+        expect(value).toBe('zsh');
+      });
+      expect(adapter.getTerminalName(mockTerminal2)).toBeOkWith((value: string) => {
+        expect(value).toBe('powershell');
       });
     });
 
-    it('should throw TERMINAL_NOT_DEFINED when terminal is null', async () => {
+    it('should return TERMINAL_NOT_DEFINED error when terminal is undefined', () => {
+      const undefinedTerminal = undefined as any;
+
+      const result = adapter.getTerminalName(undefinedTerminal);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'validateTerminalDefined',
+      });
+    });
+
+    it('should return TERMINAL_NOT_DEFINED error when terminal is null', () => {
       const nullTerminal = null as any;
 
-      await expect(async () =>
-        adapter.pasteIntoTerminal(nullTerminal),
-      ).toThrowRangeLinkExtensionErrorAsync('TERMINAL_NOT_DEFINED', {
+      const result = adapter.getTerminalName(nullTerminal);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.pasteIntoTerminal',
+        functionName: 'validateTerminalDefined',
       });
     });
   });

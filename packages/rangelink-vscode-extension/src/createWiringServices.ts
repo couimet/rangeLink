@@ -38,6 +38,7 @@ import {
   LinkGenerator,
   SelectionValidator,
   SendRouter,
+  TerminalPasteService,
   TerminalSelectionService,
   TextSelectionPaster,
 } from './services';
@@ -95,7 +96,12 @@ export const createWiringServices = (
   logger.debug({ fn: 'createWiringServices' }, 'Bookmarks store initialized');
 
   const clipboardService = new ClipboardService(ideAdapter, configReader, logger);
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, clipboardService, logger);
+  const terminalPasteService = new TerminalPasteService(ideAdapter, clipboardService, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(
+    ideAdapter,
+    terminalPasteService,
+    logger,
+  );
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
   const registry = new DestinationRegistry(
     focusCapabilityFactory,
