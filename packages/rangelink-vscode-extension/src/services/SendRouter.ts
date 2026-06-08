@@ -1,11 +1,11 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 
-import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
+import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { DestinationPicker, PasteDestination, PasteDestinationManager } from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { OperationFeedbackProvider } from '../feedback/OperationFeedbackProvider';
-import type { PasteSendOutcome } from '../feedback/types';
+import type { PasteContext, PasteSendOutcome } from '../feedback/types';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
 import { AutoPasteResult, MessageCode, type QuickPickBindResult, type SendOptions } from '../types';
 import { formatMessage, isEditorDestination, isSameFileDestination } from '../utils';
@@ -20,7 +20,7 @@ export class SendRouter {
     private readonly clipboardWriter: ClipboardWriter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly destinationPicker: DestinationPicker,
-    private readonly clipboardPreserver: ClipboardPreserver,
+    private readonly clipboardService: ClipboardService,
     private readonly feedbackProvider: OperationFeedbackProvider,
     private readonly logger: Logger,
   ) {}
@@ -49,32 +49,43 @@ export class SendRouter {
    * Handles clipboard preservation, eligibility, self-paste detection, and feedback.
    */
   async sendToDestination<T>(options: SendOptions<T>): Promise<void> {
-    const shouldPreserve = this.destinationManager.isBound();
-    if (shouldPreserve) {
+    const shouldRoute = this.destinationManager.isBound();
+    if (shouldRoute) {
       let outcome: PasteSendOutcome | undefined;
-      await this.clipboardPreserver.preserve(
+      const routeResult = await this.clipboardService.route(
         async () => {
           outcome = await this.executeSend(options);
         },
         () => this.shouldRestoreClipboard(outcome),
       );
-      if (outcome !== undefined) {
-        const destination = this.destinationManager.getBoundDestination()!;
-        this.feedbackProvider.provideSendFeedback(
-          {
-            contentType: options.contentNameCode,
-            destination: {
-              kind: destination.id,
-              label: destination.rawLabel,
-              displayName: destination.displayName,
-            },
-          },
-          outcome,
+      if (!routeResult.success) {
+        this.logger.error(
+          { fn: 'SendRouter.sendToDestination', error: routeResult.error },
+          'Clipboard routing failed',
         );
+        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), {
+          kind: 'clipboard-preservation-failed',
+        });
+        return;
+      }
+      if (outcome !== undefined) {
+        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), outcome);
       }
     } else {
       await this.executeSend(options);
     }
+  }
+
+  private buildPasteContext<T>(options: SendOptions<T>): PasteContext {
+    const destination = this.destinationManager.getBoundDestination()!;
+    return {
+      contentType: options.contentNameCode,
+      destination: {
+        kind: destination.id,
+        label: destination.rawLabel,
+        displayName: destination.displayName,
+      },
+    };
   }
 
   private async executeSend<T>(options: SendOptions<T>): Promise<PasteSendOutcome | undefined> {

@@ -173,7 +173,11 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
   }
 
   const terminal = options.terminal;
-  const terminalName = context.ideAdapter.getTerminalName(terminal);
+  const terminalNameResult = context.ideAdapter.getTerminalName(terminal);
+  if (!terminalNameResult.success) {
+    throw terminalNameResult.error;
+  }
+  const terminalName = terminalNameResult.value;
 
   return ComposablePasteDestination.createTerminal({
     terminal,

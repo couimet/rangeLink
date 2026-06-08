@@ -22,17 +22,15 @@ import {
   EXTENSION_ID_GEMINI_CODE_ASSIST,
 } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
-  assertClipboardChanged,
-  assertClipboardPreservationRan,
-  assertClipboardRestored,
+  assertClipboardEqualsGeneratedLink,
   assertPasteCommandSucceeded,
-  extractGeneratedLink,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
+  parseLogContext,
   standardSuite,
   waitForHumanVerdict,
-  writeClipboardSentinel,
+  withClipboardSentinel,
 } from '../helpers';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
@@ -302,6 +300,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.expectStatusBarMessages([
       '✓ RangeLink: Bound to Gemini Code Assist',
       '✓ RangeLink: RangeLink sent to Gemini Code Assist',
+      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
     ]);
 
     const fileUri = ss.createWorkspaceFile('gc-004', 'line 1\nline 2\nline 3\nline 4\n');
@@ -543,14 +542,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-011');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-011', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-011: always + Claude Code cold paste');
+    await withClipboardSentinel('before-clip-011', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-011: prior clipboard restored after cold paste');
   });
 
@@ -581,14 +576,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-012');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-012', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-012: always + Claude Code warm paste');
+    await withClipboardSentinel('before-clip-012', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-012: prior clipboard restored after warm paste');
   });
 
@@ -615,14 +606,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-013');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-013', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-013: always + Cursor AI cold paste');
+    await withClipboardSentinel('before-clip-013', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-013: cold Cursor AI paste — clipboard restored');
   });
 
@@ -653,14 +640,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-014');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-014', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-014: always + Cursor AI warm paste');
+    await withClipboardSentinel('before-clip-014', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-014: warm Cursor AI paste — clipboard restored');
   });
 
@@ -679,14 +662,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-015');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-015', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-015: always + Copilot Chat cold paste');
+    await withClipboardSentinel('before-clip-015', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-015: cold Copilot Chat paste — clipboard restored');
   });
 
@@ -717,14 +696,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(2, 0, 3, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-    logCapture.mark('before-clip-016');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    assertClipboardPreservationRan(logCapture, 'before-clip-016', 'R-L');
-    await assertClipboardRestored('clipboard-preservation-016: always + Copilot Chat warm paste');
+    await withClipboardSentinel('before-clip-016', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
     ss.log('✓ clipboard-preservation-016: warm Copilot Chat paste — clipboard restored');
   });
 
@@ -749,21 +724,13 @@ standardSuite('Built-in AI Assistants', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
-    await writeClipboardSentinel();
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-017');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-    const lines017 = logCapture.getLinesSince('before-017');
-    const generatedLink017 = extractGeneratedLink(lines017, { smartPad: 'both' });
-    assert.ok(generatedLink017, 'Expected "Generated link:" log line');
-    const clipboard017 = await assertClipboardChanged('clipboard-preservation-017: failed paste');
-    assert.strictEqual(
-      clipboard017,
-      generatedLink017,
-      `Expected clipboard to equal "${generatedLink017}", got: ${JSON.stringify(clipboard017)}`,
+    await assertClipboardEqualsGeneratedLink(
+      'clipboard-preservation-017: failed paste',
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+        await ss.settle();
+      },
+      'before-017',
     );
     ss.log('✓ clipboard-preservation-017: failed paste — RangeLink stays on clipboard');
   });
@@ -782,28 +749,18 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_CLAUDE_CODE);
     await ss.settle();
 
-    // Snapshot clipboard before rapid sends
-    await writeClipboardSentinel();
-    const logCapture = getLogCapture();
-
     // First send: lines 1-2
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
 
-    logCapture.mark('before-018-rapid');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await withClipboardSentinel('before-018-rapid', 'R-L', async () => {
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
 
-    // Second send: lines 3-4, fired immediately without waiting for first to complete
-    editor.selection = new vscode.Selection(2, 0, 3, 6);
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    // Clipboard preservation should have run (exactly once restoration after last op)
-    assertClipboardPreservationRan(logCapture, 'before-018-rapid', 'R-L');
-
-    await assertClipboardRestored(
-      'clipboard-preservation-018: rapid R-L to Claude Code — prior clipboard restored once',
-    );
+      // Second send: lines 3-4, fired immediately without waiting for first to complete
+      editor.selection = new vscode.Selection(2, 0, 3, 6);
+      await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+      await ss.settle();
+    });
 
     const verdict = await waitForHumanVerdict(
       'clipboard-preservation-018',
@@ -927,9 +884,16 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
 
+    const INVALID_DELAY_MS = 100;
+    const INVALID_INTERVAL_MS = 400;
+
     // Set invalid config: delay (100) <= interval (400)
-    await config.update('coldStartDelayMs', 100, vscode.ConfigurationTarget.Workspace);
-    await config.update('coldRefocusIntervalMs', 400, vscode.ConfigurationTarget.Workspace);
+    await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+    await config.update(
+      'coldRefocusIntervalMs',
+      INVALID_INTERVAL_MS,
+      vscode.ConfigurationTarget.Workspace,
+    );
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -941,14 +905,18 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
     await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-cc-007');
-    const warningLog = lines.find((line) =>
-      line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs'),
+    const ccLines = getLogCapture().getLinesSince('before-cc-007');
+    const ccCtx = parseLogContext(
+      ccLines.find((l) => {
+        const c = parseLogContext(l);
+        return (
+          c?.fn === 'claudeCode.getColdRefocus' &&
+          c.totalMs === INVALID_DELAY_MS &&
+          c.intervalMs === INVALID_INTERVAL_MS
+        );
+      }) ?? '',
     );
-    assert.ok(
-      warningLog,
-      'Expected validation warning log when coldStartDelayMs <= coldRefocusIntervalMs',
-    );
+    assert.ok(ccCtx, 'Expected claudeCode.getColdRefocus warning with totalMs=100, intervalMs=400');
 
     ss.log('✓ claude-code-007 — invalid config triggers fallback to defaults');
   });
@@ -1053,16 +1021,18 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
     await ss.settle();
 
-    const lines = logCapture.getLinesSince('before-gc-006');
-    const warningLog = lines.find(
-      (line) =>
-        line.includes('coldStartDelayMs must be greater than coldRefocusIntervalMs') &&
-        line.includes('using defaults'),
+    const gcLines = getLogCapture().getLinesSince('before-gc-006');
+    const gcCtx = parseLogContext(
+      gcLines.find((l) => {
+        const c = parseLogContext(l);
+        return (
+          c?.fn === 'gemini.getColdRefocus' &&
+          c.totalMs === INVALID_DELAY_MS &&
+          c.intervalMs === INVALID_INTERVAL_MS
+        );
+      }) ?? '',
     );
-    assert.ok(
-      warningLog,
-      'Expected validation warning log with "using defaults" when coldStartDelayMs <= coldRefocusIntervalMs',
-    );
+    assert.ok(gcCtx, 'Expected gemini.getColdRefocus warning with totalMs=100, intervalMs=400');
 
     ss.log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
   });

@@ -130,7 +130,7 @@ export class FilePathPaster {
         contentType: PasteContentType.Text,
       },
       content: {
-        clipboard: paddedPath,
+        clipboard: destinationFilePath,
         send: paddedPath,
         sourceUri: uri,
         sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),

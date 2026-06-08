@@ -616,16 +616,16 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'Clipboard always contains the unquoted path regardless of destination type'
-    expected_result: 'Clipboard contains unquoted path. Terminal received quoted version.'
+    scenario: 'Clipboard and terminal both receive the quoted path (clipboard.preserve=never)'
+    expected_result: 'Clipboard contains the quoted path. Terminal received quoted version.'
     automated: true
 
   - id: send-file-path-008
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
-    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor (clipboard.preserve=never)'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor". Uses clipboard.preserve=never.'
     automated: true
 
   - id: send-file-path-009
@@ -664,7 +664,7 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'Cmd+R Cmd+Shift+F to same file (same column, no selection) inserts absolute path at cursor'
+    scenario: 'Cmd+R Cmd+Shift+F to same file (same column, no selection) inserts absolute path at cursor (clipboard.preserve=never)'
     expected_result: 'Absolute file path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
@@ -672,7 +672,7 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-file-path'
-    scenario: 'R-F blocked when bound editor has active selection'
+    scenario: 'R-F blocked when bound editor has active selection (clipboard.preserve=never for assertion)'
     expected_result: 'Toast warns. Status bar "File path copied to clipboard". Clipboard has path. Editor unchanged.'
     automated: true
 
@@ -682,6 +682,15 @@ test_cases:
     feature: 'send-file-path'
     scenario: 'R-F to same file in different view column allowed'
     expected_result: 'File path inserted in destination column.'
+    automated: true
+
+  - id: send-file-path-016
+    labels:
+      - clipboard
+      - self-paste
+    feature: 'send-file-path'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -2170,9 +2179,9 @@ test_cases:
       - needs-override
       - override-fallback
     feature: 'custom-ai-assistants'
-    scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast — human verifies'
-    expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears, human confirms clipboard content is a valid RangeLink'
-    automated: assisted
+    scenario: 'Misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast'
+    expected_result: 'Clipboard passes automated format check, Dummy AI textarea is empty (no direct insert), toast appears'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Built-in AI Assistants

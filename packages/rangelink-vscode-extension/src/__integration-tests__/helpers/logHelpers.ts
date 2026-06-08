@@ -1,6 +1,13 @@
+import assert from 'node:assert';
 import { Console } from 'node:console';
 
+import { getLogCapture } from './getLogCapture';
+
 const nodeConsole = new Console(process.stdout, process.stderr);
+
+export type SmartPadMode = 'both' | 'before' | 'after';
+
+export type SmartPadOptions = { smartPad?: SmartPadMode };
 
 export const createLogger = (suiteName: string): ((msg: string) => void) => {
   const prefix = `[RL-integ:${suiteName}]`;
@@ -25,15 +32,14 @@ export const extractSentLink = (lines: string[]): string | undefined => {
  * send-to-destination. Returns the full link string (path + anchor), or
  * undefined if the log line is missing or the link cannot be parsed.
  *
- * When `smartPad` is set, the returned link is space-padded to match the
- * clipboard/terminal content produced by the smartPadding settings. Tests
- * that assert clipboard or terminal content against the generated link
- * should use `{ smartPad: 'both' }` to avoid manual wrapping at each
- * call site.
+ * When `smartPad` is set, the returned link is space-padded to match
+ * destination content (terminal buffer, editor text) produced by the
+ * smartPadding settings. Clipboard assertions should NOT use this
+ * option — the clipboard always contains raw (unpadded) content.
  */
 export const extractGeneratedLink = (
   lines: string[],
-  options?: { smartPad?: 'both' | 'before' | 'after' },
+  options?: SmartPadOptions,
 ): string | undefined => {
   const generatedLog = lines.find((l) => l.includes('Generated link:'));
   if (!generatedLog) return undefined;
@@ -45,4 +51,11 @@ export const extractGeneratedLink = (
   if (smartPad === 'both') return ` ${link} `;
   if (smartPad === 'before') return ` ${link}`;
   return `${link} `;
+};
+
+export const getGeneratedLink = (marker: string, options?: SmartPadOptions): string => {
+  const lines = getLogCapture().getLinesSince(marker);
+  const link = extractGeneratedLink(lines, options);
+  assert.ok(link, 'Expected "Generated link:" log line');
+  return link!;
 };

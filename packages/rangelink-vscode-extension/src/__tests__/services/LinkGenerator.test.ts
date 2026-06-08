@@ -452,7 +452,7 @@ describe('LinkGenerator', () => {
           contentType: 'Link',
         },
         content: {
-          clipboard: ' src/file.ts#L1 ',
+          clipboard: 'src/file.ts#L1',
           send: { ...link, link: ' src/file.ts#L1 ' },
           sourceUri: mockDoc.uri,
           sourceViewColumn: expectedViewColumn,

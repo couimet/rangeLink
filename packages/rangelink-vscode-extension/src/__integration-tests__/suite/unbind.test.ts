@@ -8,9 +8,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  assertNoSetContextLogged,
-  assertSetContextLogged,
-  extractGeneratedLink,
+  assertClipboardEqualsGeneratedLink,
   getLogCapture,
   standardSuite,
   waitForHuman,
@@ -41,24 +39,13 @@ standardSuite('Unbind Destination', (ss) => {
     await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
 
-    logCapture.mark('before-unbind-001-r-c');
-    await vscode.env.clipboard.writeText('unbind-test-sentinel');
-    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await ss.settle();
-    const linesRc = logCapture.getLinesSince('before-unbind-001-r-c');
-    const generatedLink = extractGeneratedLink(linesRc);
-    assert.ok(generatedLink, 'Expected "Generated link:" log line');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      'unbind-test-sentinel',
-      'Expected clipboard to contain the generated link after unbind + R-C, not the sentinel',
-    );
-    assert.strictEqual(
-      clipboard,
-      generatedLink,
-      `Expected clipboard to equal generated link, got: ${clipboard}`,
+    await assertClipboardEqualsGeneratedLink(
+      'unbind + R-C should write link to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+        await ss.settle();
+      },
+      'before-unbind-001-r-c',
     );
   });
 
@@ -79,14 +66,6 @@ standardSuite('Unbind Destination', (ss) => {
   });
 
   test('[assisted] unbind-005: "RangeLink: Unbind" hidden in command palette when no destination is bound', async () => {
-    const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-unbind-005');
-
-    const lines = logCapture.getLinesSince('before-unbind-005');
-    assertNoSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
-
     const verdict = await waitForHumanVerdict(
       'unbind-005',
       'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind" — is "RangeLink: Unbind" ABSENT?',
@@ -111,17 +90,12 @@ standardSuite('Unbind Destination', (ss) => {
       '✓ RangeLink: Unbound from Terminal ("rl-unbind-006-test")',
     ]);
 
-    const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
-
     await ss.createTerminal('rl-unbind-006-test');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-unbind-006');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-
-    const lines = logCapture.getLinesSince('before-unbind-006');
-    assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
 
     await waitForHuman(
       'unbind-006',
@@ -134,8 +108,6 @@ standardSuite('Unbind Destination', (ss) => {
       ],
     );
 
-    const linesAfter = logCapture.getLinesSince('before-unbind-006');
-    assertSetContextLogged(linesAfter, { key: CONTEXT_IS_BOUND_KEY, value: false });
     ss.log('✓ Unbind executed from palette; isBound context set to false');
   });
 

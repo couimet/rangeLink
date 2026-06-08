@@ -36,10 +36,11 @@ export const createMockFocusCapability = (
   const mockInsert = jest.fn().mockResolvedValue(insertReturns);
   const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
-  return {
+  const capability: jest.Mocked<FocusCapability> & { _mockInsert: jest.Mock } = {
     focus: jest.fn().mockResolvedValue(Result.ok(focusedDestination)),
     _mockInsert: mockInsert,
-  } as unknown as jest.Mocked<FocusCapability> & { _mockInsert: jest.Mock };
+  };
+  return capability;
 };
 
 /**
@@ -50,7 +51,7 @@ export const createMockFocusCapability = (
 export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> =>
   ({
     isEligible: jest.fn().mockResolvedValue(true),
-  }) as unknown as jest.Mocked<EligibilityChecker>;
+  }) satisfies jest.Mocked<EligibilityChecker>;
 
 /**
  * Create a mock ComposablePasteDestination for testing.

@@ -148,7 +148,7 @@ describe('FilePathPaster', () => {
           contentType: 'Text',
         },
         content: {
-          clipboard: ' /workspace/src/file.ts ',
+          clipboard: '/workspace/src/file.ts',
           send: ' /workspace/src/file.ts ',
           sourceUri: uri,
           sourceViewColumn: undefined,

@@ -16,7 +16,7 @@ export const FOCUS_TO_PASTE_DELAY_MS = 200;
 
 /**
  * Delay after a successful clipboard paste command before allowing the
- * outer ClipboardPreserver to restore the user's prior clipboard. Webview-based
+ * outer ClipboardService to restore the user's prior clipboard. Webview-based
  * AI assistants (Claude Code) read from the system clipboard
  * asynchronously across the Electron IPC boundary — this delay keeps the
  * RangeLink on the clipboard until the webview's paste handler completes.

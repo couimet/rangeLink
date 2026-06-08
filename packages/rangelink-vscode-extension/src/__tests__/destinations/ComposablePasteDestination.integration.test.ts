@@ -1,4 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { Result } from 'rangelink-core-ts';
 
 import {
   AIAssistantFocusCapability,
@@ -10,7 +11,9 @@ import {
   TerminalFocusCapability,
   TerminalInsertFactory,
 } from '../../destinations';
+import { TerminalPasteService } from '../../services';
 import {
+  createMockClipboardService,
   createMockDocument,
   createMockEditor,
   createMockFormattedLink,
@@ -34,7 +37,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
         processId: Promise.resolve(12345),
       });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const terminalPasteService = new TerminalPasteService(
+        mockAdapter,
+        createMockClipboardService(),
+        mockLogger,
+      );
+      const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -45,8 +53,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal');
       const pasteTextSpy = jest
-        .spyOn(mockAdapter, 'pasteIntoTerminal')
-        .mockResolvedValue(undefined);
+        .spyOn(terminalPasteService, 'pasteIntoTerminal')
+        .mockResolvedValue(Result.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
@@ -68,7 +76,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(showTerminalSpy).toHaveBeenCalledTimes(1);
       expect(showTerminalSpy).toHaveBeenCalledWith(mockTerminal, 'steal-focus');
       expect(pasteTextSpy).toHaveBeenCalledTimes(1);
-      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
+      expect(pasteTextSpy).toHaveBeenCalledWith(formattedLink.link, mockTerminal);
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'ComposablePasteDestination.pasteLink',
@@ -84,7 +92,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const terminalPasteService = new TerminalPasteService(
+        mockAdapter,
+        createMockClipboardService(),
+        mockLogger,
+      );
+      const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -97,10 +110,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       jest.spyOn(mockAdapter, 'showTerminal').mockImplementation(() => {
         callOrder.push('focus');
+        return Result.ok(undefined);
       });
 
-      jest.spyOn(mockAdapter, 'pasteIntoTerminal').mockImplementation(async () => {
+      jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(async () => {
         callOrder.push('insert');
+        return Result.ok(undefined);
       });
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -432,7 +447,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const terminalPasteService = new TerminalPasteService(
+        mockAdapter,
+        createMockClipboardService(),
+        mockLogger,
+      );
+      const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -472,7 +492,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const terminalPasteService = new TerminalPasteService(
+        mockAdapter,
+        createMockClipboardService(),
+        mockLogger,
+      );
+      const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -481,10 +506,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       );
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
-      jest.spyOn(mockAdapter, 'showTerminal');
+      jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(Result.ok(undefined));
       const pasteTextSpy = jest
-        .spyOn(mockAdapter, 'pasteIntoTerminal')
-        .mockResolvedValue(undefined);
+        .spyOn(terminalPasteService, 'pasteIntoTerminal')
+        .mockResolvedValue(Result.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
@@ -502,7 +527,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       await destination.pasteLink(formattedLink);
 
-      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal);
+      expect(pasteTextSpy).toHaveBeenCalledWith(formattedLink.link, mockTerminal);
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'ComposablePasteDestination.pasteLink',

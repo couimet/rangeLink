@@ -153,6 +153,19 @@ describe('OperationFeedbackProvider', () => {
       expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
 
+    it('shows warning for clipboard-preservation-failed', () => {
+      provider.provideSendFeedback(createPasteContext() as any, {
+        kind: 'clipboard-preservation-failed',
+      });
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('WARN_CLIPBOARD_PRESERVATION_FAILED');
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
+        'Clipboard preservation failed. Content was not sent.',
+      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
+      expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
+    });
+
     it('throws RangeLinkExtensionError on unexpected outcome kind', () => {
       expect(() =>
         provider.provideSendFeedback(

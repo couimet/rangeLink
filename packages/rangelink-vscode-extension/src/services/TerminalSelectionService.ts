@@ -1,6 +1,6 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 
-import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
+import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { ConfigReader } from '../config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -8,11 +8,30 @@ import {
   VSCODE_CMD_TERMINAL_COPY_SELECTION,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, PasteContentType, type TerminalPasteResult } from '../types';
 import { applySmartPadding, formatMessage } from '../utils';
 
 import type { SendRouter } from './SendRouter';
+
+interface CaptureErrorInfo {
+  readonly logMessage: string;
+  readonly messageCode: MessageCode;
+  readonly outcome: 'copy-command-failed' | 'clipboard-read-failed';
+}
+
+const COPY_FAILURE: CaptureErrorInfo = {
+  logMessage: 'executeCommand(terminal.copySelection) threw',
+  messageCode: MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED,
+  outcome: 'copy-command-failed',
+};
+
+const CAPTURE_FAILURE: CaptureErrorInfo = {
+  logMessage: 'Clipboard read failed during capture',
+  messageCode: MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED,
+  outcome: 'clipboard-read-failed',
+};
 
 /**
  * Handles terminal selection pasting, the R-L bridge in terminal context,
@@ -23,13 +42,15 @@ export class TerminalSelectionService {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
-    private readonly clipboardPreserver: ClipboardPreserver,
+    private readonly clipboardService: ClipboardService,
     private readonly sendRouter: SendRouter,
     private readonly logger: Logger,
   ) {}
 
   async pasteTerminalSelectionToDestination(): Promise<TerminalPasteResult> {
-    const logCtx = { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' };
+    const logCtx: LoggingContext = {
+      fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
+    };
 
     const activeTerminal = this.ideAdapter.activeTerminal;
     if (!activeTerminal) {
@@ -38,38 +59,25 @@ export class TerminalSelectionService {
       return { outcome: 'no-active-terminal' };
     }
 
-    let terminalText: string;
-    let copyCommandFailed = false;
-    try {
-      terminalText = await this.clipboardPreserver.preserve(async () => {
-        try {
-          await this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION);
-        } catch (e) {
-          copyCommandFailed = true;
-          throw e;
-        }
-        return this.ideAdapter.readTextFromClipboard();
-      });
-    } catch (error) {
-      if (copyCommandFailed) {
-        this.logger.error(
-          { ...logCtx, terminalName: activeTerminal.name, error },
-          'executeCommand(terminal.copySelection) threw',
-        );
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
-        );
-        return { outcome: 'copy-command-failed', error };
-      }
-      this.logger.error(
-        { ...logCtx, terminalName: activeTerminal.name, error },
-        'readTextFromClipboard() threw',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED),
-      );
-      return { outcome: 'clipboard-read-failed', error };
+    logCtx.terminalName = activeTerminal.name;
+
+    const captureResult = await this.clipboardService.capture(
+      () => this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION),
+      logCtx,
+    );
+
+    if (!captureResult.success) {
+      const error = captureResult.error;
+      const isCopyFailure =
+        error.code === RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED;
+      const errorInfo = isCopyFailure ? COPY_FAILURE : CAPTURE_FAILURE;
+
+      this.logger.error({ ...logCtx, error, isCopyFailure }, errorInfo.logMessage);
+      this.ideAdapter.showErrorMessage(formatMessage(errorInfo.messageCode));
+      return { outcome: errorInfo.outcome, error };
     }
+
+    const terminalText = captureResult.value.clipboard;
 
     if (!terminalText) {
       this.logger.debug(logCtx, 'No terminal text after clipboard roundtrip');

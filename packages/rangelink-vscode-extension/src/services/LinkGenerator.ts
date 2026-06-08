@@ -185,7 +185,7 @@ export class LinkGenerator {
         contentType: PasteContentType.Link,
       },
       content: {
-        clipboard: paddedLink,
+        clipboard: formattedLink.link,
         send: { ...formattedLink, link: paddedLink },
         sourceUri,
         sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),

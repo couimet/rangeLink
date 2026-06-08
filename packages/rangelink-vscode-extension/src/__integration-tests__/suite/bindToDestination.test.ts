@@ -220,6 +220,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
   test('bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-btd-010")']);
+
     await ss.createTerminal('rl-btd-010');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -321,6 +322,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR, fileB);
     await ss.settle();
+
     ss.log('✓ Text editor binding works in single tab group — no split required (human verdict)');
   });
 });

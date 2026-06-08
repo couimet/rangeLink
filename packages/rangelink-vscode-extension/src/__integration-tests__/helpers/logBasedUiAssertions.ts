@@ -2,6 +2,10 @@ import assert from 'node:assert';
 
 import type { LoggingContext } from 'barebone-logger';
 
+// ---------------------------------------------------------------------------
+// Utility
+// ---------------------------------------------------------------------------
+
 /**
  * Parse a log line's JSON context block.
  * Log format: `[LEVEL] {"fn":"...","message":"...",...} Human-readable text`
@@ -23,18 +27,65 @@ export const parseLogContext = (line: string): LoggingContext | undefined => {
   return undefined;
 };
 
+// ---------------------------------------------------------------------------
+// Constants (sorted alphabetically)
+// ---------------------------------------------------------------------------
+
+const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
+const EXECUTE_COMMAND_FN = 'VscodeAdapter.executeCommand';
+const FILE_PATH_FN = 'FilePathPaster.pasteFilePath';
 const INPUT_BOX_FN = 'VscodeAdapter.showInputBox';
+const PASTE_TO_AI_ASSISTANT_FN = 'VscodeAdapter.pasteClipboardToAiAssistant';
+const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
+const TERMINAL_PASTE_FN = 'VscodeAdapter.pasteTextToTerminalViaClipboard';
+
+// ---------------------------------------------------------------------------
+// Types and interfaces (sorted alphabetically)
+// ---------------------------------------------------------------------------
+
+interface ClipboardWriteAssertionOptions {
+  textLength: number;
+}
+
+interface FilePathAssertionOptions {
+  pathFormat: 'absolute' | 'workspace-relative';
+  uriSource: 'context-menu' | 'command-palette';
+  filePath: string;
+}
+
+interface FnAssertionOptions {
+  fn: string;
+}
 
 interface InputBoxAssertionOptions {
   prompt: string;
   placeHolder: string;
 }
 
-/**
- * Assert that a showInputBox log entry was emitted with the expected prompt and placeholder.
- * Parses each line's log context and compares `fn` + `options.prompt` + `options.placeHolder`
- * directly — no raw substring matching.
- */
+interface QuickPickItemExpectation {
+  label?: string;
+  description?: string;
+  detail?: string;
+  kind?: number;
+  itemKind?: string;
+  command?: string;
+  displayName?: string;
+}
+
+interface SuppressionAssertionOptions {
+  fn: string;
+  suppressedMessage: string;
+}
+
+interface TerminalPasteAssertionOptions {
+  terminalName: string;
+  minTextLength?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Assertions
+// ---------------------------------------------------------------------------
+
 export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOptions): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line) as
@@ -57,25 +108,6 @@ export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOpt
     `Expected ${INPUT_BOX_FN} log entry with prompt "${opts.prompt}" and placeholder "${opts.placeHolder}" but it was not found in ${lines.length} log lines`,
   );
 };
-
-const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
-
-/**
- * Subset of fields expected on a logged QuickPick item.
- *
- * All fields are optional: omitted fields are skipped during assertion. This
- * allows callers to assert only the fields they care about (e.g. just `kind`
- * and `itemKind` for separator checks).
- */
-interface QuickPickItemExpectation {
-  label?: string;
-  description?: string;
-  detail?: string;
-  kind?: number;
-  itemKind?: string;
-  command?: string;
-  displayName?: string;
-}
 
 /**
  * Assert that a showQuickPick log entry contains the expected items in order.
@@ -120,20 +152,12 @@ export const assertQuickPickItemsLogged = (
   }
 };
 
-/**
- * Filter lines to only those that are showQuickPick log entries with items.
- * Use instead of raw `VscodeAdapter.showQuickPick` substring matching.
- */
 export const getQuickPickLines = (lines: string[]): string[] =>
   lines.filter((line) => {
     const ctx = parseLogContext(line);
     return ctx?.fn === QUICK_PICK_FN && Array.isArray(ctx.items);
   });
 
-/**
- * Parse the items array from a single showQuickPick log line.
- * Use when you need items from a specific log entry (e.g., the 2nd picker invocation).
- */
 export const parseQuickPickItemsFromLogLine = (logLine: string): Record<string, unknown>[] => {
   const ctx = parseLogContext(logLine);
   if (ctx === undefined || !Array.isArray(ctx.items)) {
@@ -142,10 +166,6 @@ export const parseQuickPickItemsFromLogLine = (logLine: string): Record<string, 
   return ctx.items as Record<string, unknown>[];
 };
 
-/**
- * Extract the items array from the first showQuickPick log entry in a set of lines.
- * Returns undefined if no matching log entry is found.
- */
 export const extractQuickPickItemsLogged = (
   lines: string[],
 ): Record<string, unknown>[] | undefined => {
@@ -158,15 +178,6 @@ export const extractQuickPickItemsLogged = (
   return undefined;
 };
 
-interface SuppressionAssertionOptions {
-  fn: string;
-  suppressedMessage: string;
-}
-
-/**
- * Assert that a suppression log entry exists with the exact message that would have been shown.
- * Verifies both the function name and the `suppressedMessage` attribute in the log JSON context.
- */
 export const assertSuppressionLogged = (
   lines: string[],
   opts: SuppressionAssertionOptions,
@@ -182,18 +193,6 @@ export const assertSuppressionLogged = (
   );
 };
 
-const FILE_PATH_FN = 'FilePathPaster.pasteFilePath';
-
-interface FilePathAssertionOptions {
-  pathFormat: 'absolute' | 'workspace-relative';
-  uriSource: 'context-menu' | 'command-palette';
-  filePath: string;
-}
-
-/**
- * Assert that FilePathPaster.pasteFilePath resolved a file path via the expected route.
- * Compares `fn`, `pathFormat`, `uriSource`, and `filePath` directly on parsed log context.
- */
 export const assertFilePathLogged = (lines: string[], opts: FilePathAssertionOptions): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line) as
@@ -216,57 +215,6 @@ export const assertFilePathLogged = (lines: string[], opts: FilePathAssertionOpt
   );
 };
 
-const EXECUTE_COMMAND_FN = 'VscodeAdapter.executeCommand';
-const SET_CONTEXT_COMMAND = 'setContext';
-
-type ContextKeyValue = boolean | string | number;
-
-interface SetContextAssertionOptions {
-  key: string;
-  value: ContextKeyValue;
-}
-
-const matchSetContextLog = (line: string, opts: SetContextAssertionOptions): boolean => {
-  const ctx = parseLogContext(line) as
-    | (LoggingContext & {
-        command?: unknown;
-        args?: unknown;
-      })
-    | undefined;
-  if (ctx?.fn !== EXECUTE_COMMAND_FN || ctx.command !== SET_CONTEXT_COMMAND) return false;
-  if (!Array.isArray(ctx.args)) return false;
-  return ctx.args[0] === opts.key && ctx.args[1] === opts.value;
-};
-
-/**
- * Assert that a `setContext` executeCommand log was emitted for the given context key + value.
- * Matches against the parsed `args` array: args[0] === key, args[1] === value.
- */
-export const assertSetContextLogged = (lines: string[], opts: SetContextAssertionOptions): void => {
-  assert.ok(
-    lines.some((line) => matchSetContextLog(line, opts)),
-    `Expected setContext log with key="${opts.key}" value=${String(opts.value)} but it was not found in ${lines.length} log lines`,
-  );
-};
-
-/**
- * Assert that NO `setContext` executeCommand log was emitted for the given key + value.
- * Use to prove state-invariants during an observation window.
- */
-export const assertNoSetContextLogged = (
-  lines: string[],
-  opts: SetContextAssertionOptions,
-): void => {
-  assert.ok(
-    !lines.some((line) => matchSetContextLog(line, opts)),
-    `Expected setContext log with key="${opts.key}" value=${String(opts.value)} to NOT be logged, but it was found`,
-  );
-};
-
-/**
- * Assert that `VscodeAdapter.executeCommand` was logged for the given command ID.
- * Asserts at the adapter boundary rather than tying to internal routing details.
- */
 export const assertExecuteCommandLogged = (lines: string[], command: string): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line) as (LoggingContext & { command?: unknown }) | undefined;
@@ -278,21 +226,6 @@ export const assertExecuteCommandLogged = (lines: string[], command: string): vo
   );
 };
 
-const TERMINAL_PASTE_FN = 'VscodeAdapter.pasteTextToTerminalViaClipboard';
-
-interface TerminalPasteAssertionOptions {
-  terminalName: string;
-  minTextLength?: number;
-}
-
-/**
- * Assert that `pasteTextToTerminalViaClipboard` logged delivery to the expected terminal.
- * Proves the bound terminal actually received a paste — clipboard write alone does not.
- *
- * The adapter logs the padded textLength (post-smart-padding), so `minTextLength` is a
- * lower bound rather than an exact match. Pair with `assertClipboardWriteLogged` for the
- * exact content length on the first clipboard write.
- */
 export const assertTerminalPasteLogged = (
   lines: string[],
   opts: TerminalPasteAssertionOptions,
@@ -313,14 +246,6 @@ export const assertTerminalPasteLogged = (
   );
 };
 
-interface FnAssertionOptions {
-  fn: string;
-}
-
-/**
- * Assert that at least one log line has a parsed `fn` field strictly equal to `opts.fn`.
- * Use for presence-only checks where the function name alone is the contract.
- */
 export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line);
@@ -331,8 +256,6 @@ export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void 
     `Expected log entry with fn="${opts.fn}" but it was not found in ${lines.length} log lines`,
   );
 };
-
-const PASTE_TO_AI_ASSISTANT_FN = 'VscodeAdapter.pasteClipboardToAiAssistant';
 
 export const assertPasteCommandSucceeded = (lines: string[]): void => {
   const found = lines.some((line) => {
@@ -375,11 +298,6 @@ export const assertCommandsPresent = (
   }
 };
 
-/**
- * Assert that the first QuickPick item matches the expected shape exactly.
- * Use for position-dependent checks where ordering matters (e.g. "the first
- * item should be the unbound info item").
- */
 export const assertQuickPickFirstItem = (
   lines: string[],
   expected: QuickPickItemExpectation,
@@ -392,11 +310,6 @@ export const assertQuickPickFirstItem = (
   assert.deepStrictEqual(items[0], expected);
 };
 
-/**
- * Assert that the last N QuickPick items match the expected list in exact order.
- * Use when the middle of the menu varies by environment (e.g. destination
- * picker items) but the trailing items are known and their order matters.
- */
 export const assertQuickPickTrailingItems = (
   lines: string[],
   expectedItems: QuickPickItemExpectation[],
@@ -409,17 +322,6 @@ export const assertQuickPickTrailingItems = (
   assert.deepStrictEqual(items.slice(-expectedItems.length), expectedItems);
 };
 
-/**
- * Assert that the QuickPick contains items matching every field in each
- * given expectation. Only the fields present on the expectation are checked —
- * items may carry additional fields (itemCount, options, test-status metadata
- * from projectTestStatusFields) that are ignored. This makes it a partial match
- * rather than a full deepStrictEqual.
- *
- * Field comparison uses strict equality (===). All fields on
- * QuickPickItemExpectation are primitives (string, number, undefined), so this
- * is equivalent to deepStrictEqual per field.
- */
 export const assertQuickPickContains = (
   lines: string[],
   first: QuickPickItemExpectation,
@@ -460,18 +362,6 @@ export const assertCommandsAbsent = (
   }
 };
 
-const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
-
-interface ClipboardWriteAssertionOptions {
-  textLength: number;
-}
-
-/**
- * Assert that `writeTextToClipboard` logged with the expected textLength.
- * NOTE: The adapter only logs the length, not the content — this is a sanity check,
- * not a content assertion. Pair with a content-bearing log (e.g., FilePathPaster.pasteFilePath's
- * `filePath` field) when you need to prove WHAT was written.
- */
 export const assertClipboardWriteLogged = (
   lines: string[],
   opts: ClipboardWriteAssertionOptions,
@@ -486,10 +376,6 @@ export const assertClipboardWriteLogged = (
   );
 };
 
-/**
- * Assert that NO `writeTextToClipboard` log was emitted.
- * Use to prove clipboard was not touched during error paths.
- */
 export const assertNoClipboardWriteLogged = (lines: string[]): void => {
   assert.ok(
     !lines.some((line) => parseLogContext(line)?.fn === CLIPBOARD_WRITE_FN),

@@ -9,10 +9,12 @@ import {
   CMD_PASTE_TO_DESTINATION,
 } from '../../constants/commandIds';
 import {
+  assertClipboardEqualsGeneratedLink,
+  getGeneratedLink,
   getLogCapture,
   openSourceWithSelection,
+  parseLogContext,
   standardSuite,
-  writeClipboardSentinel,
 } from '../helpers';
 
 standardSuite('Text Editor Destination', (ss) => {
@@ -38,19 +40,16 @@ standardSuite('Text Editor Destination', (ss) => {
       },
     ]);
 
-    await writeClipboardSentinel();
-
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
     await ss.settle();
 
-    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
-    await ss.settle();
-
-    const clipboard = await vscode.env.clipboard.readText();
-    const fn = path.basename(fileUri.fsPath);
-    assert.ok(
-      clipboard.includes(fn),
-      `Expected clipboard to contain filename "${fn}", got: "${clipboard}"`,
+    await assertClipboardEqualsGeneratedLink(
+      'Self-paste R-L should copy link to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+        await ss.settle();
+      },
+      'before-ted-001',
     );
     assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
 
@@ -85,14 +84,17 @@ standardSuite('Text Editor Destination', (ss) => {
       `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
     ]);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ted-002');
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
+    const link = getGeneratedLink('before-ted-002', { smartPad: 'both' });
+
     const destDoc = await vscode.workspace.openTextDocument(destUri);
-    const relativeSourcePath = vscode.workspace.asRelativePath(sourceUri);
     assert.ok(
-      destDoc.getText().includes(` ${relativeSourcePath}#L1`),
-      `Expected RangeLink "${relativeSourcePath}#L1" in dest, got: ${JSON.stringify(destDoc.getText())}`,
+      destDoc.getText().includes(link),
+      `Expected dest to contain generated link "${link}", got: "${destDoc.getText()}"`,
     );
     ss.log('✓ R-L different view column: allowed, link pasted in destination column');
   });
@@ -138,23 +140,25 @@ standardSuite('Text Editor Destination', (ss) => {
 
     const lines = logCapture.getLinesSince('before-htl-001');
 
-    const hiddenTabLog = lines.find((l) =>
-      l.includes('Editor hidden behind other tabs at bound viewColumn'),
-    );
+    const hiddenTabLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor hidden behind other tabs at bound viewColumn') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(
       hiddenTabLog,
       'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
     );
 
+    const link = getGeneratedLink('before-htl-001', { smartPad: 'both' });
+
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
-    const relativeSourcePath = vscode.workspace.asRelativePath(sourceUri);
     assert.ok(
-      destContent.includes(relativeSourcePath),
-      `Expected RangeLink referencing "${relativeSourcePath}" in bound editor, got: "${destContent}"`,
-    );
-    assert.ok(
-      destContent.includes('#L1'),
-      `Expected line reference "#L1" in bound editor, got: "${destContent}"`,
+      destContent.includes(link),
+      `Expected dest to include generated link "${link}", got: "${destContent}"`,
     );
 
     ss.log('✓ Bound editor brought to foreground and received RangeLink');
@@ -201,9 +205,14 @@ standardSuite('Text Editor Destination', (ss) => {
 
     const lines = logCapture.getLinesSince('before-htl-002');
 
-    const hiddenTabLog = lines.find((l) =>
-      l.includes('Editor hidden behind other tabs at bound viewColumn'),
-    );
+    const hiddenTabLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor hidden behind other tabs at bound viewColumn') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(
       hiddenTabLog,
       'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
@@ -401,9 +410,14 @@ standardSuite('Text Editor Destination', (ss) => {
     await ss.settle();
 
     const linesSinceClose = logCapture.getLinesSince('before-dtg-004-close');
-    const stateCleared = linesSinceClose.some((l) =>
-      l.includes('Bound file no longer in multiple editor groups — duplicate state cleared'),
-    );
+    const stateCleared = linesSinceClose.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Bound file no longer in multiple editor groups — duplicate state cleared') &&
+        ctx?.fn === 'PasteDestinationManager.onDidChangeTabs' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(stateCleared, 'Expected state-cleared log after closing the duplicate tab');
 
     // Re-open dest in col 2 to re-enter duplicate state.
@@ -478,9 +492,14 @@ standardSuite('Text Editor Destination', (ss) => {
     await ss.settle();
 
     const lines = logCapture.getLinesSince('before-svc-001');
-    const movedLog = lines.some((l) =>
-      l.includes('Editor moved to different viewColumn, following it'),
-    );
+    const movedLog = lines.some((l) => {
+      const ctx = parseLogContext(l);
+      return (
+        l.includes('Editor moved to different viewColumn, following it') &&
+        ctx?.fn === 'EditorFocusCapability.resolveViewColumn' &&
+        ctx?.editorUri === destUri.toString()
+      );
+    });
     assert.ok(movedLog, 'Expected "Editor moved to different viewColumn" log but none found');
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();

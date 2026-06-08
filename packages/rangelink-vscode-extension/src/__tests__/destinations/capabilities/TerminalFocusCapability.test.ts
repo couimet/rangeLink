@@ -1,8 +1,10 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import { FocusErrorReason } from '../../../destinations/capabilities/FocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
+import { RangeLinkExtensionError } from '../../../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../../../errors/RangeLinkExtensionErrorCodes';
 import {
   createMockInsertFactory,
   createMockTerminal,
@@ -34,17 +36,18 @@ describe('TerminalFocusCapability', () => {
       expect(value.inserter).toBe(mockInserterFn);
     });
     expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'test', terminalName: 'zsh' },
+      { fn: 'test::focus', terminalName: 'zsh' },
       'Terminal focused via showTerminal()',
     );
   });
 
-  it('returns TERMINAL_FOCUS_FAILED error when showTerminal throws', async () => {
+  it('returns TERMINAL_FOCUS_FAILED error when showTerminal fails', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const focusError = new Error('Terminal disposed');
-    jest.spyOn(mockAdapter, 'showTerminal').mockImplementation(() => {
-      throw focusError;
+    const focusError = new RangeLinkExtensionError({
+      code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
+      message: 'Terminal reference is not defined',
     });
+    jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(Result.err(focusError));
     const terminal = createMockTerminal({ name: 'bash' });
     const mockInsertFactory = createMockInsertFactory<vscode.Terminal>();
 
@@ -59,12 +62,12 @@ describe('TerminalFocusCapability', () => {
 
     expect(result).toBeErrWith((error: { reason: string; cause: unknown }) => {
       expect(error).toStrictEqual({
-        reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
+        reason: 'TERMINAL_FOCUS_FAILED',
         cause: focusError,
       });
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'test', terminalName: 'bash', error: focusError },
+      { fn: 'test::focus', terminalName: 'bash', error: focusError },
       'Failed to focus terminal',
     );
   });

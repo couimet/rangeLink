@@ -13,14 +13,14 @@ import {
   CMD_TERMINAL_PASTE_SELECTED_TEXT,
 } from '../../constants/commandIds';
 import {
-  assertClipboardChanged,
+  assertClipboardEqualsGeneratedLink,
   assertNoClipboardWriteLogged,
   assertTerminalBufferContains,
-  assertTerminalBufferEquals,
+  assertTerminalBufferEqualsGeneratedLink,
   type CapturingTerminal,
   clearSelection,
   echoToTerminal,
-  extractGeneratedLink,
+  getGeneratedLink,
   assertQuickPickContains,
   MENU_ITEM_GROUP_AI_ASSISTANTS,
   MENU_ITEM_GROUP_FILES,
@@ -30,7 +30,6 @@ import {
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
-  writeClipboardSentinel,
 } from '../helpers';
 
 const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text and try again.';
@@ -68,14 +67,14 @@ standardSuite('Core Send Commands', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
+    const generatedLink = getGeneratedLink('before-r-l-002', { smartPad: 'both' });
+
     const updatedDestDoc = await vscode.workspace.openTextDocument(destUri);
     const destText = updatedDestDoc.getText();
-    const relPath = vscode.workspace.asRelativePath(srcUri);
-    const expectedContent = ` ${relPath}#L2-L3 `;
     assert.strictEqual(
       destText,
-      expectedContent,
-      `Expected dest editor to contain exactly "${expectedContent}", got: ${JSON.stringify(destText)}`,
+      generatedLink,
+      `Expected dest editor to contain exactly the generated link, got: ${JSON.stringify(destText)}`,
     );
 
     ss.log('✓ R-L sent exact RangeLink to bound text editor destination');
@@ -94,9 +93,6 @@ standardSuite('Core Send Commands', (ss) => {
       (i) => `line ${i + 1} content`,
     );
 
-    const relPath = vscode.workspace.asRelativePath(fileUri);
-    const expectedLink = `${relPath}#L1-L3`;
-
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(0, 0, 3, 0);
@@ -107,8 +103,13 @@ standardSuite('Core Send Commands', (ss) => {
     });
     await ss.settle();
 
+    const logCapture003 = getLogCapture();
+    logCapture003.mark('before-r-l-003');
+
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
+
+    const generatedLink = getGeneratedLink('before-r-l-003', { smartPad: 'both' });
 
     const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
       tier1: string;
@@ -116,8 +117,8 @@ standardSuite('Core Send Commands', (ss) => {
     };
     assert.strictEqual(
       dummyText.tier1,
-      ` ${expectedLink} `,
-      `Expected Dummy AI tier1=" ${expectedLink} ", got: ${JSON.stringify(dummyText.tier1)}`,
+      generatedLink,
+      `Expected Dummy AI tier1="${generatedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
     );
     ss.log('✓ R-L sent RangeLink to Dummy AI (Tier 1) destination');
   });
@@ -136,21 +137,13 @@ standardSuite('Core Send Commands', (ss) => {
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
     await ss.settle();
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-r-c-001');
-
-    await writeClipboardSentinel();
-    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await ss.settle();
-
-    const clipboard = await assertClipboardChanged('R-C should write link to clipboard');
-    const lines = logCapture.getLinesSince('before-r-c-001');
-    const generatedLink = extractGeneratedLink(lines);
-    assert.ok(generatedLink, 'Expected "Generated link:" log line');
-    assert.strictEqual(
-      clipboard,
-      generatedLink,
-      `Expected clipboard to equal generated link, got: ${JSON.stringify(clipboard)}`,
+    await assertClipboardEqualsGeneratedLink(
+      'R-C should write link to clipboard',
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+        await ss.settle();
+      },
+      'before-r-c-001',
     );
 
     assert.strictEqual(
@@ -182,9 +175,7 @@ standardSuite('Core Send Commands', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const relPath = vscode.workspace.asRelativePath(fileUri);
-    const expectedContent = ` ${relPath}#L1-L2 `;
-    assertTerminalBufferEquals(capturing.getCapturedText(), expectedContent);
+    assertTerminalBufferEqualsGeneratedLink(capturing, 'before-r-l-004');
 
     ss.log(
       '✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination',
@@ -205,23 +196,13 @@ standardSuite('Core Send Commands', (ss) => {
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
     await ss.settle();
 
-    await writeClipboardSentinel();
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-r-c-002');
-
-    await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
-    await ss.settle();
-
-    const relPath = vscode.workspace.asRelativePath(fileUri);
-    const expectedContent = `${relPath}#L1-L2`;
-    const clipboard = await assertClipboardChanged(
+    await assertClipboardEqualsGeneratedLink(
       'R-C command dispatch should write link to clipboard',
-    );
-    assert.strictEqual(
-      clipboard,
-      expectedContent,
-      `Expected exact link on clipboard, got: ${JSON.stringify(clipboard)}`,
+      async () => {
+        await vscode.commands.executeCommand(CMD_COPY_LINK_ONLY_RELATIVE);
+        await ss.settle();
+      },
+      'before-r-c-002',
     );
 
     assert.strictEqual(
@@ -416,15 +397,13 @@ standardSuite('Core Send Commands', (ss) => {
     await ss.settle();
     capturing.clearCaptured();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-r-l-001');
+
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const captured = capturing.getCapturedText();
-    assertTerminalBufferContains(captured, 'csc-r-l-001');
-    assert.ok(
-      captured.startsWith(' ') && captured.endsWith(' '),
-      `Expected padded (space-bracketed) link in terminal buffer, got: ${JSON.stringify(captured)}`,
-    );
+    assertTerminalBufferEqualsGeneratedLink(capturing, 'before-r-l-001');
     ss.log('✓ R-L sent padded RangeLink to bound terminal');
   });
 
@@ -445,15 +424,13 @@ standardSuite('Core Send Commands', (ss) => {
     await ss.settle();
     capturing.clearCaptured();
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fullline-001');
+
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const captured = capturing.getCapturedText();
-    assertTerminalBufferContains(captured, 'csc-fullline-001');
-    assert.ok(
-      captured.startsWith(' ') && captured.endsWith(' '),
-      `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
-    );
+    assertTerminalBufferEqualsGeneratedLink(capturing, 'before-fullline-001');
     ss.log('✓ Full-line selection → R-L: link generated, no error');
   });
 });

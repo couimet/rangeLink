@@ -3,6 +3,7 @@ import type * as vscode from 'vscode';
 
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import type { TerminalPasteService } from '../../services';
 import type { FocusTier } from '../types';
 
 import { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
@@ -28,6 +29,7 @@ import { TerminalFocusCapability } from './TerminalFocusCapability';
 export class FocusCapabilityFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
+    private readonly terminalPasteService: TerminalPasteService,
     private readonly logger: Logger,
   ) {}
 
@@ -45,7 +47,7 @@ export class FocusCapabilityFactory {
     return new TerminalFocusCapability(
       this.ideAdapter,
       terminal,
-      new TerminalInsertFactory(this.ideAdapter, this.logger),
+      new TerminalInsertFactory(this.terminalPasteService, this.logger),
       this.logger,
     );
   }

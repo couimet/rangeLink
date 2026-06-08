@@ -5,7 +5,9 @@ import * as vscode from 'vscode';
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import { markRangeLinkTestFixture } from '../../destinations/utils/testFixtureRegistry';
 
-import { settle, TERMINAL_READY_MS } from './testEnv';
+import { withClipboardSentinel } from './clipboardHelpers';
+import { getGeneratedLink } from './logHelpers';
+import { TERMINAL_READY_MS, settle } from './testEnv';
 
 /**
  * A VS Code terminal backed by a custom pseudoterminal that records every
@@ -111,4 +113,31 @@ export const assertTerminalBufferContains = (captured: string, expected: string)
     captured.includes(expected),
     `Terminal buffer missing expected substring:\n  expected to include: ${JSON.stringify(expected)}\n  actual:              ${JSON.stringify(captured)}`,
   );
+};
+
+export const assertTerminalBufferEqualsGeneratedLink = (
+  capturing: CapturingTerminal,
+  marker: string,
+): void => {
+  const generatedLink = getGeneratedLink(marker, { smartPad: 'both' });
+  assertTerminalBufferEquals(capturing.getCapturedText(), generatedLink);
+};
+
+export const assertTerminalBufferContainsGeneratedLink = (
+  capturing: CapturingTerminal,
+  marker: string,
+): void => {
+  const generatedLink = getGeneratedLink(marker, { smartPad: 'both' });
+  assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
+};
+
+export const assertClipboardPreservedAndTerminalLink = async (
+  capturing: CapturingTerminal,
+  marker: string,
+  operationLabel: string,
+  fn: () => Promise<void>,
+): Promise<void> => {
+  capturing.clearCaptured();
+  await withClipboardSentinel(marker, operationLabel, fn);
+  assertTerminalBufferEqualsGeneratedLink(capturing, marker);
 };

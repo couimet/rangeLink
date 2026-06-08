@@ -1,4 +1,5 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
+import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { displayName } from '../../../package.json';
@@ -7,24 +8,27 @@ import {
   CLIPBOARD_POST_PASTE_DELAY_MS,
   ENV_RANGELINK_CAPTURE_LOGS,
   FOCUS_TO_PASTE_DELAY_MS,
-  VSCODE_CMD_TERMINAL_PASTE,
 } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
-  BehaviourAfterPaste,
   MessageCode,
   RelativePathFormat,
   type ResolveWorkspacePathResult,
-  type SendTextToTerminalOptions,
   TerminalFocusType,
 } from '../../types';
-import { formatMessage, getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
+import {
+  formatMessage,
+  getUntitledDisplayName,
+  resolveWorkspacePath,
+  validateTerminalDefined,
+} from '../../utils';
 import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
 import type { MessageProvider } from '../MessageProvider';
 import type { QuickPickProvider } from '../QuickPickProvider';
+import type { TerminalPasteAdapter } from '../TerminalPasteAdapter';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -94,7 +98,8 @@ export class VscodeAdapter
     ConfigurationProvider,
     ErrorFeedbackProvider,
     QuickPickProvider,
-    MessageProvider
+    MessageProvider,
+    TerminalPasteAdapter
 {
   /**
    * Create a new VSCode adapter.
@@ -109,13 +114,19 @@ export class VscodeAdapter
 
   /**
    * Read text from clipboard using VSCode API.
+   *
+   * Prefer {@link ClipboardService} for logging and error handling.
+   * Direct calls are only appropriate inside ClipboardService itself.
    */
   async readTextFromClipboard(): Promise<string> {
     return this.ideInstance.env.clipboard.readText();
   }
 
   /**
-   * Write text to clipboard using VSCode API
+   * Write text to clipboard using VSCode API.
+   *
+   * Prefer {@link ClipboardService} for logging and error handling.
+   * Direct calls are only appropriate inside ClipboardService itself.
    */
   async writeTextToClipboard(text: string): Promise<void> {
     this.logger.debug(
@@ -140,8 +151,7 @@ export class VscodeAdapter
    * worked — tests rely on this attribute to assert correct fallback behavior.
    *
    * After the successful paste, waits for postPasteDelayMs so the webview can
-   * complete its async clipboard read before the outer ClipboardPreserver
-   * restores the user's prior clipboard.
+   * complete its async clipboard read across the Electron IPC boundary.
    *
    * Not a generic clipboard-paste facade: the iteration and delays are tuned
    * for AI assistant webview surfaces. Use a different code path for terminal
@@ -336,89 +346,44 @@ export class VscodeAdapter
   // ============================================================================
 
   /**
-   * Enforce that terminal reference exists (not undefined).
-   *
-   * Shared validation for all terminal operations.
-   * Name chosen to allow future validation additions beyond existence check.
-   *
-   * @param terminal - Terminal to validate
-   * @param callerName - Name of calling method for error context
-   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined
-   */
-  private enforceTerminalExists(terminal: vscode.Terminal | undefined, callerName: string): void {
-    if (!terminal) {
-      throw new RangeLinkExtensionError({
-        code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
-        message: 'Terminal reference is not defined',
-        functionName: callerName,
-      });
-    }
-  }
-
-  /**
    * Show terminal in UI with specified focus behavior.
    *
    * Wrapper for terminal.show() to isolate destination classes from direct vscode calls.
    *
    * Architecture note: Uses enum parameter instead of boolean for extensibility.
    * Additional focus types can be added later without breaking existing code.
-   *
-   * @param terminal - Terminal to show
-   * @param focusType - Focus behavior (currently only StealFocus supported)
-   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
-   * @throws RangeLinkError with UNKNOWN_FOCUS_TYPE if focusType is unrecognized
    */
-  showTerminal(terminal: vscode.Terminal, focusType: TerminalFocusType): void {
-    this.enforceTerminalExists(terminal, 'VscodeAdapter.showTerminal');
-    this.logger.debug(
-      { fn: 'VscodeAdapter.showTerminal', terminalName: terminal.name, focusType },
-      'Showing terminal',
-    );
+  showTerminal(
+    terminal: vscode.Terminal,
+    focusType: TerminalFocusType,
+  ): Result<void, RangeLinkExtensionError> {
+    const logCtx: LoggingContext = {
+      fn: 'VscodeAdapter.showTerminal',
+      terminalName: terminal?.name,
+      focusType,
+    };
+
+    const validationResult = validateTerminalDefined(terminal);
+    if (!validationResult.success) {
+      this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal validation failed');
+      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
+    }
 
     switch (focusType) {
       case TerminalFocusType.StealFocus:
         terminal.show(false); // false = don't preserve focus, steal it to terminal
-        break;
+        this.logger.debug(logCtx, 'Showing terminal');
+        return Result.ok(undefined);
       default:
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
-          message: `Unknown focus type: ${focusType}`,
-          functionName: 'VscodeAdapter.showTerminal',
-          details: { focusType: focusType as never },
-        });
-    }
-  }
-
-  /**
-   * Paste clipboard content into a terminal.
-   *
-   * Shows the terminal to ensure it has focus, then executes the terminal paste
-   * command. The clipboard must already contain the desired text — this method
-   * does NOT write to clipboard. The single clipboard write happens earlier in
-   * ClipboardRouter.executeCopyAndSend().
-   *
-   * @param terminal - Terminal to paste into
-   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
-   */
-  async pasteIntoTerminal(
-    terminal: vscode.Terminal,
-    options?: SendTextToTerminalOptions,
-  ): Promise<void> {
-    this.enforceTerminalExists(terminal, 'VscodeAdapter.pasteIntoTerminal');
-    const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
-    this.logger.debug(
-      { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: terminal.name },
-      'Pasting into terminal',
-    );
-    terminal.show();
-    this.logger.debug(
-      { fn: 'VscodeAdapter.pasteIntoTerminal', terminalName: terminal.name },
-      'Executing terminal paste command',
-    );
-    await this.executeCommand(VSCODE_CMD_TERMINAL_PASTE);
-
-    if (behaviour === BehaviourAfterPaste.EXECUTE) {
-      terminal.sendText('', true);
+        this.logger.error(logCtx, `Unknown focus type: ${focusType}`);
+        return Result.err(
+          new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
+            message: `Unknown focus type: ${focusType}`,
+            functionName: 'VscodeAdapter.showTerminal',
+            details: { focusType: focusType as never },
+          }),
+        );
     }
   }
 
@@ -426,14 +391,17 @@ export class VscodeAdapter
    * Get terminal name for display/logging.
    *
    * Wrapper for terminal.name property access to isolate destination classes.
-   *
-   * @param terminal - Terminal to get name from
-   * @returns Terminal name
-   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
    */
-  getTerminalName(terminal: vscode.Terminal): string {
-    this.enforceTerminalExists(terminal, 'VscodeAdapter.getTerminalName');
-    return terminal.name;
+  getTerminalName(terminal: vscode.Terminal): Result<string, RangeLinkExtensionError> {
+    const validationResult = validateTerminalDefined(terminal);
+    if (!validationResult.success) {
+      this.logger.error(
+        { fn: 'VscodeAdapter.getTerminalName', error: validationResult.error },
+        'Terminal validation failed',
+      );
+      return validationResult as unknown as Result<string, RangeLinkExtensionError>;
+    }
+    return Result.ok(terminal.name);
   }
 
   // ============================================================================

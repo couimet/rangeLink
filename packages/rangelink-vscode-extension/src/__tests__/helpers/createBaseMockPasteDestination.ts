@@ -99,6 +99,7 @@ export const createBaseMockPasteDestination = (
   return {
     id,
     displayName: 'Test Destination',
+    rawLabel: 'test-destination',
     isAvailable: jest.fn().mockResolvedValue(true),
     isEligibleForPasteLink: jest.fn().mockResolvedValue(true),
     isEligibleForPasteContent: jest.fn().mockResolvedValue(true),
@@ -112,5 +113,5 @@ export const createBaseMockPasteDestination = (
     equals: jest.fn().mockResolvedValue(false),
     getDestinationUri: jest.fn().mockReturnValue(undefined),
     ...processedOverrides,
-  } as unknown as jest.Mocked<PasteDestination>;
+  } satisfies jest.Mocked<PasteDestination>;
 };

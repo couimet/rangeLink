@@ -99,6 +99,17 @@ describe('destinationBuilders', () => {
         details: { actualKind: 'text-editor', expectedKind: 'terminal' },
       });
     });
+
+    it('throws when getTerminalName returns an error', () => {
+      const context = createMockContext();
+
+      expect(() =>
+        buildTerminalDestination({ kind: 'terminal', terminal: undefined as any }, context),
+      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'validateTerminalDefined',
+      });
+    });
   });
 
   describe('buildTextEditorDestination', () => {
