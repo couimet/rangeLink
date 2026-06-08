@@ -684,6 +684,15 @@ test_cases:
     expected_result: 'File path inserted in destination column.'
     automated: true
 
+  - id: send-file-path-016
+    labels:
+      - clipboard
+      - self-paste
+    feature: 'send-file-path'
+    scenario: 'R-F to same file (same column, no selection) inserts path at cursor'
+    expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section 7 — Context Menu Integrations
   # ---------------------------------------------------------------------------

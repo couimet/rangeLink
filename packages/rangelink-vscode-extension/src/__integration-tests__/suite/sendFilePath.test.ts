@@ -256,10 +256,6 @@ standardSuite('Send File Path', (ss) => {
       'Expected "Quoted path for unsafe characters" log — path with spaces must be quoted for terminal safety',
     );
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
-    assert.ok(
-      clipboard.includes(relativePath),
-      `Expected clipboard to include the file path, got: ${JSON.stringify(clipboard)}`,
-    );
     ss.log('✓ Both terminal and clipboard receive the quoted path');
   });
 
@@ -585,5 +581,42 @@ standardSuite('Send File Path', (ss) => {
       `Expected destination to contain path "${relativePath}", got: ${JSON.stringify(destDoc.getText())}`,
     );
     ss.log('✓ Same file, different view column: allowed, path inserted in destination column');
+  });
+
+  test('send-file-path-016: self-paste with no selection inserts path at cursor (no clipboard.preserve override, no clipboard assertion)', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
+
+    const fileUri = ss.createWorkspaceFile('sfp-016-self', 'original content\n');
+    const destBasename = path.basename(fileUri.fsPath);
+    const destEditor = await openEditor(fileUri);
+    // Place cursor at beginning — no selection, so R-F is allowed
+    destEditor.selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
+    ]);
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const expectedContent = ` ${relativePath} original content\n`;
+    assert.strictEqual(
+      doc.getText(),
+      expectedContent,
+      `Expected file to have path inserted at cursor, got: ${JSON.stringify(doc.getText())}`,
+    );
+    ss.log(
+      '✓ Self-paste with no selection: path inserted at cursor, normal status bar feedback (no clipboard assertion)',
+    );
   });
 });

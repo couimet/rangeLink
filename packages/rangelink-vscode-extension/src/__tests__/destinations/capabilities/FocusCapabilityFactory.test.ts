@@ -6,7 +6,7 @@ import { EditorFocusCapability } from '../../../destinations/capabilities/Editor
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
-import { createMockTerminal, createMockUri, createMockVscodeAdapter } from '../../helpers';
+import { createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 describe('FocusCapabilityFactory', () => {
   let factory: FocusCapabilityFactory;
@@ -14,7 +14,8 @@ describe('FocusCapabilityFactory', () => {
   beforeEach(() => {
     const mockLogger = createMockLogger();
     const mockAdapter = createMockVscodeAdapter();
-    factory = new FocusCapabilityFactory(mockAdapter, mockLogger);
+    const mockTerminalPasteService = createMockTerminalPasteService();
+    factory = new FocusCapabilityFactory(mockAdapter, mockTerminalPasteService, mockLogger);
   });
 
   it('creates EditorFocusCapability', () => {

@@ -1,69 +1,30 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import type { BindSuccessInfo, PasteDestination } from '../../destinations';
+import type { BindSuccessInfo } from '../../destinations';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { SendRouter } from '../../services/SendRouter';
 import { AutoPasteResult, ExtensionResult, MessageCode } from '../../types';
 import {
-  createMockClipboardPreserver,
+  createMockClipboardService,
+  createMockClipboardWriter,
   createMockComposablePasteDestination,
   createMockDestinationManager,
   createMockDestinationPicker,
+  createMockOperationFeedbackProvider,
+  createMockPasteDestinationForSendRouter,
+  createMockUri,
 } from '../helpers';
-
-const createMockFeedbackProvider = () =>
-  ({
-    showError: jest.fn(),
-    provideCopyFeedback: jest.fn(),
-    provideSendFeedback: jest.fn(),
-  }) as jest.Mocked<{
-    showError: jest.Mock;
-    provideCopyFeedback: jest.Mock;
-    provideSendFeedback: jest.Mock;
-  }>;
-
-const createMockClipboardWriter = () => ({
-  writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
-});
-
-const createMockUri = (path: string): vscode.Uri =>
-  ({
-    scheme: 'file',
-    fsPath: path,
-    path,
-    toString: () => `file://${path}`,
-  }) as unknown as vscode.Uri;
-
-const createMockDestination = (overrides: Partial<PasteDestination> = {}): PasteDestination =>
-  ({
-    id: 'terminal',
-    displayName: 'Terminal ("bash")',
-    rawLabel: 'bash',
-    isAvailable: jest.fn().mockResolvedValue(true),
-    isEligibleForPasteLink: jest.fn().mockResolvedValue(true),
-    isEligibleForPasteContent: jest.fn().mockResolvedValue(true),
-    pasteLink: jest.fn().mockResolvedValue(true),
-    pasteContent: jest.fn().mockResolvedValue(true),
-    getSupportedLinkTypes: jest.fn().mockReturnValue([]),
-    getSupportedContentTypes: jest.fn().mockReturnValue([]),
-    shouldPreserveClipboard: jest.fn().mockReturnValue(true),
-    focus: jest.fn().mockResolvedValue(true),
-    getJumpSuccessMessage: jest.fn().mockReturnValue(''),
-    getLoggingDetails: jest.fn().mockReturnValue({}),
-    getDestinationUri: jest.fn().mockReturnValue(undefined),
-    equals: jest.fn().mockResolvedValue(false),
-    ...overrides,
-  }) as unknown as PasteDestination;
 
 describe('SendRouter', () => {
   let router: SendRouter;
   let mockClipboardWriter: ReturnType<typeof createMockClipboardWriter>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockDestinationPicker: ReturnType<typeof createMockDestinationPicker>;
-  let mockClipboardPreserver: ReturnType<typeof createMockClipboardPreserver>;
-  let mockFeedbackProvider: ReturnType<typeof createMockFeedbackProvider>;
+  let mockClipboardService: ReturnType<typeof createMockClipboardService>;
+  let mockFeedbackProvider: ReturnType<typeof createMockOperationFeedbackProvider>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   const createMockSendOptions = (overrides: Record<string, unknown> = {}) => ({
     control: { contentType: 'Link' as const },
@@ -82,22 +43,22 @@ describe('SendRouter', () => {
     mockClipboardWriter = createMockClipboardWriter();
     mockDestinationManager = createMockDestinationManager();
     mockDestinationPicker = createMockDestinationPicker();
-    mockClipboardPreserver = createMockClipboardPreserver();
-    mockClipboardPreserver.preserve.mockImplementation(
+    mockClipboardService = createMockClipboardService();
+    mockClipboardService.route.mockImplementation(
       async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
         const result = await fn();
         shouldRestore?.();
-        return result;
+        return Result.ok(result);
       },
     );
-    mockFeedbackProvider = createMockFeedbackProvider();
+    mockFeedbackProvider = createMockOperationFeedbackProvider();
     mockLogger = createMockLogger();
 
     router = new SendRouter(
       mockClipboardWriter as any,
       mockDestinationManager,
       mockDestinationPicker,
-      mockClipboardPreserver,
+      mockClipboardService,
       mockFeedbackProvider as any,
       mockLogger,
     );
@@ -195,8 +156,8 @@ describe('SendRouter', () => {
       expect(mockFeedbackProvider.provideSendFeedback).not.toHaveBeenCalled();
     });
 
-    it('preserves clipboard and provides feedback when bound and paste succeeds', async () => {
-      const dest = createMockDestination();
+    it('logs, shows warning, and returns when clipboard preservation fails', async () => {
+      const dest = createMockPasteDestinationForSendRouter();
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -205,14 +166,54 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
+        mockFeedbackProvider as any,
+        mockLogger,
+      );
+      const routeError = new RangeLinkError({
+        code: RangeLinkErrorCodes.CLIPBOARD_READ_FAILED,
+        message: 'Failed to read clipboard',
+        functionName: 'ClipboardService::route',
+      });
+      mockClipboardService.route.mockResolvedValue(Result.err(routeError));
+
+      await router.sendToDestination(createMockSendOptions() as any);
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'SendRouter.sendToDestination', error: routeError },
+        'Clipboard routing failed',
+      );
+      expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
+        {
+          contentType: 'CONTENT_NAME_RANGELINK',
+          destination: {
+            kind: 'terminal',
+            label: 'bash',
+            displayName: 'Terminal ("bash")',
+          },
+        },
+        { kind: 'clipboard-preservation-failed' },
+      );
+    });
+
+    it('preserves clipboard and provides feedback when bound and paste succeeds', async () => {
+      const dest = createMockPasteDestinationForSendRouter();
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: dest,
+      });
+      router = new SendRouter(
+        mockClipboardWriter as any,
+        mockDestinationManager,
+        mockDestinationPicker,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
 
       await router.sendToDestination(createMockSendOptions() as any);
 
-      expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+      expect(mockClipboardService.route).toHaveBeenCalledTimes(1);
       expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
         {
           contentType: 'CONTENT_NAME_RANGELINK',
@@ -223,7 +224,7 @@ describe('SendRouter', () => {
     });
 
     it('skips feedback when outcome is undefined', async () => {
-      const dest = createMockDestination();
+      const dest = createMockPasteDestinationForSendRouter();
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -232,7 +233,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -255,7 +256,7 @@ describe('SendRouter', () => {
 
   describe('executeSend (via sendToDestination)', () => {
     it('returns self-paste-blocked when checkSelfPaste detects collision', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -268,7 +269,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -310,7 +311,7 @@ describe('SendRouter', () => {
     });
 
     it('skips auto-paste when content is not eligible', async () => {
-      const dest = createMockDestination();
+      const dest = createMockPasteDestinationForSendRouter();
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -319,7 +320,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -342,7 +343,7 @@ describe('SendRouter', () => {
     });
 
     it('returns sent-automatic when paste succeeds with no user instruction', async () => {
-      const dest = createMockDestination({ getUserInstruction: undefined });
+      const dest = createMockPasteDestinationForSendRouter({ getUserInstruction: undefined });
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -351,7 +352,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -368,7 +369,7 @@ describe('SendRouter', () => {
     });
 
     it('returns sent-manual when paste succeeds with user instruction', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         getUserInstruction: jest.fn().mockReturnValueOnce('Press Cmd+V to paste'),
       });
       mockDestinationManager = createMockDestinationManager({
@@ -379,7 +380,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -396,7 +397,7 @@ describe('SendRouter', () => {
     });
 
     it('returns failed-manual when paste fails with user instruction', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         getUserInstruction: jest
           .fn()
           .mockImplementation((result: AutoPasteResult) =>
@@ -411,7 +412,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -436,7 +437,7 @@ describe('SendRouter', () => {
     });
 
     it('returns failed-automatic when paste fails with no user instruction', async () => {
-      const dest = createMockDestination({ getUserInstruction: undefined });
+      const dest = createMockPasteDestinationForSendRouter({ getUserInstruction: undefined });
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -445,7 +446,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -470,7 +471,7 @@ describe('SendRouter', () => {
     });
 
     it('falls back to generic destination name in logs when displayName is empty', async () => {
-      const dest = createMockDestination({ displayName: '' });
+      const dest = createMockPasteDestinationForSendRouter({ displayName: '' });
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -479,7 +480,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -504,7 +505,7 @@ describe('SendRouter', () => {
 
   describe('checkSelfPaste', () => {
     it('allows paste when sourceUri is undefined', async () => {
-      const dest = createMockDestination({ id: 'text-editor' });
+      const dest = createMockPasteDestinationForSendRouter({ id: 'text-editor' });
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: dest,
@@ -513,7 +514,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -535,7 +536,7 @@ describe('SendRouter', () => {
     });
 
     it('blocks with block-on-uri when same file and view column', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -548,7 +549,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -591,7 +592,7 @@ describe('SendRouter', () => {
     });
 
     it('allows cross-column paste when URIs match but view columns differ', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -604,7 +605,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -631,7 +632,7 @@ describe('SendRouter', () => {
     });
 
     it('blocks with block-on-editor-selection when selection is active and writes clipboard', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -645,7 +646,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -684,7 +685,7 @@ describe('SendRouter', () => {
     });
 
     it('blocks with block-on-editor-selection when selection is active and does NOT write clipboard', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -698,7 +699,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
@@ -737,7 +738,7 @@ describe('SendRouter', () => {
     });
 
     it('allows paste with block-on-editor-selection when destination has no active selection', async () => {
-      const dest = createMockDestination({
+      const dest = createMockPasteDestinationForSendRouter({
         id: 'text-editor',
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
@@ -751,7 +752,7 @@ describe('SendRouter', () => {
         mockClipboardWriter as any,
         mockDestinationManager,
         mockDestinationPicker,
-        mockClipboardPreserver,
+        mockClipboardService,
         mockFeedbackProvider as any,
         mockLogger,
       );
