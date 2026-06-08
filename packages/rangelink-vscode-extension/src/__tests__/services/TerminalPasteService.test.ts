@@ -5,7 +5,12 @@ import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalPasteService } from '../../services';
 import { BehaviourAfterPaste } from '../../types';
-import { createMockClipboardService, createMockTerminal, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
+import {
+  createMockClipboardService,
+  createMockTerminal,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers';
 
 describe('TerminalPasteService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
