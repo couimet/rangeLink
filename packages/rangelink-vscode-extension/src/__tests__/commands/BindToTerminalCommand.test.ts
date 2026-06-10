@@ -3,11 +3,13 @@ import { Result } from 'rangelink-core-ts';
 
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
 import type { BindSuccessInfo } from '../../destinations';
+import type { BoundSession } from '../../destinations';
 import type { TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import type { TerminalBindableQuickPickItem } from '../../types';
 import type { ExtensionResult } from '../../types';
+import type { TerminalBindableQuickPickItem } from '../../types';
 import {
+  createMockBoundSession,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockEligibleTerminal,
@@ -20,6 +22,7 @@ import {
 describe('BindToTerminalCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let command: BindToTerminalCommand;
@@ -28,6 +31,7 @@ describe('BindToTerminalCommand', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockDestinationManager = createMockDestinationManager();
+    mockSession = createMockBoundSession();
     mockAvailabilityService = createMockDestinationAvailabilityService();
     showTerminalPickerSpy = spyOnShowTerminalPicker();
   });
@@ -39,6 +43,7 @@ describe('BindToTerminalCommand', () => {
         mockAdapter,
         mockAvailabilityService,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 
@@ -57,6 +62,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -93,6 +99,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -129,6 +136,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -172,6 +180,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -201,6 +210,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -244,6 +254,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -268,6 +279,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -302,6 +314,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -345,6 +358,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -368,6 +382,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -394,6 +409,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 
@@ -426,6 +442,7 @@ describe('BindToTerminalCommand', () => {
           mockAdapter,
           mockAvailabilityService,
           mockDestinationManager,
+          mockSession,
           mockLogger,
         );
 

@@ -5,15 +5,16 @@ import type * as vscode from 'vscode';
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_SMART_PADDING_PASTE_LINK, SETTING_SMART_PADDING_PASTE_LINK } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
-import type { OperationFeedbackProvider } from '../feedback/OperationFeedbackProvider';
+import type { OperationFeedbackProvider } from '../feedback';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { DirtyBufferWarningResult, MessageCode, PasteContentType, PathFormat } from '../types';
 import { applySmartPadding, formatMessage, generateLinkFromSelections } from '../utils';
 
 import { getReferencePath } from './FilePathPaster';
-import { handleDirtyBufferWarning, LINK_DIRTY_BUFFER_CODES } from './handleDirtyBufferWarning';
+import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 import type { SelectionValidator } from './SelectionValidator';
 import type { SendRouter } from './SendRouter';
+import { LINK_DIRTY_BUFFER_CODES } from './types';
 
 /**
  * Orchestrates link creation from editor selections.

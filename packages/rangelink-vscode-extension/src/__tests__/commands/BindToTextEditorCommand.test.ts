@@ -1,15 +1,16 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { BindToTextEditorCommand } from '../../commands';
+import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import type { FileBindableQuickPickItem } from '../../types';
 import { ExtensionResult } from '../../types';
+import type { FileBindableQuickPickItem } from '../../types';
 import {
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
-  createMockEditorComposablePasteDestination,
   createMockEditor,
+  createMockEditorComposablePasteDestination,
   createMockEligibleFile,
   createMockTab,
   createMockTabGroup,
@@ -19,11 +20,13 @@ import {
   createMockVscodeAdapter,
   spyOnShowFilePicker,
 } from '../helpers';
+import { createMockBoundSession } from '../helpers';
 
 describe('BindToTextEditorCommand', () => {
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let showFilePickerSpy: jest.SpyInstance;
   let command: BindToTextEditorCommand;
@@ -32,12 +35,14 @@ describe('BindToTextEditorCommand', () => {
     mockAdapter = createMockVscodeAdapter();
     mockAvailabilityService = createMockDestinationAvailabilityService();
     mockDestinationManager = createMockDestinationManager();
+    mockSession = createMockBoundSession();
     mockLogger = createMockLogger();
     showFilePickerSpy = spyOnShowFilePicker();
     command = new BindToTextEditorCommand(
       mockAdapter,
       mockAvailabilityService,
       mockDestinationManager,
+      mockSession,
       mockLogger,
     );
   });
@@ -170,15 +175,15 @@ describe('BindToTextEditorCommand', () => {
         uri: mockUri,
         viewColumn: 3,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: boundEditorDest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(boundEditorDest);
       mockAvailabilityService.getAllFileItems.mockReturnValue([]);
       command = new BindToTextEditorCommand(
         mockAdapter,
         mockAvailabilityService,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 

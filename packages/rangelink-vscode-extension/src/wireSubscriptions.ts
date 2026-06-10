@@ -77,6 +77,7 @@ export const wireSubscriptions = (
     ideAdapter,
     logger,
     availabilityService,
+    boundSession,
     destinationManager,
     contextKeyService,
     statusBar,
@@ -111,7 +112,7 @@ export const wireSubscriptions = (
   // Disposables
   registrar.pushDisposable(delimiterCache);
   registrar.pushDisposable(statusBar);
-  registrar.pushDisposable(destinationManager);
+  registrar.pushDisposable(boundSession);
   registrar.pushDisposable(contextKeyService);
 
   // Link providers

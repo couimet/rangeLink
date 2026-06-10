@@ -6,7 +6,7 @@ import {
   CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
   CONTEXT_IS_BOUND,
 } from '../constants/contextKeys';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { BoundSession } from '../destinations';
 import { classifyTerminalForBinding } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { isTerminalDestination } from '../utils/destinationKindGuards';
@@ -26,7 +26,7 @@ export class ContextKeyService implements vscode.Disposable {
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
     const updateAll = (): void => {
@@ -38,11 +38,15 @@ export class ContextKeyService implements vscode.Disposable {
     this.logger.debug({ fn: FN }, 'ContextKeyService initializing all context keys');
     updateAll();
 
+    // Terminal lifecycle events and bound-destination changes all require
+    // re-evaluating context keys. BoundSession also subscribes to some of
+    // these events, but for a different purpose (auto-unbind). No overlap —
+    // each class owns its own reaction to the same event sources.
     this.disposables.push(
       ideAdapter.onDidOpenTerminal(updateAll),
       ideAdapter.onDidCloseTerminal(updateAll),
       ideAdapter.onDidChangeActiveTerminal(updateAll),
-      destinationManager.onDidChangeBoundDestination(updateAll),
+      session.onDidChange(updateAll),
     );
   }
 
@@ -58,7 +62,7 @@ export class ContextKeyService implements vscode.Disposable {
   }
 
   private updateIsBound(): void {
-    const isBound = this.destinationManager.getBoundDestination() !== undefined;
+    const isBound = this.session.get() !== undefined;
     this.lastSetValues[CONTEXT_IS_BOUND] = isBound;
     this.logger.debug({ fn: `${FN}.updateIsBound`, isBound }, 'Evaluating isBound context key');
     this.ideAdapter.setContext(CONTEXT_IS_BOUND, isBound);
@@ -78,7 +82,7 @@ export class ContextKeyService implements vscode.Disposable {
   }
 
   private updateActiveTerminalPasteDestination(): void {
-    const bound = this.destinationManager.getBoundDestination();
+    const bound = this.session.get();
     const active =
       bound !== undefined &&
       isTerminalDestination(bound) &&

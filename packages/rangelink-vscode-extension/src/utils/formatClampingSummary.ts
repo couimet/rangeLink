@@ -1,4 +1,4 @@
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import { MessageCode } from '../types';
 
 import type { ConvertedPosition } from './convertRangeLinkPosition';
@@ -28,9 +28,9 @@ export const formatClampingSummary = (start: ConvertedPosition, end: ConvertedPo
     return formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER);
   }
 
-  throw new RangeLinkExtensionError({
-    code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-    message: 'formatClampingSummary called with no clamping flags set',
-    functionName: 'formatClampingSummary',
-  });
+  throw RangeLinkExtensionError.forUnexpected(
+    'clamping summary state',
+    { lineClamped, characterClamped },
+    'formatClampingSummary',
+  );
 };

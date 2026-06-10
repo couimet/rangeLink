@@ -26,9 +26,11 @@ import {
 import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
+import type { EventSubscriptionProvider } from '../EventSubscriptionProvider';
 import type { MessageProvider } from '../MessageProvider';
 import type { QuickPickProvider } from '../QuickPickProvider';
 import type { TerminalPasteAdapter } from '../TerminalPasteAdapter';
+import type { VisibleEditorProvider } from '../VisibleEditorProvider';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -97,9 +99,11 @@ export class VscodeAdapter
     ClipboardProvider,
     ConfigurationProvider,
     ErrorFeedbackProvider,
-    QuickPickProvider,
+    EventSubscriptionProvider,
     MessageProvider,
-    TerminalPasteAdapter
+    QuickPickProvider,
+    TerminalPasteAdapter,
+    VisibleEditorProvider
 {
   /**
    * Create a new VSCode adapter.

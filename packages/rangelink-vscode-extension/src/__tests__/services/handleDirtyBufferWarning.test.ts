@@ -1,10 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import {
-  handleDirtyBufferWarning,
-  LINK_DIRTY_BUFFER_CODES,
-  FILE_PATH_DIRTY_BUFFER_CODES,
-} from '../../services/handleDirtyBufferWarning';
+import { handleDirtyBufferWarning } from '../../services/handleDirtyBufferWarning';
+import { FILE_PATH_DIRTY_BUFFER_CODES, LINK_DIRTY_BUFFER_CODES } from '../../services/types';
 import {
   createMockConfigReader,
   createMockDocument,

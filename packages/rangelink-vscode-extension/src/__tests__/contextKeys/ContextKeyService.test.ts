@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { ContextKeyService } from '../../contextKeys/ContextKeyService';
-import type { PasteDestination } from '../../destinations';
 import {
+  createMockBoundSession,
   createMockTerminal,
   createMockTerminalComposablePasteDestination,
   createMockVscodeAdapter,
@@ -15,39 +15,21 @@ const MINIMAL_PTY = {
   close: jest.fn(),
 };
 
-type MockPasteDestinationManager = {
-  getBoundDestination: jest.Mock;
-  onDidChangeBoundDestination: jest.Mock;
-};
-
-const createMockPasteDestinationManager = (
-  boundDest?: PasteDestination | undefined,
-): MockPasteDestinationManager => {
-  const emitter = new (jest.requireActual('vscode').EventEmitter)();
-  const onDidChangeBoundDestination = jest
-    .fn()
-    .mockImplementation((listener: (info: unknown) => void) => emitter.event(listener));
-
-  return {
-    getBoundDestination: jest.fn(() => boundDest),
-    onDidChangeBoundDestination,
-  };
-};
-
 describe('ContextKeyService', () => {
   let adapter: VscodeAdapterWithTestHooks;
   let vscodeMock: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>;
-  let pm: MockPasteDestinationManager;
+  let session: ReturnType<typeof createMockBoundSession>;
   let logger: ReturnType<typeof createMockLogger>;
   let setContextSpy: jest.SpyInstance;
 
-  const createService = (): ContextKeyService => new ContextKeyService(adapter, pm as any, logger);
+  const createService = (): ContextKeyService =>
+    new ContextKeyService(adapter, session as any, logger);
 
   beforeEach(() => {
     adapter = createMockVscodeAdapter();
     vscodeMock = adapter.__getVscodeInstance();
     vscodeMock.window.activeTerminal = undefined;
-    pm = createMockPasteDestinationManager();
+    session = createMockBoundSession();
     logger = createMockLogger();
     setContextSpy = jest.spyOn(adapter, 'setContext');
   });
@@ -66,7 +48,7 @@ describe('ContextKeyService', () => {
 
   it('sets isBound=true on construction when a destination is bound', () => {
     const dest = createMockTerminalComposablePasteDestination();
-    pm = createMockPasteDestinationManager(dest);
+    session = createMockBoundSession({ get: jest.fn().mockReturnValue(dest) });
     createService();
 
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', true);
@@ -150,7 +132,7 @@ describe('ContextKeyService', () => {
     const terminal = createMockTerminal({ name: 'zsh' });
     const dest = createMockTerminalComposablePasteDestination({ terminal });
     vscodeMock.window.activeTerminal = terminal;
-    pm = createMockPasteDestinationManager(dest);
+    session = createMockBoundSession({ get: jest.fn().mockReturnValue(dest) });
 
     createService();
 
@@ -166,7 +148,7 @@ describe('ContextKeyService', () => {
     const activeTerminal = createMockTerminal({ name: 'zsh', processId: Promise.resolve(2) });
     const dest = createMockTerminalComposablePasteDestination({ terminal: boundTerminal });
     vscodeMock.window.activeTerminal = activeTerminal;
-    pm = createMockPasteDestinationManager(dest);
+    session = createMockBoundSession({ get: jest.fn().mockReturnValue(dest) });
 
     createService();
 
@@ -182,7 +164,7 @@ describe('ContextKeyService', () => {
     vscodeMock.window.activeTerminal = terminal;
     // Use a plain object that won't pass isTerminalDestination guard
     const nonTerminalDest = { id: 'text-editor', displayName: 'Editor', rawLabel: 'file.ts' };
-    pm = createMockPasteDestinationManager(nonTerminalDest as unknown as PasteDestination);
+    session = createMockBoundSession({ get: jest.fn().mockReturnValue(nonTerminalDest) });
 
     createService();
 
@@ -201,7 +183,7 @@ describe('ContextKeyService', () => {
     expect(vscodeMock.window.onDidOpenTerminal).toHaveBeenCalledTimes(1);
     expect(vscodeMock.window.onDidCloseTerminal).toHaveBeenCalledTimes(1);
     expect(vscodeMock.window.onDidChangeActiveTerminal).toHaveBeenCalledTimes(1);
-    expect(pm.onDidChangeBoundDestination).toHaveBeenCalledTimes(1);
+    expect(session.onDidChange).toHaveBeenCalledTimes(1);
   });
 
   it('logs initialization on construction', () => {
@@ -252,9 +234,8 @@ describe('ContextKeyService', () => {
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', false);
 
     const dest = createMockTerminalComposablePasteDestination();
-    pm.getBoundDestination.mockReturnValue(dest);
-    const onBoundChange = pm.onDidChangeBoundDestination.mock.calls[0][0];
-    onBoundChange({ id: 'terminal', displayName: 'Terminal ("zsh")' });
+    session.get.mockReturnValue(dest);
+    session._emitter.fire({ id: 'terminal', displayName: 'Terminal ("zsh")' });
 
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', true);
     expect(logger.debug).toHaveBeenCalledWith(
@@ -273,7 +254,7 @@ describe('ContextKeyService', () => {
     });
     vscodeMock.window.activeTerminal = shell;
     const dest = createMockTerminalComposablePasteDestination({ terminal: shell });
-    pm.getBoundDestination.mockReturnValue(dest);
+    session.get.mockReturnValue(dest);
     const service = createService();
 
     expect(service.getLastSetValues()).toStrictEqual({
@@ -282,9 +263,8 @@ describe('ContextKeyService', () => {
       'rangelink.isActiveTerminalPasteDestination': true,
     });
 
-    pm.getBoundDestination.mockReturnValue(undefined);
-    const onBoundChange = pm.onDidChangeBoundDestination.mock.calls[0][0];
-    onBoundChange(undefined);
+    session.get.mockReturnValue(undefined);
+    session._emitter.fire(undefined);
 
     expect(service.getLastSetValues()).toStrictEqual({
       'rangelink.isBound': false,
@@ -305,7 +285,7 @@ describe('ContextKeyService', () => {
     (vscodeMock.window.onDidChangeActiveTerminal as jest.Mock).mockReturnValueOnce(
       changeDisposable,
     );
-    pm.onDidChangeBoundDestination.mockReturnValueOnce(boundDisposable);
+    session.onDidChange.mockReturnValueOnce(boundDisposable);
 
     const service = createService();
     service.dispose();

@@ -4,6 +4,7 @@ import { spyOnFormatMessage } from '../helpers';
 
 const createMockVscodeAdapter = () => ({
   showErrorMessage: jest.fn().mockResolvedValue(undefined),
+  setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
   setSuccessfulStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
   showInformationMessage: jest.fn().mockResolvedValue(undefined),
   showWarningMessage: jest.fn().mockResolvedValue(undefined),
@@ -175,7 +176,55 @@ describe('OperationFeedbackProvider', () => {
       ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
         message: 'Unexpected paste send outcome: {"kind":"unexpected-value"}',
         functionName: 'OperationFeedbackProvider.provideSendFeedback',
+        details: { unexpectedValue: { kind: 'unexpected-value' } },
       });
+    });
+  });
+
+  describe('notifyAutoUnbind', () => {
+    it('shows terminal-closed status bar message', () => {
+      provider.notifyAutoUnbind('Terminal ("bash")', 'terminal-closed');
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(
+        'STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED',
+        { destinationName: 'Terminal ("bash")' },
+      );
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        'Unbound from Terminal ("bash") — terminal closed',
+      );
+    });
+
+    it('shows editor-closed status bar message', () => {
+      provider.notifyAutoUnbind('Text Editor ("file.ts")', 'editor-closed');
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(
+        'STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED',
+        { destinationName: 'Text Editor ("file.ts")' },
+      );
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        'Unbound from Text Editor ("file.ts") — editor closed',
+      );
+    });
+
+    it('throws on unexpected reason', () => {
+      expect(() =>
+        provider.notifyAutoUnbind('Test', 'unknown-reason' as any),
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
+        message: 'Unexpected auto-unbind reason: "unknown-reason"',
+        functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
+        details: { unexpectedValue: 'unknown-reason' },
+      });
+    });
+  });
+
+  describe('notifyDuplicateTabWarning', () => {
+    it('shows duplicate tab warning toast', () => {
+      provider.notifyDuplicateTabWarning();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS');
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
+        'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',
+      );
     });
   });
 
@@ -207,7 +256,7 @@ describe('OperationFeedbackProvider', () => {
         message:
           "Chat assistant destination 'claude-code' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
         functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-        details: { destinationKind: 'claude-code' },
+        details: { unexpectedValue: 'claude-code' },
       });
     });
 
@@ -218,7 +267,7 @@ describe('OperationFeedbackProvider', () => {
         message:
           "AI assistant destination 'custom-ai:my-extension' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
         functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-        details: { destinationKind: 'custom-ai:my-extension' },
+        details: { unexpectedValue: 'custom-ai:my-extension' },
       });
     });
 

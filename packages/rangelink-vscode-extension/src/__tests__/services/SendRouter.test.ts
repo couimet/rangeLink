@@ -3,6 +3,7 @@ import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { BindSuccessInfo } from '../../destinations';
+import type { BoundSession } from '../../destinations';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { SendRouter } from '../../services/SendRouter';
@@ -17,11 +18,13 @@ import {
   createMockPasteDestinationForSendRouter,
   createMockUri,
 } from '../helpers';
+import { createMockBoundSession } from '../helpers';
 
 describe('SendRouter', () => {
   let router: SendRouter;
   let mockClipboardWriter: ReturnType<typeof createMockClipboardWriter>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockDestinationPicker: ReturnType<typeof createMockDestinationPicker>;
   let mockClipboardService: ReturnType<typeof createMockClipboardService>;
   let mockFeedbackProvider: ReturnType<typeof createMockOperationFeedbackProvider>;
@@ -41,6 +44,7 @@ describe('SendRouter', () => {
 
   beforeEach(() => {
     mockClipboardWriter = createMockClipboardWriter();
+    mockSession = createMockBoundSession();
     mockDestinationManager = createMockDestinationManager();
     mockDestinationPicker = createMockDestinationPicker();
     mockClipboardService = createMockClipboardService();
@@ -57,6 +61,7 @@ describe('SendRouter', () => {
     router = new SendRouter(
       mockClipboardWriter as any,
       mockDestinationManager,
+      mockSession,
       mockDestinationPicker,
       mockClipboardService,
       mockFeedbackProvider as any,
@@ -68,7 +73,7 @@ describe('SendRouter', () => {
 
   describe('resolveDestination', () => {
     it('returns true when a destination is already bound', async () => {
-      mockDestinationManager.isBound.mockReturnValue(true);
+      mockSession.isSet.mockReturnValue(true);
 
       const result = await router.resolveDestination({ fn: 'test' });
 
@@ -77,7 +82,7 @@ describe('SendRouter', () => {
     });
 
     it('returns true when picker binds successfully', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions: { kind: 'terminal', terminal: { name: 'bash' } as any },
@@ -99,7 +104,7 @@ describe('SendRouter', () => {
     });
 
     it('returns false when picker returns no-resource', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'no-resource' });
 
       const result = await router.resolveDestination({ fn: 'test' });
@@ -112,7 +117,7 @@ describe('SendRouter', () => {
     });
 
     it('returns false when user cancels picker', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'cancelled' });
 
       const result = await router.resolveDestination({ fn: 'test' });
@@ -121,7 +126,7 @@ describe('SendRouter', () => {
     });
 
     it('returns false when bind fails', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions: { kind: 'terminal', terminal: { name: 'bash' } as any },
@@ -144,7 +149,7 @@ describe('SendRouter', () => {
 
   describe('sendToDestination', () => {
     it('calls executeSend directly when unbound', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
 
       await router.sendToDestination(createMockSendOptions() as any);
 
@@ -158,13 +163,13 @@ describe('SendRouter', () => {
 
     it('logs, shows warning, and returns when clipboard preservation fails', async () => {
       const dest = createMockPasteDestinationForSendRouter();
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -198,13 +203,13 @@ describe('SendRouter', () => {
 
     it('preserves clipboard and provides feedback when bound and paste succeeds', async () => {
       const dest = createMockPasteDestinationForSendRouter();
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -225,13 +230,13 @@ describe('SendRouter', () => {
 
     it('skips feedback when outcome is undefined', async () => {
       const dest = createMockPasteDestinationForSendRouter();
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -261,13 +266,13 @@ describe('SendRouter', () => {
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -312,13 +317,13 @@ describe('SendRouter', () => {
 
     it('skips auto-paste when content is not eligible', async () => {
       const dest = createMockPasteDestinationForSendRouter();
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -344,13 +349,13 @@ describe('SendRouter', () => {
 
     it('returns sent-automatic when paste succeeds with no user instruction', async () => {
       const dest = createMockPasteDestinationForSendRouter({ getUserInstruction: undefined });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -372,13 +377,13 @@ describe('SendRouter', () => {
       const dest = createMockPasteDestinationForSendRouter({
         getUserInstruction: jest.fn().mockReturnValueOnce('Press Cmd+V to paste'),
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -404,13 +409,13 @@ describe('SendRouter', () => {
             result === AutoPasteResult.Failure ? 'Manual paste required' : undefined,
           ),
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -438,13 +443,13 @@ describe('SendRouter', () => {
 
     it('returns failed-automatic when paste fails with no user instruction', async () => {
       const dest = createMockPasteDestinationForSendRouter({ getUserInstruction: undefined });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -472,13 +477,13 @@ describe('SendRouter', () => {
 
     it('falls back to generic destination name in logs when displayName is empty', async () => {
       const dest = createMockPasteDestinationForSendRouter({ displayName: '' });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -506,13 +511,13 @@ describe('SendRouter', () => {
   describe('checkSelfPaste', () => {
     it('allows paste when sourceUri is undefined', async () => {
       const dest = createMockPasteDestinationForSendRouter({ id: 'text-editor' });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -541,13 +546,13 @@ describe('SendRouter', () => {
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -597,13 +602,13 @@ describe('SendRouter', () => {
         getDestinationUri: () => createMockUri('/test/file.ts'),
         getDestinationViewColumn: () => 1,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -638,13 +643,13 @@ describe('SendRouter', () => {
         getDestinationViewColumn: () => 1,
         editorHasActiveSelection: () => true,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -691,13 +696,13 @@ describe('SendRouter', () => {
         getDestinationViewColumn: () => 1,
         editorHasActiveSelection: () => true,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -744,13 +749,13 @@ describe('SendRouter', () => {
         getDestinationViewColumn: () => 1,
         editorHasActiveSelection: () => false,
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: dest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(dest);
       router = new SendRouter(
         mockClipboardWriter as any,
         mockDestinationManager,
+        mockSession,
         mockDestinationPicker,
         mockClipboardService,
         mockFeedbackProvider as any,
@@ -803,7 +808,7 @@ describe('SendRouter', () => {
     });
 
     it('delegates to destinationManager for self-paste-blocked with clipboardWritten: false', () => {
-      mockDestinationManager.isClipboardRestorationApplicable.mockReturnValue(false);
+      mockSession.isClipboardRestorationApplicable.mockReturnValue(false);
 
       const result = (router as any).shouldRestoreClipboard({
         kind: 'self-paste-blocked',
@@ -813,18 +818,18 @@ describe('SendRouter', () => {
       });
 
       expect(result).toBe(false);
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
     });
 
     it('delegates to destinationManager for sent-automatic outcome', () => {
-      mockDestinationManager.isClipboardRestorationApplicable.mockReturnValue(true);
+      mockSession.isClipboardRestorationApplicable.mockReturnValue(true);
 
       const result = (router as any).shouldRestoreClipboard({
         kind: 'sent-automatic',
       });
 
       expect(result).toBe(true);
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
     });
 
     it('delegates to destinationManager for sent-manual outcome', () => {
@@ -833,7 +838,7 @@ describe('SendRouter', () => {
         instruction: 'Press Cmd+V',
       });
 
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
     });
 
     it('delegates to destinationManager for failed-automatic outcome', () => {
@@ -842,7 +847,7 @@ describe('SendRouter', () => {
         destinationKind: 'terminal',
       });
 
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
     });
 
     it('delegates to destinationManager for failed-manual outcome', () => {
@@ -851,13 +856,13 @@ describe('SendRouter', () => {
         instruction: 'Manual paste required',
       });
 
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
     });
 
     it('delegates to destinationManager when outcome is undefined', () => {
       (router as any).shouldRestoreClipboard(undefined);
 
-      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
     });
   });
 
@@ -865,7 +870,7 @@ describe('SendRouter', () => {
 
   describe('showPickerAndBind', () => {
     it('returns no-resource when picker finds nothing', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'no-resource' });
 
       const result = await router.resolveDestination({ fn: 'test' });
@@ -878,7 +883,7 @@ describe('SendRouter', () => {
     });
 
     it('returns cancelled when user dismisses picker', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'cancelled' });
 
       const result = await router.resolveDestination({ fn: 'test' });
@@ -891,7 +896,7 @@ describe('SendRouter', () => {
     });
 
     it('returns bound when bind succeeds', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions: { kind: 'terminal', terminal: { name: 'bash' } as any },
@@ -909,7 +914,7 @@ describe('SendRouter', () => {
     });
 
     it('returns bind-failed when bind returns error', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions: { kind: 'terminal', terminal: { name: 'bash' } as any },
@@ -929,7 +934,7 @@ describe('SendRouter', () => {
     });
 
     it('throws on unexpected picker outcome', async () => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
       mockDestinationPicker.pick.mockResolvedValue({
         outcome: 'unexpected-value',
       } as any);
@@ -947,7 +952,7 @@ describe('SendRouter', () => {
           viewColumn: 1,
         },
       });
-      mockDestinationManager.getBoundDestination.mockReturnValue(editorDest);
+      mockSession.get.mockReturnValue(editorDest);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'cancelled' });
 
       await (router as any).showPickerAndBind();
@@ -971,7 +976,7 @@ describe('SendRouter', () => {
           terminal: mockTerminal,
         },
       });
-      mockDestinationManager.getBoundDestination.mockReturnValue(terminalDest);
+      mockSession.get.mockReturnValue(terminalDest);
       mockDestinationPicker.pick.mockResolvedValue({ outcome: 'cancelled' });
 
       await (router as any).showPickerAndBind();

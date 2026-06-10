@@ -320,6 +320,14 @@
   <rationale>Direct calls bypass the adapter abstraction, making code harder to test and inconsistent with the rest of the codebase</rationale>
 </rule>
 
+<rule id="P005" priority="critical">
+  <title>No re-exporting imported symbols</title>
+  <do>Import types, values, and functions from their canonical source file — never re-export them from an intermediate module</do>
+  <never>Use `export { X } from './Y'` or `import { X } from './Y'; export { X }` outside of barrel files (index.ts)</never>
+  <exception>Barrel files (`index.ts`) exist to re-export — this is their sole purpose</exception>
+  <rationale>Re-exports create indirection, making it unclear where a symbol originates. Callers should depend directly on the canonical source, not a pass-through module</rationale>
+</rule>
+
 </critical-rules>
 
 ---

@@ -1,11 +1,16 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 
 import type { ClipboardService } from '../clipboard/ClipboardService';
-import type { DestinationPicker, PasteDestination, PasteDestinationManager } from '../destinations';
+import type {
+  DestinationBinder,
+  DestinationPicker,
+  PasteDestination,
+  BoundSession,
+} from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { OperationFeedbackProvider } from '../feedback/OperationFeedbackProvider';
-import type { PasteContext, PasteSendOutcome } from '../feedback/types';
+import type { OperationFeedbackProvider } from '../feedback';
+import type { PasteContext, PasteSendOutcome } from '../feedback';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
 import { AutoPasteResult, MessageCode, type QuickPickBindResult, type SendOptions } from '../types';
 import { formatMessage, isEditorDestination, isSameFileDestination } from '../utils';
@@ -18,7 +23,8 @@ import { formatMessage, isEditorDestination, isSameFileDestination } from '../ut
 export class SendRouter {
   constructor(
     private readonly clipboardWriter: ClipboardWriter,
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly binder: DestinationBinder,
+    private readonly session: BoundSession,
     private readonly destinationPicker: DestinationPicker,
     private readonly clipboardService: ClipboardService,
     private readonly feedbackProvider: OperationFeedbackProvider,
@@ -30,7 +36,7 @@ export class SendRouter {
    * Returns true if a destination is available (already bound or user picked one).
    */
   async resolveDestination(logCtx: LoggingContext): Promise<boolean> {
-    if (!this.destinationManager.isBound()) {
+    if (!this.session.isSet()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
       const pickerResult = await this.showPickerAndBind();
       if (pickerResult.outcome !== 'bound') {
@@ -49,7 +55,7 @@ export class SendRouter {
    * Handles clipboard preservation, eligibility, self-paste detection, and feedback.
    */
   async sendToDestination<T>(options: SendOptions<T>): Promise<void> {
-    const shouldRoute = this.destinationManager.isBound();
+    const shouldRoute = this.session.isSet();
     if (shouldRoute) {
       let outcome: PasteSendOutcome | undefined;
       const routeResult = await this.clipboardService.route(
@@ -77,7 +83,7 @@ export class SendRouter {
   }
 
   private buildPasteContext<T>(options: SendOptions<T>): PasteContext {
-    const destination = this.destinationManager.getBoundDestination()!;
+    const destination = this.session.get()!;
     return {
       contentType: options.contentNameCode,
       destination: {
@@ -91,13 +97,13 @@ export class SendRouter {
   private async executeSend<T>(options: SendOptions<T>): Promise<PasteSendOutcome | undefined> {
     const { content, strategies, fnName } = options;
 
-    if (!this.destinationManager.isBound()) {
+    if (!this.session.isSet()) {
       await this.clipboardWriter.writeTextToClipboard(content.clipboard);
       this.logger.info({ fn: fnName }, 'No destination bound - copied to clipboard only');
       return undefined;
     }
 
-    const destination = this.destinationManager.getBoundDestination()!;
+    const destination = this.session.get()!;
     const displayName = destination.displayName || 'destination';
 
     const selfPasteOutcome = await this.checkSelfPaste(options, destination);
@@ -214,7 +220,7 @@ export class SendRouter {
     if (outcome?.kind === 'self-paste-blocked' && outcome.clipboardWritten) {
       return false;
     }
-    return this.destinationManager.isClipboardRestorationApplicable(
+    return this.session.isClipboardRestorationApplicable(
       outcome?.kind === 'sent-automatic' || outcome?.kind === 'sent-manual',
     );
   }
@@ -222,8 +228,11 @@ export class SendRouter {
   private async showPickerAndBind(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'SendRouter.showPickerAndBind' };
 
-    const boundDest = this.destinationManager.getBoundDestination();
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const boundDest = this.session.get();
+    // Dynamic read — the bound destination may change after the picker resolves,
+    // so resolveBoundTerminalProcessId must re-read current state at call time
+    // rather than using the snapshot captured in boundDest above.
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
 
     const editorPickerOptions = isEditorDestination(boundDest)
       ? {
@@ -249,7 +258,7 @@ export class SendRouter {
         return { outcome: 'cancelled' };
 
       case 'selected': {
-        const bindResult = await this.destinationManager.bind(result.bindOptions);
+        const bindResult = await this.binder.bind(result.bindOptions);
         if (!bindResult.success) {
           this.logger.error(
             { ...logCtx, error: bindResult.error },

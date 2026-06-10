@@ -10,6 +10,7 @@ import {
   MENU_ITEM_VERSION_INFO,
 } from '../../__integration-tests__/helpers/menuConstants';
 import type { Bookmark } from '../../bookmarks';
+import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
@@ -32,6 +33,7 @@ import {
   spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
+import { createMockBoundSession } from '../helpers';
 /**
  * Semantic constant for when user dismisses QuickPick (Escape or click outside).
  * VSCode's showQuickPick returns undefined in this case.
@@ -65,6 +67,7 @@ describe('RangeLinkStatusBar', () => {
   let mockStatusBarItem: ReturnType<typeof createMockStatusBarItem>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
@@ -89,6 +92,7 @@ describe('RangeLinkStatusBar', () => {
         executeCommand: executeCommandMock,
       },
     });
+    mockSession = createMockBoundSession();
     mockDestinationManager = createMockDestinationManager();
     mockBookmarkService = createMockBookmarkService();
     showFilePickerSpy = spyOnShowFilePicker();
@@ -100,6 +104,7 @@ describe('RangeLinkStatusBar', () => {
       new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -125,14 +130,14 @@ describe('RangeLinkStatusBar', () => {
       const mockBoundDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
       });
-      mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: mockBoundDest,
-      });
+      mockDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(mockBoundDest);
 
       new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -158,12 +163,13 @@ describe('RangeLinkStatusBar', () => {
       new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
       );
 
-      (mockDestinationManager as any)._onDidChangeBoundDestinationEmitter.fire({
+      (mockSession as any)._emitter.fire({
         id: 'terminal',
         displayName: 'Terminal ("zsh")',
       });
@@ -178,12 +184,13 @@ describe('RangeLinkStatusBar', () => {
       new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
       );
 
-      (mockDestinationManager as any)._onDidChangeBoundDestinationEmitter.fire(undefined);
+      (mockSession as any)._emitter.fire(undefined);
 
       expect(mockStatusBarItem.tooltip).toBe('RangeLink — no destination bound');
       expect(mockStatusBarItem.color).toBeUndefined();
@@ -223,6 +230,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -282,6 +290,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -319,13 +328,13 @@ describe('RangeLinkStatusBar', () => {
       const mockBoundDestination = createMockTerminalPasteDestination({
         displayName: 'Terminal ("zsh")',
       });
-      const boundDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: mockBoundDestination,
-      });
+      const boundDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(mockBoundDestination);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         boundDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -365,13 +374,13 @@ describe('RangeLinkStatusBar', () => {
         displayName: 'Text Editor ("Untitled-2")',
         viewColumn: 2,
       });
-      const boundDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: mockBoundDestination,
-      });
+      const boundDestinationManager = createMockDestinationManager();
+      mockSession.isSet.mockReturnValue(true);
+      mockSession.get.mockReturnValue(mockBoundDestination);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         boundDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -427,6 +436,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -498,6 +508,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -535,6 +546,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -577,6 +589,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -603,6 +616,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -623,6 +637,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -676,6 +691,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -729,6 +745,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -774,6 +791,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -820,6 +838,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -868,6 +887,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -895,6 +915,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -936,6 +957,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -962,6 +984,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1000,6 +1023,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1040,6 +1064,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1065,6 +1090,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1085,6 +1111,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1118,6 +1145,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,
@@ -1159,6 +1187,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockSession,
         mockAvailabilityService,
         mockBookmarkService,
         mockLogger,

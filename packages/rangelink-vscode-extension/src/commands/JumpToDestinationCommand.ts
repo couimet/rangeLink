@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
+import type { BoundSession, DestinationFocuser } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { type BindOptions, MessageCode } from '../types';
 import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
@@ -17,7 +17,8 @@ import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
  */
 export class JumpToDestinationCommand {
   constructor(
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly focuser: DestinationFocuser,
+    private readonly session: BoundSession,
     private readonly destinationPicker: DestinationPicker,
     private readonly logger: Logger,
   ) {
@@ -30,7 +31,7 @@ export class JumpToDestinationCommand {
   async execute(): Promise<JumpToDestinationResult> {
     const logCtx = { fn: 'JumpToDestinationCommand.execute' };
 
-    if (this.destinationManager.isBound()) {
+    if (this.session.isSet()) {
       return this.focus(logCtx);
     }
 
@@ -67,7 +68,7 @@ export class JumpToDestinationCommand {
 
   private async focus(logCtx: { fn: string }): Promise<JumpToDestinationResult> {
     this.logger.debug(logCtx, 'Destination already bound, focusing');
-    const focusResult = await this.destinationManager.focusBoundDestination();
+    const focusResult = await this.focuser.focusBoundDestination();
 
     if (!focusResult.success) {
       return { outcome: 'focus-failed', error: focusResult.error };
@@ -81,7 +82,7 @@ export class JumpToDestinationCommand {
     logCtx: { fn: string },
   ): Promise<JumpToDestinationResult> {
     this.logger.debug(logCtx, 'Binding selected destination and focusing');
-    const result = await this.destinationManager.bindAndFocus(bindOptions);
+    const result = await this.focuser.bindAndFocus(bindOptions);
 
     if (!result.success) {
       this.logger.debug(logCtx, 'Bind and focus failed');

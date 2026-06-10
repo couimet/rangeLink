@@ -11,4 +11,7 @@ export * from './DestinationRegistry';
 export * from './DestinationAvailabilityService';
 export * from './DestinationPicker';
 export * from './destinationBuilders';
+export * from './BoundSession';
+export * from './DestinationBinder';
+export * from './DestinationFocuser';
 export * from './PasteDestinationManager';

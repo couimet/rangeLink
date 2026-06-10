@@ -2,6 +2,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { BindToDestinationCommand } from '../../commands';
 import type { BindSuccessInfo } from '../../destinations';
+import type { BoundSession } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
 import type { BindOptions } from '../../types';
@@ -13,6 +14,7 @@ import {
   createMockTerminalComposablePasteDestination,
   createMockUri,
 } from '../helpers';
+import { createMockBoundSession } from '../helpers';
 
 describe('BindToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
@@ -31,16 +33,19 @@ describe('BindToDestinationCommand message contracts', () => {
 describe('BindToDestinationCommand', () => {
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockDestinationPicker: ReturnType<typeof createMockDestinationPicker>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let command: BindToDestinationCommand;
 
   beforeEach(() => {
     mockDestinationManager = createMockDestinationManager();
     mockDestinationPicker = createMockDestinationPicker();
+    mockSession = createMockBoundSession();
     mockLogger = createMockLogger();
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
   });
@@ -65,6 +70,7 @@ describe('BindToDestinationCommand', () => {
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 
@@ -96,6 +102,7 @@ describe('BindToDestinationCommand', () => {
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 
@@ -124,6 +131,7 @@ describe('BindToDestinationCommand', () => {
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 
@@ -157,6 +165,7 @@ describe('BindToDestinationCommand', () => {
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 
@@ -180,16 +189,16 @@ describe('BindToDestinationCommand', () => {
       uri: mockUri,
       viewColumn: 2,
     });
-    mockDestinationManager = createMockDestinationManager({
-      isBound: true,
-      boundDestination: boundEditorDest,
-    });
+    mockDestinationManager = createMockDestinationManager();
+    mockSession.isSet.mockReturnValue(true);
+    mockSession.get.mockReturnValue(boundEditorDest);
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 
@@ -213,16 +222,16 @@ describe('BindToDestinationCommand', () => {
 
   it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
     const boundTerminalDest = createMockTerminalComposablePasteDestination({ processId: 99 });
-    mockDestinationManager = createMockDestinationManager({
-      isBound: true,
-      boundDestination: boundTerminalDest,
-    });
+    mockDestinationManager = createMockDestinationManager();
+    mockSession.isSet.mockReturnValue(true);
+    mockSession.get.mockReturnValue(boundTerminalDest);
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
     command = new BindToDestinationCommand(
       mockDestinationManager,
       mockDestinationPicker,
+      mockSession,
       mockLogger,
     );
 

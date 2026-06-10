@@ -81,8 +81,10 @@ describe('formatClampingSummary', () => {
       expect(() => formatClampingSummary(NO_CLAMPING, NO_CLAMPING)).toThrowRangeLinkExtensionError(
         'UNEXPECTED_CODE_PATH',
         {
-          message: 'formatClampingSummary called with no clamping flags set',
+          message:
+            'Unexpected clamping summary state: {"lineClamped":false,"characterClamped":false}',
           functionName: 'formatClampingSummary',
+          details: { unexpectedValue: { lineClamped: false, characterClamped: false } },
         },
       );
     });

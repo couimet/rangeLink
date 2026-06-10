@@ -19,10 +19,10 @@ export const createMockWiringServices = (): jest.Mocked<WiringServices> =>
       getAllFileItems: jest.fn(),
       getGroupedDestinationItems: jest.fn(),
     },
+    boundSession: { dispose: jest.fn() },
     destinationManager: {
       bind: jest.fn(),
       unbind: jest.fn(),
-      getBoundDestination: jest.fn(),
       dispose: jest.fn(),
     },
     contextKeyService: { dispose: jest.fn() },

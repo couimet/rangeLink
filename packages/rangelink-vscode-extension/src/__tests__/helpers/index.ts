@@ -2,6 +2,7 @@ export * from './createMockAsRelativePath';
 export * from './createMockBindableQuickPickItem';
 export * from './createMockBookmarkService';
 export * from './createMockBookmarksStore';
+export * from './createMockBoundSession';
 export * from './createMockCancellationToken';
 export * from './createMockClaudeCodeComposableDestination';
 export * from './createMockClaudeCodeDestination';

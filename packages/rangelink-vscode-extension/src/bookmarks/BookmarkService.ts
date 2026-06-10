@@ -5,7 +5,7 @@ import {
   DEFAULT_FEATURES_BOOKMARKS_ENABLED,
   SETTING_FEATURES_BOOKMARKS_ENABLED,
 } from '../constants';
-import type { PasteDestinationManager } from '../destinations';
+import type { PasteDestinationManager, BoundSession } from '../destinations';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -26,6 +26,7 @@ export class BookmarkService {
     private readonly ideAdapter: VscodeAdapter,
     private readonly configReader: ConfigReader,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
     this.logger.debug({ fn: 'BookmarkService.constructor' }, 'BookmarkService initialized');
@@ -89,7 +90,7 @@ export class BookmarkService {
     const logCtx = { fn: 'BookmarkService.sendBookmark', bookmarkId };
 
     // TODO #385: add clipboard preservation here when bookmarks are exposed
-    if (!this.destinationManager.isBound()) {
+    if (!this.session.isSet()) {
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
         message: 'Cannot send bookmark: no destination is currently bound',

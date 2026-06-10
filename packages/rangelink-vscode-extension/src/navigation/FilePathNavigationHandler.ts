@@ -1,13 +1,10 @@
 import os from 'node:os';
 
 import type { Logger } from 'barebone-logger';
-import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import { formatMessage } from '../utils';
-
-export { buildFilePathPattern, extractFilePath };
 
 /**
  * Navigation handler for plain file path navigation.
