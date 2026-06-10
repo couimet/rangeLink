@@ -108,7 +108,7 @@ export class BoundSession implements vscode.Disposable {
         const destinationName = this.bound.displayName;
         const terminalName = closedTerminal.name || 'Unnamed Terminal'; // log-only, no i18n needed
         this.logger.info(
-          { fn: 'PasteDestinationManager.onDidCloseTerminal', terminalName },
+          { fn: 'BoundSession.setupTerminalCloseListener', terminalName },
           `Bound terminal closed: ${terminalName} - auto-unbinding`,
         );
         this.clear();
@@ -133,7 +133,7 @@ export class BoundSession implements vscode.Disposable {
 
       const editorDisplayName = this.bound.displayName || 'Unknown'; // log-only, no i18n needed
       const logCtx = {
-        fn: 'PasteDestinationManager.onDidCloseTextDocument',
+        fn: 'BoundSession.setupDocumentCloseListener',
         editorDisplayName,
         boundDocumentUri: boundDocumentUri.toString(),
         isClosed: closedDocument.isClosed,
@@ -172,7 +172,7 @@ export class BoundSession implements vscode.Disposable {
         this.isInDuplicateTabState = true;
         this.logger.warn(
           {
-            fn: 'PasteDestinationManager.onDidChangeTabs',
+            fn: 'BoundSession.setupMultiColumnGuardListener',
             editorUri: boundDocumentUri.toString(),
             matchCount: matchingEditors.length,
             viewColumns: matchingEditors.map((e) => e.viewColumn),
@@ -184,7 +184,7 @@ export class BoundSession implements vscode.Disposable {
         this.isInDuplicateTabState = false;
         this.logger.info(
           {
-            fn: 'PasteDestinationManager.onDidChangeTabs',
+            fn: 'BoundSession.setupMultiColumnGuardListener',
             editorUri: boundDocumentUri.toString(),
           },
           'Bound file no longer in multiple editor groups — duplicate state cleared',

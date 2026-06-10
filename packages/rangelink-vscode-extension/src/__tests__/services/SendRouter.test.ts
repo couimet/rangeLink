@@ -2,7 +2,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import type { BindSuccessInfo } from '../../destinations';
+import type { BindSuccessInfo, PasteDestination } from '../../destinations';
 import type { BoundSession } from '../../destinations';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
@@ -796,73 +796,96 @@ describe('SendRouter', () => {
   // ── shouldRestoreClipboard ───────────────────────────────────
 
   describe('shouldRestoreClipboard', () => {
-    it('returns false for self-paste-blocked with clipboardWritten: true', () => {
-      const result = (router as any).shouldRestoreClipboard({
-        kind: 'self-paste-blocked',
-        destinationKind: 'text-editor',
-        clipboardWritten: true,
-        toastMessage: 'test message',
-      });
+    const createDest = (overrides: Partial<PasteDestination> = {}) =>
+      createMockPasteDestinationForSendRouter(overrides);
+
+    it('returns false for self-paste-blocked with clipboardWritten: true (regardless of destination)', () => {
+      const dest = createDest({ shouldPreserveClipboard: jest.fn().mockReturnValue(true) });
+
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'self-paste-blocked', destinationKind: 'text-editor', clipboardWritten: true, toastMessage: 'test' },
+        dest,
+      );
 
       expect(result).toBe(false);
+      expect(dest.shouldPreserveClipboard).not.toHaveBeenCalled();
     });
 
-    it('delegates to destinationManager for self-paste-blocked with clipboardWritten: false', () => {
-      mockSession.isClipboardRestorationApplicable.mockReturnValue(false);
-
-      const result = (router as any).shouldRestoreClipboard({
-        kind: 'self-paste-blocked',
-        destinationKind: 'text-editor',
-        clipboardWritten: false,
-        toastMessage: 'test message',
-      });
-
-      expect(result).toBe(false);
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
-    });
-
-    it('delegates to destinationManager for sent-automatic outcome', () => {
-      mockSession.isClipboardRestorationApplicable.mockReturnValue(true);
-
-      const result = (router as any).shouldRestoreClipboard({
-        kind: 'sent-automatic',
-      });
+    it('returns true when no destination is bound', () => {
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'failed-automatic', destinationKind: 'terminal' },
+        undefined,
+      );
 
       expect(result).toBe(true);
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
     });
 
-    it('delegates to destinationManager for sent-manual outcome', () => {
-      (router as any).shouldRestoreClipboard({
-        kind: 'sent-manual',
-        instruction: 'Press Cmd+V',
+    it('returns false when destination.shouldPreserveClipboard() returns false', () => {
+      const dest = createDest({ shouldPreserveClipboard: jest.fn().mockReturnValue(false) });
+
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'sent-automatic' },
+        dest,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('returns true when paste succeeded (sent-automatic) and shouldPreserveClipboard returns true', () => {
+      const dest = createDest();
+
+      const result = (router as any).shouldRestoreClipboard({ kind: 'sent-automatic' }, dest);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns true when paste succeeded (sent-manual) and shouldPreserveClipboard returns true', () => {
+      const dest = createDest();
+
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'sent-manual', instruction: 'Press Cmd+V' },
+        dest,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('returns true when paste failed and destination has no failure instruction', () => {
+      const dest = createDest({
+        getUserInstruction: jest
+          .fn()
+          .mockImplementation((result: AutoPasteResult) =>
+            result === AutoPasteResult.Failure ? undefined : 'Press Cmd+V',
+          ),
       });
 
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(true);
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'failed-automatic', destinationKind: 'terminal' },
+        dest,
+      );
+
+      expect(result).toBe(true);
     });
 
-    it('delegates to destinationManager for failed-automatic outcome', () => {
-      (router as any).shouldRestoreClipboard({
-        kind: 'failed-automatic',
-        destinationKind: 'terminal',
+    it('returns false when paste failed and destination provides a failure instruction', () => {
+      const dest = createDest({
+        getUserInstruction: jest.fn().mockReturnValue('Manual paste required'),
       });
 
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      const result = (router as any).shouldRestoreClipboard(
+        { kind: 'failed-manual', instruction: 'Manual paste required' },
+        dest,
+      );
+
+      expect(result).toBe(false);
     });
 
-    it('delegates to destinationManager for failed-manual outcome', () => {
-      (router as any).shouldRestoreClipboard({
-        kind: 'failed-manual',
-        instruction: 'Manual paste required',
-      });
+    it('returns true when outcome is undefined and destination is bound with default mocks', () => {
+      const dest = createDest();
 
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
-    });
+      const result = (router as any).shouldRestoreClipboard(undefined, dest);
 
-    it('delegates to destinationManager when outcome is undefined', () => {
-      (router as any).shouldRestoreClipboard(undefined);
-
-      expect(mockSession.isClipboardRestorationApplicable).toHaveBeenCalledWith(false);
+      expect(result).toBe(true);
     });
   });
 

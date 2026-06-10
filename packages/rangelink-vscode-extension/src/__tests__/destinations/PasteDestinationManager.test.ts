@@ -242,7 +242,6 @@ describe('PasteDestinationManager', () => {
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
       });
       expect(mockFeedback.notifyAlreadyBound).toHaveBeenCalledWith('Terminal ("bash")');
-      expect(mockFeedback.notifyAlreadyBound).toHaveBeenCalledWith('Terminal ("bash")');
     });
 
     it('should handle terminal with custom name', async () => {
@@ -581,9 +580,10 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.visibleTextEditors = [];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
       const missingUri = createMockUri('/workspace/src/gone.ts');
+      const fileNotFoundError = new Error('File not found');
       mockAdapter
         .__getVscodeInstance()
-        .workspace.openTextDocument.mockRejectedValueOnce(new Error('File not found'));
+        .workspace.openTextDocument.mockRejectedValueOnce(fileNotFoundError);
 
       const result = await manager.bind({ kind: 'text-editor', uri: missingUri, viewColumn: 1 });
 
@@ -608,6 +608,7 @@ describe('PasteDestinationManager', () => {
           uri: 'file:///workspace/src/gone.ts',
           viewColumn: 1,
           fileName: 'gone.ts',
+          error: fileNotFoundError,
         },
         'showTextDocument threw for background tab',
       );

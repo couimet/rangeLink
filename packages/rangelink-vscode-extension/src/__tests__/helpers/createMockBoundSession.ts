@@ -4,15 +4,16 @@ import type { BoundSession } from '../../destinations';
 import type { BoundDestinationInfo } from '../../types';
 
 export const createMockBoundSession = (overrides?: { get?: jest.Mock; isSet?: jest.Mock }) => {
-  let stored: BoundDestinationInfo | undefined = overrides?.get ? undefined : undefined;
+  let stored: BoundDestinationInfo | undefined = undefined;
 
   const getMock = overrides?.get ?? jest.fn().mockImplementation(() => stored);
 
-  const isSetMock = overrides?.isSet ?? jest.fn().mockImplementation(() => stored !== undefined);
+  const isSetMock = overrides?.isSet ?? jest.fn().mockImplementation(() => getMock() !== undefined);
 
   const getInfoMock = jest.fn().mockImplementation(() => {
-    if (!stored) return undefined;
-    return { id: stored.id, displayName: stored.displayName };
+    const current = getMock();
+    if (!current) return undefined;
+    return { id: current.id, displayName: current.displayName };
   });
 
   const setMock = jest.fn().mockImplementation((dest: BoundDestinationInfo | undefined) => {

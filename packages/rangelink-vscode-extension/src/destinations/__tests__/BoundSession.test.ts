@@ -190,7 +190,7 @@ describe('BoundSession', () => {
     it('is safe to call when nothing is bound', () => {
       const session = createSession();
 
-      expect(() => session.clear()).not.toThrow();
+      session.clear();
       expect(session.isSet()).toBe(false);
     });
   });
@@ -337,6 +337,10 @@ describe('BoundSession', () => {
       handler(terminal);
 
       expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'BoundSession.setupTerminalCloseListener', terminalName: 'bash' },
+        'Bound terminal closed: bash - auto-unbinding',
+      );
       expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
         'Terminal ("bash")',
         'terminal-closed',
@@ -395,7 +399,7 @@ describe('BoundSession', () => {
       handler(terminal);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.onDidCloseTerminal', terminalName: 'Unnamed Terminal' },
+        { fn: 'BoundSession.setupTerminalCloseListener', terminalName: 'Unnamed Terminal' },
         'Bound terminal closed: Unnamed Terminal - auto-unbinding',
       );
     });
@@ -418,6 +422,15 @@ describe('BoundSession', () => {
       handler({ uri, isClosed: true } as vscode.TextDocument);
 
       expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupDocumentCloseListener',
+          editorDisplayName: 'Text Editor ("test.ts")',
+          boundDocumentUri: 'file://file:///test.ts',
+          isClosed: true,
+        },
+        'Bound document closed (isClosed=true): Text Editor ("test.ts") — auto-unbinding',
+      );
       expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
         'Text Editor ("test.ts")',
         'editor-closed',
@@ -438,8 +451,13 @@ describe('BoundSession', () => {
       handler({ uri, isClosed: true } as vscode.TextDocument);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({ editorDisplayName: 'Unknown' }),
-        expect.stringContaining('auto-unbinding'),
+        {
+          fn: 'BoundSession.setupDocumentCloseListener',
+          editorDisplayName: 'Unknown',
+          boundDocumentUri: 'file://file:///test.ts',
+          isClosed: true,
+        },
+        'Bound document closed (isClosed=true): Unknown — auto-unbinding',
       );
     });
 
@@ -511,6 +529,15 @@ describe('BoundSession', () => {
       const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
       handler();
 
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupMultiColumnGuardListener',
+          editorUri: 'file://file:///test.ts',
+          matchCount: 2,
+          viewColumns: [1, 2],
+        },
+        'Bound file detected in multiple editor groups',
+      );
       expect(mockFeedback.notifyDuplicateTabWarning).toHaveBeenCalled();
     });
 
@@ -541,7 +568,10 @@ describe('BoundSession', () => {
       handler();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({ fn: 'PasteDestinationManager.onDidChangeTabs' }),
+        {
+          fn: 'BoundSession.setupMultiColumnGuardListener',
+          editorUri: 'file://file:///test.ts',
+        },
         'Bound file no longer in multiple editor groups — duplicate state cleared',
       );
     });

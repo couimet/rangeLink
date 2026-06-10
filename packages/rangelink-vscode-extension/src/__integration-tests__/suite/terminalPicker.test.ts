@@ -816,4 +816,23 @@ standardSuite('Terminal Picker', (ss) => {
 
     ss.log('✓ Direct bind to pty terminal rejected with error notification');
   });
+
+  // ── Terminal lifecycle: auto-unbind on close ─────────────────────
+
+  test('auto-unbind-terminal-001: closing bound terminal shows status bar auto-unbind message', async () => {
+    const t = await ss.createTerminal('rl-aut-001');
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await ss.settle();
+
+    t.dispose();
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-aut-001")',
+      'RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed',
+    ]);
+    ss.log('✓ Terminal close triggered status bar auto-unbind message');
+  });
 });

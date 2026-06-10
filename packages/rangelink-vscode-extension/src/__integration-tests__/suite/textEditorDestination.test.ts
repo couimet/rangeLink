@@ -10,6 +10,7 @@ import {
 } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
+  closeAllEditors,
   getGeneratedLink,
   getLogCapture,
   openSourceWithSelection,
@@ -519,5 +520,30 @@ standardSuite('Text Editor Destination', (ss) => {
     );
 
     ss.log('✓ Paste followed bound editor to new view column');
+  });
+
+  // ── Text Editor lifecycle: auto-unbind on close ──────────────────
+  //
+  // Untitled files (openTextDocument({ content })) are truly ephemeral:
+  // VS Code disposes them when the tab closes, which fires
+  // onDidCloseTextDocument.
+
+  test('auto-unbind-editor-001: closing bound untitled editor shows status bar auto-unbind message', async () => {
+    const doc = await vscode.workspace.openTextDocument({ content: 'auto-unbind test file\n' });
+    await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    const untitledName = path.basename(doc.uri.fsPath);
+    await closeAllEditors();
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${untitledName}")`,
+      `RangeLink: Unbound from Text Editor ("${untitledName}") — editor closed`,
+    ]);
+    ss.log('✓ Untitled editor close triggered status bar auto-unbind message');
   });
 });

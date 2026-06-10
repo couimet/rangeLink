@@ -55,35 +55,44 @@ export class SendRouter {
    * Handles clipboard preservation, eligibility, self-paste detection, and feedback.
    */
   async sendToDestination<T>(options: SendOptions<T>): Promise<void> {
-    const shouldRoute = this.session.isSet();
+    const destinationSnapshot = this.session.get();
+    const shouldRoute = destinationSnapshot !== undefined;
     if (shouldRoute) {
       let outcome: PasteSendOutcome | undefined;
       const routeResult = await this.clipboardService.route(
         async () => {
           outcome = await this.executeSend(options);
         },
-        () => this.shouldRestoreClipboard(outcome),
+        () => this.shouldRestoreClipboard(outcome, destinationSnapshot),
       );
       if (!routeResult.success) {
         this.logger.error(
           { fn: 'SendRouter.sendToDestination', error: routeResult.error },
           'Clipboard routing failed',
         );
-        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), {
-          kind: 'clipboard-preservation-failed',
-        });
+        if (destinationSnapshot) {
+          this.feedbackProvider.provideSendFeedback(
+            this.buildPasteContext(options, destinationSnapshot),
+            { kind: 'clipboard-preservation-failed' },
+          );
+        }
         return;
       }
-      if (outcome !== undefined) {
-        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options), outcome);
+      if (outcome !== undefined && destinationSnapshot) {
+        this.feedbackProvider.provideSendFeedback(
+          this.buildPasteContext(options, destinationSnapshot),
+          outcome,
+        );
       }
     } else {
       await this.executeSend(options);
     }
   }
 
-  private buildPasteContext<T>(options: SendOptions<T>): PasteContext {
-    const destination = this.session.get()!;
+  private buildPasteContext<T>(
+    options: SendOptions<T>,
+    destination: PasteDestination,
+  ): PasteContext {
     return {
       contentType: options.contentNameCode,
       destination: {
@@ -216,13 +225,18 @@ export class SendRouter {
    * clipboard — the written content must survive. Otherwise delegates to
    * PasteDestinationManager's restoration logic.
    */
-  private shouldRestoreClipboard(outcome: PasteSendOutcome | undefined): boolean {
+  private shouldRestoreClipboard(
+    outcome: PasteSendOutcome | undefined,
+    destination: PasteDestination | undefined,
+  ): boolean {
     if (outcome?.kind === 'self-paste-blocked' && outcome.clipboardWritten) {
       return false;
     }
-    return this.session.isClipboardRestorationApplicable(
-      outcome?.kind === 'sent-automatic' || outcome?.kind === 'sent-manual',
-    );
+    if (!destination) return true;
+    if (!destination.shouldPreserveClipboard()) return false;
+    const pasteSucceeded = outcome?.kind === 'sent-automatic' || outcome?.kind === 'sent-manual';
+    if (pasteSucceeded) return true;
+    return destination.getUserInstruction?.(AutoPasteResult.Failure) === undefined;
   }
 
   private async showPickerAndBind(): Promise<QuickPickBindResult> {

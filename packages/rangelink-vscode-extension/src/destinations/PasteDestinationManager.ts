@@ -227,8 +227,8 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
       this.logger.debug(logCtx, 'Editor not visible, bringing background tab to foreground');
       try {
         await this.vscodeAdapter.showTextDocument(options.uri, { viewColumn: options.viewColumn });
-      } catch {
-        this.logger.warn(logCtx, 'showTextDocument threw for background tab');
+      } catch (error) {
+        this.logger.warn({ ...logCtx, error }, 'showTextDocument threw for background tab');
         this.feedback.notifyBindFailedEditor(MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED, {
           fileName,
         });
