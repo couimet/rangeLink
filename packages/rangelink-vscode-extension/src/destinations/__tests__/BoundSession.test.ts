@@ -23,8 +23,6 @@ describe('BoundSession', () => {
   };
   let mockLogger: ReturnType<typeof createMockLogger>;
 
-  const createUri = (path: string): vscode.Uri => createMockUri(path) as vscode.Uri;
-
   const createSession = (): BoundSession =>
     new BoundSession(mockEvents, mockEditors, mockFeedback, mockLogger);
 
@@ -45,12 +43,12 @@ describe('BoundSession', () => {
   // ── constructor ──────────────────────────────────────────────────
 
   describe('constructor', () => {
-    it('subscribes to all three lifecycle events on construction', () => {
+    it('subscribes to session-lifetime events on construction', () => {
       createSession();
 
       expect(mockEvents.onDidCloseTerminal).toHaveBeenCalledTimes(1);
       expect(mockEvents.onDidCloseTextDocument).toHaveBeenCalledTimes(1);
-      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(1);
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -193,6 +191,89 @@ describe('BoundSession', () => {
       session.clear();
       expect(session.isSet()).toBe(false);
     });
+
+    it('disposes per-binding guards on clear', () => {
+      const tabsDispose = jest.fn();
+      mockEvents.onDidChangeTabs.mockReturnValue({ dispose: tabsDispose });
+
+      const session = createSession();
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: createMockUri('/test.ts'),
+        viewColumn: 1,
+      });
+
+      session.set(dest);
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(2);
+
+      session.clear();
+      expect(tabsDispose).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // ── Per-binding guards ───────────────────────────────────────────
+
+  describe('per-binding guards', () => {
+    it('creates tab-close and multi-column guards when binding an editor', () => {
+      const session = createSession();
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: createMockUri('/test.ts'),
+        viewColumn: 1,
+      });
+
+      session.set(dest);
+
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not create guards when binding a non-editor destination', () => {
+      const session = createSession();
+      const dest = createMockSingletonComposablePasteDestination({
+        id: 'cursor-ai',
+        displayName: 'Cursor AI',
+      });
+
+      session.set(dest);
+
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(0);
+    });
+
+    it('disposes guards and re-creates them on rebind', () => {
+      const dispose1 = jest.fn();
+      const dispose2 = jest.fn();
+      mockEvents.onDidChangeTabs
+        .mockReturnValueOnce({ dispose: dispose1 })
+        .mockReturnValueOnce({ dispose: dispose2 });
+
+      const session = createSession();
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: createMockUri('/test.ts'),
+        viewColumn: 1,
+      });
+
+      session.set(dest);
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(2);
+
+      const dispose3 = jest.fn();
+      const dispose4 = jest.fn();
+      mockEvents.onDidChangeTabs
+        .mockReturnValueOnce({ dispose: dispose3 })
+        .mockReturnValueOnce({ dispose: dispose4 });
+
+      session.clear();
+      expect(dispose1).toHaveBeenCalledTimes(1);
+      expect(dispose2).toHaveBeenCalledTimes(1);
+
+      const newDest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: createMockUri('/test.ts'),
+        viewColumn: 1,
+      });
+      session.set(newDest);
+      expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(4);
+    });
   });
 
   // ── isClipboardRestorationApplicable ──────────────────────────────
@@ -304,20 +385,17 @@ describe('BoundSession', () => {
   // ── dispose ──────────────────────────────────────────────────────
 
   describe('dispose', () => {
-    it('disposes all lifecycle listener subscriptions', () => {
+    it('disposes session-lifetime listener subscriptions', () => {
       const terminalDispose = jest.fn();
       const documentDispose = jest.fn();
-      const tabsDispose = jest.fn();
       mockEvents.onDidCloseTerminal.mockReturnValue({ dispose: terminalDispose });
       mockEvents.onDidCloseTextDocument.mockReturnValue({ dispose: documentDispose });
-      mockEvents.onDidChangeTabs.mockReturnValue({ dispose: tabsDispose });
 
       const session = createSession();
       session.dispose();
 
       expect(terminalDispose).toHaveBeenCalledTimes(1);
       expect(documentDispose).toHaveBeenCalledTimes(1);
-      expect(tabsDispose).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -409,7 +487,7 @@ describe('BoundSession', () => {
 
   describe('document close lifecycle', () => {
     it('unbinds when the bound document is closed with isClosed=true', () => {
-      const uri = createUri('file:///test.ts');
+      const uri = createMockUri('/test.ts');
       const dest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor ("test.ts")',
         uri,
@@ -426,7 +504,7 @@ describe('BoundSession', () => {
         {
           fn: 'BoundSession.setupDocumentCloseListener',
           editorDisplayName: 'Text Editor ("test.ts")',
-          boundDocumentUri: 'file://file:///test.ts',
+          boundDocumentUri: 'file:///test.ts',
           isClosed: true,
         },
         'Bound document closed (isClosed=true): Text Editor ("test.ts") — auto-unbinding',
@@ -438,7 +516,7 @@ describe('BoundSession', () => {
     });
 
     it('falls back to Unknown in log when editor displayName is empty', () => {
-      const uri = createUri('file:///test.ts');
+      const uri = createMockUri('/test.ts');
       const dest = createMockEditorComposablePasteDestination({
         displayName: '',
         uri,
@@ -454,7 +532,7 @@ describe('BoundSession', () => {
         {
           fn: 'BoundSession.setupDocumentCloseListener',
           editorDisplayName: 'Unknown',
-          boundDocumentUri: 'file://file:///test.ts',
+          boundDocumentUri: 'file:///test.ts',
           isClosed: true,
         },
         'Bound document closed (isClosed=true): Unknown — auto-unbinding',
@@ -462,7 +540,7 @@ describe('BoundSession', () => {
     });
 
     it('keeps binding when isClosed=false', () => {
-      const uri = createUri('file:///test.ts');
+      const uri = createMockUri('/test.ts');
       const dest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor ("test.ts")',
         uri,
@@ -481,14 +559,14 @@ describe('BoundSession', () => {
     it('does not unbind when a different document closes', () => {
       const dest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor ("test.ts")',
-        uri: createUri('file:///test.ts'),
+        uri: createMockUri('/test.ts'),
         viewColumn: 1,
       });
       const session = createSession();
       session.set(dest);
 
       const handler = mockEvents.onDidCloseTextDocument.mock.calls[0][0];
-      handler({ uri: createUri('file:///other.ts'), isClosed: true } as vscode.TextDocument);
+      handler({ uri: createMockUri('/other.ts'), isClosed: true } as vscode.TextDocument);
 
       expect(session.isSet()).toBe(true);
       expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
@@ -503,133 +581,10 @@ describe('BoundSession', () => {
       session.set(dest);
 
       const handler = mockEvents.onDidCloseTextDocument.mock.calls[0][0];
-      handler({ uri: createUri('file:///test.ts'), isClosed: true } as vscode.TextDocument);
+      handler({ uri: createMockUri('/test.ts'), isClosed: true } as vscode.TextDocument);
 
       expect(session.isSet()).toBe(true);
       expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
-    });
-  });
-
-  // ── Multi-column guard ────────────────────────────────────────────
-
-  describe('multi-column guard', () => {
-    const createEditorDest = () =>
-      createMockEditorComposablePasteDestination({
-        displayName: 'Text Editor ("test.ts")',
-        uri: createUri('file:///test.ts'),
-        viewColumn: 1,
-      });
-
-    it('warns when bound editor appears in 2+ tab groups', () => {
-      const dest = createEditorDest();
-      const session = createSession();
-      session.set(dest);
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }, { viewColumn: 2 }]);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'BoundSession.setupMultiColumnGuardListener',
-          editorUri: 'file://file:///test.ts',
-          matchCount: 2,
-          viewColumns: [1, 2],
-        },
-        'Bound file detected in multiple editor groups',
-      );
-      expect(mockFeedback.notifyDuplicateTabWarning).toHaveBeenCalled();
-    });
-
-    it('does not re-warn when already in duplicate state', () => {
-      const dest = createEditorDest();
-      const session = createSession();
-      session.set(dest);
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }, { viewColumn: 2 }]);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-      mockFeedback.notifyDuplicateTabWarning.mockClear();
-      handler();
-
-      expect(mockFeedback.notifyDuplicateTabWarning).not.toHaveBeenCalled();
-    });
-
-    it('clears duplicate state when back to 0 instances', () => {
-      const dest = createEditorDest();
-      const session = createSession();
-      session.set(dest);
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }, { viewColumn: 2 }]);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([]);
-      (mockLogger.info as jest.Mock).mockClear();
-      handler();
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        {
-          fn: 'BoundSession.setupMultiColumnGuardListener',
-          editorUri: 'file://file:///test.ts',
-        },
-        'Bound file no longer in multiple editor groups — duplicate state cleared',
-      );
-    });
-
-    it('clears duplicate state when back to 1 instance', () => {
-      const dest = createEditorDest();
-      const session = createSession();
-      session.set(dest);
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }, { viewColumn: 2 }]);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }]);
-      handler();
-
-      expect(session.isSet()).toBe(true);
-    });
-
-    it('does not warn when not bound', () => {
-      createSession();
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-
-      expect(mockFeedback.notifyDuplicateTabWarning).not.toHaveBeenCalled();
-    });
-
-    it('does not warn for non-editor destinations', () => {
-      const dest = createMockSingletonComposablePasteDestination({
-        id: 'cursor-ai',
-        displayName: 'Cursor AI',
-      });
-      const session = createSession();
-      session.set(dest);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-
-      expect(mockFeedback.notifyDuplicateTabWarning).not.toHaveBeenCalled();
-    });
-
-    it('resets duplicate state after unbind and allows re-warn on rebind', () => {
-      const dest = createEditorDest();
-      const session = createSession();
-      session.set(dest);
-      mockEditors.findVisibleEditorsByUri.mockReturnValue([{ viewColumn: 1 }, { viewColumn: 2 }]);
-
-      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-      handler();
-      expect(mockFeedback.notifyDuplicateTabWarning).toHaveBeenCalledTimes(1);
-
-      session.clear();
-      const newDest = createEditorDest();
-      session.set(newDest);
-      mockFeedback.notifyDuplicateTabWarning.mockClear();
-
-      handler();
-      expect(mockFeedback.notifyDuplicateTabWarning).toHaveBeenCalledTimes(1);
     });
   });
 });

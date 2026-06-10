@@ -803,7 +803,12 @@ describe('SendRouter', () => {
       const dest = createDest({ shouldPreserveClipboard: jest.fn().mockReturnValue(true) });
 
       const result = (router as any).shouldRestoreClipboard(
-        { kind: 'self-paste-blocked', destinationKind: 'text-editor', clipboardWritten: true, toastMessage: 'test' },
+        {
+          kind: 'self-paste-blocked',
+          destinationKind: 'text-editor',
+          clipboardWritten: true,
+          toastMessage: 'test',
+        },
         dest,
       );
 
@@ -823,10 +828,7 @@ describe('SendRouter', () => {
     it('returns false when destination.shouldPreserveClipboard() returns false', () => {
       const dest = createDest({ shouldPreserveClipboard: jest.fn().mockReturnValue(false) });
 
-      const result = (router as any).shouldRestoreClipboard(
-        { kind: 'sent-automatic' },
-        dest,
-      );
+      const result = (router as any).shouldRestoreClipboard({ kind: 'sent-automatic' }, dest);
 
       expect(result).toBe(false);
     });

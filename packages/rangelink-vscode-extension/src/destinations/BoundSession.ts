@@ -7,6 +7,8 @@ import type { BoundDestinationInfo } from '../types';
 import { AutoPasteResult } from '../types';
 import { isEditorDestination, isTerminalDestination } from '../utils';
 
+import { createMultiColumnGuard } from './createMultiColumnGuard';
+import { createTabCloseGuard } from './createTabCloseGuard';
 import type { PasteDestination } from './PasteDestination';
 
 /**
@@ -14,18 +16,19 @@ import type { PasteDestination } from './PasteDestination';
  *
  * Owns the bound state, emits change events, and registers VSCode
  * lifecycle listeners that protect the bound destination:
- * - Terminal close auto-unbind
- * - Document close auto-unbind (with language-mode transition detection)
- * - Multi-column duplicate-tab guard
+ * - Terminal close auto-unbind (session-lifetime)
+ * - Document close auto-unbind (session-lifetime; + language-mode detection)
+ * - Tab close auto-unbind (per-binding)
+ * - Multi-column duplicate-tab guard (per-binding)
  *
  * Created once per extension activation. The same session persists
  * across bind/unbind cycles — only the internal bound destination changes.
  */
 export class BoundSession implements vscode.Disposable {
   private bound: PasteDestination | undefined;
-  private isInDuplicateTabState = false;
   private readonly emitter = new vscode.EventEmitter<BoundDestinationInfo | undefined>();
   private readonly disposables: vscode.Disposable[] = [];
+  private bindingDisposables: vscode.Disposable[] = [];
 
   readonly onDidChange = this.emitter.event;
 
@@ -37,7 +40,6 @@ export class BoundSession implements vscode.Disposable {
   ) {
     this.setupTerminalCloseListener();
     this.setupDocumentCloseListener();
-    this.setupMultiColumnGuardListener();
   }
 
   get(): PasteDestination | undefined {
@@ -49,12 +51,34 @@ export class BoundSession implements vscode.Disposable {
       throw new Error('BoundSession.set() called while already bound. Call clear() first.');
     }
     this.bound = destination;
+
+    if (isEditorDestination(destination)) {
+      this.bindingDisposables.push(
+        createTabCloseGuard({
+          events: this.events,
+          feedback: this.feedback,
+          logger: this.logger,
+          boundUri: destination.resource.uri,
+          displayName: destination.displayName,
+          clearBinding: () => this.clear(),
+        }),
+        createMultiColumnGuard({
+          events: this.events,
+          editors: this.editors,
+          feedback: this.feedback,
+          logger: this.logger,
+          boundUri: destination.resource.uri,
+        }),
+      );
+    }
+
     this.emitter.fire(this.getInfo()!);
   }
 
   clear(): void {
     this.bound = undefined;
-    this.isInDuplicateTabState = false;
+    this.bindingDisposables.forEach((d) => d.dispose());
+    this.bindingDisposables = [];
     this.emitter.fire(undefined);
   }
 
@@ -93,6 +117,8 @@ export class BoundSession implements vscode.Disposable {
   }
 
   dispose(): void {
+    this.bindingDisposables.forEach((d) => d.dispose());
+    this.bindingDisposables = [];
     this.disposables.forEach((d) => d?.dispose());
     this.disposables.length = 0;
     this.emitter.dispose();
@@ -121,6 +147,17 @@ export class BoundSession implements vscode.Disposable {
 
   private setupDocumentCloseListener(): void {
     const disposable = this.events.onDidCloseTextDocument((closedDocument) => {
+      this.logger.info(
+        {
+          fn: 'BoundSession.setupDocumentCloseListener',
+          uri: closedDocument.uri.toString(),
+          isClosed: closedDocument.isClosed,
+          scheme: closedDocument.uri.scheme,
+          isBound: isEditorDestination(this.bound),
+        },
+        'onDidCloseTextDocument fired',
+      );
+
       if (!isEditorDestination(this.bound)) {
         return;
       }
@@ -154,42 +191,6 @@ export class BoundSession implements vscode.Disposable {
       const destinationName = this.bound.displayName;
       this.clear();
       this.feedback.notifyAutoUnbind(destinationName, 'editor-closed');
-    });
-
-    this.disposables.push(disposable);
-  }
-
-  private setupMultiColumnGuardListener(): void {
-    const disposable = this.events.onDidChangeTabs(() => {
-      if (!isEditorDestination(this.bound)) {
-        return;
-      }
-
-      const boundDocumentUri = this.bound.resource.uri;
-      const matchingEditors = this.editors.findVisibleEditorsByUri(boundDocumentUri);
-
-      if (matchingEditors.length > 1 && !this.isInDuplicateTabState) {
-        this.isInDuplicateTabState = true;
-        this.logger.warn(
-          {
-            fn: 'BoundSession.setupMultiColumnGuardListener',
-            editorUri: boundDocumentUri.toString(),
-            matchCount: matchingEditors.length,
-            viewColumns: matchingEditors.map((e) => e.viewColumn),
-          },
-          'Bound file detected in multiple editor groups',
-        );
-        this.feedback.notifyDuplicateTabWarning();
-      } else if (matchingEditors.length <= 1 && this.isInDuplicateTabState) {
-        this.isInDuplicateTabState = false;
-        this.logger.info(
-          {
-            fn: 'BoundSession.setupMultiColumnGuardListener',
-            editorUri: boundDocumentUri.toString(),
-          },
-          'Bound file no longer in multiple editor groups — duplicate state cleared',
-        );
-      }
     });
 
     this.disposables.push(disposable);

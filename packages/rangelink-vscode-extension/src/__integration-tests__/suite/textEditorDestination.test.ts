@@ -522,12 +522,6 @@ standardSuite('Text Editor Destination', (ss) => {
     ss.log('✓ Paste followed bound editor to new view column');
   });
 
-  // ── Text Editor lifecycle: auto-unbind on close ──────────────────
-  //
-  // Untitled files (openTextDocument({ content })) are truly ephemeral:
-  // VS Code disposes them when the tab closes, which fires
-  // onDidCloseTextDocument.
-
   test('auto-unbind-editor-001: closing bound untitled editor shows status bar auto-unbind message', async () => {
     const doc = await vscode.workspace.openTextDocument({ content: 'auto-unbind test file\n' });
     await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -545,5 +539,50 @@ standardSuite('Text Editor Destination', (ss) => {
       `RangeLink: Unbound from Text Editor ("${untitledName}") — editor closed`,
     ]);
     ss.log('✓ Untitled editor close triggered status bar auto-unbind message');
+  });
+
+  test('auto-unbind-editor-002: closing bound saved editor shows status bar auto-unbind message', async () => {
+    const fileUri = ss.createWorkspaceFile('aue-002', 'saved file auto-unbind test\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    await vscode.window.showTextDocument(doc, vscode.ViewColumn.Two);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    const destBasename = path.basename(fileUri.fsPath);
+    await closeAllEditors();
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `RangeLink: Unbound from Text Editor ("${destBasename}") — editor closed`,
+    ]);
+    ss.log('✓ Saved editor close triggered status bar auto-unbind message');
+  });
+
+  test('auto-unbind-editor-003: closing all editors unbinds only the bound one when multiple tabs are open', async () => {
+    const boundUri = ss.createWorkspaceFile('aue-003-bound', 'bound file\n');
+    const otherUri = ss.createWorkspaceFile('aue-003-other', 'other file\n');
+
+    const boundDoc = await vscode.workspace.openTextDocument(boundUri);
+    const otherDoc = await vscode.workspace.openTextDocument(otherUri);
+    await vscode.window.showTextDocument(boundDoc, vscode.ViewColumn.One);
+    await vscode.window.showTextDocument(otherDoc, vscode.ViewColumn.Two);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, boundUri);
+    await ss.settle();
+
+    const boundBasename = path.basename(boundUri.fsPath);
+    const otherBasename = path.basename(otherUri.fsPath);
+    await closeAllEditors();
+    await ss.settle();
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${boundBasename}")`,
+      `RangeLink: Unbound from Text Editor ("${boundBasename}") — editor closed`,
+    ]);
+    ss.log(`✓ Only bound editor (${boundBasename}) auto-unbound; other (${otherBasename}) ignored`);
   });
 });
