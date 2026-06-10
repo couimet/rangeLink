@@ -288,7 +288,7 @@ test_cases:
   - id: auto-unbind-terminal-001
     feature: 'terminal-picker'
     scenario: 'Closing a bound terminal triggers auto-unbind with status bar message'
-    expected_result: 'The status bar shows "Unbound from Terminal ("rl-aut-001") — terminal closed". The terminal is no longer bound.'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed". The terminal is no longer bound.'
     automated: true
 
   # ---------------------------------------------------------------------------

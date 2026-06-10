@@ -1,5 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 
 import { createMockOperationFeedbackProvider, createMockUri } from '../../__tests__/helpers';
 import { createTabCloseGuard } from '../createTabCloseGuard';
@@ -13,10 +13,21 @@ describe('createTabCloseGuard', () => {
   let mockFeedback: ReturnType<typeof createMockOperationFeedbackProvider>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let clearBinding: jest.Mock;
+  let testUri: vscode.Uri;
 
   const createClosedEvent = (uri: vscode.Uri): { closed: { input: { uri: vscode.Uri } }[] } => ({
     closed: [{ input: { uri } }],
   });
+
+  const createGuard = () =>
+    createTabCloseGuard({
+      events: mockEvents,
+      feedback: mockFeedback,
+      logger: mockLogger,
+      boundUri: testUri,
+      displayName: 'Text Editor ("test.ts")',
+      clearBinding,
+    });
 
   beforeEach(() => {
     mockEvents = {
@@ -27,21 +38,15 @@ describe('createTabCloseGuard', () => {
     mockFeedback = createMockOperationFeedbackProvider();
     mockLogger = createMockLogger();
     clearBinding = jest.fn();
+    testUri = createMockUri('/test.ts');
+    (vscode.window.tabGroups as unknown as { all: unknown[] }).all = [];
   });
 
-  it('unbinds when the bound editor tab is closed', () => {
-    const uri = createMockUri('/test.ts');
-    createTabCloseGuard({
-      events: mockEvents,
-      feedback: mockFeedback,
-      logger: mockLogger,
-      boundUri: uri,
-      displayName: 'Text Editor ("test.ts")',
-      clearBinding,
-    });
+  it('unbinds when the last tab of the bound editor is closed', () => {
+    createGuard();
 
     const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
-    handler(createClosedEvent(uri));
+    handler(createClosedEvent(testUri));
 
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'createTabCloseGuard', editorUri: 'file:///test.ts' },
@@ -54,15 +59,22 @@ describe('createTabCloseGuard', () => {
     );
   });
 
+  it('does not unbind when another tab of the same file is still open', () => {
+    (vscode.window.tabGroups as unknown as { all: unknown[] }).all = [
+      { tabs: [{ input: { uri: testUri } }] },
+    ];
+
+    createGuard();
+
+    const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+    handler(createClosedEvent(testUri));
+
+    expect(clearBinding).not.toHaveBeenCalled();
+    expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+  });
+
   it('does nothing when a different tab is closed', () => {
-    createTabCloseGuard({
-      events: mockEvents,
-      feedback: mockFeedback,
-      logger: mockLogger,
-      boundUri: createMockUri('/bound.ts'),
-      displayName: 'Text Editor ("bound.ts")',
-      clearBinding,
-    });
+    createGuard();
 
     const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
     handler(createClosedEvent(createMockUri('/other.ts')));
@@ -72,15 +84,7 @@ describe('createTabCloseGuard', () => {
   });
 
   it('subscribes to onDidChangeTabs', () => {
-    createTabCloseGuard({
-      events: mockEvents,
-      feedback: mockFeedback,
-      logger: mockLogger,
-      boundUri: createMockUri('/test.ts'),
-      displayName: 'Text Editor ("test.ts")',
-      clearBinding,
-    });
-
+    createGuard();
     expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(1);
   });
 
@@ -88,16 +92,9 @@ describe('createTabCloseGuard', () => {
     const dispose = jest.fn();
     mockEvents.onDidChangeTabs.mockReturnValue({ dispose });
 
-    const guard = createTabCloseGuard({
-      events: mockEvents,
-      feedback: mockFeedback,
-      logger: mockLogger,
-      boundUri: createMockUri('/test.ts'),
-      displayName: 'Text Editor ("test.ts")',
-      clearBinding,
-    });
-
+    const guard = createGuard();
     guard.dispose();
+
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 });

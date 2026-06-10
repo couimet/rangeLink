@@ -423,7 +423,7 @@ standardSuite('Text Editor Destination', (ss) => {
       const ctx = parseLogContext(l);
       return (
         l.includes('Bound file no longer in multiple editor groups — duplicate state cleared') &&
-        ctx?.fn === 'PasteDestinationManager.onDidChangeTabs' &&
+        ctx?.fn === 'createMultiColumnGuard' &&
         ctx?.editorUri === destUri.toString()
       );
     });

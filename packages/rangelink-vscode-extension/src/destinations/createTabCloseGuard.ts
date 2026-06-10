@@ -1,11 +1,14 @@
 import type { Logger } from 'barebone-logger';
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider } from '../ide';
 
 /**
- * Auto-unbind when the bound editor tab is closed (both saved and untitled files).
+ * Auto-unbind when the last tab of the bound editor is closed.
+ *
+ * Uses the tab API (vscode.window.tabGroups) to check remaining instances
+ * because visible editors may be stale during onDidChangeTabs.
  */
 export const createTabCloseGuard = (deps: {
   events: EventSubscriptionProvider;
@@ -22,6 +25,11 @@ export const createTabCloseGuard = (deps: {
       (tab) => (tab.input as { uri?: vscode.Uri })?.uri?.toString() === boundUriString,
     );
     if (!closedTab) return;
+
+    const remainingTabs = vscode.window.tabGroups.all
+      .flatMap((g) => g.tabs)
+      .filter((t) => (t.input as { uri?: vscode.Uri })?.uri?.toString() === boundUriString);
+    if (remainingTabs.length > 0) return;
 
     deps.logger.info(
       { fn: 'createTabCloseGuard', editorUri: boundUriString },
