@@ -63,7 +63,9 @@ echo ""
 
 # --- Step 2: Generate QA issue ---
 
-QA_OUTPUT=$("$SCRIPT_DIR/generate-qa-issue.sh") || {
+echo -e "${GREEN}Step 4: Generating QA issue tracker...${NC}"
+
+QA_OUTPUT=$("$SCRIPT_DIR/generate-qa-issue.sh" "$PACKAGE_DIR/qa/qa-test-cases-v${VERSION}.yaml") || {
   echo -e "${RED}Error: generate-qa-issue.sh failed${NC}" >&2
   exit 1
 }

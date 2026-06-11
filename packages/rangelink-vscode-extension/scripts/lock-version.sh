@@ -114,10 +114,12 @@ else
   mv "$UNRELEASED_INSTRUCTIONS" "$VERSIONED_INSTRUCTIONS"
 
   # Fixup internal references from unreleased → versioned.
+  # PUBLISHED_VERSION is the pre-bump version (read before step 2), so the
+  # scope line captures the correct range (e.g. "Changes from v1.0.0 → v2.0.0").
   sed -i.bak \
     -e "s/qa-test-cases-unreleased\.yaml/qa-test-cases-v${VERSION}.yaml/g" \
     -e "s/qa-checklist-unreleased/qa-checklist-v${VERSION}/g" \
-    -e "s/ → Unreleased/ → v${VERSION}/g" \
+    -e "s|Changes from v[0-9.]* → Unreleased|Changes from v${PUBLISHED_VERSION} → v${VERSION}|g" \
     "$VERSIONED_INSTRUCTIONS" && rm -f "${VERSIONED_INSTRUCTIONS}.bak"
 
   echo -e "${GREEN}Step 3: Generated release-testing-instructions-v${VERSION}.md${NC}"

@@ -63,7 +63,7 @@ if [[ -z "$YAML_FILE" ]]; then
 
   YAML_FILE="$QA_DIR/$LATEST"
   if [[ -t 0 ]]; then
-    printf 'Use %s? [Y/n] ' "qa/$LATEST"
+    printf 'Use %s? [Y/n] ' "qa/$LATEST" >&2
     read -r REPLY
     if [[ -n "$REPLY" && ! "$REPLY" =~ ^[Yy]$ ]]; then
       echo "Aborted." >&2
