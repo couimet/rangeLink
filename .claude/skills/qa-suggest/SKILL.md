@@ -23,20 +23,16 @@ Extract:
 
 - `version` — the last published version (e.g., `1.0.0`)
 
-During trunk-based development the QA artifacts use the "Unreleased" placeholder (e.g., `qa-test-cases-unreleased.yaml`) — this convention is embedded in the QA tooling, not read from a config field. The `version` field in package.json always holds the last published SemVer.
+The QA YAML lives at `qa-test-cases.yaml` (stable filename; version context comes from `package.json .version` and the git tag, not the filename). The `version` field in package.json holds the last published SemVer.
 
 ## Step 2: Locate QA YAMLs
 
-Find the current cycle's YAML and the previous version's YAML:
+Find the current cycle's YAML and the previous version's snapshot:
 
-```text
-Glob(pattern="packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml")
-```
+- **Current YAML**: `packages/rangelink-vscode-extension/qa/qa-test-cases.yaml` (stable filename, no version suffix)
+- **Previous YAML**: retrieve from the most recent release tag: `git show <tag>:packages/rangelink-vscode-extension/qa/qa-test-cases.yaml` (e.g., `git show vscode-extension-v1.0.0:packages/rangelink-vscode-extension/qa/qa-test-cases.yaml`). This is the baseline for diffing.
 
-- **Current YAML**: `qa-test-cases-unreleased.yaml` during trunk-based development, or `qa-test-cases-v<version>.yaml` once the version is locked in
-- **Previous YAML**: the most recent released version's YAML (e.g., `qa-test-cases-v1.0.0.yaml`) — this is the baseline for diffing
-
-**If the current YAML doesn't exist**, STOP: "No QA YAML found. Run `pnpm generate:qa-test-plan` first."
+**If the current YAML doesn't exist**, STOP: "No QA YAML found at qa/qa-test-cases.yaml."
 
 Read both YAML files in parallel.
 
@@ -228,10 +224,6 @@ Integrate suggestions from <scratchpad-path> to <current-yaml-path>
 ### 2. Generate GitHub tracking issues (run from project root)
 
 pnpm generate:qa-issue:vscode-extension
-
-To target a specific file instead of auto-discover:
-
-pnpm generate:qa-issue:vscode-extension -- qa/<current-yaml-filename>
 ```
 
 Replace `<scratchpad-path>`, `<current-yaml-path>`, and `<current-yaml-filename>` with the real values from this run.

@@ -17,11 +17,9 @@
 | Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
 | Ubuntu manual QA         | `pnpm test:release:ubuntu`                                    | Manual QA of Ctrl+R keybindings    | —                    |
 | Cursor manual QA         | `pnpm test:release:cursor`                                    | Manual QA of Cursor IDE TCs        | —                    |
-| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
 | Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
 | Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
 | Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
-| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
 | Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
 
 All commands run from the project root unless noted.
@@ -36,9 +34,9 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 | Script                                     | When                               | Re-runnable?      | What it does                                                                                    |
 | ------------------------------------------ | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm release:lock:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Renames QA YAML → versioned, bumps `.version`, regenerates instructions, generates QA issue     |
+| `pnpm release:lock:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Bumps `.version`, regenerates the QA instructions landing page, generates the QA issue          |
 | `pnpm release:prepare:vscode-extension`    | QA passed, ready to ship           | No (one-way door) | Date-stamps CHANGELOG, strips README markers/banner, generates publishing instructions          |
-| `pnpm release:start:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Copies versioned YAML → unreleased, adds `[Unreleased]` CHANGELOG header, re-adds README banner |
+| `pnpm release:start:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Adds `[Unreleased]` CHANGELOG header, re-adds README banner                                     |
 
 The release lifecycle is documented in [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md#release-workflow).
 
@@ -263,12 +261,10 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 ### File location and naming
 
 ```text
-qa/qa-test-cases-unreleased.yaml
+qa/qa-test-cases.yaml
 ```
 
-During trunk-based development the file is `qa/qa-test-cases-unreleased.yaml`. At release time `pnpm release:lock:vscode-extension` renames it to `qa/qa-test-cases-v<version>.yaml` and generates the QA issue automatically. One file per release — Git tracks history across versions.
-
-New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
+The QA test plan lives at `qa/qa-test-cases.yaml` — a single stable file that evolves across releases. Version context comes from `package.json .version` and the git tag, not the filename. Previous release snapshots live in git history (use `git show <tag>:packages/rangelink-vscode-extension/qa/qa-test-cases.yaml`).
 
 ### The `automated` field
 
@@ -320,16 +316,10 @@ Place new TCs at the end of the file under the relevant feature section. TC ID r
 
 - **Never renumber** existing IDs — results reference IDs by name across QA cycles
 - **Continue from the highest** existing ID for that feature slug (e.g., if `bind-to-destination-010` exists, the next is `bind-to-destination-011`)
-- **IDs are globally unique** per feature slug across all QA YAML snapshots — check the highest ID in `qa/` before assigning
+- **IDs are globally unique** per feature slug within `qa-test-cases.yaml` — check the highest existing ID in that feature slug before assigning
 
 Set `automated: true` immediately if you are also writing the integration test; otherwise set `false` and leave a note in the scenario description.
 
 ### Quick Start
 
-Release testing is **guided through a script** that generates version-specific instructions:
-
-```bash
-pnpm generate:release-testing-instructions:vscode-extension
-```
-
-The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>.md` with copy-paste-ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
+Release testing is driven by the GitHub issue created by `pnpm release:lock:vscode-extension`. The lock script also generates `qa/release-testing-instructions-v<version>.md` — a minimal landing page that points at the QA tracker issue, `pnpm test`, `pnpm validate:qa-coverage:vscode-extension`, and `pnpm release:prepare:vscode-extension`. Per-feature `pnpm test:release:grep` commands live in the GitHub issue, not in this file.
