@@ -352,86 +352,87 @@ standardSuite('Context Menus — Terminal', (ss) => {
     ss.log(
       '✓ Terminal content-area "Send Selected Text" visible when terminal has selection and is not bound',
     );
-
-    // TC context-menus-terminal-011: R-V HIDDEN from both terminal menus when
-    // the terminal IS the bound destination (self-paste gate)
-    // ---------------------------------------------------------------------------
-
-    test('[assisted] context-menus-terminal-011: "Send Selected Text" is hidden from the terminal content-area menu when the terminal IS the bound destination', async () => {
-      const terminalName = 'rl-ctxmenu-term-011';
-      const terminal = await ss.createTerminal(terminalName);
-
-      await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, terminal);
-      await ss.settle();
-
-      const markerText = 'CTXMENU_011_SELF_BIND_MARKER';
-      echoToTerminal(terminal, markerText);
-      await ss.settle(TERMINAL_READY_MS);
-
-      ss.expectStatusBarMessages([`✓ RangeLink: Bound to Terminal ("${terminalName}")`]);
-      ss.expectContextKeys({
-        'rangelink.isActiveTerminalBindable': true,
-        'rangelink.isActiveTerminalPasteDestination': true,
-        'rangelink.isBound': true,
-      });
-
-      const logCapture = getLogCapture();
-      logCapture.mark('before-ctxmenu-term-011');
-
-      const verdict = await waitForHumanVerdict(
-        'context-menus-terminal-011',
-        `Select "${markerText}" in "${terminalName}". Is "RangeLink: Send Selected Text" ABSENT from the content-area right-click menu?`,
-        [
-          `The terminal "${terminalName}" IS the bound destination (self-paste would be circular).`,
-          `1. Select "${markerText}" in the terminal content area`,
-          '2. Right-click the terminal CONTENT AREA — verify "RangeLink: Send Selected Text" is ABSENT',
-          'Verdict:',
-        ],
-      );
-      assert.strictEqual(
-        verdict,
-        'pass',
-        'Expected "Send Selected Text" to be hidden from the terminal content-area menu when the terminal IS the bound destination',
-      );
-
-      ss.log(
-        '✓ Self-paste gate: R-V hidden from terminal content-area menu when terminal IS the bound destination',
-      );
-    });
-
-    // ---------------------------------------------------------------------------
-
-    test('[assisted] context-menus-terminal-012: Terminal content-area "Send Selected Text" is absent when no terminal text is selected', async () => {
-      const terminalName = 'rl-ctxmenu-term-012';
-      const terminal = await ss.createTerminal(terminalName);
-      echoToTerminal(terminal, 'CTXMENU_012_NO_SELECTION');
-      await ss.settle(TERMINAL_READY_MS);
-
-      ss.expectContextKeys({
-        'rangelink.isActiveTerminalBindable': true,
-        'rangelink.isActiveTerminalPasteDestination': false,
-        'rangelink.isBound': false,
-      });
-
-      const verdict = await waitForHumanVerdict(
-        'context-menus-terminal-012',
-        `Right-click INSIDE "${terminalName}" content area WITHOUT selecting text. Is "RangeLink: Send Selected Text" ABSENT from the content-area menu?`,
-        [
-          `The terminal "${terminalName}" has output text but nothing is selected.`,
-          '1. Do NOT select any text in the terminal',
-          '2. Right-click INSIDE the terminal content area (not the tab)',
-          'Verdict:',
-        ],
-      );
-      assert.strictEqual(
-        verdict,
-        'pass',
-        'Expected "Send Selected Text" to be absent from terminal content-area menu when no text is selected',
-      );
-
-      ss.log('✓ No-selection negative: R-V absent from terminal content-area menu');
-    });
   });
+
+  // TC context-menus-terminal-011: R-V HIDDEN from both terminal menus when
+  // the terminal IS the bound destination (self-paste gate)
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-011: "Send Selected Text" is hidden from the terminal content-area menu when the terminal IS the bound destination', async () => {
+    const terminalName = 'rl-ctxmenu-term-011';
+    const terminal = await ss.createTerminal(terminalName);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, terminal);
+    await ss.settle();
+
+    const markerText = 'CTXMENU_011_SELF_BIND_MARKER';
+    echoToTerminal(terminal, markerText);
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Terminal ("${terminalName}")`]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-term-011');
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-011',
+      `Select "${markerText}" in "${terminalName}". Is "RangeLink: Send Selected Text" ABSENT from the content-area right-click menu?`,
+      [
+        `The terminal "${terminalName}" IS the bound destination (self-paste would be circular).`,
+        `1. Select "${markerText}" in the terminal content area`,
+        '2. Right-click the terminal CONTENT AREA — verify "RangeLink: Send Selected Text" is ABSENT',
+        'Verdict:',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "Send Selected Text" to be hidden from the terminal content-area menu when the terminal IS the bound destination',
+    );
+
+    ss.log(
+      '✓ Self-paste gate: R-V hidden from terminal content-area menu when terminal IS the bound destination',
+    );
+  });
+
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-012: Terminal content-area "Send Selected Text" is absent when no terminal text is selected', async () => {
+    const terminalName = 'rl-ctxmenu-term-012';
+    const terminal = await ss.createTerminal(terminalName);
+    echoToTerminal(terminal, 'CTXMENU_012_NO_SELECTION');
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': false,
+      'rangelink.isBound': false,
+    });
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-012',
+      `Right-click INSIDE "${terminalName}" content area WITHOUT selecting text. Is "RangeLink: Send Selected Text" ABSENT from the content-area menu?`,
+      [
+        `The terminal "${terminalName}" has output text but nothing is selected.`,
+        '1. Do NOT select any text in the terminal',
+        '2. Right-click INSIDE the terminal content area (not the tab)',
+        'Verdict:',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "Send Selected Text" to be absent from terminal content-area menu when no text is selected',
+    );
+
+    ss.log('✓ No-selection negative: R-V absent from terminal content-area menu');
+  });
+
   // ---------------------------------------------------------------------------
   // TC send-terminal-selection-005 (lives here because the scenario is
   // specifically the terminal-context-menu path into R-V; the test file's slug

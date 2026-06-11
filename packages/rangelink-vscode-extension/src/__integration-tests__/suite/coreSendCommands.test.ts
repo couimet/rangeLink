@@ -303,7 +303,7 @@ standardSuite('Core Send Commands', (ss) => {
       [
         `1. Click into "csc-sts-004-src", drag-select "${MARKER}"`,
         '2. Press Cmd+R Cmd+V — the RangeLink destination picker opens',
-        '3. Press Escape to dismiss the picker, then click Cancel',
+        '3. Press Escape to dismiss the picker',
       ],
     );
 

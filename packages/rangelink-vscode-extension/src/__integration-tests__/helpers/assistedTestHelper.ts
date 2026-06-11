@@ -115,7 +115,7 @@ export const waitForHumanVerdict = async (
   if (consoleSteps !== undefined) {
     consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
   }
-  nodeConsole.log('PASS / FAIL buttons in the status bar (bottom-left).');
+  nodeConsole.log('Verdict — status bar (bottom-left)');
   nodeConsole.log(SECTION_LINE);
 
   // Dispose any stale UI from a previous invocation that never settled
@@ -142,7 +142,7 @@ export const waitForHumanVerdict = async (
       cancellable: false,
     },
     (progress) => {
-      progress.report({ message: 'Click PASS or FAIL in the bottom-left status bar' });
+      progress.report({ message: 'Verdict — status bar (bottom-left)' });
 
       return new Promise<HumanVerdict>((resolve, reject) => {
         activeVerdictReject = reject;

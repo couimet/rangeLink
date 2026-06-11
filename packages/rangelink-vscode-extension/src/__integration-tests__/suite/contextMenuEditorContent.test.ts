@@ -435,7 +435,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         `A Terminal "${terminalName}" is bound as the current destination.`,
         '1. Right-click anywhere inside the editor',
         '2. Select "RangeLink: Unbind" from the context menu',
-        '3. Click Cancel on the notification',
       ],
     );
 

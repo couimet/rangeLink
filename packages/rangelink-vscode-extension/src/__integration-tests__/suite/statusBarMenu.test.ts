@@ -197,12 +197,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
 
     await waitForHuman(
       'status-bar-menu-008',
-      'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", dismiss the R-G input box (Escape), then click Cancel.',
+      'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", then dismiss the R-G input box (Escape).',
       [
         '1. Press Cmd+R Cmd+M to open the R-M menu',
         '2. Select "$(link-external) Go to Link"',
         '3. The R-G input box opens — press Escape to dismiss it',
-        '4. Click Cancel on this notification',
       ],
     );
 

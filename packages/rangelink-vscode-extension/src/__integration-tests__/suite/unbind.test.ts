@@ -106,7 +106,6 @@ standardSuite('Unbind Destination', (ss) => {
         '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
         '2. Type "RangeLink: Unbind"',
         '3. Execute "RangeLink: Unbind" to unbind the destination',
-        '4. Click Cancel on the notification',
       ],
     );
 
