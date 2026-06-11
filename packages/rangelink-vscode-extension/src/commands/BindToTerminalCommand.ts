@@ -27,7 +27,7 @@ import { formatMessage } from '../utils';
  *   picker flow — 0 terminals shows error, 1 auto-binds, 2+ shows the terminal
  *   picker.
  *
- * Success feedback is handled by PasteDestinationManager.bind().
+ * Success feedback is handled by the DestinationBinder implementation.
  */
 export class BindToTerminalCommand {
   constructor(

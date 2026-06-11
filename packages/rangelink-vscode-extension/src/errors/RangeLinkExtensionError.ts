@@ -42,7 +42,7 @@ export class RangeLinkExtensionError extends DetailedError<RangeLinkExtensionErr
       code: ErrorCodes.UNEXPECTED_CODE_PATH,
       message: options?.message ?? `Unexpected ${label}: ${JSON.stringify(value)}`,
       functionName,
-      details: { unexpectedValue: value, ...options?.extraDetails },
+      details: { ...options?.extraDetails, unexpectedValue: value },
     });
   }
 }
