@@ -1,10 +1,6 @@
-# RangeLink QA Test Cases — v1.0.0 → Unreleased
+# RangeLink QA Test Cases
 #
-# Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting Unreleased.
-#
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-unreleased.yaml`
-# to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
+# Run `pnpm generate:qa-issue:vscode-extension` to create the GitHub issue tracker.
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)

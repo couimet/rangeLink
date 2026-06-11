@@ -7,12 +7,11 @@
 #   automated: assisted → must have an [assisted]-tagged integration test
 #   automated: false    → must NOT have an integration test (fully manual)
 #
-# Output: qa/qa-coverage-report-v<version>-<timestamp>.txt (alongside terminal output)
+# Reads qa/qa-test-cases.yaml. Version comes from package.json.
+# Output: qa/output/qa-coverage-report-v<version>-<timestamp>.txt (alongside terminal output)
 #
 # Usage:
-#   ./scripts/validate-qa-coverage.sh [path-to-yaml]
-#
-# Defaults to the latest QA YAML in qa/ if no argument is provided.
+#   ./scripts/validate-qa-coverage.sh
 
 set -euo pipefail
 
@@ -20,30 +19,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INTEGRATION_TEST_DIR="$PACKAGE_ROOT/src/__integration-tests__/suite"
 QA_DIR="$PACKAGE_ROOT/qa"
-
-find_latest_qa_yaml() {
-  # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
-  # (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
-  # to unsuffixed names for sorting purposes, then pick the highest.
-  local latest
-  latest=$(
-    for f in "$QA_DIR"/qa-test-cases-*.yaml; do
-      [[ -e "$f" ]] || continue
-      name=$(basename "$f")
-      base="${name%.yaml}"
-      if [[ "$base" =~ -[0-9]{3}$ ]]; then
-        printf '%s\t%s\n' "$base" "$f"
-      else
-        printf '%s-000\t%s\n' "$base" "$f"
-      fi
-    done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
-  )
-  if [[ -z "$latest" ]]; then
-    echo "No QA YAML files found in $QA_DIR" >&2
-    exit 1
-  fi
-  echo "$latest"
-}
 
 # Extract TC IDs from non-[assisted] integration tests.
 find_automated_test_ids() {
@@ -71,25 +46,22 @@ find_assisted_test_ids() {
     | sort -u || true
 }
 
-YAML_PATH="${1:-$(find_latest_qa_yaml)}"
+YAML_PATH="$QA_DIR/qa-test-cases.yaml"
 
 if [[ ! -f "$YAML_PATH" ]]; then
   echo "QA YAML file not found: $YAML_PATH" >&2
   exit 1
 fi
 
-# Derive version from YAML filename for the report file
-YAML_BASENAME=$(basename "$YAML_PATH" .yaml)
-YAML_REST="${YAML_BASENAME#qa-test-cases-}"
-if [[ "$YAML_REST" =~ ^(.*)-[0-9]{3}$ ]]; then
-  REPORT_VERSION="${BASH_REMATCH[1]}"
-else
-  REPORT_VERSION="$YAML_REST"
+REPORT_VERSION=$(jq -r '.version // empty' "$PACKAGE_ROOT/package.json")
+if [[ -z "$REPORT_VERSION" ]]; then
+  echo "Error: .version not set in $PACKAGE_ROOT/package.json" >&2
+  exit 1
 fi
 OUTPUT_DIR="$QA_DIR/output"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
+REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-v${REPORT_VERSION}-${TIMESTAMP}.txt"
 
 # Collect all output, write to both terminal and file
 {

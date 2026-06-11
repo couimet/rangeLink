@@ -156,7 +156,7 @@ JS
   chmod +x "$PKG_DIR/scripts/resolve-qa-labels.js"
 
   # Create a minimal QA YAML file so the script finds one
-  cat > "$PKG_DIR/qa/qa-test-cases-unreleased.yaml" <<'YAML'
+  cat > "$PKG_DIR/qa/qa-test-cases.yaml" <<'YAML'
 test_cases:
   - id: test-feature-001
     feature: test-feature
