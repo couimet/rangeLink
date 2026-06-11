@@ -36,17 +36,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When more open files exist beyond the inline list, extras collapse into "More files..." which opens a secondary picker
   - Secondary picker organizes all open files into "Active Files" section + per-"Tab Group N" sections
   - Escaping the secondary picker returns to the destination picker
-- **Gemini Code Assist Integration** - Paste destination for Google's Gemini Code Assist (#529) <sup>Unreleased</sup>
+- **Gemini Code Assist Integration** - Paste destination for Google's Gemini Code Assist (#529)
   - Automatically inserts links and selected text directly into Gemini Code Assist
   - Requires [Gemini Code Assist](https://marketplace.visualstudio.com/items?itemName=Google.geminicodeassist) extension (`Google.geminicodeassist`)
   - Configurable cold-start timing: `rangelink.destinations.gemini.coldStartDelayMs` (default: `2500`) and `rangelink.destinations.gemini.coldRefocusIntervalMs` (default: `300`) — tune for your machine's speed; increase the delay on slower hardware if the initial paste after binding silently fails to reach the Gemini panel
-- **Custom AI Assistants** - Connect RangeLink to any AI tool with a VS Code extension (#500) <sup>Unreleased</sup>
+- **Custom AI Assistants** - Connect RangeLink to any AI tool with a VS Code extension (#500)
   - New setting `rangelink.customAiAssistants`: three-tier command schema — `insertCommands` (direct text delivery), `focusAndPasteCommands` (focus + auto-paste), `focusCommands` (focus + manual paste toast)
   - Custom assistants appear in the destination picker (R-D) alongside built-in destinations
   - Lazy tier resolution: RangeLink checks which commands are registered on first use and caches the winning tier — no per-operation overhead
   - Override built-in assistants (Cursor, Claude Code, Copilot) via config with automatic fallback to hardcoded commands
   - `${content}` template interpolation for insert commands with non-standard argument formats
-- **Claude Code Cold-Start Timing** - Configurable cold-start settings for the Claude Code Extension destination <sup>Unreleased</sup>
+- **Claude Code Cold-Start Timing** - Configurable cold-start settings for the Claude Code Extension destination
   - `rangelink.destinations.claudeCode.coldStartDelayMs` (default: `2500`) and `rangelink.destinations.claudeCode.coldRefocusIntervalMs` (default: `300`) — tune for your machine's speed; increase the delay on slower hardware if the initial paste after binding silently fails to reach the Claude Code panel
 - **Release Notifier** - Once-per-upgrade notification so new versions don't go unnoticed (#525)
   - On upgrade, shows "RangeLink updated to vX.Y.Z. See what changed!" with "What's New" and "Skip for this version" buttons
@@ -88,10 +88,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Send This File's Relative Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
-  - **Terminal** (right-click on terminal tabs or inside terminal):
-    - "RangeLink: Send Selection to Destination" - Send the selected terminal text to the bound destination (content-area menu only; opens the destination picker if nothing is bound)
+  - **Terminal Tab** (right-click on tabs):
     - "RangeLink: Bind Here" - Bind this terminal as destination
-    - "RangeLink: Unbind" - Unbind current destination (content-area menu only when bound)
+    - "RangeLink: Unbind" - Unbind current destination (when bound)
+  - **Terminal Content** (right-click inside terminal):
+    - "RangeLink: Send Selected Text" - Send the selected terminal text to the bound destination (hidden when the terminal IS the bound destination; opens the destination picker if nothing is bound)
+    - "RangeLink: Bind Here" - Bind this terminal as destination
+    - "RangeLink: Unbind" - Unbind current destination (when bound)
 - **Navigation clamping feedback** - Navigation now warns when a link points beyond file boundaries instead of silently landing at the nearest valid position
 - **Navigation toast settings** - Control which toasts appear after clicking a RangeLink (#54)
   - `rangelink.navigation.showNavigatedToast` (default: `true`) — suppress the "Navigated to …" info toast for a quieter workflow

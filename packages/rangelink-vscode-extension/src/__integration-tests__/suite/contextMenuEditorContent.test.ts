@@ -277,8 +277,7 @@ standardSuite('Context Menus — Editor Content', (ss) => {
       [
         '1. Right-click anywhere inside the editor',
         '2. Look at the RangeLink commands as a group (grouped together in the menu)',
-        '3. Click Pass if a visual separator line sits between the RangeLink block and the adjacent VS Code menu items.',
-        '   Click Fail if there is no separator (the RangeLink commands blend into the rest of the menu).',
+        'Verdict:',
       ],
     );
 
@@ -471,9 +470,8 @@ standardSuite('Context Menus — Editor Content', (ss) => {
         `A Terminal "${terminalName}" is bound so Unbind should remain visible.`,
         '1. Do NOT click-drag or double-click to create a text selection — cursor only',
         '2. Right-click anywhere inside the editor',
-        '3. Click Pass if ALL FIVE of these items are NOT visible: "Send RangeLink", "Send RangeLink (Absolute)", "Send Portable Link", "Send Portable Link (Absolute)", "Send Selected Text"',
+        'Verdict:',
         '   (File-path items and Bind/Unbind should remain visible — that is correct.)',
-        '   Click Fail if any of the five selection-dependent items appear despite no selection.',
       ],
     );
 

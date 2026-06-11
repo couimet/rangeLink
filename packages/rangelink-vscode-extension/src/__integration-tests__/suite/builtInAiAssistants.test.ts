@@ -72,11 +72,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const verdict = await waitForHumanVerdict(
       'claude-code-002',
       'Did the RangeLink + selected code appear in Claude Code chat?',
-      [
-        '1. The RangeLink send was fired automatically',
-        '2. Click PASS if the link + selected code appeared in Claude Code chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. The RangeLink send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       verdict,
@@ -119,8 +115,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       [
         '1. Lines 1-2 of cc-004 are already selected',
         '2. The send was fired automatically (no keypress needed)',
-        '3. Click PASS if the RangeLink appeared in Claude Code chat input',
-        '4. Click FAIL otherwise',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -156,11 +151,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const coldVerdict = await waitForHumanVerdict(
       'claude-code-005-cold',
       'Cold send: did the RangeLink appear in Claude Code chat?',
-      [
-        '1. Lines 1-2 of cc-005 are selected; cold send was fired automatically',
-        '2. Click PASS if the RangeLink appeared in Claude Code chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. Lines 1-2 of cc-005 are selected; cold send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       coldVerdict,
@@ -188,11 +179,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const warmVerdict = await waitForHumanVerdict(
       'claude-code-005-warm',
       'Warm send: did the lines 3-4 RangeLink appear in Claude Code chat without refocus flicker?',
-      [
-        '1. Lines 3-4 of cc-005 are selected; warm send was fired automatically',
-        '2. Click PASS if the new RangeLink appeared AND the panel did not flicker/refocus',
-        '3. Click FAIL otherwise (no content, or visible flicker indicating cold-start path)',
-      ],
+      ['1. Lines 3-4 of cc-005 are selected; warm send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       warmVerdict,
@@ -239,11 +226,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const verdict = await waitForHumanVerdict(
       'gemini-code-assist-002',
       'Did the RangeLink + selected code appear in Gemini Code Assist chat?',
-      [
-        '1. The RangeLink send was fired automatically',
-        '2. Click PASS if the link + selected code appeared in Gemini Code Assist chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. The RangeLink send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       verdict,
@@ -288,8 +271,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       [
         '1. Lines 1-2 of gc-003 are already selected',
         '2. The send was fired automatically (no keypress needed)',
-        '3. Click PASS if the RangeLink appeared in Gemini Code Assist chat input',
-        '4. Click FAIL otherwise',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -327,11 +309,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const coldVerdict = await waitForHumanVerdict(
       'gemini-code-assist-004-cold',
       'Cold send: did the RangeLink appear in Gemini Code Assist chat?',
-      [
-        '1. Lines 1-2 of gc-004 are selected; cold send was fired automatically',
-        '2. Click PASS if the RangeLink appeared in Gemini Code Assist chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. Lines 1-2 of gc-004 are selected; cold send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       coldVerdict,
@@ -357,11 +335,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const warmVerdict = await waitForHumanVerdict(
       'gemini-code-assist-004-warm',
       'Warm send: did the lines 3-4 RangeLink appear in Gemini Code Assist chat without refocus flicker?',
-      [
-        '1. Lines 3-4 of gc-004 are selected; warm send was fired automatically',
-        '2. Click PASS if the new RangeLink appeared AND the panel did not flicker/refocus',
-        '3. Click FAIL otherwise (no content, or visible flicker indicating cold-start path)',
-      ],
+      ['1. Lines 3-4 of gc-004 are selected; warm send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       warmVerdict,
@@ -406,11 +380,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const verdict = await waitForHumanVerdict(
       'github-copilot-chat-002',
       'Did the RangeLink + selected code appear in GitHub Copilot Chat?',
-      [
-        '1. The RangeLink send was fired automatically',
-        '2. Click PASS if the link + selected code appeared in GitHub Copilot Chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. The RangeLink send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       verdict,
@@ -453,8 +423,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       [
         '1. Lines 1-2 of ghc-003 are already selected',
         '2. The send was fired automatically (no keypress needed)',
-        '3. Click PASS if the RangeLink appeared in GitHub Copilot Chat input',
-        '4. Click FAIL otherwise',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -490,11 +459,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const coldVerdict = await waitForHumanVerdict(
       'github-copilot-chat-004-cold',
       'Cold send: did the RangeLink appear in GitHub Copilot Chat?',
-      [
-        '1. Lines 1-2 of ghc-004 are selected; cold send was fired automatically',
-        '2. Click PASS if the RangeLink appeared in GitHub Copilot Chat input',
-        '3. Click FAIL otherwise',
-      ],
+      ['1. Lines 1-2 of ghc-004 are selected; cold send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       coldVerdict,
@@ -520,11 +485,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const warmVerdict = await waitForHumanVerdict(
       'github-copilot-chat-004-warm',
       'Warm send: did the lines 3-4 RangeLink appear in GitHub Copilot Chat without refocus flicker?',
-      [
-        '1. Lines 3-4 of ghc-004 are selected; warm send was fired automatically',
-        '2. Click PASS if the new RangeLink appeared AND the panel did not flicker/refocus',
-        '3. Click FAIL otherwise (no content, or visible flicker indicating cold-start path)',
-      ],
+      ['1. Lines 3-4 of ghc-004 are selected; warm send was fired automatically', 'Verdict:'],
     );
     assert.strictEqual(
       warmVerdict,
@@ -791,8 +752,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
       [
         '1. Two rapid sends were fired automatically',
         '2. Check Claude Code chat for BOTH RangeLinks (lines 1-2 and lines 3-4)',
-        '3. Click PASS if both links were delivered',
-        '4. Click FAIL otherwise (missing link or wrong content)',
+        'Verdict:',
       ],
     );
     assert.strictEqual(

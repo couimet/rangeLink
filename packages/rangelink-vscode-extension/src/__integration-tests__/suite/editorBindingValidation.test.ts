@@ -25,7 +25,7 @@ standardSuite('Editor Binding Validation', (ss) => {
         '2. Right-click anywhere in the EDITOR CONTENT AREA (not the tab at the top)',
         '3. Confirm these do NOT appear: "Send RangeLink", "Send This File\'s Path", "RangeLink: Bind Here"',
         '4. "Send Selected Text" and "Unbind" are acceptable if present',
-        '   Click Pass if link/bind commands are absent, Fail if any appear',
+        'Verdict:',
       ],
     );
 
@@ -47,7 +47,7 @@ standardSuite('Editor Binding Validation', (ss) => {
         '3. Right-click anywhere in the Output panel',
         '4. Confirm no "Send This File\'s Path" or "RangeLink: Bind Here" appears',
         '5. "Unbind" is acceptable if present',
-        '   Click Pass if those commands are absent, Fail if any appear',
+        'Verdict:',
       ],
     );
 
@@ -71,7 +71,7 @@ standardSuite('Editor Binding Validation', (ss) => {
         '5. Confirm no "Send File Path" or "Send Relative File Path" appears',
         '6. Press Cmd+R Cmd+D — confirm Settings UI is not listed as a bindable destination',
         '7. Press Escape to dismiss the picker',
-        '   Click Pass if all commands are absent, Fail if any appear',
+        'Verdict:',
       ],
     );
 
@@ -136,7 +136,7 @@ standardSuite('Editor Binding Validation', (ss) => {
         '2. Right-click the search editor TAB at the top of the editor area (not the content)',
         '3. Confirm no "Send File Path" or "Send Relative File Path" appears in the context menu',
         '4. "Unbind" is acceptable if present',
-        '   Click Pass if file path commands are absent, Fail if any appear',
+        'Verdict:',
       ],
     );
 

@@ -74,8 +74,7 @@ standardSuite('Unbind Destination', (ss) => {
       [
         '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
         '2. Type "RangeLink: Unbind"',
-        '3. Click Pass if "RangeLink: Unbind" is NOT visible (the `when: rangelink.isBound` clause should hide it).',
-        '   Click Fail if it IS present (that would be a bug).',
+        'Verdict:',
       ],
     );
 

@@ -165,8 +165,7 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (ss) => {
       [
         '1. Hover your cursor over https://example.com/path/file.ts#L10 in the editor',
         '2. The URL will show a regular VS Code browser-style link hover — that is expected and fine',
-        '3. PASS if: RangeLink does NOT add its own clickable underline or tooltip',
-        '4. FAIL if: RangeLink adds a clickable underline or tooltip on the URL',
+        'Verdict:',
       ],
     );
 
@@ -191,8 +190,7 @@ standardSuite('Link Generation — Clickable Links (Assisted)', (ss) => {
       [
         '1. Look at the line: See code at src/utils/helper.ts#L5 for details',
         '2. Hover your cursor over the RangeLink (it should be underlined/clickable)',
-        '3. PASS if: the RangeLink tooltip shows clean text (file path and line number)',
-        '4. FAIL if: the tooltip shows raw JSON, a command: URI, or internal parameters',
+        'Verdict:',
       ],
     );
 

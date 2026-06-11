@@ -491,7 +491,7 @@ describe('package.json contributions', () => {
       it('rangelink.terminal.pasteSelectedTextToDestination', () => {
         expect(findCommand('rangelink.terminal.pasteSelectedTextToDestination')).toStrictEqual({
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
-          title: 'RangeLink: Send Selection to Destination',
+          title: 'RangeLink: Send Selected Text',
           icon: '$(symbol-snippet)',
         });
       });
@@ -1454,11 +1454,11 @@ describe('package.json contributions', () => {
         expect(terminalContextMenu).toHaveLength(3);
       });
 
-      it('pasteSelectedTextToDestination in edit group when text selected (matches editor family — no isBound gate)', () => {
+      it('pasteSelectedTextToDestination leads terminal context menu when text selected and terminal is not the bound destination', () => {
         expect(terminalContextMenu[0]).toStrictEqual({
-          when: 'terminalTextSelected',
+          when: 'terminalTextSelected && !rangelink.isActiveTerminalPasteDestination',
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
-          group: '2_edit@10',
+          group: 'rangelink@1',
         });
       });
 
@@ -1466,7 +1466,7 @@ describe('package.json contributions', () => {
         expect(terminalContextMenu[1]).toStrictEqual({
           when: 'rangelink.isActiveTerminalBindable',
           command: 'rangelink.terminal.bind',
-          group: 'rangelink@1',
+          group: 'rangelink@2',
         });
       });
 
@@ -1474,7 +1474,7 @@ describe('package.json contributions', () => {
         expect(terminalContextMenu[2]).toStrictEqual({
           when: 'rangelink.isBound',
           command: 'rangelink.terminal.unbind',
-          group: 'rangelink@2',
+          group: 'rangelink@3',
         });
       });
     });

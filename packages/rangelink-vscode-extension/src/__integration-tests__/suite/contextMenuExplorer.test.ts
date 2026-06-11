@@ -177,12 +177,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const verdict = await waitForHumanVerdict(
       'context-menus-explorer-005',
       `Right-click "${fn}" in Explorer — is "RangeLink: Unbind" ABSENT from the menu?`,
-      [
-        `1. Locate "${fn}" in the Explorer panel`,
-        '2. Right-click it',
-        '3. Click Pass if "RangeLink: Unbind" is NOT in the menu (the `when: rangelink.isBound` clause should hide it).',
-        '   Click Fail if it IS present (that would be a bug).',
-      ],
+      [`1. Locate "${fn}" in the Explorer panel`, '2. Right-click it', 'Verdict:'],
     );
 
     assert.strictEqual(

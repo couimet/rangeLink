@@ -30,7 +30,6 @@ export const waitForHuman = async (
   if (consoleSteps !== undefined) {
     consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
   }
-  nodeConsole.log('Click Cancel on the notification when done.');
   nodeConsole.log(SECTION_LINE);
 
   await vscode.window.withProgress(
@@ -116,7 +115,7 @@ export const waitForHumanVerdict = async (
   if (consoleSteps !== undefined) {
     consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
   }
-  nodeConsole.log('Click the PASS or FAIL button in the status bar (bottom-left) when done.');
+  nodeConsole.log('PASS / FAIL buttons in the status bar (bottom-left).');
   nodeConsole.log(SECTION_LINE);
 
   // Dispose any stale UI from a previous invocation that never settled
