@@ -130,8 +130,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
       [
         '1. Locate the RangeLink item in the bottom-right status bar',
         '2. Hover over it to reveal the tooltip',
-        '3. Click PASS if it shows "$(link) RangeLink" with tooltip "RangeLink — no destination bound"',
-        '   Click FAIL if the text or tooltip is wrong, or the item is missing',
+        'Verdict:',
       ],
     );
     assert.strictEqual(verdict, 'pass', 'Human reported status bar text or tooltip was incorrect');
@@ -198,12 +197,11 @@ standardSuite('R-M Status Bar Menu', (ss) => {
 
     await waitForHuman(
       'status-bar-menu-008',
-      'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", dismiss the R-G input box (Escape), then click Cancel.',
+      'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", then dismiss the R-G input box (Escape).',
       [
         '1. Press Cmd+R Cmd+M to open the R-M menu',
         '2. Select "$(link-external) Go to Link"',
         '3. The R-G input box opens — press Escape to dismiss it',
-        '4. Click Cancel on this notification',
       ],
     );
 
@@ -336,8 +334,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
         '1. Locate the RangeLink item in the bottom-right status bar',
         '2. Hover over it to reveal the tooltip',
         '3. Verify the icon does NOT have a prominent/bright color (it should look default/neutral)',
-        '4. Click PASS if tooltip is "RangeLink — no destination bound" and color is default',
-        '   Click FAIL if the tooltip or color is wrong',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -356,8 +353,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
         '1. Hover over the RangeLink status bar item again',
         `2. Verify the tooltip shows "RangeLink — Terminal (\\"${terminalName}\\")"`,
         '3. Verify the icon now has a prominent/bright color (different from the default)',
-        '4. Click PASS if both tooltip and color changed correctly',
-        '   Click FAIL if the tooltip or color is wrong',
+        'Verdict:',
       ],
     );
     assert.strictEqual(verdictBound, 'pass', 'Human reported bound tooltip or color was incorrect');
@@ -372,8 +368,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
         '1. Hover over the RangeLink status bar item again',
         '2. Verify the tooltip is back to "RangeLink — no destination bound"',
         '3. Verify the icon color is back to default (no prominent color)',
-        '4. Click PASS if both tooltip and color reverted correctly',
-        '   Click FAIL if the tooltip or color is wrong',
+        'Verdict:',
       ],
     );
     assert.strictEqual(

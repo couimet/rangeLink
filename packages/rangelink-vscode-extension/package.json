@@ -338,7 +338,7 @@
       },
       {
         "command": "rangelink.terminal.pasteSelectedTextToDestination",
-        "title": "RangeLink: Send Selection to Destination",
+        "title": "RangeLink: Send Selected Text",
         "icon": "$(symbol-snippet)"
       },
       {
@@ -941,19 +941,19 @@
       ],
       "terminal/context": [
         {
-          "when": "terminalTextSelected",
+          "when": "terminalTextSelected && !rangelink.isActiveTerminalPasteDestination",
           "command": "rangelink.terminal.pasteSelectedTextToDestination",
-          "group": "2_edit@10"
+          "group": "rangelink@1"
         },
         {
           "when": "rangelink.isActiveTerminalBindable",
           "command": "rangelink.terminal.bind",
-          "group": "rangelink@1"
+          "group": "rangelink@2"
         },
         {
           "when": "rangelink.isBound",
           "command": "rangelink.terminal.unbind",
-          "group": "rangelink@2"
+          "group": "rangelink@3"
         }
       ]
     }

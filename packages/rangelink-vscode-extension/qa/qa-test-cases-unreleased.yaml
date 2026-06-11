@@ -982,6 +982,30 @@ test_cases:
     expected_result: 'With a different terminal already bound, the pty terminal content-area menu shows "RangeLink: Unbind" but does NOT show "RangeLink: Bind Here". Proves Unbind rides on `rangelink.isBound` (not bindability).'
     automated: assisted
 
+  - id: context-menus-terminal-010
+    labels:
+      - terminal
+    feature: 'context-menus'
+    scenario: 'Terminal content-area "Send Selected Text" appears when terminal has selection and is not the bound destination'
+    expected_result: 'With a terminal that has selected text and no destination bound, right-clicking the terminal CONTENT AREA shows "RangeLink: Send Selected Text". Selecting it opens the destination picker.'
+    automated: assisted
+
+  - id: context-menus-terminal-011
+    labels:
+      - terminal
+    feature: 'context-menus'
+    scenario: '"Send Selected Text" is hidden from the terminal content-area menu when the terminal IS the bound destination'
+    expected_result: 'When a terminal is the bound destination and has selected text, "RangeLink: Send Selected Text" is absent from the content-area context menu. The `!rangelink.isActiveTerminalPasteDestination` gate prevents circular self-paste.'
+    automated: assisted
+
+  - id: context-menus-terminal-012
+    labels:
+      - terminal
+    feature: 'context-menus'
+    scenario: 'Terminal content-area "Send Selected Text" is absent when no text is selected'
+    expected_result: 'With a terminal that has NO text selected, right-clicking the terminal CONTENT AREA does not show "RangeLink: Send Selected Text". The `terminalTextSelected` clause hides it.'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 8 — Dirty Buffer Warning
   # ---------------------------------------------------------------------------
@@ -1245,8 +1269,8 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-terminal-selection'
-    scenario: 'Terminal TAB context menu does NOT include "Send Selection to Destination"'
-    expected_result: '"RangeLink: Send Selection to Destination" is NOT present in the tab menu (the command is only registered for the content-area menu).'
+    scenario: 'Terminal TAB context menu does NOT include "Send Selected Text"'
+    expected_result: '"RangeLink: Send Selected Text" is NOT present in the tab menu (the command is only registered for the content-area menu).'
     automated: assisted
 
   - id: send-terminal-selection-010
@@ -1261,7 +1285,7 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-terminal-selection'
-    scenario: 'Unbound: "Send Selection to Destination" is visible; clicking opens destination picker and delivers to picked destination'
+    scenario: 'Unbound: "Send Selected Text" is visible; clicking opens destination picker and delivers to picked destination'
     expected_result: 'The item is visible (parity with editor family — no isBound gate). The destination picker opens, and after picking DEST, the selection is delivered to DEST and DEST becomes the bound destination.'
     automated: assisted
 
@@ -1269,8 +1293,8 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-terminal-selection'
-    scenario: '"Send Selection to Destination" is hidden when no terminal text is selected'
-    expected_result: '"RangeLink: Send Selection to Destination" is NOT present (`when` clause requires `terminalTextSelected`).'
+    scenario: '"Send Selected Text" is hidden when no terminal text is selected'
+    expected_result: '"RangeLink: Send Selected Text" is NOT present (`when` clause requires `terminalTextSelected`).'
     automated: assisted
 
   - id: send-terminal-selection-013

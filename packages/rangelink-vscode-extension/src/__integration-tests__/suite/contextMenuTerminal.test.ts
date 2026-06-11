@@ -191,8 +191,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       [
         `1. Locate the "${terminalName}" tab in the terminal panel's tab bar`,
         '2. Right-click the tab (NOT the content area)',
-        '3. PASS if "RangeLink: Bind Here" is NOT in the menu',
-        '4. FAIL if "RangeLink: Bind Here" appears in the menu',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -222,8 +221,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       [
         `1. Focus the "${terminalName}" pty terminal`,
         '2. Right-click INSIDE the terminal output area (NOT the tab)',
-        '3. PASS if "RangeLink: Bind Here" is NOT in the menu',
-        '4. FAIL if "RangeLink: Bind Here" appears in the menu',
+        'Verdict:',
       ],
     );
     assert.strictEqual(
@@ -300,11 +298,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const verdict = await waitForHumanVerdict(
       'context-menus-terminal-009',
       `Right-click inside the "${ptyName}" pty terminal content area. Is "RangeLink: Unbind" PRESENT and "RangeLink: Bind Here" ABSENT?`,
-      [
-        '1. Right-click INSIDE the pty terminal content area',
-        '2. PASS if "RangeLink: Unbind" IS in the menu AND "RangeLink: Bind Here" is NOT',
-        '3. FAIL if either condition is violated',
-      ],
+      ['1. Right-click INSIDE the pty terminal content area', 'Verdict:'],
     );
     assert.strictEqual(
       verdict,
@@ -315,6 +309,130 @@ standardSuite('Context Menus — Terminal', (ss) => {
     ss.log('✓ Pty content menu: Unbind present, Bind Here absent (when bound to shell)');
   });
 
+  // TC context-menus-terminal-010: R-V in terminal CONTENT-AREA context menu
+  // when terminal has selection and is NOT the bound destination
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-010: Terminal content-area "Send Selected Text" appears when terminal has selection and is not the bound destination', async () => {
+    const terminalName = 'rl-ctxmenu-term-010';
+    const destName = 'rl-ctxmenu-term-010-DEST';
+    const terminal = await ss.createTerminal(terminalName);
+    await ss.createTerminal(destName);
+
+    const markerText = 'CTXMENU_010_RV_CONTENT_MARKER';
+    echoToTerminal(terminal, markerText);
+    terminal.show(true);
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Terminal ("${destName}")`,
+      `✓ RangeLink: Selected text sent to Terminal ("${destName}")`,
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-term-010');
+
+    await waitForHuman(
+      'context-menus-terminal-010',
+      `Select "${markerText}" in "${terminalName}" → right-click CONTENT AREA → "RangeLink: Send Selected Text" → pick "${destName}" from the destination picker`,
+      [
+        `The terminal "${terminalName}" has "${markerText}" in its output. No destination is bound.`,
+        '1. Select the marker text in the terminal content area',
+        '2. Right-click INSIDE the terminal content area (not the tab)',
+        '3. Verify "RangeLink: Send Selected Text" is present in the content-area context menu',
+        '4. Select it — a destination picker opens — pick Terminal ("' + destName + '")',
+      ],
+    );
+
+    ss.log(
+      '✓ Terminal content-area "Send Selected Text" visible when terminal has selection and is not bound',
+    );
+  });
+
+  // TC context-menus-terminal-011: R-V HIDDEN from both terminal menus when
+  // the terminal IS the bound destination (self-paste gate)
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-011: "Send Selected Text" is hidden from the terminal content-area menu when the terminal IS the bound destination', async () => {
+    const terminalName = 'rl-ctxmenu-term-011';
+    const terminal = await ss.createTerminal(terminalName);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, terminal);
+    await ss.settle();
+
+    const markerText = 'CTXMENU_011_SELF_BIND_MARKER';
+    echoToTerminal(terminal, markerText);
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Terminal ("${terminalName}")`]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-term-011');
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-011',
+      `Select "${markerText}" in "${terminalName}". Is "RangeLink: Send Selected Text" ABSENT from the content-area right-click menu?`,
+      [
+        `The terminal "${terminalName}" IS the bound destination (self-paste would be circular).`,
+        `1. Select "${markerText}" in the terminal content area`,
+        '2. Right-click the terminal CONTENT AREA — verify "RangeLink: Send Selected Text" is ABSENT',
+        'Verdict:',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "Send Selected Text" to be hidden from the terminal content-area menu when the terminal IS the bound destination',
+    );
+
+    ss.log(
+      '✓ Self-paste gate: R-V hidden from terminal content-area menu when terminal IS the bound destination',
+    );
+  });
+
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] context-menus-terminal-012: Terminal content-area "Send Selected Text" is absent when no terminal text is selected', async () => {
+    const terminalName = 'rl-ctxmenu-term-012';
+    const terminal = await ss.createTerminal(terminalName);
+    echoToTerminal(terminal, 'CTXMENU_012_NO_SELECTION');
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': false,
+      'rangelink.isBound': false,
+    });
+
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-012',
+      `Right-click INSIDE "${terminalName}" content area WITHOUT selecting text. Is "RangeLink: Send Selected Text" ABSENT from the content-area menu?`,
+      [
+        `The terminal "${terminalName}" has output text but nothing is selected.`,
+        '1. Do NOT select any text in the terminal',
+        '2. Right-click INSIDE the terminal content area (not the tab)',
+        'Verdict:',
+      ],
+    );
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Expected "Send Selected Text" to be absent from terminal content-area menu when no text is selected',
+    );
+
+    ss.log('✓ No-selection negative: R-V absent from terminal content-area menu');
+  });
+
   // ---------------------------------------------------------------------------
   // TC send-terminal-selection-005 (lives here because the scenario is
   // specifically the terminal-context-menu path into R-V; the test file's slug
@@ -322,7 +440,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
   // QA journal.)
   // ---------------------------------------------------------------------------
 
-  test('[assisted] send-terminal-selection-005: Terminal content-area "Send Selection to Destination" sends selected text to bound editor', async () => {
+  test('[assisted] send-terminal-selection-005: Terminal content-area "Send Selected Text" sends selected text to bound editor', async () => {
     const editorUri = await ss.createAndOpenFile(
       'ctxmenu-term-sts-005',
       'destination file — terminal selection arrives here\n',
@@ -353,14 +471,14 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'send-terminal-selection-005',
-      `Select "${markerText}" in terminal "${terminalName}" → right-click → "RangeLink: Send Selection to Destination"`,
+      `Select "${markerText}" in terminal "${terminalName}" → right-click → "RangeLink: Send Selected Text"`,
       [
         `A Text Editor "${editorFn}" is currently bound as the destination.`,
         `The terminal "${terminalName}" has "${markerText}" in its output.`,
         `1. Select the "${markerText}" text in the terminal content area`,
         '2. Right-click INSIDE the terminal content area (not the tab)',
-        '3. Verify "RangeLink: Send Selection to Destination" is present',
-        '4. Select "RangeLink: Send Selection to Destination"',
+        '3. Verify "RangeLink: Send Selected Text" is present',
+        '4. Select "RangeLink: Send Selected Text"',
         `The selected text should appear in the "${editorFn}" editor.`,
       ],
     );
@@ -372,9 +490,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       `Expected editor to contain "${markerText}" but got: ${editorText}`,
     );
 
-    ss.log(
-      '✓ Terminal context-menu "Send Selection to Destination" routed selection to bound editor',
-    );
+    ss.log('✓ Terminal context-menu "Send Selected Text" routed selection to bound editor');
   });
 
   // ---------------------------------------------------------------------------
@@ -409,14 +525,14 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'send-terminal-selection-008',
-      `Select "${markerText}" in SOURCE terminal "${sourceName}" → right-click → "Send Selection to Destination"`,
+      `Select "${markerText}" in SOURCE terminal "${sourceName}" → right-click → "Send Selected Text"`,
       [
         `Destination: Terminal "${boundName}" is bound (pty-captured — the test reads its buffer to verify content).`,
         `Source: Terminal "${sourceName}" contains "${markerText}".`,
         `1. Click the "${sourceName}" terminal to focus it`,
         `2. Select the "${markerText}" text in its output`,
         '3. Right-click INSIDE the source terminal content area (not the tab)',
-        '4. Select "RangeLink: Send Selection to Destination"',
+        '4. Select "RangeLink: Send Selected Text"',
         `The selection should paste into "${boundName}" and focus should shift there.`,
       ],
     );
@@ -435,7 +551,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     );
   });
 
-  test('[assisted] send-terminal-selection-009: "Send Selection to Destination" is NOT in the terminal TAB menu', async () => {
+  test('[assisted] send-terminal-selection-009: "Send Selected Text" is NOT in the terminal TAB menu', async () => {
     const terminalName = 'rl-sts-009';
     const terminal = await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -455,20 +571,19 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const verdict = await waitForHumanVerdict(
       'send-terminal-selection-009',
-      `Select text in "${terminalName}" → right-click the TAB → is "Send Selection to Destination" ABSENT from the menu?`,
+      `Select text in "${terminalName}" → right-click the TAB → is "Send Selected Text" ABSENT from the menu?`,
       [
         `The terminal "${terminalName}" is bound to itself (self-bind for this contract test).`,
         `1. Click the "${terminalName}" terminal and select "STS_009_MARKER_TEXT" in its output`,
         '2. Right-click the terminal TAB (not the content area)',
-        '3. Click Pass if "RangeLink: Send Selection to Destination" is NOT in the menu.',
-        '   Click Fail if it IS present (that would be a bug).',
+        'Verdict:',
       ],
     );
 
     assert.strictEqual(
       verdict,
       'pass',
-      'Human reported "Send Selection to Destination" WAS visible in the tab menu — this is a bug',
+      'Human reported "Send Selected Text" WAS visible in the tab menu — this is a bug',
     );
 
     ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict)');
@@ -503,12 +618,12 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'send-terminal-selection-010',
-      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selection to Destination"`,
+      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selected Text"`,
       [
         `Destination: Terminal "${terminalName}" is bound (the SAME terminal we'll select from).`,
         `1. Select "${markerText}" in "${terminalName}" (the marker text is visible in the buffer)`,
         '2. Right-click INSIDE the content area',
-        '3. Select "RangeLink: Send Selection to Destination"',
+        '3. Select "RangeLink: Send Selected Text"',
         'The selection will be pasted BACK into the same terminal (this documents current behavior; a self-paste guard for terminals is worth filing as a follow-up).',
       ],
     );
@@ -553,12 +668,12 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'send-terminal-selection-011',
-      `Select "${markerText}" in "${sourceName}" → right-click content area → "Send Selection to Destination" → pick Terminal ("${destName}")`,
+      `Select "${markerText}" in "${sourceName}" → right-click content area → "Send Selected Text" → pick Terminal ("${destName}")`,
       [
         `No destination is currently bound. Two terminals exist: "${sourceName}" (with marker text) and "${destName}" (empty destination).`,
         `1. Click the "${sourceName}" terminal and select "${markerText}"`,
         '2. Right-click INSIDE the content area (NOT the tab)',
-        '3. Select "RangeLink: Send Selection to Destination"',
+        '3. Select "RangeLink: Send Selected Text"',
         `4. In the destination picker that opens, pick Terminal ("${destName}")`,
         `The selection should be delivered to "${destName}" and "${destName}" should become the bound destination.`,
       ],
@@ -604,13 +719,12 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     const verdict = await waitForHumanVerdict(
       'send-terminal-selection-012',
-      `Right-click inside "${terminalName}" WITHOUT selecting → is "Send Selection to Destination" ABSENT from the menu?`,
+      `Right-click inside "${terminalName}" WITHOUT selecting → is "Send Selected Text" ABSENT from the menu?`,
       [
         `The terminal "${terminalName}" is bound to itself.`,
         '1. Do NOT click-drag or double-click to create a text selection',
         `2. Right-click INSIDE the "${terminalName}" content area on an empty region`,
-        '3. Click Pass if "RangeLink: Send Selection to Destination" is NOT in the menu (the `when: terminalTextSelected` clause should hide it).',
-        '   Click Fail if it IS present (that would be a bug).',
+        'Verdict:',
       ],
     );
 
@@ -659,14 +773,14 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     await waitForHuman(
       'send-terminal-selection-013',
-      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selection to Destination"`,
+      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selected Text"`,
       [
         'Destination: Dummy AI (Tier 1) is bound.',
         `Source: "${terminalName}" has "${markerText}" in its output.`,
         `1. Click the "${terminalName}" terminal to focus it`,
         `2. Select "${markerText}" in its output`,
         '3. Right-click INSIDE the terminal content area (not the tab)',
-        '4. Select "RangeLink: Send Selection to Destination"',
+        '4. Select "RangeLink: Send Selected Text"',
         'The selection should be delivered to the Dummy AI extension via direct insert.',
       ],
     );

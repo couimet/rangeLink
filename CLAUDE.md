@@ -278,6 +278,61 @@
   </bad-example>
 </rule>
 
+<rule id="T017" priority="critical">
+  <title>waitForHuman instructions are self-contained; waitForHumanVerdict defines PASS</title>
+  <scope>Integration tests under `src/__integration-tests__/` only</scope>
+
+<do>Make the 2nd param of `waitForHuman(label, instruction, steps)` self-contained — every action the tester must perform is stated in `instruction`. The `steps` array adds background context and step-by-step breakdown but the tester can complete the test from `instruction` alone.</do>
+<never>Hide a required action only in `steps`. If the tester must select a picker item, press a keybinding, or dismiss a dialog, that belongs in `instruction`.</never>
+
+<do>In `waitForHumanVerdict(label, question, steps)`, phrase `question` as a yes/no question where YES = PASS. State exactly what the tester must verify before pressing PASS.</do>
+<never>Explain the FAIL path in `steps`. The default action is FAIL — no explanation needed. Do not write "FAIL if …" or "press FAIL when …".</never>
+
+<never>Tell the tester to click Cancel or press Escape to dismiss. They know how to dismiss menus and pickers.</never>
+
+  <good-example>
+    ```typescript
+    // BAD: required action hidden in steps[3]
+    await waitForHuman(
+      'context-menus-terminal-001',
+      `Right-click terminal TAB "${name}" → "RangeLink: Send Selection"`,
+      [
+        `The terminal "${name}" has selected text.`,
+        '1. Right-click the terminal TAB',
+        '2. Verify the entry is present',
+        '3. Select it to open the destination picker and pick any destination',
+      ],
+    );
+
+    // GOOD: instruction is self-contained
+    await waitForHuman(
+      'context-menus-terminal-001',
+      `Right-click terminal TAB "${name}" → "RangeLink: Send Selection" → pick any destination from the picker that opens`,
+      [
+        `The terminal "${name}" has selected text. No destination is bound.`,
+        '1. Right-click the terminal TAB (not the content area)',
+        '2. Verify "RangeLink: Send Selection to Destination" is present',
+        '3. Select it — a destination picker opens',
+        '4. Pick any destination and press Enter',
+      ],
+    );
+
+    // VERDICT — GOOD: question states what to verify for PASS, no FAIL explanation
+    const verdict = await waitForHumanVerdict(
+      'context-menus-terminal-012',
+      `Is "RangeLink: Send Selection" ABSENT from both the tab menu AND the content-area menu?`,
+      [
+        `The terminal "${name}" IS the bound destination.`,
+        '1. Right-click the terminal TAB — check the entry is absent',
+        '2. Right-click the terminal CONTENT AREA — check the entry is absent',
+        '3. Press PASS if absent from both',
+      ],
+    );
+    ```
+
+  </good-example>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before the first pnpm, npm, or node command in a session</when>
@@ -589,6 +644,7 @@
   <mark>New rows in command/setting tables</mark>
   <mark>A `> [!IMPORTANT]` banner at the top of the README if one doesn't exist yet</mark>
   <skip>Cosmetic renames or rewording of existing features — only mark genuinely new functionality</skip>
+  <never>Add `<sup>Unreleased</sup>` markers in CHANGELOG. The `## [Unreleased]` section header already conveys that everything within it is unreleased. Markers are for README only, where released and unreleased content is interleaved.</never>
   <see>docs/RELEASE-STRATEGY.md § Trunk-Based Documentation</see>
 </unreleased-markers>
 

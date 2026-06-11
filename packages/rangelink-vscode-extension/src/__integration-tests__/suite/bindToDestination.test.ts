@@ -226,8 +226,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
         '1. Press Cmd+R Cmd+D',
         '2. Select Terminal ("rl-btd-009-b") from the list',
         '3. When the confirmation dialog appears, click "No, keep current binding"',
-        '4. Click Pass if the original binding to "rl-btd-009-a" was kept (no rebind, no status-bar change).',
-        '   Click Fail if "rl-btd-009-b" ended up bound or you saw a rebind toast.',
+        'Verdict:',
       ],
     );
 
