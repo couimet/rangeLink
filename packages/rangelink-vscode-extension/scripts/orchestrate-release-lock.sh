@@ -43,21 +43,24 @@ if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
   exit 1
 fi
 
-# --- Create release branch ---
+# --- Create or re-enter release branch ---
 
 RELEASE_BRANCH="release/v${VERSION}"
-if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
-  echo -e "${RED}Error: branch $RELEASE_BRANCH already exists.${NC}" >&2
-  exit 1
-fi
-
 CURRENT_BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
-if [[ "$CURRENT_BRANCH" != "main" ]]; then
-  echo -e "${YELLOW}Not on main (current: $CURRENT_BRANCH). Creating $RELEASE_BRANCH from main.${NC}"
-fi
 
-git -C "$REPO_ROOT" checkout -b "$RELEASE_BRANCH" main
-echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
+if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
+  if [[ "$CURRENT_BRANCH" != "$RELEASE_BRANCH" ]]; then
+    echo -e "${RED}Error: branch $RELEASE_BRANCH already exists but current branch is $CURRENT_BRANCH.${NC}" >&2
+    exit 1
+  fi
+  echo -e "${YELLOW}Re-running on existing branch $RELEASE_BRANCH.${NC}"
+else
+  if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    echo -e "${YELLOW}Not on main (current: $CURRENT_BRANCH). Creating $RELEASE_BRANCH from main.${NC}"
+  fi
+  git -C "$REPO_ROOT" checkout -b "$RELEASE_BRANCH" main
+  echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
+fi
 
 # --- Step 1: Lock the version ---
 
@@ -100,8 +103,8 @@ fi
 
 # Inject the QA issue URL into the instructions file.
 sed -i.bak \
-  -e "s|qa_issue_url: \"\"|qa_issue_url: \"$QA_ISSUE_URL\"|" \
-  -e "s|\*\*QA tracker:\*\* <to be filled by release:lock>|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
+  -e "s|qa_issue_url: \".*\"|qa_issue_url: \"$QA_ISSUE_URL\"|" \
+  -e "s|\*\*QA tracker:\*\* .*|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
   "$INSTRUCTIONS_FILE" && rm -f "${INSTRUCTIONS_FILE}.bak"
 
 echo -e "${GREEN}QA issue URL injected into instructions file.${NC}"
