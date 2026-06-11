@@ -3,8 +3,9 @@ import type * as vscode from 'vscode';
 
 import type {
   BindSuccessInfo,
+  BoundSession,
   DestinationAvailabilityService,
-  PasteDestinationManager,
+  DestinationBinder,
 } from '../destinations';
 import {
   classifyTerminalForBinding,
@@ -26,13 +27,14 @@ import { formatMessage } from '../utils';
  *   picker flow — 0 terminals shows error, 1 auto-binds, 2+ shows the terminal
  *   picker.
  *
- * Success feedback is handled by PasteDestinationManager.bind().
+ * Success feedback is handled by the DestinationBinder implementation.
  */
 export class BindToTerminalCommand {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly availabilityService: DestinationAvailabilityService,
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly binder: DestinationBinder,
+    private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -70,11 +72,11 @@ export class BindToTerminalCommand {
         `Direct bind to terminal "${preferredTerminal.name}" from context menu`,
       );
       return this.mapBindResult(
-        await this.destinationManager.bind({ kind: 'terminal', terminal: preferredTerminal }),
+        await this.binder.bind({ kind: 'terminal', terminal: preferredTerminal }),
       );
     }
 
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
     const terminalItems = await this.availabilityService.getTerminalItems(
       Infinity,
       boundTerminalProcessId,
@@ -97,7 +99,7 @@ export class BindToTerminalCommand {
         { ...logCtx, terminalName: terminalInfo.name },
         'Single terminal, auto-binding',
       );
-      return this.mapBindResult(await this.destinationManager.bind(terminalInfo.bindOptions));
+      return this.mapBindResult(await this.binder.bind(terminalInfo.bindOptions));
     }
 
     const bindResult = await showTerminalPicker(
@@ -110,7 +112,7 @@ export class BindToTerminalCommand {
             { ...logCtx, terminalName: eligible.name },
             `Binding to terminal "${eligible.name}"`,
           );
-          return this.destinationManager.bind(eligible.bindOptions);
+          return this.binder.bind(eligible.bindOptions);
         },
       },
       this.logger,

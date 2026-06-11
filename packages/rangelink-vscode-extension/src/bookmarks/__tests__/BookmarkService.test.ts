@@ -7,6 +7,7 @@ import {
   createMockDestinationManager,
   createMockVscodeAdapter,
 } from '../../__tests__/helpers';
+import { createMockBoundSession } from '../../__tests__/helpers';
 import type { Bookmark } from '../../bookmarks';
 import { BookmarkService } from '../BookmarkService';
 
@@ -16,6 +17,7 @@ describe('BookmarkService', () => {
   let mockConfigReader: ReturnType<typeof createMockConfigReader>;
   let mockClipboard: ReturnType<typeof createMockClipboard>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
+  let service: BookmarkService;
 
   const TEST_BOOKMARK: Bookmark = {
     id: 'bookmark-1',
@@ -26,6 +28,19 @@ describe('BookmarkService', () => {
     accessCount: 0,
   };
 
+  const createService = (): BookmarkService => {
+    const mockSession = createMockBoundSession();
+    const mockDestinationManager = createMockDestinationManager();
+    return new BookmarkService(
+      mockBookmarksStore,
+      mockAdapter,
+      mockConfigReader,
+      mockDestinationManager,
+      mockSession,
+      mockLogger,
+    );
+  };
+
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockBookmarksStore = createMockBookmarksStore({ bookmarks: [TEST_BOOKMARK] });
@@ -34,16 +49,85 @@ describe('BookmarkService', () => {
     mockAdapter = createMockVscodeAdapter({
       envOptions: { clipboard: mockClipboard },
     });
+    service = createService();
+  });
+
+  describe('constructor', () => {
+    it('logs initialization', () => {
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BookmarkService.constructor' },
+        'BookmarkService initialized',
+      );
+    });
+  });
+
+  describe('isVisible', () => {
+    it('returns true when bookmarks feature is enabled', () => {
+      (mockConfigReader.getBoolean as jest.Mock).mockReturnValue(true);
+
+      expect(service.isVisible()).toBe(true);
+    });
+
+    it('returns false when bookmarks feature is disabled', () => {
+      expect(service.isVisible()).toBe(false);
+    });
+  });
+
+  describe('getAllBookmarks', () => {
+    it('returns all bookmarks from store', () => {
+      const result = service.getAllBookmarks();
+
+      expect(result).toStrictEqual([TEST_BOOKMARK]);
+      expect(mockBookmarksStore.getAll).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns empty array when no bookmarks exist', () => {
+      mockBookmarksStore.getAll.mockReturnValue([]);
+
+      expect(service.getAllBookmarks()).toStrictEqual([]);
+    });
+  });
+
+  describe('hasBookmarks', () => {
+    it('returns true when bookmarks exist', () => {
+      expect(service.hasBookmarks()).toBe(true);
+    });
+
+    it('returns false when no bookmarks exist', () => {
+      mockBookmarksStore.getAll.mockReturnValue([]);
+
+      expect(service.hasBookmarks()).toBe(false);
+    });
+  });
+
+  describe('addBookmark', () => {
+    it('delegates to store.add', async () => {
+      const input = { label: 'New', link: 'src/file.ts#L1' };
+
+      await service.addBookmark(input);
+
+      expect(mockBookmarksStore.add).toHaveBeenCalledWith(input);
+    });
+  });
+
+  describe('removeBookmark', () => {
+    it('delegates to store.remove', async () => {
+      await service.removeBookmark('bookmark-1');
+
+      expect(mockBookmarksStore.remove).toHaveBeenCalledWith('bookmark-1');
+    });
   });
 
   describe('sendBookmark', () => {
     it('throws DESTINATION_NOT_BOUND when no destination is bound', async () => {
-      const mockDestinationManager = createMockDestinationManager({ isBound: false });
+      const mockSession = createMockBoundSession();
+      const mockDestinationManager = createMockDestinationManager();
       const service = new BookmarkService(
         mockBookmarksStore,
         mockAdapter,
         mockConfigReader,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 
@@ -56,15 +140,14 @@ describe('BookmarkService', () => {
     });
 
     it('logs warning and returns early when bookmark is not found', async () => {
-      const mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: { displayName: 'Terminal' } as any,
-      });
+      const mockSession = createMockBoundSession({ isSet: jest.fn().mockReturnValue(true) });
+      const mockDestinationManager = createMockDestinationManager();
       const service = new BookmarkService(
         mockBookmarksStore,
         mockAdapter,
         mockConfigReader,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 
@@ -79,9 +162,8 @@ describe('BookmarkService', () => {
     });
 
     it('copies link to clipboard and sends to bound destination', async () => {
+      const mockSession = createMockBoundSession({ isSet: jest.fn().mockReturnValue(true) });
       const mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: { displayName: 'Terminal' } as any,
         sendTextToDestinationResult: true,
       });
       const service = new BookmarkService(
@@ -89,6 +171,7 @@ describe('BookmarkService', () => {
         mockAdapter,
         mockConfigReader,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 
@@ -105,9 +188,8 @@ describe('BookmarkService', () => {
     });
 
     it('records access before writing to clipboard', async () => {
+      const mockSession = createMockBoundSession({ isSet: jest.fn().mockReturnValue(true) });
       const mockDestinationManager = createMockDestinationManager({
-        isBound: true,
-        boundDestination: { displayName: 'Terminal' } as any,
         sendTextToDestinationResult: true,
       });
       const service = new BookmarkService(
@@ -115,6 +197,7 @@ describe('BookmarkService', () => {
         mockAdapter,
         mockConfigReader,
         mockDestinationManager,
+        mockSession,
         mockLogger,
       );
 

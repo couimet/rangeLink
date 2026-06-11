@@ -282,6 +282,16 @@ test_cases:
     automated: true
 
   # ---------------------------------------------------------------------------
+  # Section — Terminal Lifecycle: Auto-Unbind on Close
+  # ---------------------------------------------------------------------------
+
+  - id: auto-unbind-terminal-001
+    feature: 'terminal-picker'
+    scenario: 'Closing a bound terminal triggers auto-unbind with status bar message'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed". The terminal is no longer bound.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
   # Section 4 — File Picker
   # ---------------------------------------------------------------------------
 
@@ -1869,6 +1879,28 @@ test_cases:
     feature: 'text-editor-destination'
     scenario: 'Binding survives language change after content insertion'
     expected_result: 'The selected text arrives in the untitled file alongside the markdown content. The binding was preserved despite the language change triggered by content insertion.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Lifecycle: Auto-Unbind on Close
+  # ---------------------------------------------------------------------------
+
+  - id: auto-unbind-editor-001
+    feature: 'text-editor-destination'
+    scenario: 'Closing a bound untitled text editor triggers auto-unbind with status bar message'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor ("Untitled-1") — editor closed". The editor is no longer bound.'
+    automated: true
+
+  - id: auto-unbind-editor-002
+    feature: 'text-editor-destination'
+    scenario: 'Closing a bound saved (disk-based) text editor triggers auto-unbind with status bar message'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor ("__rl-test-aue-002-...") — editor closed". The editor is no longer bound.'
+    automated: true
+
+  - id: auto-unbind-editor-003
+    feature: 'text-editor-destination'
+    scenario: 'Closing all editors unbinds only the bound one when multiple saved-file tabs are open'
+    expected_result: 'The status bar shows the bind confirmation and auto-unbind message for the bound file only. The non-bound file in the other tab group is ignored. The rangelink.isBound context key is false.'
     automated: true
 
   # ---------------------------------------------------------------------------

@@ -3,15 +3,12 @@ import type * as vscode from 'vscode';
 
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_WARN_ON_DIRTY_BUFFER, SETTING_WARN_ON_DIRTY_BUFFER } from '../constants';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { DirtyBufferWarningResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { DirtyBufferMessageCodes } from './types';
-
-export type { DirtyBufferMessageCodes } from './types';
-export { LINK_DIRTY_BUFFER_CODES, FILE_PATH_DIRTY_BUFFER_CODES } from './types';
 
 /**
  * Checks whether a document has unsaved changes and, if so, shows the dirty
@@ -94,14 +91,11 @@ export const handleDirtyBufferWarning = async (
         formatMessage(MessageCode.INFO_OPERATION_ABORTED_DIRTY_BUFFER),
       );
       return result;
-    default: {
-      const exhaustiveCheck: never = result;
-      throw new RangeLinkExtensionError({
-        code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-        message: `Unexpected dirty buffer warning result: ${exhaustiveCheck}`,
-        functionName: 'handleDirtyBufferWarning',
-        details: { exhaustiveCheck },
-      });
-    }
+    default:
+      throw RangeLinkExtensionError.forUnexpected(
+        'dirty buffer warning result',
+        result,
+        'handleDirtyBufferWarning',
+      );
   }
 };

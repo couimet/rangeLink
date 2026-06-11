@@ -1,13 +1,15 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { JumpToDestinationCommand } from '../../commands';
-import type { DestinationPicker } from '../../destinations';
 import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
+import type { BoundSession } from '../../destinations';
+import type { DestinationPicker } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
 import type { BindOptions, DestinationPickerResult } from '../../types';
 import { ExtensionResult } from '../../types';
 import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
+import { createMockBoundSession } from '../helpers';
 
 describe('JumpToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
@@ -25,15 +27,22 @@ describe('JumpToDestinationCommand message contracts', () => {
 
 describe('JumpToDestinationCommand', () => {
   let mockDestinationManager: jest.Mocked<PasteDestinationManager>;
+  let mockSession: jest.Mocked<BoundSession>;
   let mockPickerCommand: jest.Mocked<DestinationPicker>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let command: JumpToDestinationCommand;
 
   beforeEach(() => {
     mockDestinationManager = createMockDestinationManager();
+    mockSession = createMockBoundSession();
     mockPickerCommand = createMockDestinationPicker();
     mockLogger = createMockLogger();
-    command = new JumpToDestinationCommand(mockDestinationManager, mockPickerCommand, mockLogger);
+    command = new JumpToDestinationCommand(
+      mockDestinationManager,
+      mockSession,
+      mockPickerCommand,
+      mockLogger,
+    );
   });
 
   it('logs initialization in constructor', () => {
@@ -45,7 +54,7 @@ describe('JumpToDestinationCommand', () => {
 
   describe('when destination is already bound', () => {
     beforeEach(() => {
-      mockDestinationManager.isBound.mockReturnValue(true);
+      mockSession.isSet.mockReturnValue(true);
     });
 
     it('focuses bound destination and returns focused result without showing picker', async () => {
@@ -88,7 +97,7 @@ describe('JumpToDestinationCommand', () => {
 
   describe('when no destination is bound', () => {
     beforeEach(() => {
-      mockDestinationManager.isBound.mockReturnValue(false);
+      mockSession.isSet.mockReturnValue(false);
     });
 
     it('shows picker, binds, focuses, and returns focused result', async () => {

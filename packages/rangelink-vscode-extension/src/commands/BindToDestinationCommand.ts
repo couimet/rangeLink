@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
+import type { BoundSession, DestinationBinder } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { MessageCode } from '../types';
@@ -16,8 +16,9 @@ import { isEditorDestination } from '../utils';
  */
 export class BindToDestinationCommand {
   constructor(
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly binder: DestinationBinder,
     private readonly destinationPicker: DestinationPicker,
+    private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -31,9 +32,9 @@ export class BindToDestinationCommand {
 
     this.logger.debug(logCtx, 'Showing destination picker for binding');
 
-    const boundDest = this.destinationManager.getBoundDestination();
+    const boundDest = this.session.get();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
 
     const pickerResult = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE,
@@ -56,7 +57,7 @@ export class BindToDestinationCommand {
 
       case 'selected': {
         this.logger.debug(logCtx, 'Binding selected destination');
-        const bindResult = await this.destinationManager.bind(pickerResult.bindOptions);
+        const bindResult = await this.binder.bind(pickerResult.bindOptions);
 
         if (!bindResult.success) {
           this.logger.debug(logCtx, 'Bind failed');

@@ -1,16 +1,13 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import type { BindingFeedback } from '../feedback';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
-  type AIAssistantDestinationKind,
-  AutoPasteResult,
   BindFailureReason,
   type BindOptions,
-  type BoundDestinationInfo,
   type ConfirmationQuickPickItem,
   type DestinationKind,
   ExtensionResult,
@@ -19,14 +16,11 @@ import {
   type StatusBarOptions,
   type TextEditorBindOptions,
 } from '../types';
-import {
-  formatMessage,
-  isBinaryFile,
-  isEditorDestination,
-  isTerminalDestination,
-  isWritableScheme,
-} from '../utils';
+import { formatMessage, isBinaryFile, isWritableScheme } from '../utils';
 
+import { BoundSession } from './BoundSession';
+import type { DestinationBinder } from './DestinationBinder';
+import type { DestinationFocuser } from './DestinationFocuser';
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { PasteDestination } from './PasteDestination';
 
@@ -48,64 +42,15 @@ export interface BindSuccessInfo {
  */
 export type FocusSuccessInfo = BindSuccessInfo;
 
-/**
- * Unified destination manager for RangeLink (Phase 3)
- *
- * Manages binding to any paste destination (terminals, text editors, AI assistants, etc.)
- * Replaces TerminalBindingManager and ChatDestinationManager with single unified system.
- *
- * **Design:**
- * - Only one destination bound at a time (terminal OR text-editor OR AI assistant)
- * - Terminal binding requires active terminal reference
- * - AI assistant destinations use availability check (e.g., Cursor IDE detection, Claude Code extension)
- * - Terminal-only auto-unbind on terminal close (different semantics)
- * - No state persistence across reloads (same as legacy behavior)
- */
-export class PasteDestinationManager implements vscode.Disposable {
-  /**
-   * Static lookup table mapping AI assistant destination kinds to unavailable error message codes
-   */
-  private static readonly AI_ASSISTANT_ERROR_CODES: Record<
-    AIAssistantDestinationKind,
-    MessageCode
-  > = {
-    'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
-    'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
-    'gemini-code-assist': MessageCode.ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE,
-    'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
-  };
-
-  private boundDestination: PasteDestination | undefined;
-  private disposables: vscode.Disposable[] = [];
-  private isInDuplicateTabState = false;
-
-  private readonly _onDidChangeBoundDestinationEmitter = new vscode.EventEmitter<
-    BoundDestinationInfo | undefined
-  >();
-
-  readonly onDidChangeBoundDestination: vscode.Event<BoundDestinationInfo | undefined> =
-    this._onDidChangeBoundDestinationEmitter.event;
-
+export class PasteDestinationManager implements DestinationBinder, DestinationFocuser {
   constructor(
-    private readonly context: vscode.ExtensionContext,
     private readonly registry: DestinationRegistry,
     private readonly vscodeAdapter: VscodeAdapter,
+    private readonly session: BoundSession,
+    private readonly feedback: BindingFeedback,
     private readonly logger: Logger,
-  ) {
-    // Listen for terminal closure (terminal-only auto-unbind)
-    this.setupTerminalCloseListener();
-    // Listen for text document closure (text-editor-only auto-unbind)
-    this.setupTextDocumentCloseListener();
-    // Warn when bound editor appears in multiple tab groups
-    this.setupMultiColumnGuardListener();
-  }
+  ) {}
 
-  /**
-   * Bind to a destination using typed options.
-   *
-   * @param options - Discriminated union specifying destination kind and kind-specific options
-   * @returns ExtensionResult with bind success info or error
-   */
   async bind(options: BindOptions): Promise<ExtensionResult<BindSuccessInfo>> {
     switch (options.kind) {
       case 'terminal': {
@@ -153,102 +98,25 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   /**
    * Unbind current destination
-   *
-   * @param options.skipMessage - If true, suppresses the status bar message.
-   *   Used by close listeners that provide their own merged message.
    */
-  unbind(options?: StatusBarOptions): void {
-    if (!this.boundDestination) {
+  unbind(): void {
+    const bound = this.session.get();
+    if (!bound) {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
-      if (!options?.skipMessage) {
-        this.vscodeAdapter.setStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
-        );
-      }
+      this.feedback.notifyNothingToUnbind();
       return;
     }
 
-    const displayName = this.boundDestination.displayName;
+    const displayName = bound.displayName;
 
-    this.clearBoundDestination();
+    this.session.clear();
 
     this.logger.info(
       { fn: 'PasteDestinationManager.unbind', displayName },
       `Successfully unbound from ${displayName}`,
     );
 
-    if (!options?.skipMessage) {
-      this.vscodeAdapter.setSuccessfulStatusBarMessage(
-        formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
-      );
-    }
-  }
-
-  /**
-   * Check if any destination is bound
-   */
-  isBound(): boolean {
-    return this.boundDestination !== undefined;
-  }
-
-  /**
-   * Get current bound destination (for status display)
-   */
-  getBoundDestination(): PasteDestination | undefined {
-    return this.boundDestination;
-  }
-
-  /**
-   * Get narrowed bound-destination info for event consumers.
-   *
-   * Returns only the fields needed by read-only consumers (status bar, etc.)
-   * rather than the full PasteDestination API surface.
-   */
-  getBoundDestinationInfo(): BoundDestinationInfo | undefined {
-    return this.boundDestination !== undefined
-      ? { id: this.boundDestination.id, displayName: this.boundDestination.displayName }
-      : undefined;
-  }
-
-  /**
-   * Subscribe to bound-destination changes, receiving the current value
-   * immediately on subscription, then all subsequent changes.
-   *
-   * Eliminates the need for callers to separately pull initial state via
-   * {@link getBoundDestinationInfo}.
-   */
-  subscribeToBoundDestination(
-    listener: (info: BoundDestinationInfo | undefined) => void,
-  ): vscode.Disposable {
-    listener(this.getBoundDestinationInfo());
-    return this.onDidChangeBoundDestination(listener);
-  }
-
-  /**
-   * Whether clipboard content should be restored after a paste operation.
-   *
-   * Returns true (restore) when no destination is bound, when paste succeeded
-   * (the link is already in the AI chat — the user's original clipboard should
-   * come back), or when the destination has no manual-paste instruction.
-   *
-   * Returns false when paste failed AND the destination provided a failure
-   * instruction (i.e. the user was told "Paste (Cmd/Ctrl+V) …") — the
-   * RangeLink must stay on the clipboard for the user to paste manually.
-   * Also returns false when the destination's shouldPreserveClipboard() signals
-   * false (Tier 3 custom AI assistants that resolve to focusCommands).
-   */
-  isClipboardRestorationApplicable(pasteSucceeded: boolean): boolean {
-    if (!this.boundDestination) {
-      return true;
-    }
-    if (!this.boundDestination.shouldPreserveClipboard()) {
-      return false;
-    }
-    if (pasteSucceeded) {
-      return true;
-    }
-    const failureInstruction = this.boundDestination.getUserInstruction?.(AutoPasteResult.Failure);
-    return failureInstruction === undefined;
+    this.feedback.notifyUnbound(displayName);
   }
 
   /**
@@ -263,7 +131,8 @@ export class PasteDestinationManager implements vscode.Disposable {
   async focusBoundDestination(
     options?: StatusBarOptions,
   ): Promise<ExtensionResult<FocusSuccessInfo>> {
-    if (!this.boundDestination) {
+    const bound = this.session.get();
+    if (!bound) {
       return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
@@ -272,26 +141,19 @@ export class PasteDestinationManager implements vscode.Disposable {
         }),
       );
     }
-
-    const destinationKind = this.boundDestination.id;
-    const displayName = this.boundDestination.displayName;
-
+    const destinationKind = bound.id;
+    const displayName = bound.displayName;
     const logCtx = {
       fn: 'PasteDestinationManager.focusBoundDestination',
       destinationKind,
       displayName,
-      ...this.boundDestination.getLoggingDetails(),
+      ...bound.getLoggingDetails(),
     };
-
     this.logger.debug(logCtx, `Attempting to focus ${displayName}`);
-
-    const focused = await this.boundDestination.focus();
-
+    const focused = await bound.focus();
     if (!focused) {
       this.logger.warn(logCtx, `Failed to focus ${displayName}`);
-      this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName: displayName }),
-      );
+      this.feedback.notifyJumpFailed(displayName);
       return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_FOCUS_FAILED,
@@ -301,23 +163,11 @@ export class PasteDestinationManager implements vscode.Disposable {
         }),
       );
     }
-
-    if (!options?.skipMessage) {
-      const successMessage = this.boundDestination.getJumpSuccessMessage();
-      this.vscodeAdapter.setSuccessfulStatusBarMessage(successMessage);
-    }
-
+    if (!options?.skipMessage) this.feedback.notifyJumpFocused(bound.getJumpSuccessMessage());
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
-
     return ExtensionResult.ok({ destinationName: displayName, destinationKind });
   }
 
-  /**
-   * Send a formatted RangeLink to bound destination.
-   *
-   * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if sent successfully, false otherwise
-   */
   async sendLinkToDestination(formattedLink: FormattedLink): Promise<boolean> {
     return this.executeSend({
       logContext: {
@@ -349,48 +199,6 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Dispose of resources (cleanup event listeners)
-   */
-  dispose(): void {
-    this.clearBoundDestination();
-    this._onDidChangeBoundDestinationEmitter.dispose();
-    this.disposables.forEach((d) => d?.dispose());
-    this.disposables = [];
-  }
-
-  /**
-   * Setup terminal closure listener for auto-unbind
-   *
-   * Terminal-only behavior: auto-unbind when terminal closes.
-   * AI assistant destinations don't need this (persistent across extension lifecycle).
-   */
-  private setupTerminalCloseListener(): void {
-    const terminalCloseDisposable = this.vscodeAdapter.onDidCloseTerminal((closedTerminal) => {
-      if (!isTerminalDestination(this.boundDestination)) {
-        return;
-      }
-
-      if (this.boundDestination.resource.terminal === closedTerminal) {
-        const destinationName = this.boundDestination.displayName;
-        const terminalName = closedTerminal.name || 'Unnamed Terminal';
-        this.logger.info(
-          { fn: 'PasteDestinationManager.onDidCloseTerminal', terminalName },
-          `Bound terminal closed: ${terminalName} - auto-unbinding`,
-        );
-        this.unbind({ skipMessage: true });
-        this.vscodeAdapter.setStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED, {
-            destinationName,
-          }),
-        );
-      }
-    });
-
-    this.context.subscriptions.push(terminalCloseDisposable);
-    this.disposables.push(terminalCloseDisposable);
-  }
-
-  /**
    * Bind to text editor (special case requiring active text editor)
    *
    * **Requirements:**
@@ -419,11 +227,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.logger.debug(logCtx, 'Editor not visible, bringing background tab to foreground');
       try {
         await this.vscodeAdapter.showTextDocument(options.uri, { viewColumn: options.viewColumn });
-      } catch {
-        this.logger.warn(logCtx, 'showTextDocument threw for background tab');
-        this.vscodeAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED, { fileName }),
-        );
+      } catch (error) {
+        this.logger.warn({ ...logCtx, error }, 'showTextDocument threw for background tab');
+        this.feedback.notifyBindFailedEditor(MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED, {
+          fileName,
+        });
         return this.bindFailedResult(
           fnName,
           `No visible editor for ${options.uri.toString()} at viewColumn ${options.viewColumn}`,
@@ -432,18 +240,16 @@ export class PasteDestinationManager implements vscode.Disposable {
       }
       if (!this.vscodeAdapter.hasVisibleEditorAt(options.uri, options.viewColumn)) {
         this.logger.warn(logCtx, 'showTextDocument resolved but editor not at expected viewColumn');
-        this.vscodeAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN, { fileName }),
-        );
+        this.feedback.notifyBindFailedEditor(MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN, {
+          fileName,
+        });
         return this.bindFailedResult(
           fnName,
           `Editor opened but not visible at expected viewColumn ${options.viewColumn}`,
           BindFailureReason.NO_ACTIVE_EDITOR,
         );
       }
-      void this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_BACKGROUND_TAB_OPENED, { fileName }),
-      );
+      this.feedback.notifyBackgroundTabOpened(fileName);
       wasBackgroundTab = true;
     }
 
@@ -453,9 +259,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!isWritableScheme(scheme)) {
       this.logger.warn(logCtx, `Cannot bind: Editor is read-only (scheme: ${scheme})`);
-      this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme }),
-      );
+      this.feedback.notifyBindFailedEditor(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme });
       return this.bindFailedResult(
         fnName,
         `Editor is read-only (scheme: ${scheme})`,
@@ -465,9 +269,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (isBinaryFile(scheme, fsPath)) {
       this.logger.warn(logCtx, 'Cannot bind: Editor is a binary file');
-      this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName }),
-      );
+      this.feedback.notifyBindFailedEditor(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName });
       return this.bindFailedResult(
         fnName,
         'Editor is a binary file',
@@ -502,18 +304,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         `Cannot bind: ${newDestination.displayName} not available`,
       );
 
-      const messageCode =
-        PasteDestinationManager.AI_ASSISTANT_ERROR_CODES[kind as AIAssistantDestinationKind];
-
-      if (messageCode) {
-        this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
-      } else {
-        this.vscodeAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE, {
-            extensionName: newDestination.displayName,
-          }),
-        );
-      }
+      this.feedback.notifyBindFailedNotAvailable(newDestination.displayName, kind);
 
       return this.bindFailedResult(
         fnName,
@@ -541,16 +332,14 @@ export class PasteDestinationManager implements vscode.Disposable {
     const kind = newDestination.id;
     const logCtx = { fn: 'PasteDestinationManager.commitBind', kind };
 
-    if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
+    const currentBound = this.session.get();
+    if (currentBound && (await currentBound.equals(newDestination))) {
       this.logger.debug(
         { ...logCtx, displayName: newDestination.displayName },
         `Already bound to ${newDestination.displayName}, no action taken`,
       );
-      this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
-          destinationName: newDestination.displayName,
-        }),
-      );
+      this.feedback.notifyAlreadyBound(newDestination.displayName);
+
       return this.bindFailedResult(
         'commitBind',
         'Already bound to same destination',
@@ -560,9 +349,9 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     let replacedName: string | undefined;
 
-    if (this.boundDestination) {
+    if (currentBound) {
       const confirmed = await this.confirmReplaceBinding(
-        this.boundDestination,
+        currentBound,
         kind,
         newDestination.displayName,
       );
@@ -576,26 +365,21 @@ export class PasteDestinationManager implements vscode.Disposable {
         );
       }
 
-      replacedName = this.boundDestination.displayName;
+      replacedName = currentBound.displayName;
       this.logger.info(
         { ...logCtx, displayName: replacedName },
         `Unbinding "${replacedName}" for replacement`,
       );
-      this.clearBoundDestination();
+      this.session.clear();
     }
 
-    await this.setBoundDestination(newDestination);
-
+    this.session.set(newDestination);
     this.logger.info(
-      {
-        ...logCtx,
-        displayName: newDestination.displayName,
-        ...newDestination.getLoggingDetails(),
-      },
+      { ...logCtx, displayName: newDestination.displayName, ...newDestination.getLoggingDetails() },
       `Successfully bound to "${newDestination.displayName}"`,
     );
 
-    this.showBindSuccessToast(newDestination.displayName, replacedName);
+    this.feedback.notifyBound(newDestination.displayName, replacedName);
 
     return ExtensionResult.ok({
       destinationName: newDestination.displayName,
@@ -604,170 +388,18 @@ export class PasteDestinationManager implements vscode.Disposable {
     });
   }
 
-  /**
-   * Update internal state when binding a new destination.
-   *
-   * @param destination - The destination to bind
-   */
-  private async setBoundDestination(destination: PasteDestination): Promise<void> {
-    this.boundDestination = destination;
-    this._onDidChangeBoundDestinationEmitter.fire(this.getBoundDestinationInfo()!);
-  }
-
-  /**
-   * Clear internal state when unbinding.
-   */
-  private clearBoundDestination(): void {
-    this.boundDestination = undefined;
-    this.isInDuplicateTabState = false;
-    this._onDidChangeBoundDestinationEmitter.fire(undefined);
-  }
-
-  /**
-   * Setup document close listener for document closure detection
-   *
-   * **Lazy unbind strategy:**
-   * - Only unbinds when bound document is actually closed (not just hidden)
-   * - Allows user to move document between tab groups or switch to other files
-   * - Paste automatically brings hidden document to foreground via showTextDocument()
-   *
-   * **Language-mode transition handling:**
-   * - `setTextDocumentLanguage()` fires onDidCloseTextDocument followed by onDidOpenTextDocument
-   *   for the same URI (confirmed by VS Code issue microsoft/vscode#102737)
-   * - During these transient close events, `closedDocument.isClosed` is `false`
-   * - Real document closures have `closedDocument.isClosed === true`
-   * - We use this discriminator to avoid false auto-unbinds during language changes
-   */
-  private setupTextDocumentCloseListener(): void {
-    const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
-      if (!isEditorDestination(this.boundDestination)) {
-        return;
-      }
-
-      const boundDocumentUri = this.boundDestination.resource.uri;
-
-      if (closedDocument.uri.toString() !== boundDocumentUri.toString()) {
-        return;
-      }
-
-      const editorDisplayName = this.boundDestination.displayName || 'Unknown';
-      const logCtx = {
-        fn: 'PasteDestinationManager.onDidCloseTextDocument',
-        editorDisplayName,
-        boundDocumentUri: boundDocumentUri.toString(),
-        isClosed: closedDocument.isClosed,
-      };
-
-      if (!closedDocument.isClosed) {
-        this.logger.info(
-          logCtx,
-          `Document close event with isClosed=false — language-mode transition detected, keeping binding for ${editorDisplayName}`,
-        );
-        return;
-      }
-
-      this.logger.info(
-        logCtx,
-        `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`,
-      );
-      const destinationName = this.boundDestination.displayName;
-      this.unbind({ skipMessage: true });
-      this.vscodeAdapter.setStatusBarMessage(
-        formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED, {
-          destinationName,
-        }),
-      );
-    });
-
-    this.context.subscriptions.push(documentCloseDisposable);
-    this.disposables.push(documentCloseDisposable);
-  }
-
-  /**
-   * Proactive guard: warn when a tab change causes the bound editor file
-   * to appear in multiple tab groups simultaneously.
-   *
-   * Fires once per "entry into duplicate state" to avoid spamming.
-   * Resets when duplicates are resolved (back to 1 instance) or on unbind.
-   */
-  private setupMultiColumnGuardListener(): void {
-    const tabChangeDisposable = this.vscodeAdapter.onDidChangeTabs(() => {
-      if (!isEditorDestination(this.boundDestination)) {
-        return;
-      }
-
-      const boundDocumentUri = this.boundDestination.resource.uri;
-      const matchingEditors = this.vscodeAdapter.findVisibleEditorsByUri(boundDocumentUri);
-
-      if (matchingEditors.length > 1 && !this.isInDuplicateTabState) {
-        this.isInDuplicateTabState = true;
-        this.logger.warn(
-          {
-            fn: 'PasteDestinationManager.onDidChangeTabs',
-            editorUri: boundDocumentUri.toString(),
-            matchCount: matchingEditors.length,
-            viewColumns: matchingEditors.map((e) => e.viewColumn),
-          },
-          'Bound file detected in multiple editor groups',
-        );
-        void this.vscodeAdapter.showWarningMessage(
-          formatMessage(MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS),
-        );
-      } else if (matchingEditors.length <= 1 && this.isInDuplicateTabState) {
-        this.isInDuplicateTabState = false;
-        this.logger.info(
-          {
-            fn: 'PasteDestinationManager.onDidChangeTabs',
-            editorUri: boundDocumentUri.toString(),
-          },
-          'Bound file no longer in multiple editor groups — duplicate state cleared',
-        );
-      }
-    });
-
-    this.context.subscriptions.push(tabChangeDisposable);
-    this.disposables.push(tabChangeDisposable);
-  }
-
-  /**
-   * Show toast notification for successful binding
-   *
-   * Displays detailed message if replacing an existing binding,
-   * or standard success message for normal binding.
-   *
-   * @param newDestinationName - Display name of newly bound destination
-   * @param replacedName - Display name of the destination that was replaced, if any
-   */
-  private showBindSuccessToast(newDestinationName: string, replacedName?: string): void {
-    const toastMessage = replacedName
-      ? formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
-          previousDestination: replacedName,
-          newDestination: newDestinationName,
-        })
-      : formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
-          destinationName: newDestinationName,
-        });
-
-    this.vscodeAdapter.setSuccessfulStatusBarMessage(toastMessage);
-  }
-
-  /**
-   * Execute paste to bound destination (no UI feedback).
-   *
-   * Feedback is handled by SendRouter via OperationFeedbackProvider.
-   */
   private async executeSend(options: {
     logContext: LoggingContext;
     debugMessage: (displayName: string) => string;
     errorMessage: (displayName: string) => string;
     execute: (destination: PasteDestination) => Promise<boolean>;
   }): Promise<boolean> {
-    if (!this.boundDestination) {
+    const destination = this.session.get();
+    if (!destination) {
       this.logger.debug(options.logContext, 'No destination bound');
       return false;
     }
 
-    const destination = this.boundDestination;
     const displayName = destination.displayName || 'destination';
 
     const enhancedLogContext: LoggingContext = {

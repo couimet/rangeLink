@@ -3,8 +3,9 @@ import type * as vscode from 'vscode';
 
 import type {
   BindSuccessInfo,
+  BoundSession,
   DestinationAvailabilityService,
-  PasteDestinationManager,
+  DestinationBinder,
 } from '../destinations';
 import { showFilePicker } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -32,7 +33,8 @@ export class BindToTextEditorCommand {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly availabilityService: DestinationAvailabilityService,
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly binder: DestinationBinder,
+    private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -73,9 +75,7 @@ export class BindToTextEditorCommand {
         matchingViewColumns.length === 1 ? { viewColumn: matchingViewColumns[0] } : undefined;
       const editor = await this.ideAdapter.showTextDocument(uri, showOptions);
       const viewColumn = editor.viewColumn ?? 1;
-      return this.mapBindResult(
-        await this.destinationManager.bind({ kind: 'text-editor', uri, viewColumn }),
-      );
+      return this.mapBindResult(await this.binder.bind({ kind: 'text-editor', uri, viewColumn }));
     }
 
     const items = matchingViewColumns.map((vc) => ({
@@ -92,7 +92,7 @@ export class BindToTextEditorCommand {
     }
 
     return this.mapBindResult(
-      await this.destinationManager.bind({
+      await this.binder.bind({
         kind: 'text-editor',
         uri,
         viewColumn: selected.viewColumn,
@@ -103,7 +103,7 @@ export class BindToTextEditorCommand {
   private async executeWithPicker(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTextEditorCommand.executeWithPicker' };
 
-    const boundDest = this.destinationManager.getBoundDestination();
+    const boundDest = this.session.get();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
     const fileItems = this.availabilityService.getAllFileItems(
       boundEditorDest?.resource.uri.toString(),
@@ -124,7 +124,7 @@ export class BindToTextEditorCommand {
     if (fileItems.length === 1) {
       const { fileInfo } = fileItems[0];
       this.logger.debug({ ...logCtx, filename: fileInfo.filename }, 'Single file, auto-binding');
-      return this.mapBindResult(await this.destinationManager.bind(fileInfo.bindOptions));
+      return this.mapBindResult(await this.binder.bind(fileInfo.bindOptions));
     }
 
     const result = await showFilePicker(
@@ -132,8 +132,7 @@ export class BindToTextEditorCommand {
       this.ideAdapter,
       {
         getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
-        onSelected: async (file) =>
-          this.mapBindResult(await this.destinationManager.bind(file.bindOptions)),
+        onSelected: async (file) => this.mapBindResult(await this.binder.bind(file.bindOptions)),
       },
       this.logger,
     );

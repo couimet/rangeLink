@@ -41,7 +41,7 @@ describe('TerminalSelectionService', () => {
         showInformationMessage: mockShowInformationMessage,
       },
     });
-    mockDestinationManager = createMockDestinationManager({ isBound: false });
+    mockDestinationManager = createMockDestinationManager();
     mockSendRouter = {
       resolveDestination: jest.fn(),
       sendToDestination: jest.fn(),

@@ -642,12 +642,8 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 4;
     const PROVIDER_COUNT = 4;
-    const DESTINATION_MANAGER_LISTENERS = 3;
     const EXPECTED_SUBSCRIPTION_COUNT =
-      INFRASTRUCTURE_COUNT +
-      PROVIDER_COUNT +
-      expectedCommands.length +
-      DESTINATION_MANAGER_LISTENERS;
+      INFRASTRUCTURE_COUNT + PROVIDER_COUNT + expectedCommands.length;
 
     expect(mockContext.subscriptions.length).toBe(EXPECTED_SUBSCRIPTION_COUNT);
   });

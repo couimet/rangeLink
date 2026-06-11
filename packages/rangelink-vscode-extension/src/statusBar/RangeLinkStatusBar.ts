@@ -13,8 +13,9 @@ import {
 } from '../constants';
 import {
   buildDestinationQuickPickItems,
+  type BoundSession,
+  type DestinationBinder,
   type DestinationAvailabilityService,
-  type PasteDestinationManager,
 } from '../destinations';
 import {
   resolveBoundTerminalProcessId,
@@ -57,7 +58,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
-    private readonly destinationManager: PasteDestinationManager,
+    private readonly binder: DestinationBinder,
+    private readonly session: BoundSession,
     private readonly availabilityService: DestinationAvailabilityService,
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
@@ -72,7 +74,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     this.statusBarItem.show();
 
     this.disposables.push(
-      this.destinationManager.subscribeToBoundDestination((boundDest) => {
+      this.session.subscribe((boundDest) => {
         this.updateStatusBarAppearance(boundDest);
       }),
     );
@@ -135,7 +137,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     switch (selected.itemKind) {
       case 'bindable': {
-        const result = await this.destinationManager.bind(selected.bindOptions);
+        const result = await this.binder.bind(selected.bindOptions);
         if (!result.success) {
           this.logger.error({ ...logCtx, error: result.error }, 'Bind failed from status bar menu');
           this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
@@ -191,7 +193,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
    * Re-opens the status bar menu if the user escapes.
    */
   private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<void> {
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    // Dynamic read — re-evaluates the current bound state at call time
+    // rather than using a snapshot, since the binding may have changed.
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
     const terminalItems = await this.availabilityService.getTerminalItems(
       Infinity,
       boundTerminalProcessId,
@@ -203,7 +207,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (eligible) => {
-          const bindResult = await this.destinationManager.bind(eligible.bindOptions);
+          const bindResult = await this.binder.bind(eligible.bindOptions);
           if (!bindResult.success) {
             this.logger.error(
               { ...logCtx, error: bindResult.error },
@@ -228,7 +232,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
    * Re-opens the status bar menu if the user escapes.
    */
   private async showSecondaryFilePicker(logCtx: LoggingContext): Promise<void> {
-    const boundDest = this.destinationManager.getBoundDestination();
+    const boundDest = this.session.get();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
     const fileItems = this.availabilityService.getAllFileItems(
       boundEditorDest?.resource.uri.toString(),
@@ -249,7 +253,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (file) => {
-          const bindResult = await this.destinationManager.bind(file.bindOptions);
+          const bindResult = await this.binder.bind(file.bindOptions);
           if (!bindResult.success) {
             this.logger.error(
               { ...logCtx, error: bindResult.error },
@@ -298,7 +302,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async buildJumpOrDestinationsSection(): Promise<
     (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
   > {
-    const boundDest = this.destinationManager.getBoundDestination();
+    const boundDest = this.session.get();
     if (boundDest) {
       const jumpDescription = isEditorDestination(boundDest)
         ? `→ ${boundDest.displayName} · ${formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: boundDest.resource.viewColumn })}`
@@ -326,7 +330,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async buildDestinationsQuickPickItems(): Promise<
     (DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]
   > {
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    // Dynamic read — re-evaluates the current bound state at call time
+    // rather than using a snapshot, since the binding may have changed.
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
     const grouped = await this.availabilityService.getGroupedDestinationItems({
       boundTerminalProcessId,
     });

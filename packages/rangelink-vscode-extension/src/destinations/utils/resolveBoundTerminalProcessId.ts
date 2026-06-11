@@ -1,5 +1,5 @@
 import { isTerminalDestination } from '../../utils';
-import type { PasteDestinationManager } from '../PasteDestinationManager';
+import type { PasteDestination } from '../PasteDestination';
 
 /**
  * Resolve the processId of the currently bound terminal destination.
@@ -8,9 +8,9 @@ import type { PasteDestinationManager } from '../PasteDestinationManager';
  *          or the terminal has no processId yet.
  */
 export const resolveBoundTerminalProcessId = async (
-  destinationManager: PasteDestinationManager,
+  getBound: () => PasteDestination | undefined,
 ): Promise<number | undefined> => {
-  const boundDest = destinationManager.getBoundDestination();
+  const boundDest = getBound();
   if (!isTerminalDestination(boundDest)) return undefined;
   return (await boundDest.resource.terminal.processId) ?? undefined;
 };

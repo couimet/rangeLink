@@ -152,10 +152,10 @@ describe('wireSubscriptions', () => {
     expect(calls[1][0]).toStrictEqual(DOCUMENT_SELECTOR);
   });
 
-  it('pushes disposables: delimiterCache, statusBar, destinationManager, and ContextKeyService', () => {
+  it('pushes disposables: delimiterCache, statusBar, boundSession, and ContextKeyService', () => {
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(1, services.delimiterCache);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(2, services.statusBar);
-    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.destinationManager);
+    expect(registrar.pushDisposable).toHaveBeenNthCalledWith(3, services.boundSession);
     expect(registrar.pushDisposable).toHaveBeenNthCalledWith(4, services.contextKeyService);
     expect(registrar.pushDisposable).toHaveBeenCalledTimes(4);
   });

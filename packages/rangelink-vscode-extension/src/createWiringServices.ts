@@ -19,6 +19,7 @@ import { ConfigReader, DelimiterCache } from './config';
 import type { CustomAiAssistantConfig } from './config/parseCustomAiAssistants';
 import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import { ContextKeyService } from './contextKeys';
+import { BoundSession } from './destinations';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
@@ -26,7 +27,7 @@ import { registerAllDestinationBuilders } from './destinations/destinationBuilde
 import { DestinationPicker } from './destinations/DestinationPicker';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
-import { OperationFeedbackProvider } from './feedback/OperationFeedbackProvider';
+import { OperationFeedbackProvider } from './feedback';
 import type { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
 import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
@@ -50,6 +51,7 @@ export interface WiringServices {
   ideAdapter: VscodeAdapter;
   logger: Logger;
   availabilityService: DestinationAvailabilityService;
+  boundSession: BoundSession;
   destinationManager: PasteDestinationManager;
   contextKeyService: ContextKeyService;
   statusBar: RangeLinkStatusBar;
@@ -122,19 +124,29 @@ export const createWiringServices = (
     logger,
   );
   const destinationPicker = new DestinationPicker(ideAdapter, availabilityService, logger);
-  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
-  const contextKeyService = new ContextKeyService(ideAdapter, destinationManager, logger);
+  const feedbackProvider = new OperationFeedbackProvider(ideAdapter);
+  const boundSession = new BoundSession(ideAdapter, ideAdapter, feedbackProvider, logger);
+  const destinationManager = new PasteDestinationManager(
+    registry,
+    ideAdapter,
+    boundSession,
+    feedbackProvider,
+    logger,
+  );
+  const contextKeyService = new ContextKeyService(ideAdapter, boundSession, logger);
 
   const bindToTerminalCommand = new BindToTerminalCommand(
     ideAdapter,
     availabilityService,
     destinationManager,
+    boundSession,
     logger,
   );
   const bindToTextEditorCommand = new BindToTextEditorCommand(
     ideAdapter,
     availabilityService,
     destinationManager,
+    boundSession,
     logger,
   );
 
@@ -143,6 +155,7 @@ export const createWiringServices = (
     ideAdapter,
     configReader,
     destinationManager,
+    boundSession,
     logger,
   );
   const addBookmarkCommand = new AddBookmarkCommand(
@@ -155,10 +168,12 @@ export const createWiringServices = (
   const bindToDestinationCommand = new BindToDestinationCommand(
     destinationManager,
     destinationPicker,
+    boundSession,
     logger,
   );
   const jumpToDestinationCommand = new JumpToDestinationCommand(
     destinationManager,
+    boundSession,
     destinationPicker,
     logger,
   );
@@ -166,10 +181,10 @@ export const createWiringServices = (
   const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   const selectionValidator = new SelectionValidator(ideAdapter, logger);
-  const feedbackProvider = new OperationFeedbackProvider(ideAdapter);
   const sendRouter = new SendRouter(
     ideAdapter,
     destinationManager,
+    boundSession,
     destinationPicker,
     clipboardService,
     feedbackProvider,
@@ -210,6 +225,7 @@ export const createWiringServices = (
   const statusBar = new RangeLinkStatusBar(
     ideAdapter,
     destinationManager,
+    boundSession,
     availabilityService,
     bookmarkService,
     logger,
@@ -253,6 +269,7 @@ export const createWiringServices = (
     ideAdapter,
     logger,
     availabilityService,
+    boundSession,
     destinationManager,
     contextKeyService,
     statusBar,
