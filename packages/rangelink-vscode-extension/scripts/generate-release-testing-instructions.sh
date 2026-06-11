@@ -66,10 +66,7 @@ generated: ${GENERATED_TS}
 
 ## Next steps
 
-1. \`pnpm test\` — unit tests + coverage gate
-2. Work through the QA tracker checkboxes — each row has the exact pnpm command to run
-3. \`pnpm validate:qa-coverage:vscode-extension\`
-4. When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`
+Work through the QA tracker issue — the first comment has the workflow checklist and each checkbox row has the exact pnpm command to run.
 EOF
 
 RELATIVE_PATH="${OUTPUT_FILE#"$MONOREPO_ROOT"/}"

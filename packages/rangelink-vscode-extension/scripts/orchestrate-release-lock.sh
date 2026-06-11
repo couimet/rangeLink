@@ -76,7 +76,7 @@ fi
 
 # --- Step 3: Generate QA issue ---
 
-echo -e "${GREEN}Step 4: Generating QA issue tracker...${NC}"
+echo -e "${GREEN}Step 3: Generating QA issue tracker...${NC}"
 
 QA_OUTPUT=$("$SCRIPT_DIR/generate-qa-issue.sh") || {
   echo -e "${RED}Error: generate-qa-issue.sh failed${NC}" >&2
@@ -130,6 +130,21 @@ Soft-lock the deferred "Unreleased" version for QA.
 EOF
 
 echo -e "${GREEN}Commit message: $(basename "$COMMIT_MSG_FILE")${NC}"
+
+# Post the workflow instructions as a comment on the QA issue so they are
+# visible alongside the checkboxes — no need to switch between the issue
+# and the instructions file. The commit message path is now known, so the
+# comment includes the exact copy-paste commands.
+COMMIT_MSG_REL="${COMMIT_MSG_FILE#"$REPO_ROOT"/}"
+gh issue comment "$QA_ISSUE_URL" --body "## Workflow
+
+- [ ] Commit: \`git add -u && git commit -F $COMMIT_MSG_REL\`
+- [ ] Push: \`git push -u origin $RELEASE_BRANCH\`
+- [ ] Create PR: \`gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL\`
+- [ ] \`pnpm test\` — unit tests + coverage gate
+- [ ] Work through the checkboxes above — each row has the exact pnpm command
+- [ ] \`pnpm validate:qa-coverage:vscode-extension\`
+- [ ] When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`"
 
 # --- Summary ---
 
