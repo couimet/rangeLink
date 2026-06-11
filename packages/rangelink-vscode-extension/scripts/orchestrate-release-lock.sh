@@ -5,12 +5,14 @@ set -euo pipefail
 #
 # Orchestrates the release lock workflow:
 #   1. Create a release/vX.Y.Z branch from main
-#   2. Run lock-version.sh (rename YAML, bump .version, regenerate instructions)
+#   2. Run lock-version.sh (bump .version, regenerate instructions)
 #   3. Run generate-qa-issue.sh (create GitHub QA issue tracker)
-#   4. Generate a commit message file
+#   4. Inject the QA issue URL into the instructions file frontmatter
+#   5. Generate a commit message file
 #
-# Delegates the actual work to the individual scripts; this script handles
-# branch setup and sequencing only.
+# Idempotent: safe to re-run after adding bug-fix TCs. On re-run,
+# detects the prior QA issue from the instructions frontmatter, closes it
+# with a "Superseded by #NEW" comment, and creates a fresh issue.
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -32,6 +34,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
+INSTRUCTIONS_FILE="$PACKAGE_DIR/qa/release-testing-instructions-v${VERSION}.md"
 
 # --- Working tree must be clean ---
 
@@ -61,7 +64,14 @@ echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
 "$SCRIPT_DIR/lock-version.sh" "$VERSION"
 echo ""
 
-# --- Step 2: Generate QA issue ---
+# --- Step 2: Detect prior QA issue (idempotency re-run) ---
+
+PRIOR_ISSUE_URL=""
+if [[ -f "$INSTRUCTIONS_FILE" ]]; then
+  PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed 's/qa_issue_url: *"*//;s/"$//')
+fi
+
+# --- Step 3: Generate QA issue ---
 
 echo -e "${GREEN}Step 4: Generating QA issue tracker...${NC}"
 
@@ -78,7 +88,25 @@ if [[ -z "$QA_ISSUE_URL" ]]; then
   exit 1
 fi
 
-# --- Step 3: Generate commit message ---
+# --- Step 4: Supersede prior issue and update instructions ---
+
+if [[ -n "$PRIOR_ISSUE_URL" ]]; then
+  echo -e "${YELLOW}Prior QA issue found: $PRIOR_ISSUE_URL${NC}"
+  gh issue comment "$PRIOR_ISSUE_URL" --body "Superseded by $QA_ISSUE_URL (release:lock re-run)."
+  gh issue close "$PRIOR_ISSUE_URL"
+  gh issue comment "$QA_ISSUE_URL" --body "Supersedes $PRIOR_ISSUE_URL."
+  echo -e "${GREEN}Closed prior issue; new issue has backref.${NC}"
+fi
+
+# Inject the QA issue URL into the instructions file.
+sed -i.bak \
+  -e "s|qa_issue_url: \"\"|qa_issue_url: \"$QA_ISSUE_URL\"|" \
+  -e "s|\*\*QA tracker:\*\* <to be filled by release:lock>|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
+  "$INSTRUCTIONS_FILE" && rm -f "${INSTRUCTIONS_FILE}.bak"
+
+echo -e "${GREEN}QA issue URL injected into instructions file.${NC}"
+
+# --- Step 5: Generate commit message ---
 
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
@@ -92,7 +120,6 @@ cat > "$COMMIT_MSG_FILE" <<EOF
 
 Soft-lock the deferred "Unreleased" version for QA.
 
-- Renamed qa-test-cases-unreleased.yaml → qa-test-cases-v${VERSION}.yaml
 - Bumped package.json .version → ${VERSION}
 - Regenerated release testing instructions
 - Generated QA issue tracker: ${QA_ISSUE_URL}
