@@ -20,7 +20,7 @@ cd "$PACKAGE_DIR" || { echo "Error: cannot cd to $PACKAGE_DIR" >&2; exit 1; }
 
 PASSED=0
 FAILED=0
-TOTAL=5
+TOTAL=4
 
 run_check() {
   local name="$1"
@@ -47,42 +47,26 @@ check_artifact() {
   fi
 }
 
-# Snapshot the latest committed YAML before any generators create new files.
-# Without this, stale YAMLs from previous verify runs pollute auto-discovery.
-# Uses the same -000 normalization as the other scripts for correct sort order.
-LATEST_YAML=$(
-  for f in $(git ls-files "$QA_DIR"/qa-test-cases-*.yaml); do
-    name=$(basename "$f")
-    base="${name%.yaml}"
-    if [[ "$base" =~ -[0-9]{3}$ ]]; then
-      printf '%s\t%s\n' "$base" "$f"
-    else
-      printf '%s-000\t%s\n' "$base" "$f"
-    fi
-  done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
-)
-if [[ -z "$LATEST_YAML" ]]; then
-  echo -e "${RED}Error: no committed QA YAML files found${NC}" >&2
+YAML_PATH="$QA_DIR/qa-test-cases.yaml"
+if [[ ! -f "$YAML_PATH" ]]; then
+  echo -e "${RED}Error: $YAML_PATH not found${NC}" >&2
   exit 1
 fi
 
 echo "Verifying QA scripts..."
-echo "  Using committed YAML: $(basename "$LATEST_YAML")"
+echo "  Using YAML: $(basename "$YAML_PATH")"
 echo ""
 
-run_check "validate-qa-coverage" ./scripts/validate-qa-coverage.sh "$LATEST_YAML"
+run_check "validate-qa-coverage" ./scripts/validate-qa-coverage.sh
 check_artifact "validate-qa-coverage" "output/qa-coverage-report-*.txt"
 
 run_check "generate-release-testing-instructions" ./scripts/generate-release-testing-instructions.sh
 check_artifact "generate-release-testing-instructions" "release-testing-instructions-*.md"
 
-run_check "generate-qa-test-plan" ./scripts/generate-qa-test-plan.sh
-check_artifact "generate-qa-test-plan" "qa-test-cases-*.yaml"
-
 # dry-run produces no artifact — exit code is sufficient
-run_check "generate-qa-issue (dry-run)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --dry-run'
+run_check "generate-qa-issue (dry-run)" bash -c './scripts/generate-qa-issue.sh --dry-run'
 
-run_check "generate-qa-issue (local)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --local'
+run_check "generate-qa-issue (local)" bash -c './scripts/generate-qa-issue.sh --local'
 check_artifact "generate-qa-issue (local)" "output/qa-checklist-*.md"
 
 echo ""

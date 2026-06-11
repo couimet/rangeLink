@@ -314,7 +314,7 @@ RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
 # ── Block 1: Resolved JSON (pre-run) ──────────────────────────────────
 
 QA_DIR="$SCRIPT_DIR/../qa"
-YAML_PATH=$(find "$QA_DIR" -name 'qa-test-cases-*.yaml' | sort -V | tail -1)
+YAML_PATH="$QA_DIR/qa-test-cases.yaml"
 
 if [[ -n "$YAML_PATH" ]]; then
   YAML_TOTAL=$(grep -c '^  - id:' "$YAML_PATH" || echo 0)

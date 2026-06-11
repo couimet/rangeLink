@@ -1,22 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Generate version-specific release testing instructions for the RangeLink VS Code Extension.
+# Generate a release testing landing page for the RangeLink VS Code Extension.
 #
-# Validates prerequisites and creates a comprehensive markdown file with copy-paste ready
-# commands for the full release testing lifecycle (7 phases).
+# Outputs a minimal markdown file that points at the QA GitHub issue — the issue
+# is the canonical source for the per-feature pnpm test:release:grep commands.
+# Frontmatter tracks version, QA issue URL, and generation timestamp.
 #
-# Usage: ./scripts/generate-release-testing-instructions.sh
-#
-# Filename: qa/release-testing-instructions-unreleased.md
-#
-# Requires: jq
-# Optional: gh CLI (authenticated)
+# Usage:
+#   ./scripts/generate-release-testing-instructions.sh             → trunk-based dev (Unreleased)
+#   ./scripts/generate-release-testing-instructions.sh --version X.Y.Z  → release lock
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m'
+
+VERSION_ARG=""
+for arg in "$@"; do
+  case "$arg" in
+    --version) ;;
+    *) if [[ "$arg" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then VERSION_ARG="$arg"; fi ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
@@ -24,33 +29,19 @@ MONOREPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 PACKAGE_JSON="$PACKAGE_DIR/package.json"
 QA_DIR="$PACKAGE_DIR/qa"
 
-# --- Prerequisites ---
-
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 
-WARNINGS=""
-
-if ! command -v gh &>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: gh CLI not found — Phase 2 (GitHub QA Issues) requires it${NC}\n"
-elif ! gh auth status &>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
+if [[ -n "$VERSION_ARG" ]]; then
+  NEXT_LABEL="v${VERSION_ARG}"
+  BASE_NAME="release-testing-instructions-v${VERSION_ARG}"
+  SCOPE_LINE="Changes from v${PUBLISHED_VERSION} → v${VERSION_ARG}"
+else
+  NEXT_LABEL="Unreleased"
+  BASE_NAME="release-testing-instructions-unreleased"
+  SCOPE_LINE="Changes from v${PUBLISHED_VERSION} → ${NEXT_LABEL}"
 fi
-
-# Filename is always release-testing-instructions-unreleased.md during trunk-based
-# development — lock-version.sh renames and fixup-references it when locking a version.
-NEXT_LABEL="Unreleased"
-BASE_NAME="release-testing-instructions-unreleased"
-QA_YAML_FILENAME="qa-test-cases-unreleased.yaml"
-QA_CHECKLIST_SLUG="unreleased"
 
 echo -e "${GREEN}Generating release testing instructions for ${NEXT_LABEL}${NC}"
-
-if [[ -n "$WARNINGS" ]]; then
-  echo -e "\n${YELLOW}Prerequisites warnings (non-blocking):${NC}"
-  echo -e "$WARNINGS"
-fi
-
-# --- Output file ---
 
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.md"
 
@@ -59,139 +50,27 @@ if [[ -f "$OUTPUT_FILE" ]]; then
   exit 0
 fi
 
-# --- Generate markdown ---
+GENERATED_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 cat > "$OUTPUT_FILE" <<EOF
-# Release Testing Instructions: RangeLink VS Code Extension ${NEXT_LABEL}
-
-**Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-**Scope:** Changes from v${PUBLISHED_VERSION} → ${NEXT_LABEL}
-
-This file contains version-specific, copy-paste ready commands for the full release testing lifecycle.
-Work through each phase in order — later phases depend on earlier ones completing successfully.
-
+---
+version: ${VERSION_ARG:-$PUBLISHED_VERSION}
+qa_issue_url: ""
+generated: ${GENERATED_TS}
 ---
 
-## Phase 1: Generate QA Test Plan
+# Release Testing: RangeLink VS Code Extension ${NEXT_LABEL}
 
-Create or carry forward the QA test plan YAML for ${NEXT_LABEL}.
+**Scope:** ${SCOPE_LINE}
+**QA tracker:** <to be filled by release:lock>
 
-\`\`\`bash
-pnpm generate:qa-test-plan:vscode-extension
-\`\`\`
+## Next steps
 
-This creates \`qa/${QA_YAML_FILENAME}\` by carrying forward all TCs from the previous plan with statuses reset to pending.
-
-### AI-powered gap detection
-
-Run the \`/qa-suggest\` skill in Claude Code to identify features in the CHANGELOG \`[Unreleased]\` section that lack test coverage.
-
-### Review and commit
-
-1. Review the generated YAML and any \`/qa-suggest\` recommendations
-2. Append new TCs as needed (continue from the highest existing TC ID in each feature slug)
-3. Commit the YAML:
-
-\`\`\`bash
-git add packages/rangelink-vscode-extension/qa/${QA_YAML_FILENAME}
-git commit -m "Add QA test plan for ${NEXT_LABEL}"
-\`\`\`
-
----
-
-## Phase 2: Create GitHub QA Issues
-
-Generate the GitHub issue tracker (a single issue with grouped checkboxes per feature domain) from the QA YAML.
-
-### Dry run first
-
-\`\`\`bash
-pnpm generate:qa-issue:vscode-extension -- --dry-run
-\`\`\`
-
-Review the output to verify section groupings and TC counts look correct.
-
-### Create issues
-
-\`\`\`bash
-pnpm generate:qa-issue:vscode-extension
-\`\`\`
-
-The script prints the created issue URL.
-
----
-
-## Phase 3: Run Unit Tests + Coverage
-
-\`\`\`bash
-pnpm test
-\`\`\`
-
-All tests must pass. Check coverage thresholds in the output.
-
----
-
-## Phase 4: Run Integration Tests
-
-\`\`\`bash
-pnpm test:release
-\`\`\`
-
-This compiles the extension, launches a VS Code extension host, runs integration tests, and validates QA coverage (automated TC markers ↔ integration test IDs). All three stages must pass.
-
----
-
-## Phase 5: Manual QA Pass
-
-### Walk through the checklist
-
-Generate a local QA checklist:
-
-\`\`\`bash
-pnpm generate:qa-issue:vscode-extension --local
-\`\`\`
-
-The generated checklist is at \`qa/output/qa-checklist-${QA_CHECKLIST_SLUG}-<timestamp>.md\`.
-Each TC is annotated with its automation status and reason. Cursor and Ubuntu TCs are grouped into their own sections with the required run commands inline.
-
----
-
-## Phase 6: Validate QA Coverage
-
-\`\`\`bash
-pnpm validate:qa-coverage:vscode-extension
-\`\`\`
-
-Ensures all TCs marked \`automated: true\` in the YAML have matching integration tests, and vice versa. Fix any mismatches before proceeding.
-
----
-
-## Phase 7: Pre-Publish Verification
-
-### Final checklist
-
-- [ ] All unit tests pass (\`pnpm test\`)
-- [ ] All integration tests pass (\`pnpm test:release\`)
-- [ ] All manual QA TCs pass (or have documented exceptions in the QA GitHub issue)
-- [ ] QA coverage validation passes (\`pnpm validate:qa-coverage:vscode-extension\`)
-- [ ] CHANGELOG \`[Unreleased]\` section is complete and accurate
-- [ ] README has no stale content for the new features
-
-### Next step: publish
-
-When all checks pass, generate the publishing instructions:
-
-\`\`\`bash
-pnpm generate:publish-instructions:vscode-extension
-\`\`\`
-
-This validates the release environment and creates a version-specific publishing guide at \`publishing-instructions/publish-vscode-extension-${NEXT_LABEL}.md\`.
+1. \`pnpm test\` — unit tests + coverage gate
+2. Work through the QA tracker checkboxes — each row has the exact pnpm command to run
+3. \`pnpm validate:qa-coverage:vscode-extension\`
+4. When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`
 EOF
-
-# Format with prettier
-cd "$MONOREPO_ROOT"
-npx prettier --write "$OUTPUT_FILE" > /dev/null 2>&1
-cd "$PACKAGE_DIR"
 
 RELATIVE_PATH="${OUTPUT_FILE#"$MONOREPO_ROOT"/}"
 echo -e "\n${GREEN}✓ Generated: ${RELATIVE_PATH}${NC}"

@@ -53,46 +53,19 @@ ENDOFSTUB
   }
 }
 
-# ── find_latest_qa_yaml ────────────────────────────────────────────────────────
+# ── Stable path ────────────────────────────────────────────────────────────────
 
-@test "find_latest_qa_yaml: picks latest unsuffixed over suffixed" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0-001.yaml" <<< ""
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<< ""
-  write_yaml "qa-test-cases-v1.1.0.yaml" <<< ""
-
-  run "$SCRIPT"
-  [[ "$output" =~ "v1.1.0" ]]
-}
-
-@test "find_latest_qa_yaml: picks highest version among unsuffixed" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<< ""
-  write_yaml "qa-test-cases-v1.2.0.yaml" <<< ""
-
-  run "$SCRIPT"
-  [[ "$output" =~ "v1.2.0" ]]
-}
-
-@test "find_latest_qa_yaml: picks highest suffixed when only suffixed exist" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0-001.yaml" <<< ""
-  write_yaml "qa-test-cases-v1.0.0-005.yaml" <<< ""
-
-  run "$SCRIPT"
-  [[ "$output" =~ "v1.0.0-005" ]]
-}
-
-@test "find_latest_qa_yaml: exits 1 when no QA YAML files exist" {
+@test "stable path: exits 1 when qa-test-cases.yaml does not exist" {
   setup_fixture
   run "$SCRIPT"
   [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "No QA YAML files found" ]]
+  [[ "$output" =~ "QA YAML file not found" ]]
 }
 
-@test "explicit YAML path bypasses auto-discovery" {
+@test "default YAML path shows in output" {
   setup_fixture
-  write_yaml "custom.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -102,8 +75,8 @@ EOF
   write_test_file "tests.test.ts" <<< "test('foo-001: test', () => {});"
   export STUB_AUTOMATED_IDS="foo-001"
 
-  run "$SCRIPT" "$FIXTURE_ROOT/qa/custom.yaml"
-  [[ "$output" =~ "custom.yaml" ]]
+  run "$SCRIPT"
+  [[ "$output" =~ "qa-test-cases.yaml" ]]
   [[ "$output" =~ "Validation PASSED" ]]
   [[ "$status" -eq 0 ]]
 }
@@ -112,7 +85,8 @@ EOF
 
 @test "validation PASSED when all automated: true IDs match integration tests" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -134,7 +108,8 @@ EOF
 
 @test "validation PASSED when all assisted IDs match [assisted] tests" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -158,7 +133,8 @@ EOF
 
 @test "FAILED when YAML marks automated: true but no integration test exists (asymmetry A)" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -175,7 +151,8 @@ EOF
 
 @test "FAILED when integration test exists but not marked automated: true (asymmetry B)" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -192,7 +169,8 @@ EOF
 
 @test "FAILED when YAML marks assisted but no [assisted] test exists (asymmetry C)" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -210,7 +188,8 @@ EOF
 
 @test "FAILED when [assisted] test exists but not marked (asymmetry D)" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -229,7 +208,8 @@ EOF
 
 @test "report file created at expected path under qa/output/" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -247,32 +227,10 @@ EOF
   [[ -n "$found" ]]
 }
 
-@test "report filename uses 'unreleased' slug when input is qa-test-cases-unreleased.yaml" {
-  setup_fixture
-  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
-test_cases:
-  - id: foo-001
-    feature: 'Foo'
-    scenario: 'Test'
-    automated: true
-EOF
-  write_test_file "suite.test.ts" <<< "test('foo-001: does things', () => {});"
-  export STUB_AUTOMATED_IDS="foo-001"
-
-  run "$SCRIPT"
-  [[ "$status" -eq 0 ]]
-  local found
-  found=$(find "$FIXTURE_ROOT/qa/output" -name "qa-coverage-report-unreleased-*" -type f 2>/dev/null | head -1)
-  [[ -n "$found" ]]
-  # Negative assertion: no v-prefixed report.
-  local v_prefixed
-  v_prefixed=$(find "$FIXTURE_ROOT/qa/output" -name "qa-coverage-report-vunreleased-*" -type f 2>/dev/null | head -1)
-  [[ -z "$v_prefixed" ]]
-}
-
 @test "report contains header with QA YAML and test paths" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -293,7 +251,8 @@ EOF
 
 @test "report displays correct counts for all automated categories" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -330,7 +289,8 @@ EOF
 
 @test "counts handle zero entries (grep -c . || true guard)" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
 
@@ -343,7 +303,8 @@ EOF
 
 @test "exits 1 when integration test directory is missing" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -359,7 +320,8 @@ EOF
 
 @test "handles only assisted tests with no automated: true entries" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'
@@ -376,7 +338,8 @@ EOF
 
 @test "test ID extraction handles test(), it(), describe(), and suite() calls" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: alpha-001
     feature: 'Alpha'
@@ -416,7 +379,8 @@ delta-004"
 
 @test "[assisted] filter excludes non-assisted tests from assisted ID list" {
   setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
+  echo '{"version": "1.0.0"}' > "$FIXTURE_ROOT/package.json"
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     feature: 'Foo'

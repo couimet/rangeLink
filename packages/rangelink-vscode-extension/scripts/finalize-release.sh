@@ -48,9 +48,9 @@ fi
 
 # --- Prerequisites ---
 
-VERSIONED_YAML="$QA_DIR/qa-test-cases-v${VERSION}.yaml"
-if [[ ! -f "$VERSIONED_YAML" ]]; then
-  echo -e "${RED}Error: $VERSIONED_YAML not found. Run lock-version.sh first.${NC}" >&2
+QA_YAML="$QA_DIR/qa-test-cases.yaml"
+if [[ ! -f "$QA_YAML" ]]; then
+  echo -e "${RED}Error: $QA_YAML not found.${NC}" >&2
   exit 1
 fi
 

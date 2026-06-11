@@ -620,7 +620,7 @@
   <reason>The QA validator script only checks ID matching — it does not execute the tests. Only the integration-test runner compiles the extension and runs tests in a real VS Code host, which is the only way to verify that log-based assertions and command behavior actually work.</reason>
   <default-command>`pnpm test:release:automated` — runs only `automated: true` TCs. This is the default Claude should use. Skips `[assisted]` tests, so it does not block on human-in-the-loop prompts.</default-command>
   <targeted-command>`pnpm test:release:grep "<TC-ID-or-pattern>" --exclude-assisted` — runs a focused subset by TC ID or regex, with assisted tests filtered out. Use this when iterating on a specific feature or test. Pass multiple IDs as a regex alternation, e.g. `"terminal-picker-014|bind-to-destination-013"`. Notes: (a) do NOT prefix the pattern with `--`, the script rejects it; pnpm forwards args positionally. (b) `--exclude-assisted` is required because `:grep` alone does not filter assisted TCs; omitting it can stall the run on a human-in-the-loop prompt if the pattern matches an `[assisted]` test. Omit `--exclude-assisted` only when you specifically want to drive an assisted test (e.g., paired with `--assisted`). (c) The grep pattern MUST be shell-quoted (double quotes). Without quotes, `|` is interpreted as a shell pipe operator and only the first TC ID before `|` reaches the script. Always use `--grep "id-001|id-002|..."`, never `--grep id-001|id-002|...`.</targeted-command>
-  <extensions-command>`pnpm test:release:with-extensions --grep "<TC-ID-or-pattern>"` — runs tests that require marketplace extensions (Claude Code, Gemini Code Assist, Copilot Chat, Cursor AI, custom AI assistants). USE THIS instead of `:grep` when ANY of the target TC IDs belong to a feature group with `requires_extensions: true` in `packages/rangelink-vscode-extension/qa/qa-test-cases-unreleased.yaml`. Check the YAML's `requires_extensions` field on the matching feature group before choosing the command. The `--with-extensions` mode also automatically excludes tests labeled `needs-override`. Notes: (a) same quoting rules apply as `:grep`. (b) `--exclude-assisted` is NOT a valid flag with `:with-extensions`; the script documents supported flags in `--help`.</extensions-command>
+  <extensions-command>`pnpm test:release:with-extensions --grep "<TC-ID-or-pattern>"` — runs tests that require marketplace extensions (Claude Code, Gemini Code Assist, Copilot Chat, Cursor AI, custom AI assistants). USE THIS instead of `:grep` when ANY of the target TC IDs belong to a feature group with `requires_extensions: true` in `packages/rangelink-vscode-extension/qa/qa-test-cases.yaml`. Check the YAML's `requires_extensions` field on the matching feature group before choosing the command. The `--with-extensions` mode also automatically excludes tests labeled `needs-override`. Notes: (a) same quoting rules apply as `:grep`. (b) `--exclude-assisted` is NOT a valid flag with `:with-extensions`; the script documents supported flags in `--help`.</extensions-command>
   <full-command>`pnpm test:release` — runs everything including `[assisted]` tests. Only use when the user explicitly asks for the full suite, or when validating a release. Will block waiting for human input on assisted tests.</full-command>
   <rule>Default to `:automated` for routine validation. When iterating on specific TC IDs, switch to `:grep` with `--exclude-assisted` and the relevant IDs to keep the feedback loop tight. Before running `:grep`, check the QA YAML for `requires_extensions: true` on any of the target feature groups — if present, use `:with-extensions --grep` instead. Do not run the bare `pnpm test:release` unless explicitly asked.</rule>
 </release-test-requirement>
@@ -669,17 +669,16 @@
 </rule>
 
 <rule id="QA002" priority="critical">
-  <title>QA YAML is a single file per release cycle</title>
-  <do>During trunk-based development, edit `qa-test-cases-unreleased.yaml` — add TCs, update automated status, adjust preconditions. The version is deferred until `release:lock` locks it in.</do>
-  <do>When starting a new release cycle, use `pnpm generate:qa-test-plan:vscode-extension` to create a fresh `qa-test-cases-unreleased.yaml` carrying forward all TCs from the previous version's YAML</do>
-  <never>Edit a YAML file from a past release (e.g., don't touch v1.0.0.yaml after it has shipped)</never>
+  <title>QA YAML is a single stable file</title>
+  <do>Edit `qa-test-cases.yaml` — add TCs, update automated status, adjust preconditions. The file stays put across releases; version context comes from `package.json .version` and the git tag, not from the filename.</do>
+  <never>Edit a YAML file from a past release — previous release snapshots live in git history, not as separate files</never>
   <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in the current file is always allowed</exception>
-  <rationale>Each version has exactly one QA file. The `Unreleased` placeholder defers version naming until release time so the filename need not change mid-cycle.</rationale>
+  <rationale>A single stable filename eliminates lifecycle renames (unreleased → versioned → back). Previous release snapshots live in git history (use `git show <tag>:packages/rangelink-vscode-extension/qa/qa-test-cases.yaml`).</rationale>
 </rule>
 
 <rule id="QA003" priority="critical">
   <title>TC IDs are globally unique within the current QA YAML file</title>
-  <do>Check the current `qa-test-cases-v<version>.yaml` for the highest ID in the same `<feature-slug>` before assigning new numbers</do>
+  <do>Check `qa-test-cases.yaml` for the highest ID in the same `<feature-slug>` before assigning new numbers</do>
   <never>Reuse an ID that already appears in the current QA YAML file</never>
 </rule>
 

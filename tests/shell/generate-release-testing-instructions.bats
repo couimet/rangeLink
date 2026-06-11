@@ -50,7 +50,7 @@ EOF
 
 # ── Internal yaml reference ────────────────────────────────────────────────────
 
-@test "Unreleased: emitted markdown references qa-test-cases-unreleased.yaml" {
+@test "Unreleased: output has frontmatter, scope, and next steps" {
   setup_fixture
   write_package_json <<'EOF'
 {
@@ -61,9 +61,15 @@ EOF
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
   local out="$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md"
-  grep -q "qa/qa-test-cases-unreleased.yaml" "$out"
-  # Negative assertion: no vUnreleased in the yaml reference.
-  ! grep -q "qa-test-cases-vUnreleased.yaml" "$out"
+  # Frontmatter present.
+  head -1 "$out" | grep -q "^---$"
+  grep -q "qa_issue_url:" "$out"
+  grep -q "generated:" "$out"
+  # Scope line correct.
+  grep -q "Changes from v1.0.0 → Unreleased" "$out"
+  # QA tracker placeholder and next steps section.
+  grep -q "QA tracker:" "$out"
+  grep -q "## Next steps" "$out"
 }
 
 
@@ -84,6 +90,34 @@ EOF
   grep -q "Changes from v1.0.0 → Unreleased" "$out"
   ! grep -q "vUnreleased" "$out"
 }
+
+
+# ── Versioned mode ────────────────────────────────────────────────────────
+
+@test "versioned: --version 2.0.0 produces versioned instructions" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "1.0.0"
+}
+EOF
+
+  run "$SCRIPT" --version 2.0.0
+  [[ "$status" -eq 0 ]]
+
+  # Versioned file produced, not unreleased.
+  [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md" ]]
+  [[ ! -f "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md" ]]
+
+  local out="$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
+  # Frontmatter has version field.
+  grep -q "version: 2.0.0" "$out"
+  # Scope line correct.
+  grep -q "Changes from v1.0.0 → v2.0.0" "$out"
+  # Next steps section present.
+  grep -q "## Next steps" "$out"
+}
+
 
 # ── Error paths ────────────────────────────────────────────────────────────────
 

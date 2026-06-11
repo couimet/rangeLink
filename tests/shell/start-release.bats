@@ -38,14 +38,14 @@ ENDOFSTUB
 
 # ── Happy path ──────────────────────────────────────────────────────────────────
 
-@test "copies YAML, adds CHANGELOG header, adds README banner" {
+@test "adds CHANGELOG header, adds README banner" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     scenario: 'Test scenario'
@@ -73,9 +73,6 @@ EOF
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
 
-  # YAML copied.
-  [[ -f "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" ]]
-
   # CHANGELOG: [Unreleased] header prepended before [2.0.0].
   grep -q '^## \[Unreleased\]$' "$FIXTURE_ROOT/CHANGELOG.md"
   grep -q '^## \[2\.0\.0\]' "$FIXTURE_ROOT/CHANGELOG.md"
@@ -94,40 +91,6 @@ EOF
   [[ "$banner_line" -lt "$first_section_line" ]]
 }
 
-@test "YAML copy preserves all TCs from versioned file" {
-  setup_fixture
-  write_package_json <<'EOF'
-{
-  "version": "2.0.0"
-}
-EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
-test_cases:
-  - id: foo-001
-    scenario: 'Original scenario'
-    automated: true
-  - id: foo-002
-    scenario: 'Another scenario'
-    automated: false
-    non_automatable_reason: 'platform-specific'
-EOF
-  write_changelog <<'EOF'
-## [2.0.0] - 2026-05-26
-EOF
-  write_readme <<'EOF'
-## Why RangeLink?
-EOF
-
-  run "$SCRIPT"
-  [[ "$status" -eq 0 ]]
-
-  local copied
-  copied=$(cat "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml")
-  grep -q "scenario: 'Original scenario'" <<< "$copied"
-  grep -q "scenario: 'Another scenario'" <<< "$copied"
-  grep -q "non_automatable_reason: 'platform-specific'" <<< "$copied"
-}
-
 @test "CHANGELOG: [Unreleased] has empty sections and existing content preserved below" {
   setup_fixture
   write_package_json <<'EOF'
@@ -135,7 +98,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
   write_changelog <<'EOF'
@@ -171,7 +134,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
   write_changelog <<'EOF'
@@ -200,12 +163,10 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
-  # Simulate already-started state: unreleased YAML, CHANGELOG header, README banner.
-  cp "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" \
-     "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
+  # Simulate already-started state: CHANGELOG header, README banner.
   write_changelog <<'EOF'
 ## [Unreleased]
 
@@ -236,13 +197,11 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
 EOF
-  # Partial state: unreleased YAML exists but CHANGELOG and README not updated.
-  cp "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" \
-     "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml"
+  # Partial state: CHANGELOG not updated but README not updated.
   write_changelog <<'EOF'
 ## [2.0.0] - 2026-05-26
 EOF
@@ -272,14 +231,14 @@ EOF
   [[ "$output" =~ "version not set" ]]
 }
 
-@test "no versioned YAML matching .version exits 1" {
+@test "no qa-test-cases.yaml exits 1" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "2.0.0"
 }
 EOF
-  # No qa-test-cases-v2.0.0.yaml written.
+  # No qa-test-cases.yaml written.
 
   run "$SCRIPT"
   [[ "$status" -eq 1 ]]

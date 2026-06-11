@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/generate-qa-issue.sh [--dry-run] [--local] [yaml-file]
-# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-unreleased.yaml
-#          ./scripts/generate-qa-issue.sh --local
+# Usage: ./scripts/generate-qa-issue.sh [--dry-run] [--local]
 #
 # Creates a single GitHub issue with checkboxes grouped by TC ID prefix (feature domain).
 # CI covers fully automated tests; the issue tracks assisted and manual tests only.
@@ -11,68 +9,29 @@ set -euo pipefail
 # With --local, writes the same structured content to a local markdown file in qa/ instead of
 # creating a GitHub issue. Useful for offline QA sessions and comparing runs.
 #
-# If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
-# prompts for confirmation before proceeding.
-#
-# Filename convention: qa-test-cases-<version>.yaml
-# Version is derived from the filename — no extra flags needed.
+# Reads qa/qa-test-cases.yaml. Version comes from package.json.
 #
 # Requires:
 #   node       — resolves QA YAML labels and generates JSON
+#   jq         — reads .version from package.json
 #   gh CLI     — authenticated with write access to the repo (not needed with --dry-run or --local)
 
 DRY_RUN=false
 LOCAL_MODE=false
-YAML_FILE=""
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --local) LOCAL_MODE=true ;;
     --) ;;
-    -*) echo "Unknown option: $arg" >&2; exit 1 ;;
-    *) YAML_FILE="$arg" ;;
+    *) echo "Unknown argument: $arg" >&2; exit 1 ;;
   esac
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-QA_DIR="$(dirname "$SCRIPT_DIR")/qa"
-
-if [[ -z "$YAML_FILE" ]]; then
-  # Auto-discover: find the most recent QA YAML.
-  # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER
-  # suffixed files (v1.1.0-001.yaml) because '.' > '-' in ASCII.
-  # Normalize by appending -000 to unsuffixed names for sorting purposes.
-  LATEST=$(
-    for f in "$QA_DIR"/qa-test-cases-*.yaml; do
-      [[ -e "$f" ]] || continue
-      name=$(basename "$f")
-      base="${name%.yaml}"
-      if [[ "$base" =~ -[0-9]{3}$ ]]; then
-        printf '%s\t%s\n' "$base" "$name"
-      else
-        printf '%s-000\t%s\n' "$base" "$name"
-      fi
-    done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
-  )
-
-  if [[ -z "$LATEST" ]]; then
-    echo "Error: no QA YAML files found in $QA_DIR" >&2
-    exit 1
-  fi
-
-  YAML_FILE="$QA_DIR/$LATEST"
-  if [[ -t 0 ]]; then
-    printf 'Use %s? [Y/n] ' "qa/$LATEST" >&2
-    read -r REPLY
-    if [[ -n "$REPLY" && ! "$REPLY" =~ ^[Yy]$ ]]; then
-      echo "Aborted." >&2
-      exit 0
-    fi
-  else
-    echo "Auto-selected latest QA YAML: qa/$LATEST"
-  fi
-fi
+PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
+QA_DIR="$PACKAGE_DIR/qa"
+YAML_FILE="$QA_DIR/qa-test-cases.yaml"
 
 if [[ ! -f "$YAML_FILE" ]]; then
   echo "Error: YAML file not found: $YAML_FILE" >&2
@@ -84,19 +43,14 @@ if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v gh &>/dev
   exit 1
 fi
 
-# Derive version from filename.
-# Pattern: qa-test-cases-<version>[-NNN].yaml
-BASENAME=$(basename "$YAML_FILE" .yaml)
-REST="${BASENAME#qa-test-cases-}"
-# Strip optional -NNN suffix to get the version
-if [[ "$REST" =~ ^(.*)-[0-9]{3}$ ]]; then
-  VERSION="${BASH_REMATCH[1]}"
-else
-  VERSION="$REST"
+VERSION=$(jq -r '.version // empty' "$PACKAGE_DIR/package.json")
+if [[ -z "$VERSION" ]]; then
+  echo "Error: .version not set in $PACKAGE_DIR/package.json" >&2
+  exit 1
 fi
 
 echo "QA checklist generator"
-echo "  Version : $VERSION"
+echo "  Version : v$VERSION"
 echo "  Source  : $YAML_FILE"
 [[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issue will be created)"
 [[ "$LOCAL_MODE" == true ]] && echo "  Mode    : LOCAL (writing to file, no GitHub issue)"
@@ -121,7 +75,7 @@ echo "Found $TOTAL_TCS assisted/manual test cases across $TOTAL_GROUPS groups"
 echo ""
 
 # Build the issue body
-ISSUE_TITLE="QA Checklist — ${VERSION}"
+ISSUE_TITLE="QA Checklist — v${VERSION}"
 ISSUE_BODY="Generated from \`$(basename "$YAML_FILE")\`.
 
 CI runs fully automated tests (\`test:release:automated\`). The checkboxes below cover assisted and manual tests only.
@@ -185,10 +139,10 @@ if [[ "$LOCAL_MODE" == true ]]; then
   OUTPUT_DIR="$QA_DIR/output"
   mkdir -p "$OUTPUT_DIR"
   TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-  LOCAL_FILE="$OUTPUT_DIR/qa-checklist-${VERSION}-${TIMESTAMP}.md"
+  LOCAL_FILE="$OUTPUT_DIR/qa-checklist-v${VERSION}-${TIMESTAMP}.md"
 
   {
-    echo "# QA Checklist — ${VERSION}"
+    echo "# QA Checklist — v${VERSION}"
     echo ""
     echo "Generated from \`$(basename "$YAML_FILE")\` on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
     echo ""

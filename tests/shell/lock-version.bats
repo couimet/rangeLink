@@ -17,7 +17,6 @@ setup_fixture() {
 case "$*" in
   *--show-toplevel*) echo "${FIXTURE_ROOT_FOR_GIT:-$TEST_TEMP_DIR}" ;;
   *status*) exit 0 ;;
-  *"mv"*) shift 3; mv "$@" ;;
   *) exit 0 ;;
 esac
 ENDOFSTUB
@@ -30,23 +29,62 @@ ENDOFSTUB
   # Stub gh so the auth-status warning path does not depend on local gh state.
   make_passive_stub "gh"
 
-  # Stub generate-release-testing-instructions.sh to produce a dummy output file.
+  # Stub generate-release-testing-instructions.sh to handle --version and
+  # produce the new minimal format. In versioned mode the scope deliberately
+  # uses v{VERSION} → v{VERSION} to test the sed fixup in lock-version.sh.
   cat > "$FIXTURE_ROOT/scripts/generate-release-testing-instructions.sh" <<'STUBEOF'
 #!/usr/bin/env bash
+VERSION_ARG=""
+for arg in "$@"; do
+  case "$arg" in
+    --version) ;;
+    *) VERSION_ARG="$arg" ;;
+  esac
+done
+
 QA_DIR="$(dirname "$(dirname "${BASH_SOURCE[0]}")")/qa"
-cat > "$QA_DIR/release-testing-instructions-unreleased.md" <<'EOF'
-# Release Testing Instructions: RangeLink VS Code Extension Unreleased
+
+if [[ -n "$VERSION_ARG" ]]; then
+  cat > "$QA_DIR/release-testing-instructions-v${VERSION_ARG}.md" <<EOF
+---
+version: ${VERSION_ARG}
+qa_issue_url: ""
+generated: 2026-06-11T00:00:00Z
+---
+
+# Release Testing: RangeLink VS Code Extension v${VERSION_ARG}
+
+**Scope:** Changes from v${VERSION_ARG} → v${VERSION_ARG}
+**QA tracker:** <to be filled by release:lock>
+
+## Next steps
+
+1. \`pnpm test\` — unit tests + coverage gate
+2. Work through the QA tracker checkboxes — each row has the exact pnpm command to run
+3. \`pnpm validate:qa-coverage:vscode-extension\`
+4. When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`
+EOF
+else
+  cat > "$QA_DIR/release-testing-instructions-unreleased.md" <<EOF
+---
+version: 1.0.0
+qa_issue_url: ""
+generated: 2026-06-11T00:00:00Z
+---
+
+# Release Testing: RangeLink VS Code Extension Unreleased
 
 **Scope:** Changes from v1.0.0 → Unreleased
+**QA tracker:** <to be filled by release:lock>
 
-## Phase 1: Generate QA Test Plan
+## Next steps
 
-This creates `qa/qa-test-cases-unreleased.yaml`.
-
-## Phase 5: Manual QA Pass
-
-The generated checklist is at `qa/output/qa-checklist-unreleased-<timestamp>.md`.
+1. \`pnpm test\` — unit tests + coverage gate
+2. Work through the QA tracker checkboxes — each row has the exact pnpm command to run
+3. \`pnpm validate:qa-coverage:vscode-extension\`
+4. When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`
 EOF
+fi
 STUBEOF
   chmod +x "$FIXTURE_ROOT/scripts/generate-release-testing-instructions.sh"
 
@@ -61,14 +99,14 @@ STUBEOF
 
 # ── Happy path ──────────────────────────────────────────────────────────────────
 
-@test "renames YAML, bumps version, generates versioned instructions" {
+@test "locks version, bumps version, generates versioned instructions" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "1.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     scenario: 'Existing'
@@ -78,9 +116,9 @@ EOF
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 0 ]]
 
-  # YAML renamed.
-  [[ ! -f "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" ]]
-  [[ -f "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" ]]
+  # YAML untouched (no longer renamed).
+  [[ -f "$FIXTURE_ROOT/qa/qa-test-cases.yaml" ]]
+  [[ ! -f "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" ]]
 
   # Version bumped.
   local ver
@@ -92,14 +130,14 @@ EOF
   [[ ! -f "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md" ]]
 }
 
-@test "versioned instructions have internal references fixup'd" {
+@test "versioned instructions have scope line fixup'd" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "1.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     scenario: 'Existing'
@@ -110,13 +148,8 @@ EOF
   [[ "$status" -eq 0 ]]
 
   local out="$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
-  # Internal refs updated from unreleased → versioned.
-  grep -q "qa-test-cases-v2.0.0.yaml" "$out"
-  grep -q "qa-checklist-v2.0.0" "$out"
+  # The stub outputs v2.0.0 → v2.0.0; the sed fixup corrects it to v1.0.0 → v2.0.0.
   grep -q "v1.0.0 → v2.0.0" "$out"
-  # No stray unreleased refs in filenames/slugs.
-  ! grep -q "qa-test-cases-unreleased.yaml" "$out"
-  ! grep -q "qa-checklist-unreleased" "$out"
 }
 
 # ── Idempotency ─────────────────────────────────────────────────────────────────
@@ -128,12 +161,9 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
-test_cases:
-  - id: foo-001
-    scenario: 'Existing'
-    automated: true
-EOF
+  # Both .version and versioned instructions must exist for the idempotency gate.
+  mkdir -p "$FIXTURE_ROOT/qa"
+  touch "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
 
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 0 ]]
@@ -147,21 +177,10 @@ EOF
   "version": "1.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" <<'EOF'
-test_cases:
-  - id: foo-001
-    scenario: 'Existing'
-    automated: true
-EOF
 
-  # Simulate partial state: version already bumped but YAML not renamed.
-  # (This shouldn't happen in practice but tests the guard).
-  # Actually, let's test: versioned YAML exists (manually created) but .version not bumped.
-  # This is a pathological case — the script should handle it gracefully.
-
-  # Pre-create the versioned YAML (simulating partial previous run).
-  cp "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" \
-     "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml"
+  # Simulate partial state: versioned instructions exist but .version not bumped.
+  mkdir -p "$FIXTURE_ROOT/qa"
+  touch "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
 
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 0 ]]
@@ -202,30 +221,11 @@ EOF
   [[ "$output" =~ "SemVer" ]]
 }
 
-@test "no qa-test-cases-unreleased.yaml exits 1" {
-  setup_fixture
-  write_package_json <<'EOF'
-{
-  "version": "1.0.0"
-}
-EOF
-  # No YAML file written.
-
-  run "$SCRIPT" 2.0.0
-  [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "not found" ]]
-}
-
 @test "missing .version in package.json exits 1" {
   setup_fixture
   write_package_json <<'EOF'
 {
 }
-EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" <<'EOF'
-test_cases:
-  - id: foo-001
-    automated: true
 EOF
 
   run "$SCRIPT" 2.0.0
@@ -235,14 +235,14 @@ EOF
 
 # ── YAML content preservation ──────────────────────────────────────────────────
 
-@test "renamed YAML preserves original content" {
+@test "YAML file is untouched" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "1.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-unreleased.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
     scenario: 'Original scenario text'
@@ -256,9 +256,12 @@ EOF
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 0 ]]
 
+  # YAML still at original path with original content.
   local content
-  content=$(cat "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml")
+  content=$(cat "$FIXTURE_ROOT/qa/qa-test-cases.yaml")
   grep -q "scenario: 'Original scenario text'" <<< "$content"
   grep -q "scenario: 'Another scenario'" <<< "$content"
   grep -q "non_automatable_reason: 'platform-specific'" <<< "$content"
+  # No versioned YAML was created.
+  [[ ! -f "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" ]]
 }

@@ -58,7 +58,7 @@ STUBEOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
 EOF
@@ -107,7 +107,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases:
   - id: foo-001
 EOF
@@ -167,7 +167,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
 
@@ -186,14 +186,14 @@ ENDOFSTUB
   [[ "$output" =~ "dirty" ]]
 }
 
-@test "no versioned YAML exits 1" {
+@test "no qa-test-cases.yaml exits 1" {
   setup_fixture
   write_package_json <<'EOF'
 {
   "version": "2.0.0"
 }
 EOF
-  # No qa-test-cases-v2.0.0.yaml written.
+  # No qa-test-cases.yaml written.
 
   run "$SCRIPT"
   [[ "$status" -eq 1 ]]
@@ -207,7 +207,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
   write_changelog <<'EOF'
@@ -235,7 +235,7 @@ EOF
   "version": "2.0.0"
 }
 EOF
-  cat > "$FIXTURE_ROOT/qa/qa-test-cases-v2.0.0.yaml" <<'EOF'
+  cat > "$FIXTURE_ROOT/qa/qa-test-cases.yaml" <<'EOF'
 test_cases: []
 EOF
   write_changelog <<'EOF'

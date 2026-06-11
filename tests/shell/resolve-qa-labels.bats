@@ -157,120 +157,18 @@ EOF
   [[ "$output" == "custom-001" ]]
 }
 
-@test "resolve-qa-labels: readdirSync fails exits 1" {
-  FIXTURE_ROOT="$TEST_TEMP_DIR"
-  mkdir -p "$FIXTURE_ROOT/scripts"
-  # Intentionally NOT creating qa/ directory
-  cp "$REAL_SCRIPT" "$FIXTURE_ROOT/scripts/resolve-qa-labels.js"
-  SCRIPT="$FIXTURE_ROOT/scripts/resolve-qa-labels.js"
-
-  run node "$SCRIPT"
-  [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "Cannot read QA directory" ]]
-}
-
-@test "resolve-qa-labels: no QA YAML files exits 1" {
+@test "resolve-qa-labels: auto-discovery uses qa-test-cases.yaml" {
   setup_fixture
-  # qa/ directory exists but is empty (no yaml files) or has non-matching files
-  # Just make sure qa/ exists with no yaml files
-  run node "$SCRIPT"
-  [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "No QA YAML files found" ]]
-}
-
-@test "resolve-qa-labels: unsuffixed preferred over suffixed same version" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0-001.yaml" <<'EOF'
+  write_yaml "qa-test-cases.yaml" <<'EOF'
 test_cases:
-  - id: old-001
-    feature: Old
-    scenario: Suffixed
-    automated: true
-EOF
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
-test_cases:
-  - id: latest-001
-    feature: Latest
-    scenario: Unsuffixed
-    automated: true
-EOF
-  run node "$SCRIPT"
-  [[ "$output" == "latest-001" ]]
-}
-
-@test "resolve-qa-labels: highest version picked among unsuffixed" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0.yaml" <<'EOF'
-test_cases:
-  - id: old-001
-    feature: Old
-    scenario: v1.0.0
-    automated: true
-EOF
-  write_yaml "qa-test-cases-v2.0.0.yaml" <<'EOF'
-test_cases:
-  - id: new-001
-    feature: New
-    scenario: v2.0.0
-    automated: true
-EOF
-  run node "$SCRIPT"
-  [[ "$output" == "new-001" ]]
-}
-
-@test "resolve-qa-labels: highest suffixed picked when only suffixed exist" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.0.0-001.yaml" <<'EOF'
-test_cases:
-  - id: first-001
-    feature: First
-    scenario: 001
-    automated: true
-EOF
-  write_yaml "qa-test-cases-v1.0.0-005.yaml" <<'EOF'
-test_cases:
-  - id: fifth-001
-    feature: Fifth
-    scenario: 005
-    automated: true
-EOF
-  run node "$SCRIPT"
-  [[ "$output" == "fifth-001" ]]
-}
-
-@test "resolve-qa-labels: auto-discovery picks qa-test-cases-unreleased.yaml when it is the only file" {
-  setup_fixture
-  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
-test_cases:
-  - id: unreleased-001
-    feature: Unreleased
-    scenario: Single file
+  - id: default-001
+    feature: Default
+    scenario: Stable path
     automated: true
 EOF
   run node "$SCRIPT"
   [[ "$status" -eq 0 ]]
-  [[ "$output" == "unreleased-001" ]]
-}
-
-@test "resolve-qa-labels: auto-discovery prefers unreleased.yaml when both unreleased and versioned files exist" {
-  setup_fixture
-  write_yaml "qa-test-cases-v1.2.3.yaml" <<'EOF'
-test_cases:
-  - id: versioned-001
-    feature: Versioned
-    scenario: From versioned file
-    automated: true
-EOF
-  write_yaml "qa-test-cases-unreleased.yaml" <<'EOF'
-test_cases:
-  - id: unreleased-001
-    feature: Unreleased
-    scenario: From unreleased file
-    automated: true
-EOF
-  run node "$SCRIPT"
-  [[ "$status" -eq 0 ]]
-  [[ "$output" == "unreleased-001" ]]
+  [[ "$output" == "default-001" ]]
 }
 
 # ════════════════════════════════════════════════════════════════════
