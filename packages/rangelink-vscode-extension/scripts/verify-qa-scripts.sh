@@ -20,7 +20,7 @@ cd "$PACKAGE_DIR" || { echo "Error: cannot cd to $PACKAGE_DIR" >&2; exit 1; }
 
 PASSED=0
 FAILED=0
-TOTAL=5
+TOTAL=4
 
 run_check() {
   local name="$1"
@@ -63,13 +63,10 @@ check_artifact "validate-qa-coverage" "output/qa-coverage-report-*.txt"
 run_check "generate-release-testing-instructions" ./scripts/generate-release-testing-instructions.sh
 check_artifact "generate-release-testing-instructions" "release-testing-instructions-*.md"
 
-run_check "generate-qa-test-plan" ./scripts/generate-qa-test-plan.sh
-check_artifact "generate-qa-test-plan" "qa-test-cases-*.yaml"
-
 # dry-run produces no artifact — exit code is sufficient
-run_check "generate-qa-issue (dry-run)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --dry-run'
+run_check "generate-qa-issue (dry-run)" bash -c './scripts/generate-qa-issue.sh --dry-run'
 
-run_check "generate-qa-issue (local)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --local'
+run_check "generate-qa-issue (local)" bash -c './scripts/generate-qa-issue.sh --local'
 check_artifact "generate-qa-issue (local)" "output/qa-checklist-*.md"
 
 echo ""

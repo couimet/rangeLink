@@ -4,13 +4,11 @@ set -euo pipefail
 # Usage: ./scripts/start-release.sh
 #
 # Starts the next development cycle after a release. Reads .version from
-# package.json to find the just-shipped versioned YAML. Idempotent — safe
-# to re-run.
+# package.json. Idempotent — safe to re-run.
 #
 # Steps:
-#   1. Copy versioned YAML → qa-test-cases-unreleased.yaml
-#   2. Prepend [Unreleased] header with empty sections to CHANGELOG
-#   3. Re-add [!IMPORTANT] banner to README
+#   1. Prepend [Unreleased] header with empty sections to CHANGELOG
+#   2. Re-add [!IMPORTANT] banner to README
 #
 # Requires: jq
 
@@ -42,29 +40,18 @@ fi
 
 # --- Prerequisites ---
 
-VERSIONED_YAML="$QA_DIR/qa-test-cases-v${VERSION}.yaml"
-if [[ ! -f "$VERSIONED_YAML" ]]; then
-  echo -e "${RED}Error: $VERSIONED_YAML not found. Run finalize-release.sh first.${NC}" >&2
+QA_YAML="$QA_DIR/qa-test-cases.yaml"
+if [[ ! -f "$QA_YAML" ]]; then
+  echo -e "${RED}Error: $QA_YAML not found.${NC}" >&2
   exit 1
 fi
 
 CHANGED=false
 
-# --- Step 1: Copy YAML ---
-
-UNRELEASED_YAML="$QA_DIR/qa-test-cases-unreleased.yaml"
-if [[ -f "$UNRELEASED_YAML" ]]; then
-  echo -e "${YELLOW}Step 1: $UNRELEASED_YAML already exists — skipped.${NC}"
-else
-  cp "$VERSIONED_YAML" "$UNRELEASED_YAML"
-  echo -e "${GREEN}Step 1: Copied qa-test-cases-v${VERSION}.yaml → qa-test-cases-unreleased.yaml${NC}"
-  CHANGED=true
-fi
-
-# --- Step 2: Prepend [Unreleased] header to CHANGELOG ---
+# --- Step 1: Prepend [Unreleased] header to CHANGELOG ---
 
 if grep -q '^## \[Unreleased\]$' "$CHANGELOG"; then
-  echo -e "${YELLOW}Step 2: [Unreleased] section already exists in CHANGELOG — skipped.${NC}"
+  echo -e "${YELLOW}Step 1: [Unreleased] section already exists in CHANGELOG — skipped.${NC}"
 else
   INSERT_LINE=$(grep -n '^## \[' "$CHANGELOG" | head -1 | cut -d: -f1)
   if [[ -n "$INSERT_LINE" ]] && [[ "$INSERT_LINE" -eq 1 ]]; then
@@ -94,14 +81,14 @@ HEADER
     tail -n +"$INSERT_LINE" "$CHANGELOG" >> "$CHANGELOG.tmp"
   fi
   mv "$CHANGELOG.tmp" "$CHANGELOG"
-  echo -e "${GREEN}Step 2: Prepended [Unreleased] header to CHANGELOG${NC}"
+  echo -e "${GREEN}Step 1: Prepended [Unreleased] header to CHANGELOG${NC}"
   CHANGED=true
 fi
 
-# --- Step 3: Re-add [!IMPORTANT] banner to README ---
+# --- Step 2: Re-add [!IMPORTANT] banner to README ---
 
 if grep -q '\[!IMPORTANT\]' "$README"; then
-  echo -e "${YELLOW}Step 3: [!IMPORTANT] banner already exists in README — skipped.${NC}"
+  echo -e "${YELLOW}Step 2: [!IMPORTANT] banner already exists in README — skipped.${NC}"
 else
   INSERT_LINE=$(grep -n '^## ' "$README" | head -1 | cut -d: -f1)
   if [[ -n "$INSERT_LINE" ]] && [[ "$INSERT_LINE" -eq 1 ]]; then
@@ -123,7 +110,7 @@ BANNER
     tail -n +"$INSERT_LINE" "$README" >> "$README.tmp"
   fi
   mv "$README.tmp" "$README"
-  echo -e "${GREEN}Step 3: Added [!IMPORTANT] banner to README${NC}"
+  echo -e "${GREEN}Step 2: Added [!IMPORTANT] banner to README${NC}"
   CHANGED=true
 fi
 

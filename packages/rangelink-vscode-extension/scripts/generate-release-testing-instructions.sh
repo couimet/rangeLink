@@ -6,9 +6,9 @@ set -euo pipefail
 # Validates prerequisites and creates a comprehensive markdown file with copy-paste ready
 # commands for the full release testing lifecycle (7 phases).
 #
-# Usage: ./scripts/generate-release-testing-instructions.sh
-#
-# Filename: qa/release-testing-instructions-unreleased.md
+# Usage:
+#   ./scripts/generate-release-testing-instructions.sh             → trunk-based dev (Unreleased)
+#   ./scripts/generate-release-testing-instructions.sh --version X.Y.Z  → release lock
 #
 # Requires: jq
 # Optional: gh CLI (authenticated)
@@ -18,37 +18,33 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+VERSION_ARG=""
+for arg in "$@"; do
+  case "$arg" in
+    --version) ;;
+    *) if [[ "$arg" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then VERSION_ARG="$arg"; fi ;;
+  esac
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 MONOREPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 PACKAGE_JSON="$PACKAGE_DIR/package.json"
 QA_DIR="$PACKAGE_DIR/qa"
 
-# --- Prerequisites ---
-
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 
-WARNINGS=""
-
-if ! command -v gh &>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: gh CLI not found — Phase 2 (GitHub QA Issues) requires it${NC}\n"
-elif ! gh auth status &>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
+if [[ -n "$VERSION_ARG" ]]; then
+  NEXT_LABEL="v${VERSION_ARG}"
+  BASE_NAME="release-testing-instructions-v${VERSION_ARG}"
+else
+  NEXT_LABEL="Unreleased"
+  BASE_NAME="release-testing-instructions-unreleased"
 fi
-
-# Filename is always release-testing-instructions-unreleased.md during trunk-based
-# development — lock-version.sh renames and fixup-references it when locking a version.
-NEXT_LABEL="Unreleased"
-BASE_NAME="release-testing-instructions-unreleased"
-QA_YAML_FILENAME="qa-test-cases-unreleased.yaml"
-QA_CHECKLIST_SLUG="unreleased"
+QA_YAML_FILENAME="qa-test-cases.yaml"
+QA_CHECKLIST_SLUG="$NEXT_LABEL"
 
 echo -e "${GREEN}Generating release testing instructions for ${NEXT_LABEL}${NC}"
-
-if [[ -n "$WARNINGS" ]]; then
-  echo -e "\n${YELLOW}Prerequisites warnings (non-blocking):${NC}"
-  echo -e "$WARNINGS"
-fi
 
 # --- Output file ---
 

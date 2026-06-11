@@ -7,11 +7,10 @@ set -euo pipefail
 # against a concrete version number.
 #
 # Steps:
-#   1. Rename qa-test-cases-unreleased.yaml → qa-test-cases-vX.Y.Z.yaml
-#   2. Bump package.json .version → X.Y.Z
-#   3. Regenerate versioned release testing instructions
+#   1. Bump package.json .version → X.Y.Z
+#   2. Regenerate versioned release testing instructions
 #
-# Idempotent — safe to re-run after adding bug-fix TCs to the versioned YAML.
+# Idempotent — safe to re-run after adding bug-fix TCs to the QA YAML.
 # On re-run, prints a summary and exits cleanly.
 #
 # Requires: jq
@@ -38,6 +37,7 @@ PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 PACKAGE_JSON="$PACKAGE_DIR/package.json"
 QA_DIR="$PACKAGE_DIR/qa"
+VERSIONED_INSTRUCTIONS="$QA_DIR/release-testing-instructions-v${VERSION}.md"
 
 # --- Validation ---
 
@@ -45,9 +45,6 @@ if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
   echo -e "${RED}Error: working tree is dirty. Commit or stash changes first.${NC}" >&2
   exit 1
 fi
-
-UNRELEASED_YAML="$QA_DIR/qa-test-cases-unreleased.yaml"
-VERSIONED_YAML="$QA_DIR/qa-test-cases-v${VERSION}.yaml"
 
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 if [[ -z "$PUBLISHED_VERSION" ]]; then
@@ -57,72 +54,36 @@ fi
 
 # --- Idempotency: detect already-locked state ---
 
-if [[ "$PUBLISHED_VERSION" == "$VERSION" ]] && [[ -f "$VERSIONED_YAML" ]]; then
+if [[ "$PUBLISHED_VERSION" == "$VERSION" ]] && [[ -f "$VERSIONED_INSTRUCTIONS" ]]; then
   echo -e "${GREEN}Already locked at v${VERSION}. Nothing to do.${NC}"
   exit 0
 fi
 
-# --- Prerequisites ---
-
-if [[ ! -f "$UNRELEASED_YAML" ]]; then
-  if compgen -G "${QA_DIR}/qa-test-cases-v*.yaml" > /dev/null; then
-    echo -e "${GREEN}A versioned YAML already exists — prior run completed.${NC}"
-    exit 0
-  fi
-  echo -e "${RED}Error: $UNRELEASED_YAML not found — nothing to lock.${NC}" >&2
-  exit 1
-fi
-
-# --- Step 1: Rename QA YAML ---
-
-if [[ -f "$VERSIONED_YAML" ]]; then
-  echo -e "${YELLOW}Step 1: ${VERSIONED_YAML} already exists — skipped.${NC}"
-else
-  git -C "$REPO_ROOT" mv "$UNRELEASED_YAML" "$VERSIONED_YAML"
-  echo -e "${GREEN}Step 1: Renamed qa-test-cases-unreleased.yaml → qa-test-cases-v${VERSION}.yaml${NC}"
-fi
-
-# --- Step 2: Bump .version ---
+# --- Step 1: Bump .version ---
 
 CURRENT_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 if [[ "$CURRENT_VERSION" == "$VERSION" ]]; then
-  echo -e "${YELLOW}Step 2: .version already ${VERSION} — skipped.${NC}"
+  echo -e "${YELLOW}Step 1: .version already ${VERSION} — skipped.${NC}"
 else
   jq --arg v "$VERSION" '.version = $v' "$PACKAGE_JSON" > "$PACKAGE_JSON.tmp"
   mv "$PACKAGE_JSON.tmp" "$PACKAGE_JSON"
-  echo -e "${GREEN}Step 2: Bumped .version ${CURRENT_VERSION} → ${VERSION}${NC}"
+  echo -e "${GREEN}Step 1: Bumped .version ${CURRENT_VERSION} → ${VERSION}${NC}"
 fi
 
-# --- Step 3: Regenerate versioned release testing instructions ---
-
-VERSIONED_INSTRUCTIONS="$QA_DIR/release-testing-instructions-v${VERSION}.md"
-UNRELEASED_INSTRUCTIONS="$QA_DIR/release-testing-instructions-unreleased.md"
+# --- Step 2: Regenerate versioned release testing instructions ---
 
 if [[ -f "$VERSIONED_INSTRUCTIONS" ]]; then
-  echo -e "${YELLOW}Step 3: ${VERSIONED_INSTRUCTIONS} already exists — skipped.${NC}"
+  echo -e "${YELLOW}Step 2: ${VERSIONED_INSTRUCTIONS} already exists — skipped.${NC}"
 else
-  # Delete unreleased instructions to bypass the script's early-exit.
-  rm -f "$UNRELEASED_INSTRUCTIONS"
+  "$SCRIPT_DIR/generate-release-testing-instructions.sh" --version "$VERSION"
 
-  "$SCRIPT_DIR/generate-release-testing-instructions.sh"
-
-  if [[ ! -f "$UNRELEASED_INSTRUCTIONS" ]]; then
-    echo -e "${RED}Error: generate-release-testing-instructions.sh did not produce expected output.${NC}" >&2
-    exit 1
-  fi
-
-  mv "$UNRELEASED_INSTRUCTIONS" "$VERSIONED_INSTRUCTIONS"
-
-  # Fixup internal references from unreleased → versioned.
-  # PUBLISHED_VERSION is the pre-bump version (read before step 2), so the
+  # PUBLISHED_VERSION is the pre-bump version (read before step 1), so the
   # scope line captures the correct range (e.g. "Changes from v1.0.0 → v2.0.0").
   sed -i.bak \
-    -e "s/qa-test-cases-unreleased\.yaml/qa-test-cases-v${VERSION}.yaml/g" \
-    -e "s/qa-checklist-unreleased/qa-checklist-v${VERSION}/g" \
-    -e "s|Changes from v[0-9.]* → Unreleased|Changes from v${PUBLISHED_VERSION} → v${VERSION}|g" \
+    -e "s|Changes from v[0-9.]* → .*|Changes from v${PUBLISHED_VERSION} → v${VERSION}|" \
     "$VERSIONED_INSTRUCTIONS" && rm -f "${VERSIONED_INSTRUCTIONS}.bak"
 
-  echo -e "${GREEN}Step 3: Generated release-testing-instructions-v${VERSION}.md${NC}"
+  echo -e "${GREEN}Step 2: Generated release-testing-instructions-v${VERSION}.md${NC}"
 fi
 
 echo ""
