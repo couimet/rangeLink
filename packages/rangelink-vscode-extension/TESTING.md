@@ -6,21 +6,21 @@
 
 ## Quick Reference
 
-| Test type                | Command                                                       | When to run                        | Runs in CI           |
-| ------------------------ | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
-| Unit tests               | `pnpm test`                                                   | Every change                       | ✅                   |
-| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
-| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
-| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
-| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions   | ✅                   |
-| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
-| Ubuntu manual QA         | `pnpm test:release:ubuntu`                                    | Manual QA of Ctrl+R keybindings    | —                    |
-| Cursor manual QA         | `pnpm test:release:cursor`                                    | Manual QA of Cursor IDE TCs        | —                    |
-| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
-| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
-| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
-| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
+| Test type                | Command                                              | When to run                        | Runs in CI           |
+| ------------------------ | ---------------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests               | `pnpm test`                                          | Every change                       | ✅                   |
+| Unit tests (watch)       | `pnpm test:watch` (from extension dir)               | During active development          | —                    |
+| Coverage report          | `pnpm test:coverage` (from extension dir)            | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests        | `pnpm test:release`                                  | Before PR, after feature work      | —                    |
+| Integration (CI-safe)    | `pnpm test:release:automated`                        | CI / headless environments         | ✅                   |
+| Integration (extensions) | `pnpm test:release:with-extensions`                  | Tests needing real AI extensions   | ✅                   |
+| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                 | Run specific TCs by ID or suite    | —                    |
+| Ubuntu manual QA         | `pnpm test:release:ubuntu`                           | Manual QA of Ctrl+R keybindings    | —                    |
+| Cursor manual QA         | `pnpm test:release:cursor`                           | Manual QA of Cursor IDE TCs        | —                    |
+| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`            | At the start of each release cycle | —                    |
+| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local` | Offline QA / before manual pass    | —                    |
+| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`         | After adding integration tests     | ✅                   |
+| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`            | After QA script changes            | —                    |
 
 All commands run from the project root unless noted.
 
@@ -32,11 +32,11 @@ All `test:release*` commands accept `--label <tag>` (include TCs with QA YAML la
 
 ### Release QA Cycle (once per release)
 
-| Script                                     | When                               | Re-runnable?      | What it does                                                                                    |
-| ------------------------------------------ | ---------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm release:lock:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Bumps `.version`, regenerates the QA instructions landing page, generates the QA issue          |
-| `pnpm release:prepare:vscode-extension`    | QA passed, ready to ship           | No (one-way door) | Date-stamps CHANGELOG, strips README markers/banner, generates publishing instructions          |
-| `pnpm release:start:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Adds `[Unreleased]` CHANGELOG header, re-adds README banner                                     |
+| Script                                     | When                               | Re-runnable?      | What it does                                                                           |
+| ------------------------------------------ | ---------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
+| `pnpm release:lock:vscode-extension X.Y.Z` | Ready to start QA                  | Yes (idempotent)  | Bumps `.version`, regenerates the QA instructions landing page, generates the QA issue |
+| `pnpm release:prepare:vscode-extension`    | QA passed, ready to ship           | No (one-way door) | Date-stamps CHANGELOG, strips README markers/banner, generates publishing instructions |
+| `pnpm release:start:vscode-extension`      | After publish, starting next cycle | Yes (idempotent)  | Adds `[Unreleased]` CHANGELOG header, re-adds README banner                            |
 
 The release lifecycle is documented in [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md#release-workflow).
 
