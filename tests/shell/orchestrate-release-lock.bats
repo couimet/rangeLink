@@ -31,7 +31,15 @@ esac
 ENDOFSTUB
   export FIXTURE_ROOT_FOR_GIT="$FIXTURE_ROOT"
 
-  make_passive_stub "gh"
+  # gh stub that logs each call so tests can assert on the workflow comment body.
+  cat > "$STUB_DIR/gh" <<'GHSTUB'
+#!/usr/bin/env bash
+echo "gh $*" >> "$GH_CALL_LOG"
+exit 0
+GHSTUB
+  chmod +x "$STUB_DIR/gh"
+  export GH_CALL_LOG="$FIXTURE_ROOT/gh-calls.log"
+  : > "$GH_CALL_LOG"
 
   # Stub lock-version.sh (idempotent: does not clobber existing instructions).
   cat > "$FIXTURE_ROOT/scripts/lock-version.sh" <<'STUBEOF'
@@ -186,4 +194,40 @@ INSTEOF
   run "$SCRIPT" "2.0.0"
   [[ "$status" -eq 0 ]]
   [[ -f "$FIXTURE_ROOT/.commit-msgs/0011-lock-version-v2.0.0.txt" ]]
+}
+
+# ── Workflow comment on QA issue ──────────────────────────────────────────────────
+
+@test "posts workflow comment on QA issue after commit message" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  # Verify gh was called with the workflow comment body.
+  grep -q '## Workflow' "$GH_CALL_LOG"
+}
+
+@test "workflow comment includes commit, push, PR, test, and release steps" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  # The workflow body contains embedded newlines; grep -A captures the full block.
+  local body
+  body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
+
+  # Commit step with pre-generated file path.
+  [[ "$body" =~ "git add -u && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
+  # Push step with branch name.
+  [[ "$body" =~ "git push -u origin release/v1.0.0" ]]
+  # PR creation step.
+  [[ "$body" =~ "gh pr create" ]]
+  # Unit test, validate, and release steps.
+  [[ "$body" =~ "pnpm test" ]]
+  [[ "$body" =~ "pnpm validate:qa-coverage:vscode-extension" ]]
+  [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
 }
