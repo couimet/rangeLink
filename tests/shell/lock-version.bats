@@ -184,7 +184,7 @@ EOF
   [[ "$output" =~ "Already locked at v2.0.0" ]]
 }
 
-@test "re-run after partial completion picks up remaining steps" {
+@test "re-run overwrites stale instructions instead of skipping" {
   setup_fixture
   write_package_json <<'EOF'
 {
@@ -192,17 +192,23 @@ EOF
 }
 EOF
 
-  # Simulate partial state: versioned instructions exist but .version not bumped.
+  # Write a stale instructions file to simulate a prior run.
   mkdir -p "$FIXTURE_ROOT/qa"
-  touch "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
+  echo "stale content" > "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md"
 
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 0 ]]
 
-  # Should bump version (the missing step).
+  # Version bumped.
   local ver
   ver=$(jq -r '.version' "$FIXTURE_ROOT/package.json")
   [[ "$ver" == "2.0.0" ]]
+
+  # Instructions were regenerated, not left stale.
+  local content
+  content=$(cat "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md")
+  [[ "$content" =~ "Release Testing" ]]
+  ! [[ "$content" =~ "stale content" ]]
 }
 
 # ── Error paths ─────────────────────────────────────────────────────────────────

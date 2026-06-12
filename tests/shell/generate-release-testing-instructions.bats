@@ -134,9 +134,9 @@ EOF
   [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md" ]]
 }
 
-# ── Early-exit (kept for this script per A006 scope) ───────────────────────────
+# ── Overwrite ─────────────────────────────────────────────────────────────────────
 
-@test "file-exists early-exit still applies (no clobber)" {
+@test "overwrites existing file instead of early-exit" {
   setup_fixture
   write_package_json <<'EOF'
 {
@@ -147,9 +147,9 @@ EOF
 
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
-  [[ "$output" =~ "already exists" ]]
-  # File unchanged.
+  # File overwritten with generated content, not the preexisting text.
   local content
   content=$(cat "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md")
-  [[ "$content" == "preexisting content" ]]
+  [[ "$content" =~ "Release Testing" ]]
+  ! [[ "$content" =~ "preexisting content" ]]
 }

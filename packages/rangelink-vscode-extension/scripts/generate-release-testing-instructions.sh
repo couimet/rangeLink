@@ -45,11 +45,6 @@ echo -e "${GREEN}Generating release testing instructions for ${NEXT_LABEL}${NC}"
 
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.md"
 
-if [[ -f "$OUTPUT_FILE" ]]; then
-  echo "$OUTPUT_FILE already exists — nothing to generate"
-  exit 0
-fi
-
 GENERATED_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 cat > "$OUTPUT_FILE" <<EOF
