@@ -14,6 +14,7 @@ import {
 } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
+  assertFnLogged,
   assertNoClipboardWriteLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEqualsGeneratedLink,
@@ -363,6 +364,9 @@ standardSuite('Core Send Commands', (ss) => {
     );
 
     assertTerminalBufferContains(capturing.getCapturedText(), markerText);
+
+    const lines = logCapture.getLinesSince('before-sts-010');
+    assertFnLogged(lines, { fn: 'TerminalInsertFactory.insert' });
 
     ss.log('✓ Self-paste via R-V: selection echoed back into bound terminal buffer (pty-captured)');
   });

@@ -147,7 +147,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
 
-**Bring Your Own AI Assistant** : Any VS Code extension that exposes a focus command or a text-insertion command can be integrated as a RangeLink destination via settings. Three delivery tiers are supported — from direct text injection to manual paste — so RangeLink adapts to each extension's capabilities. See [Custom AI Assistant Settings](#custom-ai-assistant-settings-unreleased) for configuration details.
+**Bring Your Own AI Assistant** : Any VS Code extension that exposes a focus command or a text-insertion command can be integrated as a RangeLink destination via settings. Three delivery tiers are supported — from direct text injection to manual paste — so RangeLink adapts to each extension's capabilities. See [Custom AI Assistant Settings](#custom-ai-assistant-settings) for configuration details.
 
 **How it works:**
 
