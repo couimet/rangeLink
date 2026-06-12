@@ -417,7 +417,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       'context-menus-terminal-012',
       `Right-click INSIDE "${terminalName}" content area WITHOUT selecting text. Is "RangeLink: Send Selected Text" ABSENT from the content-area menu?`,
       [
-        `The terminal "${terminalName}" has output text but nothing is selected.`,
+        `No text is selected in the terminal "${terminalName}".`,
         '1. Do NOT select any text in the terminal',
         '2. Right-click INSIDE the terminal content area (not the tab)',
         'Verdict:',
