@@ -748,7 +748,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     const verdict = await waitForHumanVerdict(
       'clipboard-preservation-018',
-      'Two rapid R-L: did both RangeLinks appear in Claude Code chat?',
+      'Two rapid R-L: did both RangeLinks appear in Claude Code chat (lines 1-2 first and then lines 3-4)?',
       [
         '1. Two rapid sends were fired automatically',
         '2. Check Claude Code chat for BOTH RangeLinks (lines 1-2 and lines 3-4)',
