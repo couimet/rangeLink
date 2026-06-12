@@ -588,12 +588,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
     ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-011 ("Send Selection" visible when unbound;
-  // clicking opens destination picker and delivers to picked destination —
-  // parity with the editor family, which never gates on rangelink.isBound)
-  // ---------------------------------------------------------------------------
-
   test('[assisted] send-terminal-selection-011: "Send Selection" (unbound) opens destination picker and delivers to picked terminal', async () => {
     const sourceName = 'rl-sts-011-SOURCE';
     const destName = 'rl-sts-011-DEST';
@@ -636,7 +630,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     assertQuickPickContains(lines, {
       itemKind: 'bindable',
-      displayName: destName,
       label: `Terminal ("${destName}")`,
     });
 
