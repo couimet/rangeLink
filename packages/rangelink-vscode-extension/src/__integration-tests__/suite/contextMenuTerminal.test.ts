@@ -589,52 +589,6 @@ standardSuite('Context Menus — Terminal', (ss) => {
   });
 
   // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-010 (SELF-paste: bound terminal sends its own
-  // selection to itself — documents current behavior; no self-paste guard
-  // exists for terminal destinations)
-  // ---------------------------------------------------------------------------
-
-  test('[assisted] send-terminal-selection-010: Self-paste — bound terminal selection is sent back to itself (current behavior, no guard)', async () => {
-    const terminalName = 'rl-sts-010';
-    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
-    const markerText = 'STS_010_SELF_PASTE_MARKER';
-    capturing.terminal.sendText(markerText, false);
-    await ss.settle(TERMINAL_READY_MS);
-
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-010")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")',
-    ]);
-    ss.expectContextKeys({
-      'rangelink.isActiveTerminalBindable': true,
-      'rangelink.isActiveTerminalPasteDestination': true,
-      'rangelink.isBound': true,
-    });
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-sts-010');
-    capturing.clearCaptured();
-
-    await waitForHuman(
-      'send-terminal-selection-010',
-      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selected Text"`,
-      [
-        `Destination: Terminal "${terminalName}" is bound (the SAME terminal we'll select from).`,
-        `1. Select "${markerText}" in "${terminalName}" (the marker text is visible in the buffer)`,
-        '2. Right-click INSIDE the content area',
-        '3. Select "RangeLink: Send Selected Text"',
-        'The selection will be pasted BACK into the same terminal (this documents current behavior; a self-paste guard for terminals is worth filing as a follow-up).',
-      ],
-    );
-
-    assertTerminalBufferContains(capturing.getCapturedText(), markerText);
-
-    ss.log(
-      '✓ Self-paste: selection echoed back into bound terminal buffer (pty-captured; follow-up issue worth filing for guard)',
-    );
-  });
-
-  // ---------------------------------------------------------------------------
   // TC send-terminal-selection-011 ("Send Selection" visible when unbound;
   // clicking opens destination picker and delivers to picked destination —
   // parity with the editor family, which never gates on rangelink.isBound)

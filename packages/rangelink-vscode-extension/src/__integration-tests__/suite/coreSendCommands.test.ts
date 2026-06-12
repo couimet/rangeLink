@@ -329,6 +329,44 @@ standardSuite('Core Send Commands', (ss) => {
     ss.log('✓ R-L with no destination opens picker (log-based)');
   });
 
+  test('[assisted] send-terminal-selection-010: Self-paste via R-V — bound terminal selection is sent back to itself', async () => {
+    const terminalName = 'rl-sts-010';
+    const capturing = await ss.createAndBindCapturingTerminal(terminalName);
+    const markerText = 'STS_010_SELF_PASTE_MARKER';
+    capturing.terminal.sendText(markerText, false);
+    await ss.settle(TERMINAL_READY_MS);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-sts-010")',
+      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-sts-010');
+    capturing.clearCaptured();
+
+    await waitForHuman(
+      'send-terminal-selection-010',
+      `In "${terminalName}", select "${markerText}" and press Cmd+R Cmd+V (R-V).`,
+      [
+        `Destination: Terminal "${terminalName}" IS the bound destination (the SAME terminal we will select from).`,
+        `1. Click into "${terminalName}" to give it focus`,
+        `2. Drag-select "${markerText}" in the terminal buffer`,
+        '3. Press Cmd+R Cmd+V',
+        'The right-click menu intentionally hides "Send Selected Text" here (self-paste gate). The R-V keybinding bypasses that gate and pastes the selection BACK into the same terminal.',
+      ],
+    );
+
+    assertTerminalBufferContains(capturing.getCapturedText(), markerText);
+
+    ss.log('✓ Self-paste via R-V: selection echoed back into bound terminal buffer (pty-captured)');
+  });
+
   test('core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
     const fileUri = ss.createWorkspaceFile('csc-r-p-001', 'test content\n');
     const doc = await vscode.workspace.openTextDocument(fileUri);

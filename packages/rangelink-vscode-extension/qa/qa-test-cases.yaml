@@ -1273,8 +1273,8 @@ test_cases:
     labels:
       - clipboard
     feature: 'send-terminal-selection'
-    scenario: 'Self-paste: bound terminal sends its own selection to itself (no self-paste guard)'
-    expected_result: 'Selected text is pasted back into the same terminal (documents current behavior; a terminal-specific self-paste guard is a potential future improvement).'
+    scenario: 'Self-paste via R-V keybinding: bound terminal sends its own selection to itself'
+    expected_result: 'Selected text is pasted back into the same terminal. The right-click menu hides the entry via `!rangelink.isActiveTerminalPasteDestination`, but the R-V keybinding dispatches the command directly and bypasses the when-clause — self-paste via R-V is intentional.'
     automated: assisted
 
   - id: send-terminal-selection-011
