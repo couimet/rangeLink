@@ -146,7 +146,7 @@ fi
 
 # Inject the QA issue URL into the instructions file.
 sed -i.bak \
-  -e "s|qa_issue_url: ['\"].*['\"]|qa_issue_url: \"$QA_ISSUE_URL\"|" \
+  -e "s|qa_issue_url: ['\"].*['\"]|qa_issue_url: '$QA_ISSUE_URL'|" \
   -e "s|\*\*QA tracker:\*\* .*|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
   "$INSTRUCTIONS_FILE" && rm -f "${INSTRUCTIONS_FILE}.bak"
 
