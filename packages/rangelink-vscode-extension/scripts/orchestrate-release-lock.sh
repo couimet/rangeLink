@@ -193,11 +193,23 @@ EOF
 
 echo -e "${GREEN}Commit message: $(basename "$COMMIT_MSG_FILE")${NC}"
 
+EXISTING_PR=$(gh pr list --head "$RELEASE_BRANCH" --json url --jq '.[0].url // empty' 2>/dev/null)
+
 # Post the workflow instructions as a comment on the QA issue so they are
 # visible alongside the checkboxes — no need to switch between the issue
 # and the instructions file. The commit message path is now known, so the
 # comment includes the exact copy-paste commands.
 COMMIT_MSG_REL="${COMMIT_MSG_FILE#"$REPO_ROOT"/}"
+
+if [[ -n "$EXISTING_PR" ]]; then
+  PR_COMMENT_STEP="- [ ] Existing PR: ${EXISTING_PR}"
+else
+  PR_COMMENT_STEP="- [ ] Create PR:
+  \`\`\`
+  gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
+  \`\`\`"
+fi
+
 gh issue comment "$QA_ISSUE_URL" --body "## Workflow
 
 - [ ] Commit:
@@ -208,10 +220,7 @@ gh issue comment "$QA_ISSUE_URL" --body "## Workflow
   \`\`\`
   git push $PUSH_FLAGS origin $RELEASE_BRANCH
   \`\`\`
-- [ ] Create PR:
-  \`\`\`
-  gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
-  \`\`\`
+${PR_COMMENT_STEP}
 - [ ] Work through the checkboxes above — each row has the exact pnpm command
 - [ ] When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`"
 
@@ -223,6 +232,13 @@ echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"
 echo "  2. Commit: git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_FILE"
-echo "  3. Push and create PR: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
-echo "  4. Work through the QA issue tracker: ${QA_ISSUE_URL}"
-echo "  5. When QA is clean: pnpm release:prepare:vscode-extension"
+if [[ -n "$EXISTING_PR" ]]; then
+  echo "  3. Push: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
+  echo "  4. Existing PR: ${EXISTING_PR}"
+  N=5
+else
+  echo "  3. Push and create PR: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
+  N=4
+fi
+echo "  ${N}. Work through the QA issue tracker: ${QA_ISSUE_URL}"
+echo "  $((N+1)). When QA is clean: pnpm release:prepare:vscode-extension"

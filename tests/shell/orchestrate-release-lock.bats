@@ -54,9 +54,17 @@ ENDOFSTUB
   : > "$GIT_CALL_LOG"
 
   # gh stub that logs each call so tests can assert on the workflow comment body.
+  # Set EXISTING_PR_URL to make `gh pr list --head` return a PR URL.
   cat > "$STUB_DIR/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 echo "gh $*" >> "$GH_CALL_LOG"
+case "$*" in
+  *"pr list --head"*)
+    if [[ -n "${EXISTING_PR_URL:-}" ]]; then
+      echo "${EXISTING_PR_URL}"
+    fi
+    ;;
+esac
 exit 0
 GHSTUB
   chmod +x "$STUB_DIR/gh"
@@ -376,6 +384,31 @@ INSTEOF
   [[ "$body" =~ "gh pr create" ]]
   # Release step.
   [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
+}
+
+@test "workflow comment shows existing PR when PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export EXISTING_PR_URL="https://github.com/couimet/rangeLink/pull/42"
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  local body
+  body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
+  [[ "$body" =~ "Existing PR: https://github.com/couimet/rangeLink/pull/42" ]]
+  ! [[ "$body" =~ "gh pr create" ]]
+}
+
+@test "console summary shows existing PR when PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export EXISTING_PR_URL="https://github.com/couimet/rangeLink/pull/42"
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Existing PR: https://github.com/couimet/rangeLink/pull/42" ]]
+  ! [[ "$output" =~ "Push and create PR" ]]
 }
 
 @test "validate-qa-coverage passes: script continues" {
