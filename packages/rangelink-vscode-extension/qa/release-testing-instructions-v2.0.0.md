@@ -1,13 +1,13 @@
 ---
 version: 2.0.0
-qa_issue_url: 'https://github.com/couimet/rangeLink/issues/644'
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/645'
 generated: 2026-06-12T16:08:58Z
 ---
 
 # Release Testing: RangeLink VS Code Extension v2.0.0
 
 **Scope:** Changes from v1.0.0 → v2.0.0
-**QA tracker:** https://github.com/couimet/rangeLink/issues/644
+**QA tracker:** https://github.com/couimet/rangeLink/issues/645
 
 ## Next steps
 
