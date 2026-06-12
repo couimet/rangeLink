@@ -69,26 +69,47 @@ fi
 sed -i.bak "s/^## \[Unreleased\]$/## [${VERSION}]/" "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
 echo -e "${GREEN}Step 1: Finalized CHANGELOG — [Unreleased] → [${VERSION}]${NC}"
 
-# --- Step 2: Strip README <sup>Unreleased</sup> markers ---
+# --- Step 2: Update CHANGELOG reference links ---
+
+# Extract the previous version from the [Unreleased] compare URL, e.g.:
+#   [Unreleased]: https://...compare/vscode-extension-v1.0.0...HEAD
+# gives PREV=1.0.0. This is used to build the new [VERSION] link.
+PREV=$(sed -n 's/^\[Unreleased\]: .*compare\/vscode-extension-v\([0-9.]*\)\.\.\.HEAD$/\1/p' "$CHANGELOG")
+if [[ -z "$PREV" ]]; then
+  echo -e "${RED}Error: Could not extract previous version from [Unreleased] reference link in $CHANGELOG${NC}" >&2
+  exit 1
+fi
+
+sed -i.bak \
+  -e "s|^\[Unreleased\]: \(.*compare/\)vscode-extension-v${PREV}\(...HEAD\)$|[Unreleased]: \1vscode-extension-v${VERSION}\2|" \
+  "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
+
+# Append the new version link after the [Unreleased] line so newer links stay at the top.
+sed -i.bak "/^\[Unreleased\]:/a\\
+[${VERSION}]: https://github.com/couimet/rangelink/compare/vscode-extension-v${PREV}...vscode-extension-v${VERSION}" "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
+
+echo -e "${GREEN}Step 2: Updated CHANGELOG reference links — Unreleased → v${VERSION}, added [${VERSION}]${NC}"
+
+# --- Step 3: Strip README <sup>Unreleased</sup> markers ---
 
 sed -i.bak 's/<sup>Unreleased<\/sup>//g' "$README" && rm -f "${README}.bak"
-echo -e "${GREEN}Step 2: Stripped <sup>Unreleased</sup> markers from README${NC}"
+echo -e "${GREEN}Step 3: Stripped <sup>Unreleased</sup> markers from README${NC}"
 
-# --- Step 3: Strip README > [!IMPORTANT] banner ---
+# --- Step 4: Strip README > [!IMPORTANT] banner ---
 
 sed -i.bak '/^> \[!IMPORTANT\]/,/^$/d' "$README" && rm -f "${README}.bak"
-echo -e "${GREEN}Step 3: Removed [!IMPORTANT] banner from README${NC}"
+echo -e "${GREEN}Step 4: Removed [!IMPORTANT] banner from README${NC}"
 
-# --- Step 4: Format with prettier ---
+# --- Step 5: Format with prettier ---
 
 cd "$REPO_ROOT"
 npx prettier --write "$README" "$CHANGELOG" > /dev/null 2>&1
 cd "$PACKAGE_DIR"
 
-# --- Step 5: Generate publishing instructions ---
+# --- Step 6: Generate publishing instructions ---
 
 "$SCRIPT_DIR/generate-publishing-instructions.sh"
-echo -e "${GREEN}Step 4: Generated publishing instructions${NC}"
+echo -e "${GREEN}Step 6: Generated publishing instructions${NC}"
 
 echo ""
 echo -e "${GREEN}Release v${VERSION} finalized. Publishing instructions are ready.${NC}"

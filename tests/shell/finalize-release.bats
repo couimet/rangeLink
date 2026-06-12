@@ -70,6 +70,9 @@ EOF
 ### Added
 
 - New feature
+
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
+[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 EOF
   write_readme <<'EOF'
 # My Extension
@@ -89,6 +92,10 @@ EOF
   # CHANGELOG: [Unreleased] → [2.0.0].
   [[ ! "$(grep -c '^## \[Unreleased\]$' "$FIXTURE_ROOT/CHANGELOG.md" || true)" -gt 0 ]]
   grep -q '^## \[2.0.0\]$' "$FIXTURE_ROOT/CHANGELOG.md"
+
+  # CHANGELOG: reference links updated.
+  grep -q '^\[Unreleased\]: https://github.com/couimet/rangelink/compare/vscode-extension-v2\.0\.0\.\.\.HEAD$' "$FIXTURE_ROOT/CHANGELOG.md"
+  grep -q '^\[2\.0\.0\]: https://github.com/couimet/rangelink/compare/vscode-extension-v1\.0\.0\.\.\.vscode-extension-v2\.0\.0$' "$FIXTURE_ROOT/CHANGELOG.md"
 
   # README: no <sup>Unreleased</sup> markers remain.
   ! grep -q '<sup>Unreleased</sup>' "$FIXTURE_ROOT/README.md"
@@ -112,7 +119,16 @@ test_cases:
   - id: foo-001
 EOF
   write_changelog <<'EOF'
+# Changelog
+
 ## [Unreleased]
+
+### Added
+
+- New feature
+
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
+[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 EOF
   write_readme <<'EOF'
 # My Extension
@@ -211,6 +227,16 @@ EOF
 test_cases: []
 EOF
   write_changelog <<'EOF'
+# Changelog
+
+## [Unreleased]
+
+### Added
+
+- New feature
+
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
+[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 ## [1.0.0]
 
 ### Added
@@ -239,6 +265,16 @@ EOF
 test_cases: []
 EOF
   write_changelog <<'EOF'
+# Changelog
+
+## [Unreleased]
+
+### Added
+
+- New feature
+
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
+[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 ## [Unreleased]
 EOF
   write_readme <<'EOF'
