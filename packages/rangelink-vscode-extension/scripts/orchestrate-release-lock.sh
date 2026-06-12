@@ -237,8 +237,9 @@ if [[ -n "$EXISTING_PR" ]]; then
   echo "  4. Existing PR: ${EXISTING_PR}"
   N=5
 else
-  echo "  3. Push and create PR: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
-  N=4
+  echo "  3. Push: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
+  echo "  4. Create PR: gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_FILE"
+  N=5
 fi
 echo "  ${N}. Work through the QA issue tracker: ${QA_ISSUE_URL}"
 echo "  $((N+1)). When QA is clean: pnpm release:prepare:vscode-extension"

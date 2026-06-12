@@ -408,6 +408,18 @@ INSTEOF
   run "$SCRIPT" "1.0.0"
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Existing PR: https://github.com/couimet/rangeLink/pull/42" ]]
+  ! [[ "$output" =~ "Create PR:" ]]
+}
+
+@test "console summary shows separate push and create-PR steps when no PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  unset EXISTING_PR_URL
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "3. Push: git push" ]]
+  [[ "$output" =~ "4. Create PR: gh pr create --title \"[release] Lock version v1.0.0\"" ]]
   ! [[ "$output" =~ "Push and create PR" ]]
 }
 
