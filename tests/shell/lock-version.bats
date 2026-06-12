@@ -62,7 +62,7 @@ if [[ -n "$VERSION_ARG" ]]; then
   cat > "$QA_DIR/release-testing-instructions-v${VERSION_ARG}.md" <<EOF
 ---
 version: ${VERSION_ARG}
-qa_issue_url: ""
+qa_issue_url: ''
 generated: 2026-06-11T00:00:00Z
 ---
 
@@ -82,7 +82,7 @@ else
   cat > "$QA_DIR/release-testing-instructions-unreleased.md" <<EOF
 ---
 version: 1.0.0
-qa_issue_url: ""
+qa_issue_url: ''
 generated: 2026-06-11T00:00:00Z
 ---
 
