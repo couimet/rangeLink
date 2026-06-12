@@ -212,6 +212,8 @@ fi
 
 gh issue comment "$QA_ISSUE_URL" --body "## Workflow
 
+All steps below run on the \`$RELEASE_BRANCH\` branch. When QA is clean, \`pnpm release:prepare:vscode-extension\` will date the CHANGELOG, strip unreleased markers from the README, and generate \`publishing-instructions/publish-vscode-extension-v${VERSION}.md\`. Commit those changes, push, merge the PR to main, then follow the generated publishing instructions.
+
 - [ ] Commit:
   \`\`\`
   git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_REL
