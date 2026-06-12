@@ -204,6 +204,34 @@ INSTEOF
   grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
 }
 
+@test "re-run: delete path — supersedes prior issue when old instructions had a URL" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="some-other-branch"
+
+  # Write instructions with a prior qa_issue_url (simulating previous run).
+  local ins="$FIXTURE_ROOT/qa/release-testing-instructions-v1.0.0.md"
+  mkdir -p "$(dirname "$ins")"
+  cat > "$ins" <<'INSTEOF'
+---
+version: 1.0.0
+qa_issue_url: "https://github.com/couimet/rangeLink/issues/888"
+generated: 2026-01-01T00:00:00Z
+---
+
+# Release Testing: Placeholder
+
+**Scope:** Changes from v1.0.0 → v1.0.0
+**QA tracker:** https://github.com/couimet/rangeLink/issues/888
+INSTEOF
+
+  # 'd' (delete) + 'n' (no checkout main).
+  run bash -c 'echo -e "d\nn" | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Prior QA issue found" ]]
+  [[ "$output" =~ "Closed prior issue" ]]
+}
+
 @test "re-run: prompts when branch exists — abort" {
   setup_fixture
   export GIT_BRANCH_EXISTS=0
@@ -281,6 +309,8 @@ INSTEOF
   local body
   body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
 
+  # Fenced code blocks (triple backticks) for GitHub copy buttons.
+  [[ "$body" =~ '```' ]]
   # Commit step with pre-generated file path.
   [[ "$body" =~ "git add -u && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
   # Push step with branch name.
