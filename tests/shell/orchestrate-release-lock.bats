@@ -115,7 +115,7 @@ STUBEOF
 
   local ins="$FIXTURE_ROOT/qa/release-testing-instructions-v1.0.0.md"
   [[ -f "$ins" ]]
-  grep -q 'qa_issue_url: "https://github.com/couimet/rangeLink/issues/999"' "$ins"
+  grep -q "qa_issue_url: 'https://github.com/couimet/rangeLink/issues/999'" "$ins"
   grep -q '\*\*QA tracker:\*\* https://github.com/couimet/rangeLink/issues/999' "$ins"
 }
 
@@ -144,7 +144,7 @@ STUBEOF
   cat > "$ins" <<'INSTEOF'
 ---
 version: 1.0.0
-qa_issue_url: "https://github.com/couimet/rangeLink/issues/888"
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
 generated: 2026-01-01T00:00:00Z
 ---
 
@@ -171,7 +171,7 @@ INSTEOF
   cat > "$ins" <<'INSTEOF'
 ---
 version: 1.0.0
-qa_issue_url: "https://github.com/couimet/rangeLink/issues/888"
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
 generated: 2026-01-01T00:00:00Z
 ---
 
@@ -185,7 +185,7 @@ INSTEOF
   [[ "$status" -eq 0 ]]
 
   # Old URL should be replaced with new URL.
-  grep -q 'qa_issue_url: "https://github.com/couimet/rangeLink/issues/999"' "$ins"
+  grep -q "qa_issue_url: 'https://github.com/couimet/rangeLink/issues/999'" "$ins"
   grep -q '\*\*QA tracker:\*\* https://github.com/couimet/rangeLink/issues/999' "$ins"
   ! grep -q 'issues/888' "$ins"
 }
@@ -229,7 +229,7 @@ INSTEOF
   cat > "$ins" <<'INSTEOF'
 ---
 version: 1.0.0
-qa_issue_url: "https://github.com/couimet/rangeLink/issues/888"
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
 generated: 2026-01-01T00:00:00Z
 ---
 
