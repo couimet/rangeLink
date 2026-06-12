@@ -65,7 +65,7 @@ if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; the
         echo -e "${YELLOW}Deleting $RELEASE_BRANCH...${NC}"
         # Snapshot the prior QA issue before the instructions file is destroyed.
         if [[ -f "$INSTRUCTIONS_FILE" ]]; then
-          PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed 's/qa_issue_url: *"*//;s/"$//')
+          PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed "s/qa_issue_url: *['\"]*//;s/['\"]$//")
         fi
         git -C "$REPO_ROOT" branch -D "$RELEASE_BRANCH"
         if [[ "$CURRENT_BRANCH" != "main" ]]; then
@@ -114,7 +114,7 @@ echo ""
 # Only discover from the current instructions file if the "d"elete path
 # didn't already snapshot it before destroying the old branch.
 if [[ -z "${PRIOR_ISSUE_URL:-}" ]] && [[ -f "$INSTRUCTIONS_FILE" ]]; then
-  PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed 's/qa_issue_url: *"*//;s/"$//')
+  PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed "s/qa_issue_url: *['\"]*//;s/['\"]$//")
 fi
 
 # --- Step 3: Generate QA issue ---
@@ -146,7 +146,7 @@ fi
 
 # Inject the QA issue URL into the instructions file.
 sed -i.bak \
-  -e "s|qa_issue_url: \".*\"|qa_issue_url: \"$QA_ISSUE_URL\"|" \
+  -e "s|qa_issue_url: ['\"].*['\"]|qa_issue_url: \"$QA_ISSUE_URL\"|" \
   -e "s|\*\*QA tracker:\*\* .*|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
   "$INSTRUCTIONS_FILE" && rm -f "${INSTRUCTIONS_FILE}.bak"
 

@@ -50,7 +50,7 @@ GENERATED_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 cat > "$OUTPUT_FILE" <<EOF
 ---
 version: ${VERSION_ARG:-$PUBLISHED_VERSION}
-qa_issue_url: ""
+qa_issue_url: ''
 generated: ${GENERATED_TS}
 ---
 

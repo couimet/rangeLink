@@ -71,7 +71,7 @@ if [[ ! -f "$INSTRUCTIONS_FILE" ]]; then
   cat > "$INSTRUCTIONS_FILE" <<'INSTEOF'
 ---
 version: PLACEHOLDER
-qa_issue_url: ""
+qa_issue_url: ''
 generated: 2026-01-01T00:00:00Z
 ---
 
