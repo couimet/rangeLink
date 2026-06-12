@@ -52,17 +52,17 @@ if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; the
   if [[ "$CURRENT_BRANCH" != "$RELEASE_BRANCH" ]]; then
     echo -e "${YELLOW}Branch $RELEASE_BRANCH already exists (current: $CURRENT_BRANCH).${NC}"
     printf 'Checkout %s and re-run, delete it and start fresh, or abort? [C/d/a] ' "$RELEASE_BRANCH"
-    read -r REPLY
+    read -r REPLY || true
     case "$REPLY" in
       [dD])
         echo -e "${YELLOW}Deleting $RELEASE_BRANCH...${NC}"
         git -C "$REPO_ROOT" branch -D "$RELEASE_BRANCH"
         if [[ "$CURRENT_BRANCH" != "main" ]]; then
           printf 'Checkout main and pull --rebase? [Y/n] '
-          read -r REPLY2
+          read -r REPLY2 || true
           if [[ -z "$REPLY2" || "$REPLY2" =~ ^[Yy]$ ]]; then
             git -C "$REPO_ROOT" checkout main
-            git -C "$REPO_ROOT" pull --rebase
+            git -C "$REPO_ROOT" pull --rebase origin main
           fi
         fi
         git -C "$REPO_ROOT" checkout -b "$RELEASE_BRANCH" main
@@ -78,7 +78,7 @@ if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; the
         printf 'Pull --rebase from main? [Y/n] '
         read -r REPLY2
         if [[ -z "$REPLY2" || "$REPLY2" =~ ^[Yy]$ ]]; then
-          git -C "$REPO_ROOT" pull --rebase main
+          git -C "$REPO_ROOT" pull --rebase origin main
         fi
         ;;
     esac

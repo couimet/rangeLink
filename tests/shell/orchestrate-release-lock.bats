@@ -20,6 +20,7 @@ setup_fixture() {
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
+echo "git $*" >> "$GIT_CALL_LOG"
 case "$*" in
   *--show-toplevel*) echo "$FIXTURE_ROOT_FOR_GIT" ;;
   *"status"*) [[ "$GIT_STATUS_DIRTY" -eq 1 ]] && echo "?? dirty" ; exit 0 ;;
@@ -33,6 +34,8 @@ case "$*" in
 esac
 ENDOFSTUB
   export FIXTURE_ROOT_FOR_GIT="$FIXTURE_ROOT"
+  export GIT_CALL_LOG="$FIXTURE_ROOT/git-calls.log"
+  : > "$GIT_CALL_LOG"
 
   # gh stub that logs each call so tests can assert on the workflow comment body.
   cat > "$STUB_DIR/gh" <<'GHSTUB'
@@ -180,10 +183,12 @@ INSTEOF
   export GIT_BRANCH_EXISTS=0
   export GIT_CURRENT_BRANCH="some-other-branch"
 
-  # Pipe 'c' (checkout) + 'n' (no pull) to skip interactive prompts.
+  # Pipe 'c' (checkout) + 'n' (no pull).
   run bash -c 'echo -e "c\nn" | '"$SCRIPT"' 1.0.0'
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Branch release/v1.0.0 already exists" ]]
+  grep -q 'checkout release/v1.0.0' "$GIT_CALL_LOG"
+  ! grep -q 'pull --rebase' "$GIT_CALL_LOG"
 }
 
 @test "re-run: prompts when branch exists — delete and start fresh" {
@@ -191,10 +196,12 @@ INSTEOF
   export GIT_BRANCH_EXISTS=0
   export GIT_CURRENT_BRANCH="some-other-branch"
 
-  # Pipe 'd' (delete) + 'n' (no checkout main) to skip prompts.
+  # Pipe 'd' (delete) + 'n' (no checkout main).
   run bash -c 'echo -e "d\nn" | '"$SCRIPT"' 1.0.0'
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Deleting release/v1.0.0" ]]
+  grep -q 'branch -D release/v1.0.0' "$GIT_CALL_LOG"
+  grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
 }
 
 @test "re-run: prompts when branch exists — abort" {
@@ -217,6 +224,8 @@ INSTEOF
   run bash -c 'echo -e "\n" | '"$SCRIPT"' 1.0.0'
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Checking out release/v1.0.0" ]]
+  grep -q 'checkout release/v1.0.0' "$GIT_CALL_LOG"
+  grep -q 'pull --rebase origin main' "$GIT_CALL_LOG"
 }
 
 @test "re-run: delete path — default yes to checkout main and pull" {
@@ -229,6 +238,9 @@ INSTEOF
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Deleting release/v1.0.0" ]]
   [[ "$output" =~ "Created branch release/v1.0.0 from main" ]]
+  grep -q 'checkout main' "$GIT_CALL_LOG"
+  grep -q 'pull --rebase origin main' "$GIT_CALL_LOG"
+  grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
 }
 
 # ── Commit message numbering ──────────────────────────────────────────────────────
