@@ -79,7 +79,7 @@ standardSuite('Dirty Buffer Warning', (ss) => {
 
     await waitForHuman(
       'dirty-buffer-warning-008',
-      'R-F on dirty file with warnOnDirtyBuffer=false',
+      'R-F on dirty file with warnOnDirtyBuffer=false, bind to "dirty-buffer-test" terminal',
       [
         'Press Cmd+R Cmd+F to send the file path.',
         'When the destination picker appears, select "dirty-buffer-test" terminal.',

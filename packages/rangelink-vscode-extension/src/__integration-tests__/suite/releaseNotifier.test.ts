@@ -84,6 +84,14 @@ standardSuite('Release Notifier', (ss) => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion('0.0.0');
 
+    ss.expectModalDialogs([
+      {
+        level: 'info',
+        message: `RangeLink updated to v${getExtensionVersion()}. See what changed!`,
+        items: ["What's New", 'Skip for this version'],
+      },
+    ]);
+
     const logCapture = getLogCapture();
     logCapture.mark('before-003');
 
@@ -135,6 +143,14 @@ standardSuite('Release Notifier', (ss) => {
   test("[assisted] release-notifier-004: clicking What's New stores version and opens GitHub releases in browser", async () => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion('0.0.0');
+
+    ss.expectModalDialogs([
+      {
+        level: 'info',
+        message: `RangeLink updated to v${getExtensionVersion()}. See what changed!`,
+        items: ["What's New", 'Skip for this version'],
+      },
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-004');
@@ -198,6 +214,14 @@ standardSuite('Release Notifier', (ss) => {
   test('[assisted] release-notifier-005: clicking Skip for this version stores version without opening browser', async () => {
     const notifier = getReleaseNotifier();
     await notifier.setLastNotifiedVersion('0.0.0');
+
+    ss.expectModalDialogs([
+      {
+        level: 'info',
+        message: `RangeLink updated to v${getExtensionVersion()}. See what changed!`,
+        items: ["What's New", 'Skip for this version'],
+      },
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-005');

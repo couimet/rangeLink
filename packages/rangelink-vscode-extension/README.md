@@ -11,10 +11,6 @@
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
 > **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
-> [!IMPORTANT]
-> This documentation is for the `main` branch and may include unreleased features marked with <sup>Unreleased</sup>.
-> Install the latest published version from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) or [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension) (Cursor) for currently available features.
-
 ## Why RangeLink?
 
 Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
@@ -45,7 +41,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 
 ### Perfect For
 
-- 🤖 **AI assistants** — Claude Code (extension or terminal), Gemini Code Assist, Cursor AI, Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with _exact_ context + clickable navigation
+- 🤖 **AI assistants** — Claude Code (extension or terminal), Gemini Code Assist, Cursor AI, Copilot, plus any custom AI tool via settings — with _exact_ context + clickable navigation
 - 💻 **Terminal AI tools** — Claude Code CLI, gemini-cli, or any terminal-based AI workflow — links paste at your cursor and the terminal auto-focuses
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team collaboration** — Universal format everyone can use and navigate
@@ -134,11 +130,11 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 When you close the bound file, RangeLink auto-unbinds with a notification. If the bound file is hidden behind other tabs, RangeLink automatically brings it to the foreground during paste.
 
-**File Picker** <sup>Unreleased</sup>: In the destination picker and RangeLink Menu, open text editor files appear as individual items. The active (frontmost) file per tab group is shown inline; if you have more open files, they collapse into "More files..." which opens a secondary picker organized into "Active Files" and per-"Tab Group N" sections. The currently bound file is marked "bound" and sorted to the top.
+**File Picker** : In the destination picker and RangeLink Menu, open text editor files appear as individual items. The active (frontmost) file per tab group is shown inline; if you have more open files, they collapse into "More files..." which opens a secondary picker organized into "Active Files" and per-"Tab Group N" sections. The currently bound file is marked "bound" and sorted to the top.
 
 **Pro tip:** Split your editor into two panes (side-by-side or vertical) for the smoothest workflow — browse code on one side, build your prompt on the other. No tab switching needed.
 
-#### AI Assistants (Built-in + Custom) <sup>Unreleased</sup>
+#### AI Assistants (Built-in + Custom)
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
@@ -151,7 +147,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
 
-**Bring Your Own AI Assistant** <sup>Unreleased</sup>: Any VS Code extension that exposes a focus command or a text-insertion command can be integrated as a RangeLink destination via settings. Three delivery tiers are supported — from direct text injection to manual paste — so RangeLink adapts to each extension's capabilities. See [Custom AI Assistant Settings](#custom-ai-assistant-settings-unreleased) for configuration details.
+**Bring Your Own AI Assistant** : Any VS Code extension that exposes a focus command or a text-insertion command can be integrated as a RangeLink destination via settings. Three delivery tiers are supported — from direct text injection to manual paste — so RangeLink adapts to each extension's capabilities. See [Custom AI Assistant Settings](#custom-ai-assistant-settings) for configuration details.
 
 **How it works:**
 
@@ -186,7 +182,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 - **Cmd+Click** to jump to code
 - **Perfect for scratchpads** - Validate links before sending to claude-code
 
-#### Plain File Path Navigation <sup>Unreleased</sup>
+#### Plain File Path Navigation
 
 Plain file paths (without `#L` suffix) are also clickable — anywhere RangeLinks are detected:
 
@@ -194,7 +190,7 @@ Plain file paths (without `#L` suffix) are also clickable — anywhere RangeLink
 - **Supported formats:** absolute (`/path/to/file.ts`), relative (`./file.ts`, `../file.ts`), tilde (`~/file.ts`), and quoted paths with spaces (`"/path/with spaces/file.ts"`)
 - **Validate on click:** detection is instant; file existence is only checked when you click
 
-#### Go to Link <sup>Unreleased</sup>
+#### Go to Link
 
 **Have a RangeLink but no clickable context?** Paste or type it directly:
 
@@ -206,7 +202,7 @@ Plain file paths (without `#L` suffix) are also clickable — anywhere RangeLink
 
 ---
 
-### ⚡ RangeLink Menu <sup>Unreleased</sup>
+### ⚡ RangeLink Menu
 
 Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink** item in the status bar to access quick actions:
 
@@ -271,36 +267,36 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "RangeLink".
 
-| Command                                                 | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                                  |
-| ------------------------------------------------------- | ------------------- | --------------------- | ------------------------------------------------------------ |
-| Open Menu <sup>Unreleased</sup>                         | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                      |
-| Send RangeLink <sup>Unreleased</sup>                    | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                               |
-| Send RangeLink (Absolute) <sup>Unreleased</sup>         | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination                 |
-| Send Portable Link <sup>Unreleased</sup>                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination                 |
-| Send Portable Link (Absolute) <sup>Unreleased</sup>     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
-| Copy RangeLink                                          | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                    |
-| Copy RangeLink (Absolute)                               | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)      |
-| Send Selected Text                                      | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination             |
-| Send Current File Path <sup>Unreleased</sup>            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination               |
-| Send Current File Path (Absolute) <sup>Unreleased</sup> | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
-| Bind to Destination <sup>Unreleased</sup>               | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
-| Bind to Claude Code                                     | —                   | —                     | Auto-send links to Claude Code chat                          |
-| Bind to Gemini Code Assist <sup>Unreleased</sup>        | —                   | —                     | Auto-send links to Gemini Code Assist chat                   |
-| Bind to Cursor AI                                       | —                   | —                     | Auto-send links to Cursor AI chat                            |
-| Bind to GitHub Copilot Chat                             | —                   | —                     | Auto-send links to Copilot Chat                              |
-| Bind to Terminal                                        | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
-| Bind to Text Editor                                     | —                   | —                     | Auto-paste links at insertion point in bound text editor     |
-| Jump to Bound Destination                               | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                       |
-| Go to Link <sup>Unreleased</sup>                        | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location           |
-| Unbind <sup>Unreleased</sup>                            | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination                 |
-| Show Version Info                                       | —                   | —                     | Display version and build info                               |
+| Command                           | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                                  |
+| --------------------------------- | ------------------- | --------------------- | ------------------------------------------------------------ |
+| Open Menu                         | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                      |
+| Send RangeLink                    | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                               |
+| Send RangeLink (Absolute)         | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination                 |
+| Send Portable Link                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination                 |
+| Send Portable Link (Absolute)     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
+| Copy RangeLink                    | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                    |
+| Copy RangeLink (Absolute)         | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)      |
+| Send Selected Text                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination             |
+| Send Current File Path            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination               |
+| Send Current File Path (Absolute) | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
+| Bind to Destination               | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
+| Bind to Claude Code               | —                   | —                     | Auto-send links to Claude Code chat                          |
+| Bind to Gemini Code Assist        | —                   | —                     | Auto-send links to Gemini Code Assist chat                   |
+| Bind to Cursor AI                 | —                   | —                     | Auto-send links to Cursor AI chat                            |
+| Bind to GitHub Copilot Chat       | —                   | —                     | Auto-send links to Copilot Chat                              |
+| Bind to Terminal                  | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
+| Bind to Text Editor               | —                   | —                     | Auto-paste links at insertion point in bound text editor     |
+| Jump to Bound Destination         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                       |
+| Go to Link                        | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location           |
+| Unbind                            | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination                 |
+| Show Version Info                 | —                   | —                     | Display version and build info                               |
 
 <!-- TODO: #366 unhide when bookmarks graduates from beta — re-add these rows to the Commands table above
 | Save Selection as Bookmark <sup>Unreleased</sup>         | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks <sup>Unreleased</sup>                     | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
 -->
 
-#### Terminal-Aware Keybindings <sup>Unreleased</sup>
+#### Terminal-Aware Keybindings
 
 When the terminal has focus with text selected, R-V sends the terminal selection to your bound destination. Other R-keybindings (R-L, R-C) gracefully guide you back to R-V instead of silently doing nothing.
 
@@ -310,7 +306,7 @@ When the terminal has focus with text selected, R-V sends the terminal selection
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 
-### Context Menus <sup>Unreleased</sup>
+### Context Menus
 
 RangeLink integrates directly into VSCode's right-click menus for fast, keyboard-free workflows. Items are positioned near related VSCode commands for discoverability.
 
@@ -372,7 +368,7 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
-### Custom AI Assistant Settings <sup>Unreleased</sup>
+### Custom AI Assistant Settings
 
 | Setting                        | Default | Description                                          |
 | ------------------------------ | ------- | ---------------------------------------------------- |
@@ -421,7 +417,7 @@ At least one of the three command arrays must be present. RangeLink tries them i
 
 When `sparkAi.insertText` is registered (extension supports it), RangeLink uses direct insertion — no clipboard involved. If the command isn't available (older extension version), RangeLink falls back to the focus + manual paste flow automatically.
 
-**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Claude Code, Gemini Code Assist, Cursor, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
+**Overriding built-in assistants:** You can customize the built-in AI assistants (Claude Code, Gemini Code Assist, Cursor, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
 
 ```json
 {
@@ -454,7 +450,7 @@ Here `insertCommands` is tried first (Tier 1). If `myPlugin.sendToCopilot` isn't
 
 Run **Developer: Reload Window** (or restart VS Code) after changing this setting.
 
-### Destination Settings — Claude Code <sup>Unreleased</sup>
+### Destination Settings — Claude Code
 
 | Setting                                                   | Default | Description                                                                                       |
 | --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
@@ -463,7 +459,7 @@ Run **Developer: Reload Window** (or restart VS Code) after changing this settin
 
 On first use after binding, the Claude Code chat panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
 
-### Destination Settings — Gemini Code Assist <sup>Unreleased</sup>
+### Destination Settings — Gemini Code Assist
 
 | Setting                                               | Default | Description                                                                                  |
 | ----------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
@@ -472,7 +468,7 @@ On first use after binding, the Claude Code chat panel needs time to initialize.
 
 On first use after binding, Gemini Code Assist's webview panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
 
-### Clipboard Settings <sup>Unreleased</sup>
+### Clipboard Settings
 
 | Setting                        | Default    | Description                                            |
 | ------------------------------ | ---------- | ------------------------------------------------------ |
@@ -483,7 +479,7 @@ On first use after binding, Gemini Code Assist's webview panel needs time to ini
 - `"always"` _(default)_ — Before each operation that uses the clipboard as transport (R-L, R-V, R-F), your prior clipboard content is saved and restored afterward. Your clipboard is only permanently overwritten by R-C (Copy RangeLink), where the clipboard is the intended output.
 - `"never"` — Disables preservation. Your clipboard always contains the last RangeLink output, matching the behavior of versions before this setting was introduced.
 
-### Smart Padding Settings <sup>Unreleased</sup>
+### Smart Padding Settings
 
 | Setting                                | Default  | Description                               |
 | -------------------------------------- | -------- | ----------------------------------------- |
@@ -499,7 +495,7 @@ On first use after binding, Gemini Code Assist's webview panel needs time to ini
 
 Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
 
-### Feedback & Warning Settings <sup>Unreleased</sup>
+### Feedback & Warning Settings
 
 | Setting                                    | Default | Description                                                                                                   |
 | ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
@@ -511,7 +507,7 @@ When `warnOnDirtyBuffer` is enabled and a file has unsaved changes, a dialog app
 
 Set the navigation settings to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
 
-### Terminal Picker Settings <sup>Unreleased</sup>
+### Terminal Picker Settings
 
 | Setting                              | Default | Description                                                              |
 | ------------------------------------ | ------- | ------------------------------------------------------------------------ |

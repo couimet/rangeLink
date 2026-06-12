@@ -19,6 +19,7 @@ setup_fixture() {
   export GIT_BRANCH_EXISTS=1    # 0 = exists, 1 = does not exist
   export GIT_CURRENT_BRANCH="main"
   export GIT_STATUS_DIRTY=0     # 0=clean, 1=arbitrary dirty, 2=artifact-only
+  export GIT_REMOTE_BRANCH_EXISTS=0  # 0=no, 1=yes
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
@@ -42,6 +43,7 @@ case "$*" in
   *"branch -D"*) exit 0 ;;
   *"checkout"*) echo "Switched to branch" ;;
   *"pull --rebase"*) exit 0 ;;
+  *"ls-remote"*) [[ "$GIT_REMOTE_BRANCH_EXISTS" -eq 1 ]] && echo "refs/heads/release/v1.0.0" ; exit 0 ;;
   *"rev-parse --verify"*) exit "$GIT_BRANCH_EXISTS" ;;
   *"branch --show-current"*) echo "$GIT_CURRENT_BRANCH" ;;
   *) exit 0 ;;
@@ -52,9 +54,17 @@ ENDOFSTUB
   : > "$GIT_CALL_LOG"
 
   # gh stub that logs each call so tests can assert on the workflow comment body.
+  # Set EXISTING_PR_URL to make `gh pr list --head` return a PR URL.
   cat > "$STUB_DIR/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 echo "gh $*" >> "$GH_CALL_LOG"
+case "$*" in
+  *"pr list --head"*)
+    if [[ -n "${EXISTING_PR_URL:-}" ]]; then
+      echo "${EXISTING_PR_URL}"
+    fi
+    ;;
+esac
 exit 0
 GHSTUB
   chmod +x "$STUB_DIR/gh"
@@ -90,6 +100,14 @@ STUBEOF
 echo "Created QA issue: https://github.com/couimet/rangeLink/issues/999"
 STUBEOF
   chmod +x "$FIXTURE_ROOT/scripts/generate-qa-issue.sh"
+
+  # Stub validate-qa-coverage.sh (exits with QA_VALIDATE_EXIT).
+  cat > "$FIXTURE_ROOT/scripts/validate-qa-coverage.sh" <<'STUBEOF'
+#!/usr/bin/env bash
+exit "${QA_VALIDATE_EXIT:-0}"
+STUBEOF
+  chmod +x "$FIXTURE_ROOT/scripts/validate-qa-coverage.sh"
+  export QA_VALIDATE_EXIT=0
 }
 
 # ── First run (fresh branch) ───────────────────────────────────────────────────────
@@ -359,13 +377,82 @@ INSTEOF
   # Fenced code blocks (triple backticks) for GitHub copy buttons.
   [[ "$body" =~ '```' ]]
   # Commit step with pre-generated file path.
-  [[ "$body" =~ "git add -u && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
+  [[ "$body" =~ "git add -u && git add qa/release-testing-instructions-v1.0.0.md && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
   # Push step with branch name.
   [[ "$body" =~ "git push -u origin release/v1.0.0" ]]
   # PR creation step.
   [[ "$body" =~ "gh pr create" ]]
-  # Unit test, validate, and release steps.
-  [[ "$body" =~ "pnpm test" ]]
-  [[ "$body" =~ "pnpm validate:qa-coverage:vscode-extension" ]]
+  # Release step.
   [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
+}
+
+@test "workflow comment shows existing PR when PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export EXISTING_PR_URL="https://github.com/couimet/rangeLink/pull/42"
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  local body
+  body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
+  [[ "$body" =~ "Existing PR: https://github.com/couimet/rangeLink/pull/42" ]]
+  ! [[ "$body" =~ "gh pr create" ]]
+}
+
+@test "console summary shows existing PR when PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export EXISTING_PR_URL="https://github.com/couimet/rangeLink/pull/42"
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Existing PR: https://github.com/couimet/rangeLink/pull/42" ]]
+  ! [[ "$output" =~ "Create PR:" ]]
+}
+
+@test "console summary shows separate push and create-PR steps when no PR exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  unset EXISTING_PR_URL
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "3. Push: git push" ]]
+  [[ "$output" =~ "4. Create PR: gh pr create --title \"[release] Lock version v1.0.0\"" ]]
+  ! [[ "$output" =~ "Push and create PR" ]]
+}
+
+@test "validate-qa-coverage passes: script continues" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export QA_VALIDATE_EXIT=0
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "QA coverage validation passed" ]]
+}
+
+@test "validate-qa-coverage fails: script exits 1" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export QA_VALIDATE_EXIT=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "QA coverage validation failed" ]]
+}
+
+@test "push uses --force-with-lease when remote branch exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export GIT_REMOTE_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Remote branch origin/release/v1.0.0 exists" ]]
+
+  local body
+  body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
+  [[ "$body" =~ "git push -u --force-with-lease origin release/v1.0.0" ]]
 }

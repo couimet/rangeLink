@@ -104,6 +104,14 @@ else
   echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
 fi
 
+# --- Detect existing remote branch for push strategy ---
+
+PUSH_FLAGS="-u"
+if git -C "$REPO_ROOT" ls-remote --heads origin "$RELEASE_BRANCH" 2>/dev/null | grep -q "$RELEASE_BRANCH"; then
+  PUSH_FLAGS="-u --force-with-lease"
+  echo -e "${YELLOW}Remote branch origin/$RELEASE_BRANCH exists; push will use --force-with-lease.${NC}"
+fi
+
 # --- Step 1: Lock the version ---
 
 "$SCRIPT_DIR/lock-version.sh" "$VERSION"
@@ -152,7 +160,18 @@ sed -i.bak \
 
 echo -e "${GREEN}QA issue URL injected into instructions file.${NC}"
 
-# --- Step 5: Generate commit message ---
+# --- Step 5: Validate QA coverage ---
+
+echo -e "${GREEN}Step 5: Validating QA coverage...${NC}"
+
+if "$SCRIPT_DIR/validate-qa-coverage.sh" > /dev/null 2>&1; then
+  echo -e "${GREEN}QA coverage validation passed.${NC}"
+else
+  echo -e "${RED}QA coverage validation failed. Fix mismatches and re-run.${NC}" >&2
+  exit 1
+fi
+
+# --- Step 6: Generate commit message ---
 
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
@@ -174,28 +193,37 @@ EOF
 
 echo -e "${GREEN}Commit message: $(basename "$COMMIT_MSG_FILE")${NC}"
 
+EXISTING_PR=$(gh pr list --head "$RELEASE_BRANCH" --json url --jq '.[0].url // empty' 2>/dev/null)
+
 # Post the workflow instructions as a comment on the QA issue so they are
 # visible alongside the checkboxes — no need to switch between the issue
 # and the instructions file. The commit message path is now known, so the
 # comment includes the exact copy-paste commands.
 COMMIT_MSG_REL="${COMMIT_MSG_FILE#"$REPO_ROOT"/}"
+
+if [[ -n "$EXISTING_PR" ]]; then
+  PR_COMMENT_STEP="- [ ] Existing PR: ${EXISTING_PR}"
+else
+  PR_COMMENT_STEP="- [ ] Create PR:
+  \`\`\`
+  gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
+  \`\`\`"
+fi
+
 gh issue comment "$QA_ISSUE_URL" --body "## Workflow
+
+All steps below run on the \`$RELEASE_BRANCH\` branch. When QA is clean, \`pnpm release:prepare:vscode-extension\` will date the CHANGELOG, strip unreleased markers from the README, and generate \`publishing-instructions/publish-vscode-extension-v${VERSION}.md\`. Commit those changes, push, merge the PR to main, then follow the generated publishing instructions.
 
 - [ ] Commit:
   \`\`\`
-  git add -u && git commit -F $COMMIT_MSG_REL
+  git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_REL
   \`\`\`
 - [ ] Push:
   \`\`\`
-  git push -u origin $RELEASE_BRANCH
+  git push $PUSH_FLAGS origin $RELEASE_BRANCH
   \`\`\`
-- [ ] Create PR:
-  \`\`\`
-  gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
-  \`\`\`
-- [ ] \`pnpm test\` — unit tests + coverage gate
+${PR_COMMENT_STEP}
 - [ ] Work through the checkboxes above — each row has the exact pnpm command
-- [ ] \`pnpm validate:qa-coverage:vscode-extension\`
 - [ ] When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`"
 
 # --- Summary ---
@@ -205,7 +233,15 @@ echo -e "${GREEN}Release v${VERSION} locked on branch $RELEASE_BRANCH.${NC}"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"
-echo "  2. Commit: git add -u && git commit -F $COMMIT_MSG_FILE"
-echo "  3. Push and create PR: git push -u origin $RELEASE_BRANCH"
-echo "  4. Work through the QA issue tracker: ${QA_ISSUE_URL}"
-echo "  5. When QA is clean: pnpm release:prepare:vscode-extension"
+echo "  2. Commit: git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_FILE"
+if [[ -n "$EXISTING_PR" ]]; then
+  echo "  3. Push: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
+  echo "  4. Existing PR: ${EXISTING_PR}"
+  N=5
+else
+  echo "  3. Push: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
+  echo "  4. Create PR: gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_FILE"
+  N=5
+fi
+echo "  ${N}. Work through the QA issue tracker: ${QA_ISSUE_URL}"
+echo "  $((N+1)). When QA is clean: pnpm release:prepare:vscode-extension"
