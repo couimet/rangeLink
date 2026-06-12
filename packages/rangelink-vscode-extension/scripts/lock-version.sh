@@ -70,19 +70,15 @@ fi
 
 # --- Step 2: Regenerate versioned release testing instructions ---
 
-if [[ -f "$VERSIONED_INSTRUCTIONS" ]]; then
-  echo -e "${YELLOW}Step 2: ${VERSIONED_INSTRUCTIONS} already exists — skipped.${NC}"
-else
-  "$SCRIPT_DIR/generate-release-testing-instructions.sh" --version "$VERSION"
+"$SCRIPT_DIR/generate-release-testing-instructions.sh" --version "$VERSION"
 
-  # PUBLISHED_VERSION is the pre-bump version (read before step 1), so the
-  # scope line captures the correct range (e.g. "Changes from v1.0.0 → v2.0.0").
-  sed -i.bak \
-    -e "s|Changes from v[0-9.]* → .*|Changes from v${PUBLISHED_VERSION} → v${VERSION}|" \
-    "$VERSIONED_INSTRUCTIONS" && rm -f "${VERSIONED_INSTRUCTIONS}.bak"
+# PUBLISHED_VERSION is the pre-bump version (read before step 1), so the
+# scope line captures the correct range (e.g. "Changes from v1.0.0 → v2.0.0").
+sed -i.bak \
+  -e "s|Changes from v[0-9.]* → .*|Changes from v${PUBLISHED_VERSION} → v${VERSION}|" \
+  "$VERSIONED_INSTRUCTIONS" && rm -f "${VERSIONED_INSTRUCTIONS}.bak"
 
-  echo -e "${GREEN}Step 2: Generated release-testing-instructions-v${VERSION}.md${NC}"
-fi
+echo -e "${GREEN}Step 2: Generated release-testing-instructions-v${VERSION}.md${NC}"
 
 echo ""
 echo -e "${GREEN}Locked at v${VERSION}. QA can now begin against a concrete version.${NC}"
