@@ -160,7 +160,18 @@ sed -i.bak \
 
 echo -e "${GREEN}QA issue URL injected into instructions file.${NC}"
 
-# --- Step 5: Generate commit message ---
+# --- Step 5: Validate QA coverage ---
+
+echo -e "${GREEN}Step 5: Validating QA coverage...${NC}"
+
+if "$SCRIPT_DIR/validate-qa-coverage.sh" > /dev/null 2>&1; then
+  echo -e "${GREEN}QA coverage validation passed.${NC}"
+else
+  echo -e "${RED}QA coverage validation failed. Fix mismatches and re-run.${NC}" >&2
+  exit 1
+fi
+
+# --- Step 6: Generate commit message ---
 
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
@@ -201,9 +212,7 @@ gh issue comment "$QA_ISSUE_URL" --body "## Workflow
   \`\`\`
   gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
   \`\`\`
-- [ ] \`pnpm test\` — unit tests + coverage gate
 - [ ] Work through the checkboxes above — each row has the exact pnpm command
-- [ ] \`pnpm validate:qa-coverage:vscode-extension\`
 - [ ] When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`"
 
 # --- Summary ---

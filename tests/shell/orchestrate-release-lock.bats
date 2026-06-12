@@ -92,6 +92,14 @@ STUBEOF
 echo "Created QA issue: https://github.com/couimet/rangeLink/issues/999"
 STUBEOF
   chmod +x "$FIXTURE_ROOT/scripts/generate-qa-issue.sh"
+
+  # Stub validate-qa-coverage.sh (exits with QA_VALIDATE_EXIT).
+  cat > "$FIXTURE_ROOT/scripts/validate-qa-coverage.sh" <<'STUBEOF'
+#!/usr/bin/env bash
+exit "${QA_VALIDATE_EXIT:-0}"
+STUBEOF
+  chmod +x "$FIXTURE_ROOT/scripts/validate-qa-coverage.sh"
+  export QA_VALIDATE_EXIT=0
 }
 
 # ── First run (fresh branch) ───────────────────────────────────────────────────────
@@ -366,10 +374,28 @@ INSTEOF
   [[ "$body" =~ "git push -u origin release/v1.0.0" ]]
   # PR creation step.
   [[ "$body" =~ "gh pr create" ]]
-  # Unit test, validate, and release steps.
-  [[ "$body" =~ "pnpm test" ]]
-  [[ "$body" =~ "pnpm validate:qa-coverage:vscode-extension" ]]
+  # Release step.
   [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
+}
+
+@test "validate-qa-coverage passes: script continues" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export QA_VALIDATE_EXIT=0
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "QA coverage validation passed" ]]
+}
+
+@test "validate-qa-coverage fails: script exits 1" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export QA_VALIDATE_EXIT=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "QA coverage validation failed" ]]
 }
 
 @test "push uses --force-with-lease when remote branch exists" {
