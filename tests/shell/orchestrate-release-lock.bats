@@ -359,7 +359,7 @@ INSTEOF
   # Fenced code blocks (triple backticks) for GitHub copy buttons.
   [[ "$body" =~ '```' ]]
   # Commit step with pre-generated file path.
-  [[ "$body" =~ "git add -u && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
+  [[ "$body" =~ "git add -u && git add qa/release-testing-instructions-v1.0.0.md && git commit -F .commit-msgs/0001-lock-version-v1.0.0.txt" ]]
   # Push step with branch name.
   [[ "$body" =~ "git push -u origin release/v1.0.0" ]]
   # PR creation step.

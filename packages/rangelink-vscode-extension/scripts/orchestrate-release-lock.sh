@@ -183,7 +183,7 @@ gh issue comment "$QA_ISSUE_URL" --body "## Workflow
 
 - [ ] Commit:
   \`\`\`
-  git add -u && git commit -F $COMMIT_MSG_REL
+  git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_REL
   \`\`\`
 - [ ] Push:
   \`\`\`
@@ -205,7 +205,7 @@ echo -e "${GREEN}Release v${VERSION} locked on branch $RELEASE_BRANCH.${NC}"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"
-echo "  2. Commit: git add -u && git commit -F $COMMIT_MSG_FILE"
+echo "  2. Commit: git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_FILE"
 echo "  3. Push and create PR: git push -u origin $RELEASE_BRANCH"
 echo "  4. Work through the QA issue tracker: ${QA_ISSUE_URL}"
 echo "  5. When QA is clean: pnpm release:prepare:vscode-extension"
