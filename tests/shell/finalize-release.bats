@@ -229,14 +229,6 @@ EOF
   write_changelog <<'EOF'
 # Changelog
 
-## [Unreleased]
-
-### Added
-
-- New feature
-
-[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
-[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 ## [1.0.0]
 
 ### Added
