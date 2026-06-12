@@ -50,10 +50,41 @@ CURRENT_BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
 
 if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
   if [[ "$CURRENT_BRANCH" != "$RELEASE_BRANCH" ]]; then
-    echo -e "${RED}Error: branch $RELEASE_BRANCH already exists but current branch is $CURRENT_BRANCH.${NC}" >&2
-    exit 1
+    echo -e "${YELLOW}Branch $RELEASE_BRANCH already exists (current: $CURRENT_BRANCH).${NC}"
+    printf 'Checkout %s and re-run, delete it and start fresh, or abort? [C/d/a] ' "$RELEASE_BRANCH"
+    read -r REPLY || true
+    case "$REPLY" in
+      [dD])
+        echo -e "${YELLOW}Deleting $RELEASE_BRANCH...${NC}"
+        git -C "$REPO_ROOT" branch -D "$RELEASE_BRANCH"
+        if [[ "$CURRENT_BRANCH" != "main" ]]; then
+          printf 'Checkout main and pull --rebase? [Y/n] '
+          read -r REPLY2 || true
+          if [[ -z "$REPLY2" || "$REPLY2" =~ ^[Yy]$ ]]; then
+            git -C "$REPO_ROOT" checkout main
+            git -C "$REPO_ROOT" pull --rebase origin main
+          fi
+        fi
+        git -C "$REPO_ROOT" checkout -b "$RELEASE_BRANCH" main
+        echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
+        ;;
+      [aA])
+        echo "Aborted." >&2
+        exit 0
+        ;;
+      *)
+        echo -e "${YELLOW}Checking out $RELEASE_BRANCH...${NC}"
+        git -C "$REPO_ROOT" checkout "$RELEASE_BRANCH"
+        printf 'Pull --rebase from main? [Y/n] '
+        read -r REPLY2
+        if [[ -z "$REPLY2" || "$REPLY2" =~ ^[Yy]$ ]]; then
+          git -C "$REPO_ROOT" pull --rebase origin main
+        fi
+        ;;
+    esac
+  else
+    echo -e "${YELLOW}Re-running on existing branch $RELEASE_BRANCH.${NC}"
   fi
-  echo -e "${YELLOW}Re-running on existing branch $RELEASE_BRANCH.${NC}"
 else
   if [[ "$CURRENT_BRANCH" != "main" ]]; then
     echo -e "${YELLOW}Not on main (current: $CURRENT_BRANCH). Creating $RELEASE_BRANCH from main.${NC}"

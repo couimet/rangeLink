@@ -20,16 +20,22 @@ setup_fixture() {
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
+echo "git $*" >> "$GIT_CALL_LOG"
 case "$*" in
   *--show-toplevel*) echo "$FIXTURE_ROOT_FOR_GIT" ;;
   *"status"*) [[ "$GIT_STATUS_DIRTY" -eq 1 ]] && echo "?? dirty" ; exit 0 ;;
   *"checkout -b"*) exit 0 ;;
+  *"branch -D"*) exit 0 ;;
+  *"checkout"*) echo "Switched to branch" ;;
+  *"pull --rebase"*) exit 0 ;;
   *"rev-parse --verify"*) exit "$GIT_BRANCH_EXISTS" ;;
   *"branch --show-current"*) echo "$GIT_CURRENT_BRANCH" ;;
   *) exit 0 ;;
 esac
 ENDOFSTUB
   export FIXTURE_ROOT_FOR_GIT="$FIXTURE_ROOT"
+  export GIT_CALL_LOG="$FIXTURE_ROOT/git-calls.log"
+  : > "$GIT_CALL_LOG"
 
   # gh stub that logs each call so tests can assert on the workflow comment body.
   cat > "$STUB_DIR/gh" <<'GHSTUB'
@@ -172,14 +178,69 @@ INSTEOF
 
 # ── Error: branch exists on different checkout ─────────────────────────────────────
 
-@test "re-run: exits 1 when branch exists but we are on different branch" {
+@test "re-run: prompts when branch exists on different checkout — checkout option" {
   setup_fixture
   export GIT_BRANCH_EXISTS=0
   export GIT_CURRENT_BRANCH="some-other-branch"
 
-  run "$SCRIPT" "1.0.0"
-  [[ "$status" -eq 1 ]]
-  [[ "$output" =~ "already exists but current branch is" ]]
+  # Pipe 'c' (checkout) + 'n' (no pull).
+  run bash -c 'echo -e "c\nn" | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Branch release/v1.0.0 already exists" ]]
+  grep -q 'checkout release/v1.0.0' "$GIT_CALL_LOG"
+  ! grep -q 'pull --rebase' "$GIT_CALL_LOG"
+}
+
+@test "re-run: prompts when branch exists — delete and start fresh" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="some-other-branch"
+
+  # Pipe 'd' (delete) + 'n' (no checkout main).
+  run bash -c 'echo -e "d\nn" | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Deleting release/v1.0.0" ]]
+  grep -q 'branch -D release/v1.0.0' "$GIT_CALL_LOG"
+  grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
+}
+
+@test "re-run: prompts when branch exists — abort" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="some-other-branch"
+
+  # Pipe 'a' to abort.
+  run bash -c 'echo a | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Aborted" ]]
+}
+
+@test "re-run: checkout path — default yes to pull" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="some-other-branch"
+
+  # Default 'c' (checkout) then empty (yes) to pull.
+  run bash -c 'echo -e "\n" | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Checking out release/v1.0.0" ]]
+  grep -q 'checkout release/v1.0.0' "$GIT_CALL_LOG"
+  grep -q 'pull --rebase origin main' "$GIT_CALL_LOG"
+}
+
+@test "re-run: delete path — default yes to checkout main and pull" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="some-other-branch"
+
+  # 'd' (delete) then empty (yes) to checkout main + pull.
+  run bash -c 'echo -e "d\n" | '"$SCRIPT"' 1.0.0'
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Deleting release/v1.0.0" ]]
+  [[ "$output" =~ "Created branch release/v1.0.0 from main" ]]
+  grep -q 'checkout main' "$GIT_CALL_LOG"
+  grep -q 'pull --rebase origin main' "$GIT_CALL_LOG"
+  grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
 }
 
 # ── Commit message numbering ──────────────────────────────────────────────────────
