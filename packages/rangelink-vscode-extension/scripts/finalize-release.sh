@@ -66,9 +66,8 @@ fi
 
 # --- Step 1: Finalize CHANGELOG ---
 
-TODAY=$(date -u +"%Y-%m-%d")
-sed -i.bak "s/^## \[Unreleased\]$/## [${VERSION}] - ${TODAY}/" "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
-echo -e "${GREEN}Step 1: Finalized CHANGELOG — [Unreleased] → [${VERSION}] - ${TODAY}${NC}"
+sed -i.bak "s/^## \[Unreleased\]$/## [${VERSION}]/" "$CHANGELOG" && rm -f "${CHANGELOG}.bak"
+echo -e "${GREEN}Step 1: Finalized CHANGELOG — [Unreleased] → [${VERSION}]${NC}"
 
 # --- Step 2: Strip README <sup>Unreleased</sup> markers ---
 

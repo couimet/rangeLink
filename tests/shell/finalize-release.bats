@@ -86,9 +86,9 @@ EOF
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
 
-  # CHANGELOG: [Unreleased] → [2.0.0] - YYYY-MM-DD.
+  # CHANGELOG: [Unreleased] → [2.0.0].
   [[ ! "$(grep -c '^## \[Unreleased\]$' "$FIXTURE_ROOT/CHANGELOG.md" || true)" -gt 0 ]]
-  grep -qE '^## \[2\.0\.0\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$' "$FIXTURE_ROOT/CHANGELOG.md"
+  grep -q '^## \[2.0.0\]$' "$FIXTURE_ROOT/CHANGELOG.md"
 
   # README: no <sup>Unreleased</sup> markers remain.
   ! grep -q '<sup>Unreleased</sup>' "$FIXTURE_ROOT/README.md"
