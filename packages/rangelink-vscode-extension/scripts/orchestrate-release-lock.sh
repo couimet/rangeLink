@@ -51,11 +51,20 @@ CURRENT_BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
 if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
   if [[ "$CURRENT_BRANCH" != "$RELEASE_BRANCH" ]]; then
     echo -e "${YELLOW}Branch $RELEASE_BRANCH already exists (current: $CURRENT_BRANCH).${NC}"
-    printf 'Checkout %s and re-run, delete it and start fresh, or abort? [C/d/a] ' "$RELEASE_BRANCH"
+    echo ""
+    echo "  [C] Checkout the branch and re-run (idempotent)"
+    echo "  [D] Delete it and start fresh"
+    echo "  [A] Abort"
+    echo ""
+    printf 'Choice: '
     read -r REPLY || true
     case "$REPLY" in
       [dD])
         echo -e "${YELLOW}Deleting $RELEASE_BRANCH...${NC}"
+        # Snapshot the prior QA issue before the instructions file is destroyed.
+        if [[ -f "$INSTRUCTIONS_FILE" ]]; then
+          PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed 's/qa_issue_url: *"*//;s/"$//')
+        fi
         git -C "$REPO_ROOT" branch -D "$RELEASE_BRANCH"
         if [[ "$CURRENT_BRANCH" != "main" ]]; then
           printf 'Checkout main and pull --rebase? [Y/n] '
@@ -100,8 +109,9 @@ echo ""
 
 # --- Step 2: Detect prior QA issue (idempotency re-run) ---
 
-PRIOR_ISSUE_URL=""
-if [[ -f "$INSTRUCTIONS_FILE" ]]; then
+# Only discover from the current instructions file if the "d"elete path
+# didn't already snapshot it before destroying the old branch.
+if [[ -z "${PRIOR_ISSUE_URL:-}" ]] && [[ -f "$INSTRUCTIONS_FILE" ]]; then
   PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed 's/qa_issue_url: *"*//;s/"$//')
 fi
 
@@ -169,9 +179,18 @@ echo -e "${GREEN}Commit message: $(basename "$COMMIT_MSG_FILE")${NC}"
 COMMIT_MSG_REL="${COMMIT_MSG_FILE#"$REPO_ROOT"/}"
 gh issue comment "$QA_ISSUE_URL" --body "## Workflow
 
-- [ ] Commit: \`git add -u && git commit -F $COMMIT_MSG_REL\`
-- [ ] Push: \`git push -u origin $RELEASE_BRANCH\`
-- [ ] Create PR: \`gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL\`
+- [ ] Commit:
+  \`\`\`
+  git add -u && git commit -F $COMMIT_MSG_REL
+  \`\`\`
+- [ ] Push:
+  \`\`\`
+  git push -u origin $RELEASE_BRANCH
+  \`\`\`
+- [ ] Create PR:
+  \`\`\`
+  gh pr create --title \"[release] Lock version v${VERSION}\" --body-file $COMMIT_MSG_REL
+  \`\`\`
 - [ ] \`pnpm test\` — unit tests + coverage gate
 - [ ] Work through the checkboxes above — each row has the exact pnpm command
 - [ ] \`pnpm validate:qa-coverage:vscode-extension\`
