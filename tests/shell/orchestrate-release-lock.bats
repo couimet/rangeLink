@@ -11,19 +11,33 @@ setup_fixture() {
   mkdir -p "$FIXTURE_ROOT/.commit-msgs"
 
   cp "$REAL_SCRIPT" "$FIXTURE_ROOT/scripts/orchestrate-release-lock.sh"
+  cp "$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/check-dirty-tree.sh" \
+     "$FIXTURE_ROOT/scripts/check-dirty-tree.sh"
   SCRIPT="$FIXTURE_ROOT/scripts/orchestrate-release-lock.sh"
 
   # Default: branch does not exist, we are on main, working tree clean.
   export GIT_BRANCH_EXISTS=1    # 0 = exists, 1 = does not exist
   export GIT_CURRENT_BRANCH="main"
-  export GIT_STATUS_DIRTY=0     # 0 = clean, 1 = dirty
+  export GIT_STATUS_DIRTY=0     # 0=clean, 1=arbitrary dirty, 2=artifact-only
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
 echo "git $*" >> "$GIT_CALL_LOG"
 case "$*" in
   *--show-toplevel*) echo "$FIXTURE_ROOT_FOR_GIT" ;;
-  *"status"*) [[ "$GIT_STATUS_DIRTY" -eq 1 ]] && echo "?? dirty" ; exit 0 ;;
+  *"status"*)
+    # GIT_STATUS_DIRTY: 0=clean, 1=arbitrary dirty file, 2=only release artifact dirty.
+    case "${GIT_STATUS_DIRTY:-0}" in
+      1) echo "?? dirty.txt" ;;
+      2)
+        if [[ "$*" == *"(exclude)"*"release-testing-instructions-v"* ]]; then
+          :  # excluded — no output
+        else
+          echo "?? packages/rangelink-vscode-extension/qa/release-testing-instructions-v2.0.0.md"
+        fi
+        ;;
+    esac
+    exit 0 ;;
   *"checkout -b"*) exit 0 ;;
   *"branch -D"*) exit 0 ;;
   *"checkout"*) echo "Switched to branch" ;;
@@ -269,6 +283,39 @@ INSTEOF
   grep -q 'checkout main' "$GIT_CALL_LOG"
   grep -q 'pull --rebase origin main' "$GIT_CALL_LOG"
   grep -q 'checkout -b release/v1.0.0 main' "$GIT_CALL_LOG"
+}
+
+# ── Dirty-tree tolerance for release artifact ─────────────────────────────────────
+
+@test "dirty-tree: clean tree passes" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export GIT_STATUS_DIRTY=0
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  ! [[ "$output" =~ "working tree is dirty" ]]
+  ! [[ "$output" =~ "tolerating" ]]
+}
+
+@test "dirty-tree: only release artifact dirty passes with notice" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export GIT_STATUS_DIRTY=2
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "tolerating uncommitted release-testing-instructions" ]]
+}
+
+@test "dirty-tree: other dirty file blocks with exit 1" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export GIT_STATUS_DIRTY=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "working tree is dirty" ]]
 }
 
 # ── Commit message numbering ──────────────────────────────────────────────────────

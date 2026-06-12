@@ -41,10 +41,8 @@ VERSIONED_INSTRUCTIONS="$QA_DIR/release-testing-instructions-v${VERSION}.md"
 
 # --- Validation ---
 
-if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
-  echo -e "${RED}Error: working tree is dirty. Commit or stash changes first.${NC}" >&2
-  exit 1
-fi
+source "$SCRIPT_DIR/check-dirty-tree.sh"
+check_dirty_tree "$REPO_ROOT"
 
 PUBLISHED_VERSION=$(jq -r '.version // empty' "$PACKAGE_JSON")
 if [[ -z "$PUBLISHED_VERSION" ]]; then

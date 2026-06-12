@@ -13,6 +13,10 @@ set -euo pipefail
 # Idempotent: safe to re-run after adding bug-fix TCs. On re-run,
 # detects the prior QA issue from the instructions frontmatter, closes it
 # with a "Superseded by #NEW" comment, and creates a fresh issue.
+#
+# Tolerates uncommitted release-testing-instructions-vX.Y.Z.md so the
+# supersession logic can read its frontmatter on re-run. Any other dirty
+# file still blocks.
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -36,12 +40,10 @@ PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 INSTRUCTIONS_FILE="$PACKAGE_DIR/qa/release-testing-instructions-v${VERSION}.md"
 
-# --- Working tree must be clean ---
+# --- Working tree must be clean (except for the release instructions artifact) ---
 
-if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
-  echo -e "${RED}Error: working tree is dirty. Commit or stash changes first.${NC}" >&2
-  exit 1
-fi
+source "$SCRIPT_DIR/check-dirty-tree.sh"
+check_dirty_tree "$REPO_ROOT"
 
 # --- Create or re-enter release branch ---
 

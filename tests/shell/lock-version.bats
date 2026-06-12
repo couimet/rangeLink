@@ -10,13 +10,27 @@ setup_fixture() {
   mkdir -p "$FIXTURE_ROOT/qa"
 
   cp "$REAL_SCRIPT" "$FIXTURE_ROOT/scripts/lock-version.sh"
+  cp "$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/check-dirty-tree.sh" \
+     "$FIXTURE_ROOT/scripts/check-dirty-tree.sh"
   SCRIPT="$FIXTURE_ROOT/scripts/lock-version.sh"
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
 case "$*" in
   *--show-toplevel*) echo "${FIXTURE_ROOT_FOR_GIT:-$TEST_TEMP_DIR}" ;;
-  *status*) exit 0 ;;
+  *status*)
+    # GIT_STATUS_DIRTY: 0=clean, 1=arbitrary dirty file, 2=only release artifact dirty.
+    case "${GIT_STATUS_DIRTY:-0}" in
+      1) echo "?? dirty.txt" ;;
+      2)
+        if [[ "$*" == *"(exclude)"*"release-testing-instructions-v"* ]]; then
+          :  # excluded — no output
+        else
+          echo "?? packages/rangelink-vscode-extension/qa/release-testing-instructions-v2.0.0.md"
+        fi
+        ;;
+    esac
+    exit 0 ;;
   *) exit 0 ;;
 esac
 ENDOFSTUB
@@ -231,6 +245,36 @@ EOF
   run "$SCRIPT" 2.0.0
   [[ "$status" -eq 1 ]]
   [[ "$output" =~ "version not set" ]]
+}
+
+# ── Dirty-tree tolerance for release artifact ─────────────────────────────────────
+
+@test "dirty-tree: artifact-only is tolerated" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "1.0.0"
+}
+EOF
+  export GIT_STATUS_DIRTY=2
+
+  run "$SCRIPT" 2.0.0
+  [[ "$status" -eq 0 ]]
+  ! [[ "$output" =~ "working tree is dirty" ]]
+}
+
+@test "dirty-tree: other dirty file still blocks" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "1.0.0"
+}
+EOF
+  export GIT_STATUS_DIRTY=1
+
+  run "$SCRIPT" 2.0.0
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "working tree is dirty" ]]
 }
 
 # ── YAML content preservation ──────────────────────────────────────────────────
