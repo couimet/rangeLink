@@ -404,8 +404,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
   test('[assisted] context-menus-terminal-012: Terminal content-area "Send Selected Text" is absent when no terminal text is selected', async () => {
     const terminalName = 'rl-ctxmenu-term-012';
-    const terminal = await ss.createTerminal(terminalName);
-    echoToTerminal(terminal, 'CTXMENU_012_NO_SELECTION');
+    await ss.createTerminal(terminalName);
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectContextKeys({
