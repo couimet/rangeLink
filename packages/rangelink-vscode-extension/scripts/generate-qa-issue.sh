@@ -155,7 +155,7 @@ if [[ "$CHECKBOX_MANUAL" -ne "$TOTAL_MANUAL" ]]; then
   exit 1
 fi
 
-BODY_FOOTER="${GROUP_CHECKBOXES}"$'\n\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"$'\n\n'"---"$'\n\n'"Once all checkboxes above are checked, the release is ready to prepare for publication:"$'\n\n'"- [ ] **Release Ready** — Run \`pnpm release:prepare:vscode-extension\` to date-stamp the CHANGELOG, strip unreleased markers, and generate publishing instructions."
+BODY_FOOTER="${GROUP_CHECKBOXES}"$'\n\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
 
 ISSUE_BODY="${ISSUE_BODY}${BODY_FOOTER}"
 
