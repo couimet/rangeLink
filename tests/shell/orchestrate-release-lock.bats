@@ -19,6 +19,7 @@ setup_fixture() {
   export GIT_BRANCH_EXISTS=1    # 0 = exists, 1 = does not exist
   export GIT_CURRENT_BRANCH="main"
   export GIT_STATUS_DIRTY=0     # 0=clean, 1=arbitrary dirty, 2=artifact-only
+  export GIT_REMOTE_BRANCH_EXISTS=0  # 0=no, 1=yes
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
@@ -42,6 +43,7 @@ case "$*" in
   *"branch -D"*) exit 0 ;;
   *"checkout"*) echo "Switched to branch" ;;
   *"pull --rebase"*) exit 0 ;;
+  *"ls-remote"*) [[ "$GIT_REMOTE_BRANCH_EXISTS" -eq 1 ]] && echo "refs/heads/release/v1.0.0" ; exit 0 ;;
   *"rev-parse --verify"*) exit "$GIT_BRANCH_EXISTS" ;;
   *"branch --show-current"*) echo "$GIT_CURRENT_BRANCH" ;;
   *) exit 0 ;;
@@ -368,4 +370,18 @@ INSTEOF
   [[ "$body" =~ "pnpm test" ]]
   [[ "$body" =~ "pnpm validate:qa-coverage:vscode-extension" ]]
   [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
+}
+
+@test "push uses --force-with-lease when remote branch exists" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+  export GIT_REMOTE_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Remote branch origin/release/v1.0.0 exists" ]]
+
+  local body
+  body=$(grep -A 20 '## Workflow' "$GH_CALL_LOG")
+  [[ "$body" =~ "git push -u --force-with-lease origin release/v1.0.0" ]]
 }

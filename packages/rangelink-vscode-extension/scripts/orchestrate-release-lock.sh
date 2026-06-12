@@ -104,6 +104,14 @@ else
   echo -e "${GREEN}Created branch $RELEASE_BRANCH from main${NC}"
 fi
 
+# --- Detect existing remote branch for push strategy ---
+
+PUSH_FLAGS="-u"
+if git -C "$REPO_ROOT" ls-remote --heads origin "$RELEASE_BRANCH" 2>/dev/null | grep -q "$RELEASE_BRANCH"; then
+  PUSH_FLAGS="-u --force-with-lease"
+  echo -e "${YELLOW}Remote branch origin/$RELEASE_BRANCH exists; push will use --force-with-lease.${NC}"
+fi
+
 # --- Step 1: Lock the version ---
 
 "$SCRIPT_DIR/lock-version.sh" "$VERSION"
@@ -187,7 +195,7 @@ gh issue comment "$QA_ISSUE_URL" --body "## Workflow
   \`\`\`
 - [ ] Push:
   \`\`\`
-  git push -u origin $RELEASE_BRANCH
+  git push $PUSH_FLAGS origin $RELEASE_BRANCH
   \`\`\`
 - [ ] Create PR:
   \`\`\`
@@ -206,6 +214,6 @@ echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"
 echo "  2. Commit: git add -u && git add ${INSTRUCTIONS_FILE#"$REPO_ROOT"/} && git commit -F $COMMIT_MSG_FILE"
-echo "  3. Push and create PR: git push -u origin $RELEASE_BRANCH"
+echo "  3. Push and create PR: git push $PUSH_FLAGS origin $RELEASE_BRANCH"
 echo "  4. Work through the QA issue tracker: ${QA_ISSUE_URL}"
 echo "  5. When QA is clean: pnpm release:prepare:vscode-extension"
