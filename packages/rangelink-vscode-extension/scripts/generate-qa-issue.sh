@@ -84,12 +84,17 @@ CI runs fully automated tests (\`test:release:automated\`). The checkboxes below
 
 # Collect group checkbox lines
 GROUP_CHECKBOXES=""
+CHECKBOX_ASSISTED=0
+CHECKBOX_MANUAL=0
 for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
   PREFIX=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].prefix)")
   FEATURE=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].feature)")
   ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].assisted))")
   MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].manual))")
   REQ_EXT=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).groups[$i].requires_extensions))")
+
+  CHECKBOX_ASSISTED=$((CHECKBOX_ASSISTED + ASSISTED))
+  CHECKBOX_MANUAL=$((CHECKBOX_MANUAL + MANUAL))
 
   # Build label: (N assisted, M manual) or just (N assisted) or (M manual)
   LABEL_PARTS=""
@@ -129,6 +134,26 @@ fi
 
 TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_assisted))")
 TOTAL_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).total_manual))")
+
+# Add cursor and ubuntu assisted/manual counts to running totals
+CURSOR_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).cursor_tcs.filter(t=>t.automated==='assisted').length))")
+CURSOR_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).cursor_tcs.filter(t=>t.automated===false).length))")
+UBUNTU_ASSISTED=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).ubuntu_tcs.filter(t=>t.automated==='assisted').length))")
+UBUNTU_MANUAL=$(echo "$GROUPS_JSON" | node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(0,'utf8')).ubuntu_tcs.filter(t=>t.automated===false).length))")
+
+CHECKBOX_ASSISTED=$((CHECKBOX_ASSISTED + CURSOR_ASSISTED + UBUNTU_ASSISTED))
+CHECKBOX_MANUAL=$((CHECKBOX_MANUAL + CURSOR_MANUAL + UBUNTU_MANUAL))
+
+if [[ "$CHECKBOX_ASSISTED" -ne "$TOTAL_ASSISTED" ]]; then
+  echo "Error: checkbox assisted count ($CHECKBOX_ASSISTED) does not match YAML assisted count ($TOTAL_ASSISTED)" >&2
+  echo "This is a bug in the grouping/filtering logic. Check resolve-qa-labels.js." >&2
+  exit 1
+fi
+if [[ "$CHECKBOX_MANUAL" -ne "$TOTAL_MANUAL" ]]; then
+  echo "Error: checkbox manual count ($CHECKBOX_MANUAL) does not match YAML manual count ($TOTAL_MANUAL)" >&2
+  echo "This is a bug in the grouping/filtering logic. Check resolve-qa-labels.js." >&2
+  exit 1
+fi
 
 BODY_FOOTER="${GROUP_CHECKBOXES}"$'\n\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"$'\n\n'"---"$'\n\n'"Once all checkboxes above are checked, the release is ready to prepare for publication:"$'\n\n'"- [ ] **Release Ready** — Run \`pnpm release:prepare:vscode-extension\` to date-stamp the CHANGELOG, strip unreleased markers, and generate publishing instructions."
 

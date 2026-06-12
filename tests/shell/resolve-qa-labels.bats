@@ -207,20 +207,17 @@ EOF
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   const groups = d.groups;
-  // first-001 → prefix 'first', automated: true → automated=1, total=1
+  // first-001 → prefix 'first', automated: true → 0 assisted, 0 manual → excluded
   // second-002 → prefix 'second', automated: assisted → assisted=1, total=1
   // third-003 → prefix 'third', automated: false + cursor label → cursor_tcs
-  if (groups.length !== 2) process.exit(1);
-  if (groups[0].prefix !== 'first') process.exit(2);
-  if (groups[0].automated !== 1) process.exit(3);
+  if (groups.length !== 1) process.exit(1);
+  if (groups[0].prefix !== 'second') process.exit(2);
+  if (groups[0].assisted !== 1) process.exit(3);
   if (groups[0].total !== 1) process.exit(4);
-  if (groups[1].prefix !== 'second') process.exit(5);
-  if (groups[1].assisted !== 1) process.exit(6);
-  if (groups[1].total !== 1) process.exit(7);
   // cursor_tcs should have third-003
-  if (d.cursor_tcs.length !== 1) process.exit(8);
-  if (d.cursor_tcs[0].id !== 'third-003') process.exit(9);
-  if (d.cursor_tcs[0].automated !== false) process.exit(10);  // boolean false
+  if (d.cursor_tcs.length !== 1) process.exit(5);
+  if (d.cursor_tcs[0].id !== 'third-003') process.exit(6);
+  if (d.cursor_tcs[0].automated !== false) process.exit(7);  // boolean false
 " <<< "$output"
 }
 
@@ -335,7 +332,7 @@ if (g.reasons['Reason 3'] !== 1) process.exit(11);
 " <<< "$output"
 }
 
-@test "resolve-qa-labels: JSON includes groups with only automated TCs" {
+@test "resolve-qa-labels: JSON excludes groups with only automated TCs" {
   yml="$TEST_TEMP_DIR/json-auto-only.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
@@ -352,14 +349,10 @@ EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
-  if (d.groups.length !== 1) process.exit(1);
-  if (d.groups[0].prefix !== 'auto') process.exit(2);
-  if (d.groups[0].automated !== 2) process.exit(3);
-  if (d.groups[0].assisted !== 0) process.exit(4);
-  if (d.groups[0].manual !== 0) process.exit(5);
-  if (d.groups[0].total !== 2) process.exit(6);
-  if (d.total_assisted !== 0) process.exit(7);
-  if (d.total_manual !== 0) process.exit(8);
+  // Group has 0 assisted, 0 manual → excluded from output
+  if (d.groups.length !== 0) process.exit(1);
+  if (d.total_assisted !== 0) process.exit(2);
+  if (d.total_manual !== 0) process.exit(3);
 " <<< "$output"
 }
 
@@ -433,8 +426,9 @@ EOF
   echo "$output" | grep -q '"requires_extensions":true'
 }
 
-@test "resolve-qa-labels: JSON automated:true with cursor label NOT extracted to cursorTcs" {
+@test "resolve-qa-labels: JSON automated:true with cursor label excluded from groups and cursorTcs" {
   # cursor extraction only happens when automated !== 'true'
+  # automated-only groups (assisted=0, manual=0) are also excluded
   yml="$TEST_TEMP_DIR/json-cursor-auto.yaml"
   cat > "$yml" <<'EOF'
 test_cases:
@@ -448,11 +442,8 @@ EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
-  if (d.cursor_tcs.length !== 0) process.exit(1);  // NOT extracted
-  if (d.groups.length !== 1) process.exit(2);      // group appears with automated count
-  if (d.groups[0].prefix !== 'cursor-auto') process.exit(3);
-  if (d.groups[0].automated !== 1) process.exit(4);
-  if (d.groups[0].total !== 1) process.exit(5);
+  if (d.cursor_tcs.length !== 0) process.exit(1);  // NOT extracted (automated:true)
+  if (d.groups.length !== 0) process.exit(2);      // NOT in groups (0 assisted, 0 manual)
 " <<< "$output"
 }
 

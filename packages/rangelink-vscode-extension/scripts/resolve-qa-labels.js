@@ -293,6 +293,7 @@ if (jsonOutput) {
 
     const total = automatedCount + assistedCount + manualCount;
     if (total === 0) continue;
+    if (assistedCount === 0 && manualCount === 0) continue;
 
     totalAssisted += assistedCount;
     totalManual += manualCount;
