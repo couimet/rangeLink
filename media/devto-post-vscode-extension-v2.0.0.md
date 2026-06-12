@@ -11,7 +11,7 @@ cover_image:
   <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7vckvmiq54wa61e8u3g9.png" alt="RangeLink Logo" width="256" />
 </div>
 
-Hey folks! Yes, it's been a while. RangeLink v1.0.0 shipped in mid-December 2025, and here we are at the back end of May 2026 with v2.0.0 finally out the door.
+Hey folks! Yes, it's been a while. RangeLink v1.0.0 shipped in mid-December 2025, and here we are in mid-June with v2.0.0 finally out the door.
 
 If you were wondering whether the project went quiet, it didn't. It got busy under the hood. In v1.0.0, destinations were the place R-L sent your link. In v2.0.0, destinations carry the whole keybinding family: the new R-F and R-G route through your destination, and R-V now sends terminal selections too. A richer right-click layer sits on top of all of it. And while we were in there, we stopped silently overwriting your system clipboard.
 
