@@ -21,7 +21,7 @@ If you were wondering whether the project went quiet, it didn't. It got busy und
 
 ### Every R-\* now routes through your destination
 
-In v1.0.0, R-L was the star and R-V had just landed. R-L was destination-agnostic: it dropped the link on the clipboard whether or not you had a destination bound. In v2.0.0, every R-\* command except R-C sends to your bound destination. If nothing is bound yet, the destination picker opens and the operation finishes against whatever you pick. Right-click context menu entries work the same way, so you don't have to memorise a keybinding to get the same flow.
+In v1.0.0, R-L was the star and R-V had just landed. R-L was destination-agnostic: it dropped the link on the clipboard whether or not you had a destination bound. In v2.0.0, every send-style R-\* command (R-L, R-V, and R-F) sends to your bound destination. If nothing is bound yet, the destination picker opens and the operation finishes against whatever you pick. Right-click context menu entries work the same way, so you don't have to memorise a keybinding to get the same flow.
 
 **R-V grew up.** It used to send editor selections to your bound destination. Now it also sends _terminal_ selections. Highlight some shell output, press R-V, and it goes straight to your bound destination. No more clipboard juggling to get test output into a prompt.
 
