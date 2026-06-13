@@ -11,6 +11,10 @@
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
 > **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
+> [!IMPORTANT]
+> This documentation is for the `main` branch and may include unreleased features marked with <sup>Unreleased</sup>.
+> Install the latest published version from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) or [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension) (Cursor) for currently available features.
+
 ## Why RangeLink?
 
 Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
