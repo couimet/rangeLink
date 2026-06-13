@@ -103,7 +103,6 @@ VS Code itself shows a "What's New" tab for editor releases, but extensions auto
 | **R-G**    | **G** for **G**o to link  | independent            | Paste a RangeLink and jump straight to it                   |
 | **R-U**    | **U** for **U**nbind      | unbinds it             | Unbind the current destination                              |
 
-
 ---
 
 ## Upgrading from v1.0.0
@@ -149,7 +148,6 @@ That's what I've been cooking. It's finally yours.
 ## Happy (Range) Linking!
 
 If RangeLink is useful to you, star the [GitHub repo](https://github.com/couimet/rangeLink) and report issues or ideas via [GitHub Issues](https://github.com/couimet/rangeLink/issues).
-
 
 **Links:**
 
