@@ -7,6 +7,7 @@ set -euo pipefail
 # package.json. Idempotent — safe to re-run.
 #
 # Steps:
+#   0. If on main, create a post-release-v<VERSION> branch (otherwise apply in-place)
 #   1. Prepend [Unreleased] header with empty sections to CHANGELOG
 #   2. Re-add [!IMPORTANT] banner to README
 #
@@ -36,6 +37,19 @@ fi
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo -e "${RED}Error: .version must be SemVer (X.Y.Z), got '$VERSION'${NC}" >&2
   exit 1
+fi
+
+# --- Branch management ---
+
+CURRENT_BRANCH=$(git -C "$PACKAGE_DIR" rev-parse --abbrev-ref HEAD)
+MAIN_BRANCH=$(git -C "$PACKAGE_DIR" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo 'main')
+
+if [[ "$CURRENT_BRANCH" == "$MAIN_BRANCH" ]]; then
+  NEW_BRANCH="post-release-v${VERSION}"
+  echo -e "On ${MAIN_BRANCH} — creating branch ${GREEN}${NEW_BRANCH}${NC}"
+  git -C "$PACKAGE_DIR" checkout -b "$NEW_BRANCH"
+else
+  echo -e "${YELLOW}On branch ${CURRENT_BRANCH} — applying changes in-place.${NC}"
 fi
 
 # --- Prerequisites ---
