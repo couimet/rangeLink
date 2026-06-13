@@ -11,7 +11,7 @@ cover_image:
   <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7vckvmiq54wa61e8u3g9.png" alt="RangeLink Logo" width="256" />
 </div>
 
-> **Update (2026-MM-DD):** RangeLink 2.0.0 has shipped. [Read the v2.0.0 release post.](TBD-DEV-TO-URL)
+> **Update (2026-06-12):** RangeLink 2.0.0 has shipped. [Read the v2.0.0 release post.](https://dev.to/couimet/rangelink-200-bind-first-every-r-follows-11nd)
 
 Hey folks! Just shipped **RangeLink v0.3.0**, and I'm genuinely excited about this one.
 
