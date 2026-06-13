@@ -25,29 +25,29 @@ In v1.0.0, R-L was the star and R-V had just landed. R-L was destination-agnosti
 
 **R-V grew up.** It used to send editor selections to your bound destination. Now it also sends _terminal_ selections. Highlight some shell output, press R-V, and it goes straight to your bound destination. No more clipboard juggling to get test output into a prompt.
 
-<!-- SCREENSHOT or GIF: terminal with a selection of output highlighted, R-V pressed, content appearing in the bound AI chat panel -->
+**R-F: Send File Path.** `R-F` sends the current file's workspace-relative path to your bound destination. `R-shift-F` sends the absolute path. Tell your AI assistant "look at this file" without typing the path or dragging the tab.
 
-**R-F (new): Send File Path.** `R-F` sends the current file's workspace-relative path to your bound destination. `R-shift-F` sends the absolute path. Tell your AI assistant "look at this file" without typing the path or dragging the tab.
-
-**R-G (new): Go to Link.** `R-G` opens a prompt; paste any RangeLink (something like `recipes/baking/chickenpie.ts#L3C14-L15C9`) and you land at that exact spot. Useful for jumping to RangeLinks your AI hands back.
+**R-G: Go to Link.** `R-G` opens a prompt; paste any RangeLink (something like `recipes/baking/chickenpie.ts#L3C14-L15C9`) and you land at that exact spot. Useful for jumping to RangeLinks your AI hands back.
 
 ### We stopped messing with your clipboard
 
 Every prior version of RangeLink wrote to your system clipboard as a side effect of nearly every operation. Even when the clipboard was just the transport to a destination, whatever you had copied before was gone. Slack message in your clipboard and you press R-L? Replaced. Text you were about to paste somewhere else? Gone.
 
-v2.0.0 introduces the `rangelink.clipboard.preserve` setting (default `"always"`). RangeLink now snapshots your clipboard before each transport operation and restores it afterward. Your clipboard only changes when _you_ ask for it: R-C, R-shift-C, or an explicit "Copy" command. If you preferred the old behaviour, set the preference to `"never"`.
+v2.0.0 introduces the `rangelink.clipboard.preserve` setting (default `"always"`). RangeLink now snapshots your clipboard before each transport operation and restores it afterward. Your clipboard only changes when _you_ ask for it: R-C or R-shift-C. If you preferred the old behaviour, set the preference to `"never"`.
 
 ### One picker, one menu: R-D and R-M
 
 In v1.0.0, binding meant running a separate command for each destination type ("Bind to Terminal," "Bind to Claude Code," "Bind to Cursor AI").
 
-**R-D** (**D** for **D**estination) is one keybinding that opens a single picker showing every available destination: AI assistants (built-in and any custom ones you've configured), terminals, and open files. Sorted by relevance. If something is bound, it sits at the top.
+**R-D: Bind to Destination.** One keybinding opens a single picker showing every available destination: AI assistants (built-in and any custom ones you've configured), terminals, and open files. AI assistants appear in a fixed order. Terminals and open files follow — if one of those is bound, it's pinned to the top of its section.
 
-<!-- SCREENSHOT: R-D picker open, showing the unified list with AI assistants, terminals, and open files; the bound destination highlighted at the top -->
+![Bind to destination](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/2a7kmra05v6mp2ovm8r1.png)
 
-**R-M** (**M** for **M**enu) groups jump-to-bound, unbind, go-to-link, and show-version into one menu. You can open it from the keybinding or by clicking the `RangeLink` item in the status bar. That status bar item now reflects your bind state directly: prominent colour when something is bound, with a tooltip naming the destination.
+**R-M: RangeLink Menu.** Groups jump-to-bound, unbind, go-to-link, and show-version into one menu. Open the menu from the keybinding or by clicking the RangeLink item in the status bar. That status bar item now reflects your bind state: prominent colour when bound, with a tooltip naming the destination.
 
-<!-- SCREENSHOT: status bar with the RangeLink item in its bound (prominent) state, tooltip visible naming the destination; optionally with R-M menu open next to it -->
+![RangeLink menu](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/ypgob01gdmz1dyg5714o.png)
+
+> Don't want to memorize both R-D and R-M? R-M alone gets you far — when nothing is bound, it also lists available destinations so you can bind right from the menu.
 
 ### Bring Your Own AI
 
@@ -77,11 +77,11 @@ The fourth built-in lands too. The full built-in lineup is now Claude Code, Gemi
 
 ### Right-click works everywhere now
 
-New context menus in Explorer, Editor Tab, Editor Content, and Terminal. Each menu shows the actions that make sense for what you right-clicked: Send RangeLink, Send Portable Link, Send Selected Text, Send File Path, Bind Here, Unbind.
+New context menus in Explorer, Editor Tab, Editor Content, Terminal Tab, and Terminal Content. Each menu shows the actions that make sense for what you right-clicked: Send RangeLink, Send Portable Link, Send Selected Text, Send File Path, Bind Here, Unbind.
 
-One worth singling out: **right-click any file in the Explorer**, pick "Send Relative File Path," and it goes straight to your bound destination. The file doesn't have to be open. R-F covers the current file; the Explorer entry covers _any_ file in your workspace. Bind it to your preferred AI tool and you can dump file paths into your prompt about as fast as you can right-click.
+One worth singling out: **right-click any file in the Explorer**, pick "Send Relative File Path" (or "Send File Path" for the absolute version), and it goes straight to your bound destination. The file doesn't have to be open. R-F covers the current file; the Explorer entry covers _any_ file in your workspace. Bind RangeLink to your preferred AI tool and you can dump file paths into your prompt about as fast as you can right-click.
 
-<!-- SCREENSHOT: Explorer right-click context menu open on a file, with the "Send Relative File Path" entry visible/highlighted -->
+![Explorer right-click menu](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/ggngspjpkyjjq6stv0wp.png)
 
 ### You'll know when there's a new version
 
@@ -101,9 +101,8 @@ VS Code itself shows a "What's New" tab for editor releases, but extensions auto
 | **R-M**    | **M** for **M**enu        | acts on it             | Open the RangeLink menu (jump, unbind, go to link, version) |
 | **R-J**    | **J** for **J**ump        | focuses it             | Focus your currently bound destination                      |
 | **R-G**    | **G** for **G**o to link  | independent            | Paste a RangeLink and jump straight to it                   |
-| **R-U**    | **U** for **U**nbind      | releases it            | Unbind the current destination                              |
+| **R-U**    | **U** for **U**nbind      | unbinds it             | Unbind the current destination                              |
 
-_The same table also lives in the [extension README](https://github.com/couimet/rangeLink/tree/main/packages/rangelink-vscode-extension#command-palette) for quick reference inside your editor._
 
 ---
 
@@ -111,14 +110,13 @@ _The same table also lives in the [extension README](https://github.com/couimet/
 
 A few things to know:
 
-- **Your clipboard is no longer collateral damage.** Anything you copied before pressing R-L is still there afterwards. Set `rangelink.clipboard.preserve` to `"never"` if you preferred the old behaviour.
-- **Every R-\* command now routes through your bound destination.** R-L, R-V, R-F, R-G all send to whatever you've bound. If nothing is bound when you press one, RangeLink prompts you to pick a destination instead of writing silently to the clipboard.
-- **R-C is the only exception.** R-C stays clipboard-only by design, for sharing across projects, pasting into Slack or docs, or validating a link before sending.
-- **Binding goes through R-D now.** It opens a picker showing every destination. The individual "Bind to ..." commands still work for muscle memory, and the rest of the command palette is unchanged.
+- **Your clipboard is no longer collateral damage.** Anything you copied before pressing R-L, R-F, or R-V is still there afterwards. Set `rangelink.clipboard.preserve` to `"never"` if you preferred the old behaviour.
+- **Every R-\* command now routes through your bound destination.** R-L, R-V, and R-F all send to whatever you've bound. If nothing is bound when you press one, RangeLink prompts you to pick a destination instead of writing silently to the clipboard.
+- **Binding gets a keybinding: R-D.** In v1.0.0, binding was only available through the command palette. R-D opens a unified destination picker so you can bind without hunting through menus.
 
 ---
 
-## Try It Out
+## Try it out
 
 **Install:**
 
@@ -134,15 +132,13 @@ A few things to know:
 4. Highlight some terminal output and press R-V to send it
 5. Right-click any file in the Explorer and pick "Send Relative File Path" (no need to open it first)
 
-A favourite combo: bind the text editor destination to a markdown scratchpad in a side pane. Use R-L and R-F to assemble a prompt, review it, then paste the finished block into your AI of choice. The clipboard-preservation default means your other notes survive the process.
-
 ---
 
 ## So why did it take six months?
 
 Every feature above touches foundational layers. R-D pulled the separate bind commands into a single picker and made every R-\* (except R-C) demand a bound destination instead of falling through to the clipboard. BYOA changed the command-dispatch path that most of the existing tests already ran through, which meant a lot of assertions had to be retraced. And clipboard preservation touched every R-\* command that used the clipboard as a transport step. The unit tests that carried v1.0.0 were solid, but they were not going to catch a regression in any of those.
 
-So I built a real integration-test harness first. Over 270 integration tests across more than 30 suite files, all running inside an actual VS Code host with live terminals, editor groups in different layouts, and AI extensions pre-installed for the runner (Claude Code, Gemini Code Assist). The vast majority are fully automated. A meaningful slice is marked "assisted" — human-in-the-loop, for flows VS Code's automation API can't drive on its own. A small remainder is still manual.
+So I built a real integration-test harness first. Over 290 integration tests across more than 30 suite files, all running inside an actual VS Code host with live terminals, editor groups in different layouts, and AI extensions pre-installed for the runner (Claude Code, Gemini Code Assist). Roughly two-thirds are fully automated, another third are human-in-the-loop "assisted" tests for flows VS Code's automation API can't drive on its own, and a handful are still manual.
 
 It's the testing harness I wish I'd had when v1.0.0 shipped. It's also the reason I kept pushing the release date out: I wanted to be able to look at the v2.0.0 release notes and trust them.
 
@@ -150,14 +146,10 @@ That's what I've been cooking. It's finally yours.
 
 ---
 
-## Get Involved
+## Happy (Range) Linking!
 
-If RangeLink is useful to you:
+If RangeLink is useful to you, star the [GitHub repo](https://github.com/couimet/rangeLink) and report issues or ideas via [GitHub Issues](https://github.com/couimet/rangeLink/issues).
 
-- Star the repo on [GitHub](https://github.com/couimet/rangeLink) so others can find it
-- Report issues or share ideas via [GitHub Issues](https://github.com/couimet/rangeLink/issues)
-- Contribute via PR — TypeScript codebase, decent test coverage, PR-friendly
-- Share your workflows in the comments below
 
 **Links:**
 
@@ -166,3 +158,7 @@ If RangeLink is useful to you:
 - [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 - [Project Home](https://ouimet.info/projects/rangelink-extension.html)
 - [CHANGELOG](https://github.com/couimet/rangeLink/tree/main/packages/rangelink-vscode-extension/CHANGELOG.md#200)
+
+**About the author** — [Charles Ouimet](https://ouimet.info) is a Principal Software Developer in Montréal. He builds tools like RangeLink to fix the annoyances he runs into himself, balancing distributed systems by day with questionable side-project decisions by night. If something here helped you, coffee's always appreciated.
+
+<a href="https://www.buymeacoffee.com/couimet" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;"></a>
