@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
+import type * as vscode from 'vscode';
 
 import { projectTestStatusFields, VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
@@ -2710,6 +2711,116 @@ describe('VscodeAdapter', () => {
         mockVSCode.window.activeTextEditor = undefined;
 
         const result = adapter.getActiveEditorViewColumn();
+
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('getActiveTabUri', () => {
+      const setActiveTab = (tab: vscode.Tab): void => {
+        const tabGroup = createMockTabGroup([tab], { activeTab: tab });
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [tabGroup],
+          activeTabGroup: tabGroup,
+        });
+      };
+
+      it('returns the URI when the tab input has a .uri property', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const tab = createMockTab(mockUri);
+        setActiveTab(tab);
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBe(mockUri);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'MockTabInputText' },
+          'Resolving active tab URI',
+        );
+      });
+
+      it('returns .modified when the tab input has no .uri but has .modified', () => {
+        const modifiedUri = createMockUri('/workspace/right.txt');
+        const tab = {
+          input: { modified: modifiedUri },
+        } as unknown as vscode.Tab;
+        setActiveTab(tab);
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBe(modifiedUri);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'Object' },
+          'Resolving active tab URI',
+        );
+      });
+
+      it('returns undefined and logs unsupported when the tab input has no file URI', () => {
+        const tab = { input: { viewType: 'markdown.preview' } } as unknown as vscode.Tab;
+        setActiveTab(tab);
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' },
+          'No file URI on active tab input',
+        );
+      });
+
+      it('returns undefined and logs none when there is no active tab group', () => {
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [],
+          activeTabGroup: undefined,
+        });
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
+          'Resolving active tab URI',
+        );
+      });
+
+      it('returns undefined when the active tab group has no active tab', () => {
+        const tabGroup = createMockTabGroup([], { activeTab: undefined });
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [tabGroup],
+          activeTabGroup: tabGroup,
+        });
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
+          'Resolving active tab URI',
+        );
+      });
+    });
+
+    describe('getActiveTabViewColumn', () => {
+      it('returns the active tab group viewColumn', () => {
+        const tab = createMockTab(createMockUri('/workspace/file.ts'));
+        const tabGroup = createMockTabGroup([tab], { activeTab: tab, viewColumn: 2 });
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [tabGroup],
+          activeTabGroup: tabGroup,
+        });
+
+        const result = adapter.getActiveTabViewColumn();
+
+        expect(result).toBe(2);
+      });
+
+      it('returns undefined when there is no active tab group', () => {
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [],
+          activeTabGroup: undefined,
+        });
+
+        const result = adapter.getActiveTabViewColumn();
 
         expect(result).toBeUndefined();
       });

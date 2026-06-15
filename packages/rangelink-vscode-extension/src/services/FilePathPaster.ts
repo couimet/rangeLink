@@ -65,7 +65,7 @@ export class FilePathPaster {
   }
 
   private async pasteCurrentFilePath(pathFormat: PathFormat): Promise<void> {
-    const uri = this.ideAdapter.getActiveTextEditorUri();
+    const uri = this.ideAdapter.getActiveTabUri();
     if (!uri) {
       this.logger.debug(
         { fn: 'FilePathPaster.pasteCurrentFilePath', pathFormat },
@@ -133,7 +133,7 @@ export class FilePathPaster {
         clipboard: destinationFilePath,
         send: paddedPath,
         sourceUri: uri,
-        sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),
+        sourceViewColumn: this.ideAdapter.getActiveTabViewColumn(),
       },
       strategies: {
         sendFn: (text) => this.destinationManager.sendTextToDestination(text),

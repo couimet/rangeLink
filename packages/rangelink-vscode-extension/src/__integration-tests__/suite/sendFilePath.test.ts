@@ -15,7 +15,6 @@ import {
   assertFilePathLogged,
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
-  createFileAt,
   extractQuickPickItemsLogged,
   getLogCapture,
   openAndDismiss,
@@ -106,8 +105,7 @@ standardSuite('Send File Path', (ss) => {
       'rangelink.isBound': true,
     });
 
-    const fileUri = createFileAt('__rl-test-my folder.ts', 'content\n');
-    ss.trackFileUri(fileUri);
+    const fileUri = ss.createTrackedFile('__rl-test-my folder.ts', 'content\n');
     await openEditor(fileUri);
     await ss.settle();
 
@@ -154,8 +152,7 @@ standardSuite('Send File Path', (ss) => {
       'rangelink.isBound': true,
     });
 
-    const fileUri = createFileAt('__rl-test-utils (v2).ts', 'content\n');
-    ss.trackFileUri(fileUri);
+    const fileUri = ss.createTrackedFile('__rl-test-utils (v2).ts', 'content\n');
     await openEditor(fileUri);
     await ss.settle();
 
@@ -200,8 +197,7 @@ standardSuite('Send File Path', (ss) => {
       `✓ RangeLink: File path sent to Text Editor ("${destBasename}")`,
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
-    const sourceUri = createFileAt('__rl-test-source with spaces.ts', 'content\n');
-    ss.trackFileUri(sourceUri);
+    const sourceUri = ss.createTrackedFile('__rl-test-source with spaces.ts', 'content\n');
 
     const destEditor = await openEditor(destUri, vscode.ViewColumn.Two);
     destEditor.selection = new vscode.Selection(
@@ -268,8 +264,7 @@ standardSuite('Send File Path', (ss) => {
       'rangelink.isBound': true,
     });
 
-    const fileUri = createFileAt('__rl-test-clipboard check.ts', 'content\n');
-    ss.trackFileUri(fileUri);
+    const fileUri = ss.createTrackedFile('__rl-test-clipboard check.ts', 'content\n');
     await openEditor(fileUri);
     await ss.settle();
 
@@ -620,7 +615,6 @@ standardSuite('Send File Path', (ss) => {
     const destUri = ss.createWorkspaceFile('sfp-015-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const destBasename = path.basename(destUri.fsPath);
     const sourceUri = ss.createWorkspaceFile('sfp-015-source', 'source content\n');
-    ss.trackFileUri(sourceUri);
 
     const destEditor = await openEditor(destUri, vscode.ViewColumn.Two);
     destEditor.selection = new vscode.Selection(
@@ -690,5 +684,73 @@ standardSuite('Send File Path', (ss) => {
     ss.log(
       '✓ Self-paste with no selection: path inserted at cursor, normal status bar feedback (no clipboard assertion)',
     );
+  });
+
+  test('send-file-path-017: R-F sends workspace-relative path when active tab is an image preview', async () => {
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const pngUri = ss.createPngFixture('sfp-017');
+
+    await vscode.commands.executeCommand('vscode.open', pngUri);
+    await ss.settle();
+
+    assert.strictEqual(
+      vscode.window.activeTextEditor,
+      undefined,
+      'Expected activeTextEditor to be undefined when active tab is an image preview',
+    );
+
+    capturing.clearCaptured();
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
+    const relativePath = vscode.workspace.asRelativePath(pngUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
+    ss.log('✓ R-F sends workspace-relative path for image preview (TabInputCustom)');
+  });
+
+  test('send-file-path-018: R-F sends modified-side path when active tab is a text diff view', async () => {
+    const capturing = await ss.createAndBindCapturingTerminal('sfp-test');
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("sfp-test")',
+      '✓ RangeLink: File path sent to Terminal ("sfp-test")',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const leftUri = ss.createTrackedFile('__rl-test-sfp-018-left.txt', 'left\n');
+    const rightUri = ss.createTrackedFile('__rl-test-sfp-018-right.txt', 'right\n');
+
+    await vscode.commands.executeCommand('vscode.diff', leftUri, rightUri, 'sfp-018 Diff');
+    await ss.settle();
+
+    capturing.clearCaptured();
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    await ss.settle();
+
+    const rightRelativePath = vscode.workspace.asRelativePath(rightUri, false);
+    const leftRelativePath = vscode.workspace.asRelativePath(leftUri, false);
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${rightRelativePath} `);
+
+    // T009 — prove we picked the modified (right) side, not the original (left).
+    assert.ok(
+      !capturing.getCapturedText().includes(leftRelativePath),
+      `Terminal must not receive the left-side path "${leftRelativePath}" — diff resolution must pick the modified side`,
+    );
+    ss.log('✓ R-F sends modified-side path for text diff (TabInputTextDiff)');
   });
 });

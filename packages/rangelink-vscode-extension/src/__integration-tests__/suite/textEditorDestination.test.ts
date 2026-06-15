@@ -63,7 +63,6 @@ standardSuite('Text Editor Destination', (ss) => {
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = ss.createWorkspaceFile('ted-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('ted-002-source', 'source content\n');
-    ss.trackFileUri(sourceUri);
     const destBasename = path.basename(destUri.fsPath);
 
     const destEditor = await vscode.window.showTextDocument(
