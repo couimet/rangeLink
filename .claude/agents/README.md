@@ -32,33 +32,58 @@ Task(subagent_type="test-scope-fixer", prompt="Analyze <test-file-path>")
 - Ensures each test asserts on mock calls (delegation verification)
 - Runs tests after refactoring to verify correctness
 
-### plan-integration-test
+### tc-implement
 
-**Purpose**: Plans the exact assertion template for an `[assisted]` integration test by tracing the production code path, log manifest shape, and QA YAML preconditions. Run BEFORE writing test code.
+**Purpose**: Implements one QA TC ID end-to-end as an integration test. Traces the production code path, writes the test using `__integration-tests__/helpers/`, inserts in TC-ID ascending order in the right `suite/` file, updates the YAML entry's `automated:` field, and runs the matching `pnpm test:release:*` command.
 
-**When to use**: When you need to write a new `[assisted]` integration test for a QA TC ID. Produces a ready-to-paste test template with the gold standard assertion pattern.
+**When to use**: When you have a QA TC ID that needs an integration test. Works for any `automated:` value (`false`, `assisted`, or `true` — the last is useful for re-implementing a test file that was lost). Typical workflow: `/tcs-definition` (skill) drafts a batch of TCs in a scratchpad; `tc-implement` (agent) is invoked once per TC for short feedback loops.
 
 **Usage**:
 
 ```
-Agent(subagent_type="plan-integration-test", prompt="Plan the integration test for TC ID: file-picker-001")
+Task(subagent_type="tc-implement", prompt="bind-to-destination-013")
 ```
 
-**What it produces**:
+**Workflow**:
 
-1. Setup code (terminals, files, binds) based on QA YAML preconditions
-2. `waitForHuman()` with minimal mechanical action
-3. `assert.deepStrictEqual` on the full logged item shape (label, displayName, description, isActive, boundState, itemKind)
-4. Cleanup code
+1. **Validate**: reads the TC entry from `qa-test-cases.yaml`; rejects unknown IDs.
+2. **Trace**: identifies the picker / command / adapter mutation path and the logged-field shape.
+3. **Build**: assembles the test using the gold-standard `assert.deepStrictEqual` shape (terminal/file/overflow items).
+4. **Resolve target file**: by neighbor TC-ID (slug-to-file is NOT 1:1); falls back to camelCase slug for new files.
+5. **Insert**: maintains ascending TC-ID order within the file.
+6. **Extend helpers**: adds new primitives to `helpers/<topic>.ts` when missing rather than inlining.
+7. **Update YAML**: switches `automated:` to `true` or `assisted` based on `waitForHuman*` use; drops `preconditions:` and `steps:` (compact template).
+8. **Run pnpm**: picks `:grep` / `:with-extensions --grep` / `:automated` based on the TC's `labels:` and `automated:` value.
+9. **Iterate or report**: one retry on failure, then reports pass/fail with details.
 
 **Key Features**:
 
-- Traces the exact code path from command → adapter → log manifest
-- Knows the difference between R-D inline (label = displayName) vs R-M menu (label = indented with codicon)
-- Knows file descriptions include `· Tab Group N` in inline picker but not in secondary picker
-- Produces assertions that match CLAUDE.md rules T009-T018
+- Repeats T011, T016, T017 for self-containment (canonical rules in CLAUDE.md). Houses the release-test command reference. General test rules T009, T010, T012, T013, T014, T015 stay in CLAUDE.md only.
+- Encodes the two conventions from issue #650 thread: no redundant negative log-scraping (the framework asserts that by default), and prefer end-to-end assertions over middle-layer log-scraping.
+- Handles non-1:1 slug-to-file mappings by neighbor lookup with explicit tie-breakers.
+- For the granted tool list, see the agent's frontmatter — this README does not duplicate it.
 
 ---
+
+## Related Skills
+
+### tcs-definition
+
+**Purpose**: Interview-driven skill that drafts new QA test cases for the current `issues/<ID>` branch. Reads the active-plan note, issue body, parent issue, related YAML entries, and any partial diff; drafts initial suggestions; then runs targeted `AskUserQuestion` rounds for edge cases.
+
+**When to use**: As a step inside `/start-issue` plans, before implementation begins. The output is a scratchpad with paste-ready YAML and a list of TC IDs to hand to `tc-implement`.
+
+**Usage**: `/tcs-definition` (zero-argument).
+
+### qa-suggest
+
+**Purpose**: CHANGELOG-driven (`[Unreleased]` entries) TC suggester. Diffs CHANGELOG against the current YAML and scans integration tests to draft new entries.
+
+**When to use**: At release time, when CHANGELOG `[Unreleased]` has accumulated entries that may not yet have TCs.
+
+**Usage**: `/qa-suggest` (zero-argument).
+
+The three pieces compose: `tcs-definition` runs at issue-start (spec-driven), `tc-implement` runs per-TC during implementation, `qa-suggest` runs at release-time as a backstop.
 
 ## How Agents Work
 

@@ -193,28 +193,35 @@
 </rule>
 
 <rule id="T009" priority="critical">
-  <title>Assert the negative in integration tests</title>
+  <title>Assert the negative</title>
   <do>When asserting item X has property P, also assert that item Y does NOT have property P</do>
   <rationale>Proves the property is specific to X, not applied to everything. Without the negative assertion, a bug that gives every item the property would pass.</rationale>
   <good-example>
     ```typescript
+    // Unit tests (Jest)
+    expect(activeItem.isActive).toBe(true);
+    expect(nonActiveItem.isActive).toBeUndefined(); // proves specificity
+
+    // Integration tests (node:assert)
     assert.strictEqual(activeItem.isActive, true);
-    assert.strictEqual(nonActiveItem.isActive, undefined); // proves specificity
+    assert.strictEqual(nonActiveItem.isActive, undefined);
     ```
+
   </good-example>
 </rule>
 
 <rule id="T010" priority="critical">
   <title>Assert content, not just count</title>
-  <do>When testing that a list contains items, assert on specific item labels/fields, not just array.length</do>
-  <never>Use `assert.ok(items.length >= N)` as the sole assertion — count-only checks mask wrong items</never>
+  <do>When testing that a list contains items, assert on specific item labels/fields, not just `array.length`</do>
+  <never>Use a count-only assertion (`expect(items.length).toBeGreaterThanOrEqual(N)` or `assert.ok(items.length >= N)`) as the sole check</never>
   <rationale>A list with the right count but wrong content passes count-only assertions</rationale>
 </rule>
 
 <rule id="T011" priority="critical">
   <title>Assert payload on secondary/reopened pickers</title>
+  <scope>Integration tests only</scope>
   <do>When testing that a secondary picker opens or a parent picker reopens, parse the logged items and verify content matches expectations</do>
-  <never>Just count showQuickPick invocations — that proves a picker opened but not what it contained</never>
+  <never>Count only `showQuickPick` invocations — that proves a picker opened but not what it contained</never>
   <rationale>A bug could open an empty picker or one with wrong items while still producing the expected invocation count</rationale>
 </rule>
 
@@ -226,25 +233,34 @@
 
 <rule id="T013" priority="critical">
   <title>Named constants for test thresholds</title>
-  <do>Overflow thresholds, item counts, and setup sizes in integration tests must use SCREAMING_SNAKE_CASE constants</do>
+  <do>Overflow thresholds, item counts, and setup sizes in tests must use SCREAMING_SNAKE_CASE constants</do>
   <rationale>Cross-references P003. Prevents magic numbers in test loops and assertions from drifting when thresholds change.</rationale>
 </rule>
 
 <rule id="T014" priority="critical">
-  <title>Assert on semantic log fields, not rendered text</title>
-  <do>When a log entry contains structured fields (isActive, boundState, remainingCount), assert on those fields directly</do>
+  <title>Assert on semantic fields, not rendered text</title>
+  <do>When a structured object has semantic fields (e.g., `isActive`, `boundState`, `remainingCount`), assert on those fields directly</do>
   <never>Parse human-readable description strings to infer semantic state when a structured field is available</never>
   <good-example>
     ```typescript
+    // Unit tests (Jest)
+    expect({ boundState: item.boundState, isActive: item.isActive }).toStrictEqual({
+      boundState: 'bound',
+      isActive: true,
+    });
+
+    // Integration tests (node:assert)
     assert.deepStrictEqual(
       { boundState: item.boundState, isActive: item.isActive },
       { boundState: 'bound', isActive: true },
     );
     ```
+
   </good-example>
   <bad-example>
     ```typescript
-    assert.ok(item.description.includes('bound')); // fragile text parsing
+    expect(item.description.includes('bound')).toBe(true); // fragile text parsing
+    assert.ok(item.description.includes('bound')); // also fragile
     ```
   </bad-example>
 </rule>
@@ -252,23 +268,20 @@
 <rule id="T015" priority="critical">
   <title>Adapter methods that mutate external state must log their inputs</title>
   <do>Clipboard writes, terminal text sends, editor inserts, and navigation selections must log the values being set (or their length for large content)</do>
-  <rationale>Integration tests verify behavior via log capture. Unlogged mutations are invisible to test assertions and can only be checked via side effects, which is fragile.</rationale>
+  <rationale>Tests verify behavior via log capture (integration) or logger-mock assertions (unit). Unlogged mutations are invisible to test assertions and can only be checked via side effects, which is fragile.</rationale>
 </rule>
 
 <rule id="T016" priority="critical">
   <title>Integration tests import command IDs from constants; unit tests use literals</title>
-  <scope>Integration tests under `src/__integration-tests__/` only</scope>
+  <scope>Integration-test command dispatches only — unit tests use literals per T003</scope>
   <do>Import command IDs from `src/constants/commandIds.ts` when dispatching via `vscode.commands.executeCommand`</do>
-  <never>Use string literals for command IDs in integration-test dispatches — a typo passes compile and silently fails inside VS Code's promise chain</never>
-  <exception>Unit tests still use literals per T003. This rule is scoped to integration-test command dispatch only, not assertions.</exception>
-  <rationale>Dispatch is not an assertion — the command string is being routed to VS Code, not compared against a frozen contract. Importing the constant gives compile-time detection when a command is renamed or removed. A typo'd literal (e.g., `rangelink.sendCurrentFilePath` vs the real `rangelink.pasteCurrentFileRelativePath`) compiles locally, fails silently at runtime, and only surfaces when CI runs the integration tests.</rationale>
+  <never>Use string literals for command IDs in integration-test dispatches — a typo compiles and fails silently inside VS Code's promise chain</never>
+  <rationale>Importing the constant gives compile-time detection when a command is renamed. A typo'd literal compiles locally, fails silently at runtime, and only surfaces when CI runs the integration tests.</rationale>
   <good-example>
     ```typescript
     import { CMD_PASTE_CURRENT_FILE_PATH_RELATIVE } from '../../constants/commandIds';
-
     await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     ```
-
   </good-example>
   <bad-example>
     ```typescript
@@ -280,57 +293,12 @@
 
 <rule id="T017" priority="critical">
   <title>waitForHuman instructions are self-contained; waitForHumanVerdict defines PASS</title>
-  <scope>Integration tests under `src/__integration-tests__/` only</scope>
-
-<do>Make the 2nd param of `waitForHuman(label, instruction, steps)` self-contained — every action the tester must perform is stated in `instruction`. The `steps` array adds background context and step-by-step breakdown but the tester can complete the test from `instruction` alone.</do>
-<never>Hide a required action only in `steps`. If the tester must select a picker item, press a keybinding, or dismiss a dialog, that belongs in `instruction`.</never>
-
-<do>In `waitForHumanVerdict(label, question, steps)`, phrase `question` as a yes/no question where YES = PASS. State exactly what the tester must verify before pressing PASS.</do>
-<never>Explain the FAIL path in `steps`. The default action is FAIL — no explanation needed. Do not write "FAIL if …" or "press FAIL when …".</never>
-
-<never>Tell the tester to click Cancel or press Escape to dismiss. They know how to dismiss menus and pickers.</never>
-
-  <good-example>
-    ```typescript
-    // BAD: required action hidden in steps[3]
-    await waitForHuman(
-      'context-menus-terminal-001',
-      `Right-click terminal TAB "${name}" → "RangeLink: Send Selection"`,
-      [
-        `The terminal "${name}" has selected text.`,
-        '1. Right-click the terminal TAB',
-        '2. Verify the entry is present',
-        '3. Select it to open the destination picker and pick any destination',
-      ],
-    );
-
-    // GOOD: instruction is self-contained
-    await waitForHuman(
-      'context-menus-terminal-001',
-      `Right-click terminal TAB "${name}" → "RangeLink: Send Selection" → pick any destination from the picker that opens`,
-      [
-        `The terminal "${name}" has selected text. No destination is bound.`,
-        '1. Right-click the terminal TAB (not the content area)',
-        '2. Verify "RangeLink: Send Selection to Destination" is present',
-        '3. Select it — a destination picker opens',
-        '4. Pick any destination and press Enter',
-      ],
-    );
-
-    // VERDICT — GOOD: question states what to verify for PASS, no FAIL explanation
-    const verdict = await waitForHumanVerdict(
-      'context-menus-terminal-012',
-      `Is "RangeLink: Send Selection" ABSENT from both the tab menu AND the content-area menu?`,
-      [
-        `The terminal "${name}" IS the bound destination.`,
-        '1. Right-click the terminal TAB — check the entry is absent',
-        '2. Right-click the terminal CONTENT AREA — check the entry is absent',
-        '3. Press PASS if absent from both',
-      ],
-    );
-    ```
-
-  </good-example>
+  <scope>Assisted integration tests only</scope>
+  <do>Make the 2nd param of `waitForHuman(label, instruction, steps)` self-contained — every action the tester must perform is stated in `instruction`. The `steps` array adds background but the tester can complete the test from `instruction` alone.</do>
+  <never>Hide a required action only in `steps`. If the tester must select a picker item or press a keybinding, that belongs in `instruction`.</never>
+  <do>In `waitForHumanVerdict(label, question, steps)`, phrase `question` as a yes/no question where YES = PASS. State exactly what the tester must verify before pressing PASS.</do>
+  <never>Explain the FAIL path in `steps`. The default action is FAIL — no explanation needed. Do not write "FAIL if …" or "press FAIL when …".</never>
+  <never>Tell the tester to click Cancel or press Escape to dismiss menus and pickers. They know.</never>
 </rule>
 
 <rule id="E001" priority="critical">
@@ -617,12 +585,9 @@
 
 <release-test-requirement>
   <rule>Any change to files in `packages/rangelink-vscode-extension/qa/` or `packages/rangelink-vscode-extension/src/__integration-tests__/` MUST be validated by running an integration-test command.</rule>
-  <reason>The QA validator script only checks ID matching — it does not execute the tests. Only the integration-test runner compiles the extension and runs tests in a real VS Code host, which is the only way to verify that log-based assertions and command behavior actually work.</reason>
-  <default-command>`pnpm test:release:automated` — runs only `automated: true` TCs. This is the default Claude should use. Skips `[assisted]` tests, so it does not block on human-in-the-loop prompts.</default-command>
-  <targeted-command>`pnpm test:release:grep "<TC-ID-or-pattern>" --exclude-assisted` — runs a focused subset by TC ID or regex, with assisted tests filtered out. Use this when iterating on a specific feature or test. Pass multiple IDs as a regex alternation, e.g. `"terminal-picker-014|bind-to-destination-013"`. Notes: (a) do NOT prefix the pattern with `--`, the script rejects it; pnpm forwards args positionally. (b) `--exclude-assisted` is required because `:grep` alone does not filter assisted TCs; omitting it can stall the run on a human-in-the-loop prompt if the pattern matches an `[assisted]` test. Omit `--exclude-assisted` only when you specifically want to drive an assisted test (e.g., paired with `--assisted`). (c) The grep pattern MUST be shell-quoted (double quotes). Without quotes, `|` is interpreted as a shell pipe operator and only the first TC ID before `|` reaches the script. Always use `--grep "id-001|id-002|..."`, never `--grep id-001|id-002|...`.</targeted-command>
-  <extensions-command>`pnpm test:release:with-extensions --grep "<TC-ID-or-pattern>"` — runs tests that require marketplace extensions (Claude Code, Gemini Code Assist, Copilot Chat, Cursor AI, custom AI assistants). USE THIS instead of `:grep` when ANY of the target TC IDs belong to a feature group with `requires_extensions: true` in `packages/rangelink-vscode-extension/qa/qa-test-cases.yaml`. Check the YAML's `requires_extensions` field on the matching feature group before choosing the command. The `--with-extensions` mode also automatically excludes tests labeled `needs-override`. Notes: (a) same quoting rules apply as `:grep`. (b) `--exclude-assisted` is NOT a valid flag with `:with-extensions`; the script documents supported flags in `--help`.</extensions-command>
-  <full-command>`pnpm test:release` — runs everything including `[assisted]` tests. Only use when the user explicitly asks for the full suite, or when validating a release. Will block waiting for human input on assisted tests.</full-command>
-  <rule>Default to `:automated` for routine validation. When iterating on specific TC IDs, switch to `:grep` with `--exclude-assisted` and the relevant IDs to keep the feedback loop tight. Before running `:grep`, check the QA YAML for `requires_extensions: true` on any of the target feature groups — if present, use `:with-extensions --grep` instead. Do not run the bare `pnpm test:release` unless explicitly asked.</rule>
+  <see>The full command reference (`pnpm test:release:automated` / `:grep` / `:with-extensions` / bare) and the rules for picking among them live in `.claude/agents/tc-implement.md` under "Release-test command reference". Invoke the `tc-implement` agent or read that file when running release tests.</see>
+  <quick-reference>`:automated` is the default; `:grep "<id>" --exclude-assisted` is targeted; `:with-extensions --grep "<id>"` is for TCs with `requires-extensions` in `labels:`; bare `pnpm test:release` runs everything including assisted (avoid by default).</quick-reference>
+  <default-shortcut>For routine validation, `pnpm test:release:automated` runs all `automated: true` TCs and is safe to run without consulting the agent file.</default-shortcut>
 </release-test-requirement>
 
 </testing>
