@@ -76,8 +76,8 @@ importers:
   packages/rangelink-vscode-extension:
     dependencies:
       '@couimet/logger-contract':
-        specifier: 1.0.1-alpha.0
-        version: 1.0.1-alpha.0
+        specifier: 1.0.0
+        version: 1.0.0
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
@@ -86,8 +86,8 @@ importers:
         version: link:../rangelink-core-ts
     devDependencies:
       '@couimet/logger-contract-testing':
-        specifier: 1.0.1-alpha.0
-        version: 1.0.1-alpha.0(@couimet/logger-contract@1.0.1-alpha.0)
+        specifier: 1.0.0
+        version: 1.0.0(@couimet/logger-contract@1.0.0)(jest@29.7.0(@types/node@20.19.24))
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -343,10 +343,19 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
+  '@couimet/logger-contract-testing@1.0.0':
+    resolution: {integrity: sha512-Ug2SKE1RS/MPNKh0yoEtBftNFMWgfigiVbynytokf0XFnXwVMywHjAnfvU3amnNiQkV2HQYorl44wUWxvdZGqg==}
+    peerDependencies:
+      '@couimet/logger-contract': 1.0.0
+      jest: ^29.0.0
+
   '@couimet/logger-contract-testing@1.0.1-alpha.0':
     resolution: {integrity: sha512-vFCzvK7H69LykhmTUq0fD9JmBddnhVDnjARNzfCk5TIIgGvgXwbQxVXnoW0b0ZeTS4ykT3qFhtCCKLOUOgDuaQ==}
     peerDependencies:
       '@couimet/logger-contract': 1.0.1-alpha.0
+
+  '@couimet/logger-contract@1.0.0':
+    resolution: {integrity: sha512-LOO1agPfspl/df8JpKB8nZygBWouM9hQnslVOjVVR5DyzJzqo2oXMZS/wiFOgrHqWwBGQCDi3tkREdWMSrDg2A==}
 
   '@couimet/logger-contract@1.0.1-alpha.0':
     resolution: {integrity: sha512-RMPI2P/8tFeBvpQIHt2vzoOj5xT6SX1ihMs2JCXmR397VmarQs+EywgKAx1yTw4S+tWt2mjl+6IdijOQ2Mn44A==}
@@ -3918,9 +3927,16 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
+  '@couimet/logger-contract-testing@1.0.0(@couimet/logger-contract@1.0.0)(jest@29.7.0(@types/node@20.19.24))':
+    dependencies:
+      '@couimet/logger-contract': 1.0.0
+      jest: 29.7.0(@types/node@20.19.24)
+
   '@couimet/logger-contract-testing@1.0.1-alpha.0(@couimet/logger-contract@1.0.1-alpha.0)':
     dependencies:
       '@couimet/logger-contract': 1.0.1-alpha.0
+
+  '@couimet/logger-contract@1.0.0': {}
 
   '@couimet/logger-contract@1.0.1-alpha.0': {}
 

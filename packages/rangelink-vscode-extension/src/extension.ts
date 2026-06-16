@@ -49,10 +49,7 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     loggerContractVersion = require(`${loggerContractPkgDir}/package.json`).version as string;
   } catch (error) {
-    logger.warn(
-      { fn: 'activate', error },
-      'Failed to resolve logger-contract version',
-    );
+    logger.warn({ fn: 'activate', error }, 'Failed to resolve logger-contract version');
   }
 
   if (versionInfo) {

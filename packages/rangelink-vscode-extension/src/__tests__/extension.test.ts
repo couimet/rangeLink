@@ -26,13 +26,8 @@ const DEFAULT_DELIMITERS: Record<string, string> = {
   delimiterRange: '-',
 };
 
-const createMockConfig = (overrides?: {
-  get?: jest.Mock;
-  inspect?: jest.Mock;
-}) => ({
-  get:
-    overrides?.get ??
-    jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
+const createMockConfig = (overrides?: { get?: jest.Mock; inspect?: jest.Mock }) => ({
+  get: overrides?.get ?? jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
   inspect:
     overrides?.inspect ??
     jest.fn((key: string) => ({
