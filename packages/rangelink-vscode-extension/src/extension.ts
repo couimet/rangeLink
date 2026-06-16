@@ -28,9 +28,34 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   const logger = getLogger();
 
   let versionInfo: VersionInfo | undefined;
+  let loggerContractVersion: string | undefined;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     versionInfo = require('./version.json') as VersionInfo;
+  } catch (error) {
+    logger.warn(
+      { fn: 'activate', error },
+      'RangeLink extension activated (version info unavailable)',
+    );
+  }
+
+  try {
+    // eslint-disable-next-line no-undef
+    const loggerContractEntry = require.resolve('@couimet/logger-contract');
+    // Resolve package root from entry point (dist/index.js → package root), then
+    // require by absolute path to bypass the package's "exports" field restriction
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    const loggerContractPkgDir = require('node:path').resolve(loggerContractEntry, '../..');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    loggerContractVersion = require(`${loggerContractPkgDir}/package.json`).version as string;
+  } catch (error) {
+    logger.warn(
+      { fn: 'activate', error },
+      'Failed to resolve logger-contract version',
+    );
+  }
+
+  if (versionInfo) {
     logger.info(
       {
         fn: 'activate',
@@ -39,13 +64,9 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
         isDirty: versionInfo.isDirty,
         branch: versionInfo.branch,
         buildDate: versionInfo.buildDate,
+        loggerContractVersion,
       },
       `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
-    );
-  } catch (error) {
-    logger.warn(
-      { fn: 'activate', error },
-      'RangeLink extension activated (version info unavailable)',
     );
   }
 
