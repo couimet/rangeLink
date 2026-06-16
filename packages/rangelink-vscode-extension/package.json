@@ -961,12 +961,12 @@
     "onStartupFinished"
   ],
   "dependencies": {
-    "@couimet/logger-contract": "1.0.0",
+    "@couimet/logger-contract": "^1.0.0",
     "nanoid": "^5.1.6",
     "rangelink-core-ts": "workspace:*"
   },
   "devDependencies": {
-    "@couimet/logger-contract-testing": "1.0.0",
+    "@couimet/logger-contract-testing": "^1.0.0",
     "@types/jest": "^29.5.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
