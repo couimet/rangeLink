@@ -1,9 +1,9 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
+import { ExtensionResult } from '../../types';
 import {
   createMockClipboardService,
   createMockConfigReader,
@@ -80,7 +80,7 @@ describe('TerminalSelectionService', () => {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::capture::read',
       });
-      mockClipboardService.capture.mockResolvedValue(Result.err(captureError));
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.err(captureError));
 
       const result = await service.pasteTerminalSelectionToDestination();
 
@@ -107,7 +107,7 @@ describe('TerminalSelectionService', () => {
         functionName: 'ClipboardService::capture',
         details: { error: commandError },
       });
-      mockClipboardService.capture.mockResolvedValue(Result.err(captureError));
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.err(captureError));
 
       const result = await service.pasteTerminalSelectionToDestination();
 
@@ -128,7 +128,7 @@ describe('TerminalSelectionService', () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockClipboardService.capture.mockResolvedValue(
-        Result.ok({ clipboard: '', produced: undefined }),
+        ExtensionResult.ok({ clipboard: '', produced: undefined }),
       );
 
       const result = await service.pasteTerminalSelectionToDestination();
@@ -145,7 +145,7 @@ describe('TerminalSelectionService', () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockClipboardService.capture.mockResolvedValue(
-        Result.ok({ clipboard: 'selected text', produced: undefined }),
+        ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
       );
       mockSendRouter.resolveDestination.mockResolvedValue(false);
 
@@ -159,7 +159,7 @@ describe('TerminalSelectionService', () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockClipboardService.capture.mockResolvedValue(
-        Result.ok({ clipboard: 'selected text', produced: undefined }),
+        ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
       );
       mockSendRouter.resolveDestination.mockResolvedValue(true);
       mockConfigReader.getPaddingMode.mockReturnValue('both');
@@ -199,7 +199,7 @@ describe('TerminalSelectionService', () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
       mockClipboardService.capture.mockResolvedValue(
-        Result.ok({ clipboard: 'text', produced: undefined }),
+        ExtensionResult.ok({ clipboard: 'text', produced: undefined }),
       );
       mockSendRouter.resolveDestination.mockResolvedValue(true);
 

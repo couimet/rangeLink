@@ -1,14 +1,14 @@
 import { Result } from 'rangelink-core-ts';
 
-import type { RangeLinkExtensionError } from '../errors';
+import type { ExtensionError } from './ExtensionError';
 
 /**
  * Specialized Result type for extension operations.
  *
- * Bakes in RangeLinkExtensionError as the error type, reducing verbosity
- * and making function signatures cleaner throughout the extension.
+ * Bakes in ExtensionError (RangeLinkError | RangeLinkExtensionError) as the error type,
+ * reducing verbosity and making function signatures cleaner throughout the extension.
  */
-export type ExtensionResult<T> = Result<T, RangeLinkExtensionError>;
+export type ExtensionResult<T> = Result<T, ExtensionError>;
 
 /**
  * Companion object for ExtensionResult type.
@@ -17,5 +17,5 @@ export type ExtensionResult<T> = Result<T, RangeLinkExtensionError>;
  */
 export const ExtensionResult = {
   ok: <T>(value: T): ExtensionResult<T> => Result.ok(value),
-  err: <T = never>(error: RangeLinkExtensionError): ExtensionResult<T> => Result.err(error),
+  err: <T = never>(error: ExtensionError): ExtensionResult<T> => Result.err(error),
 };

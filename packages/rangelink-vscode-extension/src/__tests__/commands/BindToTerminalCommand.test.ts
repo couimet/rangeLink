@@ -1,12 +1,11 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
 import type { BindSuccessInfo } from '../../destinations';
 import type { BoundSession } from '../../destinations';
 import type { TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import type { ExtensionResult } from '../../types';
+import { ExtensionResult } from '../../types';
 import type { TerminalBindableQuickPickItem } from '../../types';
 import {
   createMockBoundSession,
@@ -93,7 +92,7 @@ describe('BindToTerminalCommand', () => {
           createMockTerminalQuickPickItem(terminal),
         ]);
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
-          Result.ok({ destinationName: 'My Terminal', destinationKind: 'terminal' }),
+          ExtensionResult.ok({ destinationName: 'My Terminal', destinationKind: 'terminal' }),
         );
         command = new BindToTerminalCommand(
           mockAdapter,
@@ -131,7 +130,9 @@ describe('BindToTerminalCommand', () => {
           message: 'Terminal bind failed',
           functionName: 'PasteDestinationManager.bind',
         });
-        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(Result.err(bindError));
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          ExtensionResult.err(bindError),
+        );
         command = new BindToTerminalCommand(
           mockAdapter,
           mockAvailabilityService,
@@ -162,7 +163,10 @@ describe('BindToTerminalCommand', () => {
           createMockTerminalQuickPickItem(terminal1, true),
           createMockTerminalQuickPickItem(terminal2),
         ]);
-        const bindOk = Result.ok({ destinationName: 'Terminal 2', destinationKind: 'terminal' });
+        const bindOk = ExtensionResult.ok({
+          destinationName: 'Terminal 2',
+          destinationKind: 'terminal',
+        });
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(bindOk);
         showTerminalPickerSpy.mockImplementation(
           async (
@@ -237,7 +241,9 @@ describe('BindToTerminalCommand', () => {
           message: 'Terminal bind failed',
           functionName: 'PasteDestinationManager.bind',
         });
-        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(Result.err(bindError));
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          ExtensionResult.err(bindError),
+        );
         showTerminalPickerSpy.mockImplementation(
           async (
             _terminals: readonly TerminalBindableQuickPickItem[],
@@ -305,7 +311,7 @@ describe('BindToTerminalCommand', () => {
         const terminal = createMockTerminal({ name: 'Right-Clicked Terminal' });
         mockAdapter = createMockVscodeAdapter();
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
-          Result.ok({
+          ExtensionResult.ok({
             destinationName: 'Right-Clicked Terminal',
             destinationKind: 'terminal',
           }),
@@ -352,7 +358,7 @@ describe('BindToTerminalCommand', () => {
         });
         mockAdapter = createMockVscodeAdapter();
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
-          Result.err(bindError) as ExtensionResult<BindSuccessInfo>,
+          ExtensionResult.err(bindError) as ExtensionResult<BindSuccessInfo>,
         );
         command = new BindToTerminalCommand(
           mockAdapter,
@@ -376,7 +382,7 @@ describe('BindToTerminalCommand', () => {
           createMockTerminalQuickPickItem(terminal),
         ]);
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
-          Result.ok({ destinationName: 'Only Terminal', destinationKind: 'terminal' }),
+          ExtensionResult.ok({ destinationName: 'Only Terminal', destinationKind: 'terminal' }),
         );
         command = new BindToTerminalCommand(
           mockAdapter,

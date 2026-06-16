@@ -5,6 +5,7 @@ export * from './BindFailureReason';
 export * from './DestinationBehavior';
 export * from './DestinationKind';
 export * from './DirtyBufferWarningResult';
+export * from './ExtensionError';
 export * from './ExtensionResult';
 export * from './MessageCode';
 export * from './PasteContentType';
