@@ -1,9 +1,9 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalPasteService } from '../../services';
+import { ExtensionResult } from '../../types';
 import { BehaviourAfterPaste } from '../../types';
 import {
   createMockClipboardService,
@@ -108,7 +108,7 @@ describe('TerminalPasteService', () => {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::stage',
       });
-      mockClipboardService.stage.mockResolvedValue(Result.err(stageError));
+      mockClipboardService.stage.mockResolvedValue(ExtensionResult.err(stageError));
 
       const result = await service.pasteIntoTerminal('bad content', terminal);
 

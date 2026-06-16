@@ -114,14 +114,7 @@ export const generateLinkFromSelections = (
   if (!result.success) {
     const linkTypeName = linkType === LinkType.Portable ? 'portable link' : 'link';
     logger.error({ fn: FN_NAME, error: result.error }, `Failed to generate ${linkTypeName}`);
-    return ExtensionResult.err(
-      new RangeLinkExtensionError({
-        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_FORMAT_FAILED,
-        message: `Failed to generate ${linkTypeName}`,
-        functionName: FN_NAME,
-        cause: result.error,
-      }),
-    );
+    return ExtensionResult.err(result.error);
   }
 
   logger.info({ fn: FN_NAME, formattedLink: result.value }, `Generated link: ${result.value.link}`);

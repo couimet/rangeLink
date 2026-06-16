@@ -5,10 +5,11 @@ import {
   DelimiterConfig,
   type FormattedLink,
   LinkType,
+  RangeLinkError,
+  RangeLinkErrorCodes,
   SelectionCoverage,
   SelectionType,
 } from 'rangelink-core-ts';
-import * as rangeLinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
@@ -23,6 +24,7 @@ import {
   createMockFormattedLink,
   createMockPosition,
   createMockSelection,
+  spyOnFormatLink,
   spyOnToInputSelection,
 } from '../helpers';
 
@@ -146,7 +148,7 @@ describe('generateLinkFromSelections', () => {
         }),
       );
 
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
+      spyOnFormatLink().mockReturnValue(CoreResult.ok(expectedLink));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -188,7 +190,7 @@ describe('generateLinkFromSelections', () => {
         }),
       );
 
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
+      const formatLinkSpy = spyOnFormatLink().mockReturnValue(CoreResult.ok(expectedLink));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -204,7 +206,7 @@ describe('generateLinkFromSelections', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value.linkType).toBe('portable');
       });
-      expect(rangeLinkCore.formatLink).toHaveBeenCalledWith(
+      expect(formatLinkSpy).toHaveBeenCalledWith(
         REFERENCE_PATH,
         {
           selections: [
@@ -271,12 +273,12 @@ describe('generateLinkFromSelections', () => {
         }),
       );
 
-      const formatLinkError = new rangeLinkCore.RangeLinkError({
-        code: rangeLinkCore.RangeLinkErrorCodes.VALIDATION,
+      const formatLinkError = new RangeLinkError({
+        code: RangeLinkErrorCodes.VALIDATION,
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.err(formatLinkError));
+      spyOnFormatLink().mockReturnValue(CoreResult.err(formatLinkError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -289,10 +291,9 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
-        message: 'Failed to generate link',
-        functionName: 'generateLinkFromSelections',
-        cause: formatLinkError,
+      expect(result).toBeRangeLinkErrorErr('VALIDATION', {
+        message: 'Invalid selection range',
+        functionName: 'formatLink',
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: formatLinkError },
@@ -316,12 +317,12 @@ describe('generateLinkFromSelections', () => {
         }),
       );
 
-      const formatLinkError = new rangeLinkCore.RangeLinkError({
-        code: rangeLinkCore.RangeLinkErrorCodes.VALIDATION,
+      const formatLinkError = new RangeLinkError({
+        code: RangeLinkErrorCodes.VALIDATION,
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.err(formatLinkError));
+      spyOnFormatLink().mockReturnValue(CoreResult.err(formatLinkError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -334,10 +335,9 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
-        message: 'Failed to generate portable link',
-        functionName: 'generateLinkFromSelections',
-        cause: formatLinkError,
+      expect(result).toBeRangeLinkErrorErr('VALIDATION', {
+        message: 'Invalid selection range',
+        functionName: 'formatLink',
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: formatLinkError },

@@ -1,5 +1,4 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 
 import {
   AIAssistantFocusCapability,
@@ -12,6 +11,7 @@ import {
   TerminalInsertFactory,
 } from '../../destinations';
 import { TerminalPasteService } from '../../services';
+import { ExtensionResult } from '../../types';
 import {
   createMockClipboardService,
   createMockDocument,
@@ -54,7 +54,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal');
       const pasteTextSpy = jest
         .spyOn(terminalPasteService, 'pasteIntoTerminal')
-        .mockResolvedValue(Result.ok(undefined));
+        .mockResolvedValue(ExtensionResult.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
@@ -110,12 +110,12 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       jest.spyOn(mockAdapter, 'showTerminal').mockImplementation(() => {
         callOrder.push('focus');
-        return Result.ok(undefined);
+        return ExtensionResult.ok(undefined);
       });
 
       jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(async () => {
         callOrder.push('insert');
-        return Result.ok(undefined);
+        return ExtensionResult.ok(undefined);
       });
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -506,10 +506,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       );
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
-      jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(Result.ok(undefined));
+      jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(ExtensionResult.ok(undefined));
       const pasteTextSpy = jest
         .spyOn(terminalPasteService, 'pasteIntoTerminal')
-        .mockResolvedValue(Result.ok(undefined));
+        .mockResolvedValue(ExtensionResult.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',

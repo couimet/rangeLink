@@ -1,10 +1,10 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
 import { RangeLinkExtensionError } from '../../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../../errors/RangeLinkExtensionErrorCodes';
+import { ExtensionResult } from '../../../types';
 import {
   createMockInsertFactory,
   createMockTerminal,
@@ -47,7 +47,7 @@ describe('TerminalFocusCapability', () => {
       code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
       message: 'Terminal reference is not defined',
     });
-    jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(Result.err(focusError));
+    jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(ExtensionResult.err(focusError));
     const terminal = createMockTerminal({ name: 'bash' });
     const mockInsertFactory = createMockInsertFactory<vscode.Terminal>();
 

@@ -1,5 +1,4 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { BindSuccessInfo, PasteDestination } from '../../destinations';
@@ -52,7 +51,7 @@ describe('SendRouter', () => {
       async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
         const result = await fn();
         shouldRestore?.();
-        return Result.ok(result);
+        return ExtensionResult.ok(result);
       },
     );
     mockFeedbackProvider = createMockOperationFeedbackProvider();
@@ -175,12 +174,12 @@ describe('SendRouter', () => {
         mockFeedbackProvider as any,
         mockLogger,
       );
-      const routeError = new RangeLinkError({
-        code: RangeLinkErrorCodes.CLIPBOARD_READ_FAILED,
+      const routeError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.CLIPBOARD_READ_FAILED,
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::route',
       });
-      mockClipboardService.route.mockResolvedValue(Result.err(routeError));
+      mockClipboardService.route.mockResolvedValue(ExtensionResult.err(routeError));
 
       await router.sendToDestination(createMockSendOptions() as any);
 

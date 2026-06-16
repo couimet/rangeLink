@@ -2,7 +2,6 @@ import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import type { ParsedLink } from 'rangelink-core-ts';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
-import * as rangelinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
@@ -16,6 +15,7 @@ import {
   createMockText,
   createMockUri,
   createMockVscodeAdapter,
+  spyOnFindLinksInText,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
@@ -32,7 +32,7 @@ describe('RangeLinkDocumentProvider', () => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
     mockHandler = createMockNavigationHandler();
-    mockFindLinksInText = jest.spyOn(rangelinkCore, 'findLinksInText').mockReturnValue([]);
+    mockFindLinksInText = spyOnFindLinksInText().mockReturnValue([]);
     provider = new RangeLinkDocumentProvider(mockHandler, GET_DELIMITERS, mockAdapter, mockLogger);
   });
 

@@ -78,6 +78,8 @@ export * from './createMockVscode';
 export * from './createMockVscodeAdapter';
 export * from './createMockWiringServices';
 
+export * from './spyOnFindLinksInText';
+export * from './spyOnFormatLink';
 export * from './spyOnFormatLinkTooltip';
 export * from './spyOnFormatMessage';
 export * from './spyOnGenerateLinkFromSelections';

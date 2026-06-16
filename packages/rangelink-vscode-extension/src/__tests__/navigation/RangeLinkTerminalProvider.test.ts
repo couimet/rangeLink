@@ -2,10 +2,6 @@ import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import type { ParsedLink } from 'rangelink-core-ts';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
-// Namespace import enables jest.spyOn for findLinksInText without jest.mock() hoisting.
-// With CommonJS transform (ts-jest), the production code's named import resolves through
-// the same module object, so spying here intercepts calls in the provider under test.
-import * as rangelinkCore from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
@@ -16,6 +12,7 @@ import {
   createMockDetectedLink,
   createMockNavigationHandler,
   createMockVscodeAdapter,
+  spyOnFindLinksInText,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
@@ -47,7 +44,7 @@ describe('RangeLinkTerminalProvider', () => {
     });
 
     mockHandler = createMockNavigationHandler();
-    mockFindLinksInText = jest.spyOn(rangelinkCore, 'findLinksInText').mockReturnValue([]);
+    mockFindLinksInText = spyOnFindLinksInText().mockReturnValue([]);
 
     provider = new RangeLinkTerminalProvider(mockHandler, GET_DELIMITERS, mockAdapter, mockLogger);
   });

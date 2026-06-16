@@ -1,6 +1,6 @@
 import {
   type DelimiterConfig,
-  RangeLinkError,
+  type RangeLinkError,
   validateDelimiter,
   validateSubstringConflicts,
   validateUniqueness,

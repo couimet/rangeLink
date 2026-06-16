@@ -1,7 +1,8 @@
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 
 import { TerminalInsertFactory } from '../../../../destinations/capabilities/insertFactories/terminalInsertFactory';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../../../errors';
+import { ExtensionResult } from '../../../../types';
 import { createMockTerminal, createMockTerminalPasteService } from '../../../helpers';
 
 describe('TerminalInsertFactory', () => {
@@ -29,13 +30,13 @@ describe('TerminalInsertFactory', () => {
   });
 
   it('returns false when pasteIntoTerminal returns error', async () => {
-    const stageError = new RangeLinkError({
-      code: RangeLinkErrorCodes.CLIPBOARD_STAGE_WRITE_FAILED,
+    const stageError = new RangeLinkExtensionError({
+      code: RangeLinkExtensionErrorCodes.CLIPBOARD_STAGE_WRITE_FAILED,
       message: 'Failed to write text to clipboard',
       functionName: 'ClipboardService::stage',
     });
     const mockPasteService = createMockTerminalPasteService();
-    mockPasteService.pasteIntoTerminal.mockResolvedValue(Result.err(stageError));
+    mockPasteService.pasteIntoTerminal.mockResolvedValue(ExtensionResult.err(stageError));
     const mockTerminal = createMockTerminal({ name: 'My Terminal' });
 
     const factory = new TerminalInsertFactory(mockPasteService, mockLogger);
