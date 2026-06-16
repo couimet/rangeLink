@@ -2,7 +2,7 @@
 name: tcs-definition
 version: 2026.06.15.3
 description: Draft new QA test cases for the current issue and insert approved ones into qa-test-cases.yaml. Iteration loop draft → review → approve. Pairs with `tc-implement`.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash(git branch --show-current), Bash(gh issue view *), Bash(git diff *), Bash(*/skills/issue-context/target-path.sh *)
 ---
 
 # TCs Definition
