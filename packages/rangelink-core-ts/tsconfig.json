@@ -8,6 +8,5 @@
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "out", "src/**/*.test.ts"],
-  "references": [{ "path": "../barebone-logger" }]
+  "exclude": ["node_modules", "out", "src/**/*.test.ts"]
 }

@@ -48,55 +48,21 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  packages/barebone-logger:
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.5.0
-        version: 29.5.14
-      '@types/node':
-        specifier: ^18.0.0
-        version: 18.19.130
-      jest:
-        specifier: ^29.5.0
-        version: 29.7.0(@types/node@18.19.130)
-      ts-jest:
-        specifier: ^29.1.0
-        version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@18.19.130))(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
-  packages/barebone-logger-testing:
-    dependencies:
-      barebone-logger:
-        specifier: workspace:*
-        version: link:../barebone-logger
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.5.0
-        version: 29.5.14
-      '@types/node':
-        specifier: ^18.0.0
-        version: 18.19.130
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
   packages/rangelink-core-ts:
     dependencies:
-      barebone-logger:
-        specifier: workspace:*
-        version: link:../barebone-logger
+      '@couimet/logger-contract':
+        specifier: 1.0.1-alpha.0
+        version: 1.0.1-alpha.0
     devDependencies:
+      '@couimet/logger-contract-testing':
+        specifier: 1.0.1-alpha.0
+        version: 1.0.1-alpha.0(@couimet/logger-contract@1.0.1-alpha.0)
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.130
-      barebone-logger-testing:
-        specifier: workspace:*
-        version: link:../barebone-logger-testing
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@18.19.130)
@@ -109,9 +75,9 @@ importers:
 
   packages/rangelink-vscode-extension:
     dependencies:
-      barebone-logger:
-        specifier: workspace:*
-        version: link:../barebone-logger
+      '@couimet/logger-contract':
+        specifier: 1.0.1-alpha.0
+        version: 1.0.1-alpha.0
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
@@ -119,6 +85,9 @@ importers:
         specifier: workspace:*
         version: link:../rangelink-core-ts
     devDependencies:
+      '@couimet/logger-contract-testing':
+        specifier: 1.0.1-alpha.0
+        version: 1.0.1-alpha.0(@couimet/logger-contract@1.0.1-alpha.0)
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -140,9 +109,6 @@ importers:
       '@vscode/vsce':
         specifier: ^3.6.2
         version: 3.6.2
-      barebone-logger-testing:
-        specifier: workspace:*
-        version: link:../barebone-logger-testing
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
@@ -376,6 +342,14 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@couimet/logger-contract-testing@1.0.1-alpha.0':
+    resolution: {integrity: sha512-vFCzvK7H69LykhmTUq0fD9JmBddnhVDnjARNzfCk5TIIgGvgXwbQxVXnoW0b0ZeTS4ykT3qFhtCCKLOUOgDuaQ==}
+    peerDependencies:
+      '@couimet/logger-contract': 1.0.1-alpha.0
+
+  '@couimet/logger-contract@1.0.1-alpha.0':
+    resolution: {integrity: sha512-RMPI2P/8tFeBvpQIHt2vzoOj5xT6SX1ihMs2JCXmR397VmarQs+EywgKAx1yTw4S+tWt2mjl+6IdijOQ2Mn44A==}
 
   '@emnapi/core@1.6.0':
     resolution: {integrity: sha512-zq/ay+9fNIJJtJiZxdTnXS20PllcYMX3OE23ESc4HK/bdYu3cOWYVhsOhVnXALfU/uqJIxn5NBPd9z4v+SfoSg==}
@@ -3943,6 +3917,12 @@ snapshots:
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@couimet/logger-contract-testing@1.0.1-alpha.0(@couimet/logger-contract@1.0.1-alpha.0)':
+    dependencies:
+      '@couimet/logger-contract': 1.0.1-alpha.0
+
+  '@couimet/logger-contract@1.0.1-alpha.0': {}
 
   '@emnapi/core@1.6.0':
     dependencies:
