@@ -904,6 +904,62 @@ export class VscodeAdapter
   }
 
   /**
+   * Get the URI of the currently active tab, when that tab maps back to a file.
+   *
+   * Unlike getActiveTextEditorUri(), this works for any tab input kind that
+   * exposes a file URI — text editors, custom editors (e.g. image previews),
+   * notebooks, and diff views. For text and notebook diff tabs, the URI of the
+   * modified (right-hand) side is returned, since that is the file the user is
+   * editing. Returns undefined for webviews, terminals, and when no tab is
+   * active.
+   *
+   * @returns URI of the active tab's underlying file, or undefined when the
+   *   active tab has no file URI (webview, terminal) or no tab is active
+   */
+  getActiveTabUri(): vscode.Uri | undefined {
+    const activeTab = this.ideInstance.window.tabGroups.activeTabGroup?.activeTab;
+    if (!activeTab) {
+      this.logger.debug(
+        { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
+        'Resolving active tab URI',
+      );
+      return undefined;
+    }
+    // Dynamic property check: TabInputText/Custom/Notebook expose `.uri`;
+    // TabInputTextDiff/NotebookDiff expose `.modified` (no `.uri`).
+    // Any future VS Code TabInput with a file URI works automatically.
+    const input = activeTab.input as Record<string, unknown>;
+    const candidate = input.uri ?? input.modified;
+    if (candidate && typeof candidate === 'object' && 'fsPath' in candidate) {
+      const inputKind =
+        (input as { constructor?: { name?: string } }).constructor?.name ?? 'unknown';
+      this.logger.debug(
+        { fn: 'VscodeAdapter.getActiveTabUri', inputKind },
+        'Resolving active tab URI',
+      );
+      return candidate as vscode.Uri;
+    }
+    this.logger.debug(
+      { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' },
+      'No file URI on active tab input',
+    );
+    return undefined;
+  }
+
+  /**
+   * Get the view column of the currently active tab group.
+   *
+   * Mirrors getActiveEditorViewColumn() but reads from the active tab group
+   * rather than the active text editor, so it returns a column for non-text
+   * tabs (image previews, notebooks, diffs) too.
+   *
+   * @returns ViewColumn of active tab group or undefined when no group is active
+   */
+  getActiveTabViewColumn(): vscode.ViewColumn | undefined {
+    return this.ideInstance.window.tabGroups.activeTabGroup?.viewColumn;
+  }
+
+  /**
    * Get all visible text editors.
    *
    * @returns Array of visible text editors

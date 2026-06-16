@@ -699,6 +699,22 @@ test_cases:
     expected_result: 'File path inserted at cursor. Status bar "File path sent to Text Editor".'
     automated: true
 
+  - id: send-file-path-017
+    labels:
+      - clipboard
+    feature: 'send-file-path'
+    scenario: 'R-F sends file path when active tab is an image preview'
+    expected_result: 'Terminal receives workspace-relative path to the image file. No "No active file" error toast.'
+    automated: true
+
+  - id: send-file-path-018
+    labels:
+      - clipboard
+    feature: 'send-file-path'
+    scenario: 'R-F sends the modified side path when active tab is a text diff view'
+    expected_result: 'Terminal receives workspace-relative path to the right (modified) file in the diff, not the left (original).'
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section 7 — Context Menu Integrations
   # ---------------------------------------------------------------------------

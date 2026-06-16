@@ -93,7 +93,7 @@ describe('FilePathPaster', () => {
 
   describe('pasteCurrentFilePathToDestination', () => {
     it('shows error when no active editor', async () => {
-      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'getActiveTabUri').mockReturnValue(undefined);
 
       await paster.pasteCurrentFilePathToDestination(PathFormat.Absolute);
 
@@ -107,7 +107,7 @@ describe('FilePathPaster', () => {
 
     it('delegates to pasteFilePath when active editor exists', async () => {
       const uri = createMockUri('/workspace/src/file.ts');
-      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(uri);
+      jest.spyOn(mockAdapter, 'getActiveTabUri').mockReturnValue(uri);
       mockSendRouter.resolveDestination.mockResolvedValue(false);
 
       await paster.pasteCurrentFilePathToDestination(PathFormat.Absolute);

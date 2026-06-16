@@ -6,7 +6,15 @@ import type { LogCapture } from '../../LogCapture';
 
 import type { CapturingTerminal } from './capturingPtyHelpers';
 import { createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
-import { cleanupFiles, createAndOpenFile, createWorkspaceFile, openEditor } from './fileHelpers';
+import {
+  cleanupTrackedFiles,
+  createAndOpenFile,
+  createFileAt,
+  createPngFixture,
+  createWorkspaceFile,
+  openEditor,
+  type PngFixtureMode,
+} from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
 import {
@@ -31,7 +39,25 @@ export interface SsContext {
     lineCount: number,
     lineFactory: (index: number) => string,
   ) => { uri: vscode.Uri; filename: string };
+  /**
+   * Create a tracked workspace file with a generated filename
+   * (`__rl-test-<descriptor>-<timestamp>-<counter>.txt`).
+   */
   createWorkspaceFile: (descriptor: string, content: string) => vscode.Uri;
+  /**
+   * Create a tracked workspace file with an exact filename.
+   * Prefer `createWorkspaceFile` when the descriptor-based naming is sufficient;
+   * use this when the test needs a specific filename (spaces, parentheses, etc.).
+   */
+  createTrackedFile: (filename: string, content: string) => vscode.Uri;
+  /**
+   * Create a tracked `.png` fixture in the workspace root. Auto-tracked for
+   * teardown. `'real-image'` (default) copies the extension's `icon.png` so
+   * the file opens in VS Code's image preview as a real custom editor;
+   * `'magic-only'` writes just the 8-byte PNG signature for tests that only
+   * need a binary classification.
+   */
+  createPngFixture: (descriptor: string, mode?: PngFixtureMode) => vscode.Uri;
   createAndOpenFile: (
     descriptor: string,
     content: string,
@@ -72,12 +98,10 @@ export interface SsContext {
   expectContextKeys: (keys: Record<string, unknown>) => void;
   openEditor: (uri: vscode.Uri, viewColumn?: vscode.ViewColumn) => Promise<vscode.TextEditor>;
   waitForExtensionActive: (extensionId: string, timeoutMs?: number) => Promise<void>;
-  trackFileUri: (uri: vscode.Uri) => void;
   clearDummyAi: () => Promise<void>;
 }
 
 export class SsContextImpl implements SsContext {
-  private tmpFileUris: vscode.Uri[] = [];
   private tmpTerminals: vscode.Terminal[] = [];
   private suiteLog: (msg: string) => void;
   private expectedStatusBarMessages: string[] = [];
@@ -92,11 +116,8 @@ export class SsContextImpl implements SsContext {
       // calls disposeAllTerminals() + CMD_UNBIND_DESTINATION before beginTest().
       // Disposing here would fire onDidCloseTerminal during the observation window
       // and leak status bar messages into verify().
-      // File deletion is safe here: fs.unlinkSync does not trigger editor-close events.
-      // Only editor close (closeAllEditors, in setup) can fire onDidCloseTextDocument.
       this.tmpTerminals.splice(0);
-      cleanupFiles(this.tmpFileUris);
-      this.tmpFileUris.splice(0);
+      cleanupTrackedFiles();
       await this.settle();
     });
   }
@@ -135,14 +156,19 @@ export class SsContextImpl implements SsContext {
   ): { uri: vscode.Uri; filename: string } {
     const lines = Array.from({ length: lineCount }, (_, i) => lineFactory(i));
     const uri = createWorkspaceFile(descriptor, lines.join('\n') + '\n');
-    this.tmpFileUris.push(uri);
     return { uri, filename: path.basename(uri.fsPath) };
   }
 
   createWorkspaceFile(descriptor: string, content: string): vscode.Uri {
-    const uri = createWorkspaceFile(descriptor, content);
-    this.tmpFileUris.push(uri);
-    return uri;
+    return createWorkspaceFile(descriptor, content);
+  }
+
+  createTrackedFile(filename: string, content: string): vscode.Uri {
+    return createFileAt(filename, content);
+  }
+
+  createPngFixture(descriptor: string, mode: PngFixtureMode = 'real-image'): vscode.Uri {
+    return createPngFixture(descriptor, mode);
   }
 
   async createAndOpenFile(
@@ -150,8 +176,7 @@ export class SsContextImpl implements SsContext {
     content: string,
     viewColumn?: vscode.ViewColumn,
   ): Promise<vscode.Uri> {
-    const uri = await createAndOpenFile(descriptor, content, viewColumn, this.tmpFileUris);
-    return uri;
+    return createAndOpenFile(descriptor, content, viewColumn);
   }
 
   async settle(ms?: number): Promise<void> {
@@ -199,10 +224,6 @@ export class SsContextImpl implements SsContext {
 
   async waitForExtensionActive(extensionId: string, timeoutMs?: number): Promise<void> {
     await waitForExtensionActive(extensionId, this.suiteLog, timeoutMs);
-  }
-
-  trackFileUri(uri: vscode.Uri): void {
-    this.tmpFileUris.push(uri);
   }
 
   async clearDummyAi(): Promise<void> {

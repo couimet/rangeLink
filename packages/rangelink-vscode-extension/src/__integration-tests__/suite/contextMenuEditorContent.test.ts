@@ -564,7 +564,6 @@ standardSuite('Context Menus — Editor Content', (ss) => {
     const ANCHOR_END = 'ANCHOR_END';
     const destUri = ss.createWorkspaceFile('rvec-014-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('rvec-014-source', `${ANCHOR_START}\n`);
-    ss.trackFileUri(sourceUri);
     const destBasename = path.basename(destUri.fsPath);
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);

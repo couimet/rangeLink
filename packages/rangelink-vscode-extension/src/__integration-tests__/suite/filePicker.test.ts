@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import * as vscode from 'vscode';
@@ -10,11 +9,11 @@ import {
   CMD_OPEN_STATUS_BAR_MENU,
 } from '../../constants/commandIds';
 import {
+  createFileAt,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
   getQuickPickLines,
-  getWorkspaceRoot,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   standardSuite,
@@ -123,21 +122,8 @@ standardSuite('File Picker', (ss) => {
   });
 
   test('file-picker-003: same base name shows path disambiguation', async () => {
-    const wsRoot = getWorkspaceRoot();
-    const subDirA = path.join(wsRoot, 'src', 'dirA');
-    const subDirB = path.join(wsRoot, 'src', 'dirB');
-    fs.mkdirSync(subDirA, { recursive: true });
-    fs.mkdirSync(subDirB, { recursive: true });
-
-    const fileA = path.join(subDirA, '__rl-test-fp-003-shared.ts');
-    const fileB = path.join(subDirB, '__rl-test-fp-003-shared.ts');
-    fs.writeFileSync(fileA, 'file A\n', 'utf8');
-    fs.writeFileSync(fileB, 'file B\n', 'utf8');
-    const uriA = vscode.Uri.file(fileA);
-    const uriB = vscode.Uri.file(fileB);
-
-    ss.trackFileUri(uriA);
-    ss.trackFileUri(uriB);
+    const uriA = createFileAt('src/dirA/__rl-test-fp-003-shared.ts', 'file A\n');
+    const uriB = createFileAt('src/dirB/__rl-test-fp-003-shared.ts', 'file B\n');
 
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), {
       viewColumn: vscode.ViewColumn.One,
@@ -441,22 +427,8 @@ standardSuite('File Picker', (ss) => {
   });
 
   test('[assisted] file-picker-010: secondary picker shows path disambiguation for same-name files', async () => {
-    const wsRoot = getWorkspaceRoot();
-    const subDirA = path.join(wsRoot, 'src', 'fp010A');
-    const subDirB = path.join(wsRoot, 'src', 'fp010B');
-    fs.mkdirSync(subDirA, { recursive: true });
-    fs.mkdirSync(subDirB, { recursive: true });
-
-    const sharedName = '__rl-test-fp-010-shared.ts';
-    const fileA = path.join(subDirA, sharedName);
-    const fileB = path.join(subDirB, sharedName);
-    fs.writeFileSync(fileA, 'file A\n', 'utf8');
-    fs.writeFileSync(fileB, 'file B\n', 'utf8');
-    const uriA = vscode.Uri.file(fileA);
-    const uriB = vscode.Uri.file(fileB);
-
-    ss.trackFileUri(uriA);
-    ss.trackFileUri(uriB);
+    const uriA = createFileAt('src/fp010A/__rl-test-fp-010-shared.ts', 'file A\n');
+    const uriB = createFileAt('src/fp010B/__rl-test-fp-010-shared.ts', 'file B\n');
 
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), {
       viewColumn: vscode.ViewColumn.One,
@@ -508,26 +480,11 @@ standardSuite('File Picker', (ss) => {
   });
 
   test('file-picker-011: three files with same name show deeper disambiguation paths', async () => {
-    const wsRoot = getWorkspaceRoot();
-    const dirA = path.join(wsRoot, 'src', 'a', 'nested');
-    const dirB = path.join(wsRoot, 'src', 'b', 'nested');
-    const dirC = path.join(wsRoot, 'src', 'c');
-    fs.mkdirSync(dirA, { recursive: true });
-    fs.mkdirSync(dirB, { recursive: true });
-    fs.mkdirSync(dirC, { recursive: true });
-
-    const sharedName = '__rl-test-fp-011-shared.ts';
-    const files = [
-      path.join(dirA, sharedName),
-      path.join(dirB, sharedName),
-      path.join(dirC, sharedName),
+    const uris = [
+      createFileAt('src/a/nested/__rl-test-fp-011-shared.ts', 'content\n'),
+      createFileAt('src/b/nested/__rl-test-fp-011-shared.ts', 'content\n'),
+      createFileAt('src/c/__rl-test-fp-011-shared.ts', 'content\n'),
     ];
-    const uris = files.map((f) => {
-      fs.writeFileSync(f, 'content\n', 'utf8');
-      const uri = vscode.Uri.file(f);
-      ss.trackFileUri(uri);
-      return uri;
-    });
 
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[0]), {
       viewColumn: vscode.ViewColumn.One,

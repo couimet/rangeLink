@@ -7,6 +7,24 @@ import { getWorkspaceRoot, settle } from './testEnv';
 
 let fileCounter = 0;
 
+let fileCleanupRegistry: vscode.Uri[] = [];
+
+const registerFileForCleanup = (uri: vscode.Uri): void => {
+  fileCleanupRegistry.push(uri);
+};
+
+export const cleanupTrackedFiles = (): void => {
+  cleanupFiles(fileCleanupRegistry);
+  fileCleanupRegistry = [];
+};
+
+const ensureParentDir = (filePath: string): void => {
+  const dir = path.dirname(filePath);
+  if (dir !== getWorkspaceRoot()) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+
 export const createWorkspaceFile = (descriptor: string, content: string): vscode.Uri => {
   fileCounter++;
   const filePath = path.join(
@@ -14,17 +32,17 @@ export const createWorkspaceFile = (descriptor: string, content: string): vscode
     `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.txt`,
   );
   fs.writeFileSync(filePath, content, 'utf8');
-  return vscode.Uri.file(filePath);
+  const uri = vscode.Uri.file(filePath);
+  registerFileForCleanup(uri);
+  return uri;
 };
 
 export const createAndOpenFile = async (
   descriptor: string,
   content: string,
   viewColumn?: vscode.ViewColumn,
-  trackingArray?: vscode.Uri[],
 ): Promise<vscode.Uri> => {
   const uri = createWorkspaceFile(descriptor, content);
-  trackingArray?.push(uri);
   const doc = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(doc, {
     viewColumn: viewColumn ?? vscode.ViewColumn.One,
@@ -47,8 +65,40 @@ export const findTestItemsByPrefix = (
 
 export const createFileAt = (filename: string, content: string): vscode.Uri => {
   const filePath = path.join(getWorkspaceRoot(), filename);
+  ensureParentDir(filePath);
   fs.writeFileSync(filePath, content, 'utf8');
-  return vscode.Uri.file(filePath);
+  const uri = vscode.Uri.file(filePath);
+  registerFileForCleanup(uri);
+  return uri;
+};
+
+const PNG_MAGIC_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+export type PngFixtureMode = 'real-image' | 'magic-only';
+
+export const createPngFixture = (
+  descriptor: string,
+  mode: PngFixtureMode = 'real-image',
+): vscode.Uri => {
+  fileCounter++;
+  const pngPath = path.join(
+    getWorkspaceRoot(),
+    `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.png`,
+  );
+  if (mode === 'real-image') {
+    const extension = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
+    if (!extension) {
+      throw new Error(
+        'createPngFixture(real-image) requires the RangeLink extension to be registered',
+      );
+    }
+    fs.copyFileSync(path.join(extension.extensionPath, 'icon.png'), pngPath);
+  } else {
+    fs.writeFileSync(pngPath, PNG_MAGIC_BYTES);
+  }
+  const uri = vscode.Uri.file(pngPath);
+  registerFileForCleanup(uri);
+  return uri;
 };
 
 export const openEditor = async (
