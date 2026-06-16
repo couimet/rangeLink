@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { BindToDestinationCommand } from '../../commands';
 import type { BindSuccessInfo } from '../../destinations';

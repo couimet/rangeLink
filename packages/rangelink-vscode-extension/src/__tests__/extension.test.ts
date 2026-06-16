@@ -1,4 +1,4 @@
-import { pingLog, setLogger } from 'barebone-logger';
+import { pingLog, setLogger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';
@@ -18,6 +18,26 @@ const mockStatusBarItem = createMockStatusBarItem();
 const mockOutputChannel = createMockOutputChannel();
 const mockWorkspace = createMockWorkspace() as any;
 let mockCommands = createMockCommands();
+
+const DEFAULT_DELIMITERS: Record<string, string> = {
+  delimiterLine: 'L',
+  delimiterPosition: 'C',
+  delimiterHash: '#',
+  delimiterRange: '-',
+};
+
+const createMockConfig = (overrides?: { get?: jest.Mock; inspect?: jest.Mock }) => ({
+  get: overrides?.get ?? jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
+  inspect:
+    overrides?.inspect ??
+    jest.fn((key: string) => ({
+      key,
+      defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+      globalValue: undefined,
+      workspaceValue: undefined,
+      workspaceFolderValue: undefined,
+    })),
+});
 
 // Create window mock
 const mockWindow = createMockWindow() as any;
@@ -161,16 +181,8 @@ describe('Configuration loading and validation', () => {
     ['delimiterRange', '-'],
   ])('Default values for %s', (setting, expectedDefault) => {
     it(`should use default value "${expectedDefault}" when no user/workspace settings exist`, () => {
-      const mockConfig = {
-        get: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return defaults[key];
-        }),
+      const mockConfig = createMockConfig({
+        get: jest.fn((key: string) => DEFAULT_DELIMITERS[key]),
         inspect: jest.fn((key: string) => ({
           key,
           defaultValue: expectedDefault,
@@ -178,7 +190,7 @@ describe('Configuration loading and validation', () => {
           workspaceValue: undefined,
           workspaceFolderValue: undefined,
         })),
-      };
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -235,10 +247,10 @@ describe('Configuration loading and validation', () => {
         'Default',
       ],
     ])('should prioritize %s settings over others', (_source, inspectResult, expectedValue) => {
-      const mockConfig = {
+      const mockConfig = createMockConfig({
         get: jest.fn(() => expectedValue),
         inspect: jest.fn(() => ({ ...inspectResult, defaultValue: 'Default' })),
-      };
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -254,26 +266,16 @@ describe('Configuration loading and validation', () => {
 
   describe('Duplicate delimiter values', () => {
     it('should use defaults when all delimiters are the same', async () => {
-      const mockConfig = {
-        get: jest.fn(() => {
-          return 'X';
-        }),
-        inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return {
-            key,
-            defaultValue: defaults[key] || 'L',
-            globalValue: 'X',
-            workspaceValue: undefined,
-            workspaceFolderValue: undefined,
-          };
-        }),
-      };
+      const mockConfig = createMockConfig({
+        get: jest.fn(() => 'X'),
+        inspect: jest.fn((key: string) => ({
+          key,
+          defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+          globalValue: 'X',
+          workspaceValue: undefined,
+          workspaceFolderValue: undefined,
+        })),
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -290,7 +292,7 @@ describe('Configuration loading and validation', () => {
     });
 
     it('should use defaults when two delimiters are the same', async () => {
-      const mockConfig = {
+      const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           // Line and Column both set to 'A'
           const map: Record<string, string> = {
@@ -301,22 +303,14 @@ describe('Configuration loading and validation', () => {
           };
           return map[key] || defaultValue;
         }),
-        inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return {
-            key,
-            defaultValue: defaults[key] || 'L',
-            globalValue: key === 'delimiterLine' || key === 'delimiterPosition' ? 'A' : undefined,
-            workspaceValue: undefined,
-            workspaceFolderValue: undefined,
-          };
-        }),
-      };
+        inspect: jest.fn((key: string) => ({
+          key,
+          defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+          globalValue: key === 'delimiterLine' || key === 'delimiterPosition' ? 'A' : undefined,
+          workspaceValue: undefined,
+          workspaceFolderValue: undefined,
+        })),
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -335,7 +329,7 @@ describe('Configuration loading and validation', () => {
 
   describe('Valid custom delimiter values', () => {
     it('should accept and use valid custom delimiters', async () => {
-      const mockConfig = {
+      const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           const custom: Record<string, string> = {
             delimiterLine: 'Ln',
@@ -346,12 +340,6 @@ describe('Configuration loading and validation', () => {
           return custom[key] || defaultValue;
         }),
         inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
           const custom: Record<string, string> = {
             delimiterLine: 'Ln',
             delimiterPosition: 'Col',
@@ -360,13 +348,13 @@ describe('Configuration loading and validation', () => {
           };
           return {
             key,
-            defaultValue: defaults[key] || 'L',
+            defaultValue: DEFAULT_DELIMITERS[key] || 'L',
             globalValue: custom[key],
             workspaceValue: undefined,
             workspaceFolderValue: undefined,
           };
         }),
-      };
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -385,32 +373,16 @@ describe('Configuration loading and validation', () => {
 
   describe('Configuration source logging', () => {
     it('should log source of each delimiter on startup (from default)', async () => {
-      const mockConfig = {
-        get: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return defaults[key];
-        }),
-        inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return {
-            key,
-            defaultValue: defaults[key] || 'L',
-            globalValue: undefined,
-            workspaceValue: undefined,
-            workspaceFolderValue: undefined,
-          };
-        }),
-      };
+      const mockConfig = createMockConfig({
+        get: jest.fn((key: string) => DEFAULT_DELIMITERS[key]),
+        inspect: jest.fn((key: string) => ({
+          key,
+          defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+          globalValue: undefined,
+          workspaceValue: undefined,
+          workspaceFolderValue: undefined,
+        })),
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -426,32 +398,25 @@ describe('Configuration loading and validation', () => {
     });
 
     it('should log source as user when globalValue is set', async () => {
-      const mockConfig = {
+      const mockConfig = createMockConfig({
         get: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'UserL', // User override
+          // User override for delimiterLine
+          const values: Record<string, string> = {
+            delimiterLine: 'UserL',
             delimiterPosition: 'C',
             delimiterHash: '#',
             delimiterRange: '-',
           };
-          return defaults[key];
+          return values[key];
         }),
-        inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return {
-            key,
-            defaultValue: defaults[key] || 'L',
-            globalValue: key === 'delimiterLine' ? 'UserL' : undefined,
-            workspaceValue: undefined,
-            workspaceFolderValue: undefined,
-          };
-        }),
-      };
+        inspect: jest.fn((key: string) => ({
+          key,
+          defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+          globalValue: key === 'delimiterLine' ? 'UserL' : undefined,
+          workspaceValue: undefined,
+          workspaceFolderValue: undefined,
+        })),
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -467,7 +432,7 @@ describe('Configuration loading and validation', () => {
     });
 
     it('should prioritize workspace folder over workspace over user over default', async () => {
-      const mockConfig = {
+      const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           const values: Record<string, string> = {
             delimiterLine: 'FolderL',
@@ -477,23 +442,15 @@ describe('Configuration loading and validation', () => {
           };
           return values[key] || defaultValue;
         }),
-        inspect: jest.fn((key: string) => {
-          const defaults: Record<string, string> = {
-            delimiterLine: 'L',
-            delimiterPosition: 'C',
-            delimiterHash: '#',
-            delimiterRange: '-',
-          };
-          return {
-            key,
-            defaultValue: defaults[key] || 'L',
-            // Only set the highest priority value for each key
-            globalValue: key === 'delimiterHash' ? 'U' : undefined,
-            workspaceValue: key === 'delimiterPosition' ? 'WorkspaceC' : undefined,
-            workspaceFolderValue: key === 'delimiterLine' ? 'FolderL' : undefined,
-          };
-        }),
-      };
+        inspect: jest.fn((key: string) => ({
+          key,
+          defaultValue: DEFAULT_DELIMITERS[key] || 'L',
+          // Only set the highest priority value for each key
+          globalValue: key === 'delimiterHash' ? 'U' : undefined,
+          workspaceValue: key === 'delimiterPosition' ? 'WorkspaceC' : undefined,
+          workspaceFolderValue: key === 'delimiterLine' ? 'FolderL' : undefined,
+        })),
+      });
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
@@ -585,24 +542,7 @@ describe('Extension lifecycle', () => {
     };
 
     // Mock configuration
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn((key: string) => {
-        const defaults: Record<string, string> = {
-          delimiterLine: 'L',
-          delimiterPosition: 'C',
-          delimiterHash: '#',
-          delimiterRange: '-',
-        };
-        return {
-          key,
-          defaultValue: defaults[key] || 'L',
-          globalValue: undefined,
-          workspaceValue: undefined,
-          workspaceFolderValue: undefined,
-        };
-      }),
-    };
+    const mockConfig = createMockConfig();
 
     // Set up mocks BEFORE activate
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
@@ -625,16 +565,7 @@ describe('Extension lifecycle', () => {
       globalState: createMockMemento(),
     };
 
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn((key: string) => ({
-        key,
-        defaultValue: 'L',
-        globalValue: undefined,
-        workspaceValue: undefined,
-        workspaceFolderValue: undefined,
-      })),
-    };
+    const mockConfig = createMockConfig();
 
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
@@ -654,16 +585,7 @@ describe('Extension lifecycle', () => {
       globalState: createMockMemento(),
     };
 
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn((key: string) => ({
-        key,
-        defaultValue: 'L',
-        globalValue: undefined,
-        workspaceValue: undefined,
-        workspaceFolderValue: undefined,
-      })),
-    };
+    const mockConfig = createMockConfig();
 
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
@@ -704,24 +626,7 @@ describe('Extension lifecycle', () => {
     };
 
     // Mock configuration
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn((key: string) => {
-        const defaults: Record<string, string> = {
-          delimiterLine: 'L',
-          delimiterPosition: 'C',
-          delimiterHash: '#',
-          delimiterRange: '-',
-        };
-        return {
-          key,
-          defaultValue: defaults[key] || 'L',
-          globalValue: undefined,
-          workspaceValue: undefined,
-          workspaceFolderValue: undefined,
-        };
-      }),
-    };
+    const mockConfig = createMockConfig();
 
     // Set up mocks BEFORE activate
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
@@ -745,14 +650,7 @@ describe('Logger verification and communication channel', () => {
   });
 
   it('should confirm logger initialization by calling debug() when setLogger is called', () => {
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue: string) => defaultValue),
-      inspect: jest.fn(() => ({
-        globalValue: undefined,
-        workspaceValue: undefined,
-        workspaceFolderValue: undefined,
-      })),
-    };
+    const mockConfig = createMockConfig();
     mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
@@ -799,12 +697,90 @@ describe('Logger verification and communication channel', () => {
     // Manually call debug to test formatting
     logger.debug({ fn: 'testFunction', extraContext: 'value' }, 'Test debug message');
 
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('[DEBUG]'));
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringContaining('testFunction'),
+      expect.stringMatching(/\[DEBUG\].*testFunction/),
     );
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringContaining('Test debug message'),
+      expect.stringMatching(/\[DEBUG\].*Test debug message/),
     );
+  });
+});
+
+describe('Activation logging', () => {
+  const setupMocks = () => {
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
+    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(createMockConfig());
+    (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
+  };
+
+  beforeEach(() => {
+    mockOutputChannel.appendLine.mockClear();
+    setupMocks();
+  });
+
+  const getActivationInfoLine = (): string | undefined => {
+    return (mockOutputChannel.appendLine as jest.Mock).mock.calls
+      .map((call: string[]) => call[0])
+      .find(
+        (line: string) =>
+          line.startsWith('[INFO]') && line.includes('RangeLink extension activated'),
+      );
+  };
+
+  it('logs version info and logger contract version on successful activation', () => {
+    const mockContext = {
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
+    };
+
+    extension.activate(mockContext as any);
+
+    const logLine = getActivationInfoLine();
+    expect(logLine).toBeDefined();
+    expect(logLine).toMatch(/^\[INFO\] /);
+
+    const jsonStart = logLine!.indexOf('{');
+    const jsonEnd = logLine!.lastIndexOf('}') + 1;
+    const context = JSON.parse(logLine!.slice(jsonStart, jsonEnd));
+
+    expect(context.fn).toBe('activate');
+    // Dynamic fields that change with every build — asserting key presence
+    // and non-emptiness is more valuable than exact-match assertions that
+    // break on the next build.
+    expect(typeof context.isDirty).toBe('boolean');
+    expect(typeof context.version).toBe('string');
+    expect(context.version.length).toBeGreaterThan(0);
+    expect(typeof context.commit).toBe('string');
+    expect(context.commit.length).toBeGreaterThan(0);
+    expect(typeof context.branch).toBe('string');
+    expect(context.branch.length).toBeGreaterThan(0);
+    expect(typeof context.buildDate).toBe('string');
+    expect(context.buildDate.length).toBeGreaterThan(0);
+    expect(typeof context.loggerContractVersion).toBe('string');
+    expect(context.loggerContractVersion.length).toBeGreaterThan(0);
+  });
+
+  it('logs warning when version.json is unavailable', () => {
+    jest.isolateModules(() => {
+      jest.doMock('../version.json', () => {
+        throw new Error('version.json not found');
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+      const isolatedExtension = require('../extension');
+
+      const mockContext = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
+
+      isolatedExtension.activate(mockContext as any);
+
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/\[WARNING\].*version info unavailable/),
+      );
+      expect(getActivationInfoLine()).toBeUndefined();
+    });
   });
 });

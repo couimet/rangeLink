@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import type { TerminalPickerHandlers } from '../../../destinations/types';
 import { showTerminalPicker } from '../../../destinations/utils';

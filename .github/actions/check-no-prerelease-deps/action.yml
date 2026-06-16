@@ -1,0 +1,9 @@
+name: 'Check no prerelease deps'
+description: 'Fail if any package.json declares a prerelease npm dep (alpha/beta/rc/pre).'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run prerelease-deps check
+      shell: bash
+      run: bash scripts/check-no-prerelease-deps.sh

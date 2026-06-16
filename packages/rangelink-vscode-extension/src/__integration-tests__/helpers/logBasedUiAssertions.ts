@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import type { LoggingContext } from 'barebone-logger';
+import type { LoggingContext } from '@couimet/logger-contract';
 
 // ---------------------------------------------------------------------------
 // Utility

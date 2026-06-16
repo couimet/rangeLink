@@ -35,7 +35,7 @@
     "clean": "rm -rf out dist coverage *.tsbuildinfo *.vsix",
     "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log .vscode-test",
     "compile": "pnpm compile:deps && pnpm generate-version:all && node esbuild.config.js",
-    "compile:deps": "cd ../barebone-logger && pnpm clean && pnpm compile && cd ../barebone-logger-testing && pnpm clean && pnpm compile && cd ../rangelink-core-ts && pnpm clean && pnpm compile",
+    "compile:deps": "cd ../rangelink-core-ts && pnpm clean && pnpm compile",
     "generate-version": "node scripts/generate-version.js --copy-to out",
     "generate-version:all": "node scripts/generate-version.js --copy-to out,dist",
     "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
@@ -961,11 +961,12 @@
     "onStartupFinished"
   ],
   "dependencies": {
-    "barebone-logger": "workspace:*",
+    "@couimet/logger-contract": "^1.0.0",
     "nanoid": "^5.1.6",
     "rangelink-core-ts": "workspace:*"
   },
   "devDependencies": {
+    "@couimet/logger-contract-testing": "^1.0.0",
     "@types/jest": "^29.5.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
@@ -973,7 +974,6 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.2",
-    "barebone-logger-testing": "workspace:*",
     "esbuild": "^0.25.12",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.0",

@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type {

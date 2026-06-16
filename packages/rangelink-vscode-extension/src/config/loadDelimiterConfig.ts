@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import { DEFAULT_DELIMITERS, type RangeLinkError } from 'rangelink-core-ts';
 
 import {

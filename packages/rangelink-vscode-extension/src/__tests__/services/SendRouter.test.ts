@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 

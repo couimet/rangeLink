@@ -33,6 +33,9 @@ jobs:
       - name: Check formatting and linting
         uses: ./.github/actions/check-formatting
 
+      - name: Check no prerelease deps
+        uses: ./.github/actions/check-no-prerelease-deps
+
       - name: Run tests with coverage
         id: run-tests
         uses: ./.github/actions/run-tests

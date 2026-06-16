@@ -1,6 +1,3 @@
-packages/barebone-logger test: Test Suites: 3 passed, 3 total
-packages/barebone-logger test: Tests:       12 passed, 12 total
-packages/barebone-logger test: Snapshots:   0 total
 packages/rangelink-core-ts test: Test Suites: 28 passed, 28 total
 packages/rangelink-core-ts test: Tests:       586 passed, 586 total
 packages/rangelink-core-ts test: Snapshots:   0 total

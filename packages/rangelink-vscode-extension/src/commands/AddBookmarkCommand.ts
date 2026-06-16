@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import {
   type DelimiterConfigGetter,
   LinkType,

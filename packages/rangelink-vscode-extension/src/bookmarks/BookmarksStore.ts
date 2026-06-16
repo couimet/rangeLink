@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import { nanoid } from 'nanoid';
 import type * as vscode from 'vscode';
 

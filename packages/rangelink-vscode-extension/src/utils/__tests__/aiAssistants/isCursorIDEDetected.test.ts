@@ -2,7 +2,7 @@
  * Tests for isCursorIDEDetected utility.
  */
 
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import {
   createMockVscodeAdapter,

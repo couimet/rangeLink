@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { MessageProvider } from '../ide/MessageProvider';

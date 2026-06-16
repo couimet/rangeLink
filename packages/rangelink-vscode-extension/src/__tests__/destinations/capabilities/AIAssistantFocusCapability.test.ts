@@ -1,5 +1,5 @@
-import type { LoggingContext } from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
+import type { LoggingContext } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from '../../../destinations/capabilities/ColdRefocusConfig';

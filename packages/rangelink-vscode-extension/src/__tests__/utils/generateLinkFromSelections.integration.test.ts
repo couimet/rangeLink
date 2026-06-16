@@ -7,7 +7,7 @@
  *
  * Purpose: Ensure mocks used in unit tests accurately represent real rangelink-core-ts behavior.
  */
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { type DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

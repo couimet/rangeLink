@@ -1,4 +1,4 @@
-import { getLogger } from 'barebone-logger';
+import { getLogger } from '@couimet/logger-contract';
 
 import { formatMessage } from '..';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';

@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import { ContentEligibilityChecker } from './ContentEligibilityChecker';
 import type { EligibilityChecker } from './EligibilityChecker';

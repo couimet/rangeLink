@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 import * as vscode from 'vscode';

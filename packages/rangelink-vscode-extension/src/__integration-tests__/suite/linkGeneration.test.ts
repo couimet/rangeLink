@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { NoOpLogger } from 'barebone-logger';
+import { NoOpLogger } from '@couimet/logger-contract';
 import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

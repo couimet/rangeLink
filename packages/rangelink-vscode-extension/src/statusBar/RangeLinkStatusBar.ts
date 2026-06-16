@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
 
 import type { BookmarkService } from '../bookmarks';

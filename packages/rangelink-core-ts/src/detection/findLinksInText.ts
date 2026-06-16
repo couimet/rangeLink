@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';

@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * Minimal interface for log output — satisfied by both vscode.OutputChannel and LogCapture.

@@ -1,4 +1,4 @@
-import { getLogger } from 'barebone-logger';
+import { getLogger } from '@couimet/logger-contract';
 
 import { ComputedSelection } from '../types/ComputedSelection';
 import { CoreResult } from '../types/CoreResult';

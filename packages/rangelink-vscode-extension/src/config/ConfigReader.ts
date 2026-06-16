@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import { SETTING_NAMESPACE } from '../constants/settingKeys';
 import type { ConfigurationProvider } from '../ide/ConfigurationProvider';

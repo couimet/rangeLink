@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { ContextKeyService } from '../../contextKeys/ContextKeyService';
 import {
