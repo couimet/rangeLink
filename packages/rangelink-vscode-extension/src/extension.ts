@@ -1,4 +1,4 @@
-import { getLogger, setLogger } from 'barebone-logger';
+import { getLogger, setLogger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
 
 import { createWiringServices } from './createWiringServices';

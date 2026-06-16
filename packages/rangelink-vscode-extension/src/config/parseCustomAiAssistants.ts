@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import type { InsertCommandEntry } from '../destinations/capabilities/insertFactories';
 import type { CustomAiAssistantKind } from '../types';

@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { Result } from 'rangelink-core-ts';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';

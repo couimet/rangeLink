@@ -1,4 +1,4 @@
-import { pingLog, setLogger } from 'barebone-logger';
+import { pingLog, setLogger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';

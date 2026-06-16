@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 import { Result } from 'rangelink-core-ts';
 
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../constants/aiAssistantPasteConstants';

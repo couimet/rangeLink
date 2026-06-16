@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
 
 import type { LifecycleFeedbackProvider } from '../feedback';

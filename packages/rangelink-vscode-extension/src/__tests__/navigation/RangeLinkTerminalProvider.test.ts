@@ -1,5 +1,5 @@
-import type { Logger } from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import type { ParsedLink } from 'rangelink-core-ts';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 // Namespace import enables jest.spyOn for findLinksInText without jest.mock() hoisting.

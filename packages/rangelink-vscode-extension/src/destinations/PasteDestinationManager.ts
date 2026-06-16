@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';

@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { DestinationAvailabilityService } from '../../destinations';
 import type { AIAssistantDestinationKind } from '../../types';

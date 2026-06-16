@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import { AddBookmarkCommand } from '../../commands/AddBookmarkCommand';

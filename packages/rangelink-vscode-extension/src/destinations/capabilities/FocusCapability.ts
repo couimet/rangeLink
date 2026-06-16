@@ -1,4 +1,4 @@
-import type { LoggingContext } from 'barebone-logger';
+import type { LoggingContext } from '@couimet/logger-contract';
 import type { Result } from 'rangelink-core-ts';
 
 /**

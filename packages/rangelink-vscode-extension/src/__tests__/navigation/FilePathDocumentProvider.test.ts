@@ -1,7 +1,7 @@
 import os from 'node:os';
 
-import type { Logger } from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

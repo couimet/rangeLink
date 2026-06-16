@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { ClipboardService } from '../../clipboard/ClipboardService';
 import { createMockConfigReader, createMockVscodeAdapter } from '../helpers';

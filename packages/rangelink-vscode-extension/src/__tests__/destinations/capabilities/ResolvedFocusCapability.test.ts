@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { ResolvedFocusCapability } from '../../../destinations/capabilities/ResolvedFocusCapability';

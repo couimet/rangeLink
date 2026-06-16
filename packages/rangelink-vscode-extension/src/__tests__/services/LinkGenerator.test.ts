@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import { type DelimiterConfig, type DelimiterConfigGetter, Result } from 'rangelink-core-ts';
 
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';

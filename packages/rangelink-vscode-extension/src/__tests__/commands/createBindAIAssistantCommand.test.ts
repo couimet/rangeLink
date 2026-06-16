@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { createBindAIAssistantCommand } from '../../commands/createBindAIAssistantCommand';
 import { AI_ASSISTANT_KINDS, type AIAssistantDestinationKind } from '../../types';

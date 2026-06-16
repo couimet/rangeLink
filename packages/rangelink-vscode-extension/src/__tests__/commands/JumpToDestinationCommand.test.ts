@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { JumpToDestinationCommand } from '../../commands';
 import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';

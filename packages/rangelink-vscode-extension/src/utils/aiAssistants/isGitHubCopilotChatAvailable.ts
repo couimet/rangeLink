@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../destinations/aiAssistantFocusCommands';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';

@@ -5,8 +5,8 @@
  * Use createMockVscodeAdapter() for all test files except VscodeAdapter.test.ts.
  */
 
-import type { Logger } from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 

@@ -1,6 +1,6 @@
 import os from 'node:os';
 
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { FILENAME_AMBIGUOUS, MessageCode } from '../types';

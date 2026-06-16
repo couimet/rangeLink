@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { createMockConfigReader } from '../../__tests__/helpers';
 import { parseCustomAiAssistants } from '../parseCustomAiAssistants';

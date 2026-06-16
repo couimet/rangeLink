@@ -1,5 +1,5 @@
-import type { Logger } from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { createMockConfigGetter, createMockConfigurationProvider } from '../../__tests__/helpers';
 import type { PaddingMode } from '../../utils/applySmartPadding';

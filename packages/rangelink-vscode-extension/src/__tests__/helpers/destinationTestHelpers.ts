@@ -5,7 +5,7 @@
  * contract and behavior. Reduces duplication across destination test files.
  */
 
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 
 import type { PasteDestination } from '../../destinations';
 

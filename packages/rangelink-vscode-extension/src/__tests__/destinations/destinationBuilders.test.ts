@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 import type * as vscode from 'vscode';
 
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';

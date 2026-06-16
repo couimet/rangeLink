@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { ShowVersionCommand } from '../../commands/ShowVersionCommand';
 import type { VersionInfo } from '../../types';

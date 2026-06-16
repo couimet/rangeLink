@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger } from '@couimet/logger-contract';
 import type { CoreResult, DelimiterConfigGetter, ParsedLink } from 'rangelink-core-ts';
 import { SelectionType, parseLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';

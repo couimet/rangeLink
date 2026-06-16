@@ -1,4 +1,4 @@
-import { createMockLogger } from 'barebone-logger-testing';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { handleDirtyBufferWarning } from '../../services/handleDirtyBufferWarning';
 import { FILE_PATH_DIRTY_BUFFER_CODES, LINK_DIRTY_BUFFER_CODES } from '../../services/types';
