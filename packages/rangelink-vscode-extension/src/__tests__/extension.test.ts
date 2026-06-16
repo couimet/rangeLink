@@ -745,10 +745,10 @@ describe('Activation logging', () => {
     const context = JSON.parse(logLine!.slice(jsonStart, jsonEnd));
 
     expect(context.fn).toBe('activate');
-    expect(context.isDirty).toBe(false);
     // Dynamic fields that change with every build — asserting key presence
     // and non-emptiness is more valuable than exact-match assertions that
     // break on the next build.
+    expect(typeof context.isDirty).toBe('boolean');
     expect(typeof context.version).toBe('string');
     expect(context.version.length).toBeGreaterThan(0);
     expect(typeof context.commit).toBe('string');
