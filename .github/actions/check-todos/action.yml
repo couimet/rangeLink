@@ -42,6 +42,11 @@ runs:
         # Calculate delta
         DELTA=$((CURRENT_COUNT - BASE_COUNT))
 
+        if [ -z "$DELTA" ]; then
+          echo "::error::DELTA computation failed — CURRENT_COUNT=$CURRENT_COUNT, BASE_COUNT=$BASE_COUNT (BASE_COUNT may not be a valid integer)"
+          exit 1
+        fi
+
         echo "delta=$DELTA" >> $GITHUB_OUTPUT
         echo "Base TODO/FIXME count: $BASE_COUNT"
         echo "Delta: $DELTA"
