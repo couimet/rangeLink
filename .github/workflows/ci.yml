@@ -25,10 +25,10 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
+        uses: couimet/github-actions/setup-node-pnpm@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
 
       - name: Install dependencies
-        uses: ./.github/actions/install-deps
+        uses: couimet/github-actions/install-deps@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
 
       - name: Check formatting and linting
         uses: ./.github/actions/check-formatting
@@ -82,10 +82,10 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
+        uses: couimet/github-actions/setup-node-pnpm@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
 
       - name: Install dependencies
-        uses: ./.github/actions/install-deps
+        uses: couimet/github-actions/install-deps@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
 
       - name: Run integration tests
         id: run-integration-tests
