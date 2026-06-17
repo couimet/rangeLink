@@ -36,8 +36,8 @@ runs:
         # Fetch base branch
         git fetch origin "${{ inputs.base-ref }}" --depth=1
 
-        # Count TODOs in base branch
-        BASE_COUNT=$(git show "origin/${{ inputs.base-ref }}":packages/ 2>/dev/null | grep -c "TODO\|FIXME" || echo "0")
+        # Count TODOs in base branch via git grep (searches file contents, not tree metadata)
+        BASE_COUNT=$(git grep -c -E "TODO|FIXME" "origin/${{ inputs.base-ref }}" -- packages/ 2>/dev/null | awk -F: '{s+=$NF} END {print s+0}')
 
         # Calculate delta
         DELTA=$((CURRENT_COUNT - BASE_COUNT))
