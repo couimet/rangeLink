@@ -179,6 +179,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.SMART_BIND_CONFIRM_YES_REPLACE]: 'Yes, replace',
 
   [MessageCode.STATUS_BAR_DESTINATION_BOUND]: 'Bound to {destinationName}',
+  [MessageCode.STATUS_BAR_DESTINATION_BOUND_AND_SENT]:
+    'Bound to {destinationName} — {linkTypeName} sent',
+  [MessageCode.STATUS_BAR_DESTINATION_BOUND_PREFIX]: 'Bound to {destinationName} — ',
   [MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND]: 'No destination bound',
   [MessageCode.STATUS_BAR_DESTINATION_REBOUND]:
     'Unbound {previousDestination}, now bound to {newDestination}',

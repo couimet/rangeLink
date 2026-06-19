@@ -3,6 +3,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
+  type BindContext,
   type DestinationKind,
   isAnyAiAssistantKind,
   MessageCode,
@@ -48,14 +49,19 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
     );
   }
 
-  notifyBound(destinationName: string, replacedName?: string): void {
-    const message = replacedName
-      ? formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
-          previousDestination: replacedName,
-          newDestination: destinationName,
-        })
-      : formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, { destinationName });
-    this.vscodeAdapter.setSuccessfulStatusBarMessage(message);
+  notifyBound(destinationName: string): void {
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(
+      formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, { destinationName }),
+    );
+  }
+
+  notifyRebound(newDestinationName: string, previousDestinationName: string): void {
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(
+      formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
+        previousDestination: previousDestinationName,
+        newDestination: newDestinationName,
+      }),
+    );
   }
 
   notifyAlreadyBound(destinationName: string): void {
@@ -118,36 +124,42 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
     this.vscodeAdapter.setSuccessfulStatusBarMessage(message);
   }
 
-  provideSendFeedback(context: PasteContext, outcome: PasteSendOutcome): void {
+  provideSendFeedback(
+    context: PasteContext,
+    outcome: PasteSendOutcome,
+    bindContext?: BindContext,
+  ): void {
     const linkTypeName = formatMessage(context.contentType);
     switch (outcome.kind) {
       case 'sent-automatic': {
-        const destinationName = context.destination.displayName;
-        this.vscodeAdapter.setSuccessfulStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION, {
-            linkTypeName,
-            destinationName,
-          }),
-        );
+        const message = bindContext
+          ? formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND_AND_SENT, {
+              destinationName: bindContext.destinationName,
+              linkTypeName,
+            })
+          : formatMessage(MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION, {
+              linkTypeName,
+              destinationName: context.destination.displayName,
+            });
+        this.vscodeAdapter.setSuccessfulStatusBarMessage(message);
         break;
       }
-      case 'sent-manual': {
-        this.vscodeAdapter.setSuccessfulStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, { linkTypeName }),
-        );
-        void this.vscodeAdapter.showInformationMessage(outcome.instruction);
-        break;
-      }
+      case 'sent-manual':
       case 'failed-manual': {
         this.vscodeAdapter.setSuccessfulStatusBarMessage(
-          formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, { linkTypeName }),
+          this.buildClipboardMessage(linkTypeName, bindContext),
         );
-        void this.vscodeAdapter.showWarningMessage(outcome.instruction);
+        if (outcome.kind === 'sent-manual') {
+          void this.vscodeAdapter.showInformationMessage(outcome.instruction);
+        } else {
+          void this.vscodeAdapter.showWarningMessage(outcome.instruction);
+        }
         break;
       }
       case 'failed-automatic': {
+        const failureMessage = this.buildPasteFailureMessage(outcome.destinationKind);
         void this.vscodeAdapter.showWarningMessage(
-          this.buildPasteFailureMessage(outcome.destinationKind),
+          bindContext ? `${this.buildBoundPrefix(bindContext)}${failureMessage}` : failureMessage,
         );
         break;
       }
@@ -155,14 +167,15 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         void this.vscodeAdapter.showInformationMessage(outcome.toastMessage);
         if (outcome.clipboardWritten) {
           this.vscodeAdapter.setSuccessfulStatusBarMessage(
-            formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, { linkTypeName }),
+            this.buildClipboardMessage(linkTypeName, bindContext),
           );
         }
         break;
       }
       case 'clipboard-preservation-failed': {
+        const warningMessage = formatMessage(MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED);
         void this.vscodeAdapter.showWarningMessage(
-          formatMessage(MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED),
+          bindContext ? `${this.buildBoundPrefix(bindContext)}${warningMessage}` : warningMessage,
         );
         break;
       }
@@ -173,6 +186,20 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
           'OperationFeedbackProvider.provideSendFeedback',
         );
     }
+  }
+
+  private buildBoundPrefix(bindContext: BindContext): string {
+    return formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND_PREFIX, {
+      destinationName: bindContext.destinationName,
+    });
+  }
+
+  private buildClipboardMessage(linkTypeName: string, bindContext?: BindContext): string {
+    const base = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, { linkTypeName });
+    if (bindContext) {
+      return `${this.buildBoundPrefix(bindContext)}${base}`;
+    }
+    return base;
   }
 
   private buildPasteFailureMessage(destinationKind: string): string {

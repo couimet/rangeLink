@@ -53,8 +53,7 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
-      '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isBound': true,
@@ -122,8 +121,7 @@ standardSuite('Dirty Buffer Warning', (ss) => {
     const capturing = await ss.createCapturingTerminal('dirty-buffer-test');
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
-      '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isBound': true,
@@ -630,8 +628,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
   test('[assisted] dirty-buffer-warning-013: R-F Save & Send saves file and sends path', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
-      '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isBound': true,
@@ -681,8 +678,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
   test('[assisted] dirty-buffer-warning-014: R-F Send Anyway sends path without saving', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test")',
-      '✓ RangeLink: File path sent to Terminal ("dirty-buffer-test")',
+      '✓ RangeLink: Bound to Terminal ("dirty-buffer-test") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isBound': true,

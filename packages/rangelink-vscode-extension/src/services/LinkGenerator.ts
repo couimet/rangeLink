@@ -7,13 +7,20 @@ import { DEFAULT_SMART_PADDING_PASTE_LINK, SETTING_SMART_PADDING_PASTE_LINK } fr
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { OperationFeedbackProvider } from '../feedback';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { DirtyBufferWarningResult, MessageCode, PasteContentType, PathFormat } from '../types';
+import {
+  type BindContext,
+  DirtyBufferWarningResult,
+  MessageCode,
+  PasteContentType,
+  PathFormat,
+} from '../types';
 import { applySmartPadding, formatMessage, generateLinkFromSelections } from '../utils';
 
 import { getReferencePath } from './FilePathPaster';
 import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 import type { SelectionValidator } from './SelectionValidator';
 import type { SendRouter } from './SendRouter';
+import { toBindContext } from './toBindContext';
 import { LINK_DIRTY_BUFFER_CODES } from './types';
 
 /**
@@ -71,9 +78,15 @@ export class LinkGenerator {
         this.logger.debug(logCtx, 'Active editor URI unavailable, aborting');
         return;
       }
-      const resolved = await this.sendRouter.resolveDestination(logCtx);
-      if (!resolved) return;
-      await this.copyToClipboardAndDestination(formattedLink, contentNameCode, sourceUri);
+      const resolveResult = await this.sendRouter.resolveDestination(logCtx);
+      if (!resolveResult.canProceed) return;
+      const bindContext = toBindContext(resolveResult);
+      await this.copyToClipboardAndDestination(
+        formattedLink,
+        contentNameCode,
+        sourceUri,
+        bindContext,
+      );
     } else {
       this.logger.debug(logCtx, 'generateLinkFromSelection returned undefined, aborting');
     }
@@ -167,6 +180,7 @@ export class LinkGenerator {
     formattedLink: FormattedLink,
     contentNameCode: MessageCode,
     sourceUri: vscode.Uri,
+    bindContext?: BindContext,
   ): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.copyToClipboardAndDestination' };
     const paddingMode = this.configReader.getPaddingMode(
@@ -181,24 +195,27 @@ export class LinkGenerator {
       'Sending link to destination',
     );
 
-    await this.sendRouter.sendToDestination({
-      control: {
-        contentType: PasteContentType.Link,
+    await this.sendRouter.sendToDestination(
+      {
+        control: {
+          contentType: PasteContentType.Link,
+        },
+        content: {
+          clipboard: formattedLink.link,
+          send: { ...formattedLink, link: paddedLink },
+          sourceUri,
+          sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),
+        },
+        strategies: {
+          sendFn: (link) => this.destinationManager.sendLinkToDestination(link),
+          isEligibleFn: (destination, link) => destination.isEligibleForPasteLink(link),
+        },
+        contentNameCode,
+        fnName: 'copyToClipboardAndDestination',
+        selfPastePolicy: 'block-on-uri',
+        writeClipboardOnSelfPasteBlock: true,
       },
-      content: {
-        clipboard: formattedLink.link,
-        send: { ...formattedLink, link: paddedLink },
-        sourceUri,
-        sourceViewColumn: this.ideAdapter.getActiveEditorViewColumn(),
-      },
-      strategies: {
-        sendFn: (link) => this.destinationManager.sendLinkToDestination(link),
-        isEligibleFn: (destination, link) => destination.isEligibleForPasteLink(link),
-      },
-      contentNameCode,
-      fnName: 'copyToClipboardAndDestination',
-      selfPastePolicy: 'block-on-uri',
-      writeClipboardOnSelfPasteBlock: true,
-    });
+      bindContext,
+    );
   }
 }

@@ -759,6 +759,22 @@ test_cases:
     expected_result: "'RangeLink: Unbind' is not visible in the menu (or is disabled)."
     automated: assisted
 
+  - id: context-menus-explorer-006
+    labels:
+      - explorer
+    feature: 'context-menus'
+    scenario: 'Explorer (unbound): "Send File Path" opens picker, binds selected terminal and sends absolute path in one step'
+    expected_result: 'A single merged status bar message appears: "Bound to Terminal (...) — File path sent". Terminal receives the absolute path.'
+    automated: assisted
+
+  - id: context-menus-explorer-007
+    labels:
+      - explorer
+    feature: 'context-menus'
+    scenario: 'Explorer (unbound): "Send Relative File Path" opens picker, binds selected terminal and sends relative path in one step'
+    expected_result: 'A single merged status bar message appears: "Bound to Terminal (...) — File path sent". Terminal receives the workspace-relative path.'
+    automated: assisted
+
   - id: context-menus-editor-tab-001
     labels:
       - editor-tab
@@ -789,6 +805,22 @@ test_cases:
     feature: 'context-menus'
     scenario: 'Editor tab: RangeLink: Unbind visible when bound and unbinds on click'
     expected_result: 'Destination is unbound. Confirmation notification.'
+    automated: assisted
+
+  - id: context-menus-editor-tab-005
+    labels:
+      - editor-tab
+    feature: 'context-menus'
+    scenario: 'Editor tab (unbound): "Send File Path" opens picker, binds selected terminal and sends absolute path in one step'
+    expected_result: 'A single merged status bar message appears: "Bound to Terminal (...) — File path sent". Terminal receives the absolute path.'
+    automated: assisted
+
+  - id: context-menus-editor-tab-006
+    labels:
+      - editor-tab
+    feature: 'context-menus'
+    scenario: 'Editor tab (unbound): "Send Relative File Path" opens picker, binds selected terminal and sends relative path in one step'
+    expected_result: 'A single merged status bar message appears: "Bound to Terminal (...) — File path sent". Terminal receives the workspace-relative path.'
     automated: assisted
 
   - id: context-menus-editor-content-001

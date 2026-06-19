@@ -20,6 +20,7 @@ import { applySmartPadding, formatMessage } from '../utils';
 
 import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 import type { SendRouter } from './SendRouter';
+import { toBindContext } from './toBindContext';
 import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
 
 /**
@@ -111,12 +112,13 @@ export class FilePathPaster {
       DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
     );
 
-    const resolved = await this.sendRouter.resolveDestination(logCtx);
-    if (!resolved) return;
+    const resolveResult = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolveResult.canProceed) return;
 
     const destinationFilePath = quotePath(filePath);
 
     const paddedPath = applySmartPadding(destinationFilePath, paddingMode);
+    const bindContext = toBindContext(resolveResult);
 
     if (destinationFilePath !== filePath) {
       this.logger.debug(
@@ -125,24 +127,27 @@ export class FilePathPaster {
       );
     }
 
-    await this.sendRouter.sendToDestination({
-      control: {
-        contentType: PasteContentType.Text,
+    await this.sendRouter.sendToDestination(
+      {
+        control: {
+          contentType: PasteContentType.Text,
+        },
+        content: {
+          clipboard: destinationFilePath,
+          send: paddedPath,
+          sourceUri: uri,
+          sourceViewColumn: this.ideAdapter.getActiveTabViewColumn(),
+        },
+        strategies: {
+          sendFn: (text) => this.destinationManager.sendTextToDestination(text),
+          isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+        },
+        contentNameCode: MessageCode.CONTENT_NAME_FILE_PATH,
+        fnName: 'pasteFilePath',
+        selfPastePolicy: 'block-on-editor-selection',
+        writeClipboardOnSelfPasteBlock: true,
       },
-      content: {
-        clipboard: destinationFilePath,
-        send: paddedPath,
-        sourceUri: uri,
-        sourceViewColumn: this.ideAdapter.getActiveTabViewColumn(),
-      },
-      strategies: {
-        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
-        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
-      },
-      contentNameCode: MessageCode.CONTENT_NAME_FILE_PATH,
-      fnName: 'pasteFilePath',
-      selfPastePolicy: 'block-on-editor-selection',
-      writeClipboardOnSelfPasteBlock: true,
-    });
+      bindContext,
+    );
   }
 }

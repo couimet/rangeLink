@@ -1,7 +1,8 @@
 import type { DestinationKind, MessageCode } from '../types';
 
 export interface BindingFeedback {
-  notifyBound(destinationName: string, replacedName?: string): void;
+  notifyBound(destinationName: string): void;
+  notifyRebound(newDestinationName: string, previousDestinationName: string): void;
   notifyAlreadyBound(destinationName: string): void;
   notifyBindFailedEditor(messageCode: MessageCode, params: Record<string, string>): void;
   notifyBindFailedNotAvailable(displayName: string, kind: DestinationKind): void;

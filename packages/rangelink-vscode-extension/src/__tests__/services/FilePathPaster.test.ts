@@ -108,7 +108,7 @@ describe('FilePathPaster', () => {
     it('delegates to pasteFilePath when active editor exists', async () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'getActiveTabUri').mockReturnValue(uri);
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await paster.pasteCurrentFilePathToDestination(PathFormat.Absolute);
 
@@ -124,7 +124,7 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
@@ -138,30 +138,36 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
-        control: {
-          contentType: 'Text',
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: '/workspace/src/file.ts',
+            send: ' /workspace/src/file.ts ',
+            sourceUri: uri,
+            sourceViewColumn: undefined,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_FILE_PATH',
+          fnName: 'pasteFilePath',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: true,
         },
-        content: {
-          clipboard: '/workspace/src/file.ts',
-          send: ' /workspace/src/file.ts ',
-          sourceUri: uri,
-          sourceViewColumn: undefined,
-        },
-        strategies: {
-          sendFn: expect.any(Function) as unknown,
-          isEligibleFn: expect.any(Function) as unknown,
-        },
-        contentNameCode: 'CONTENT_NAME_FILE_PATH',
-        fnName: 'pasteFilePath',
-        selfPastePolicy: 'block-on-editor-selection',
-        writeClipboardOnSelfPasteBlock: true,
-      });
+        undefined,
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'FilePathPaster.pasteFilePath',
@@ -180,10 +186,36 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: "'/workspace/my project/file'\\''s.ts'",
+            send: " '/workspace/my project/file'\\''s.ts' ",
+            sourceUri: uri,
+            sourceViewColumn: undefined,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_FILE_PATH',
+          fnName: 'pasteFilePath',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'FilePathPaster.pasteFilePath',
@@ -232,11 +264,36 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: '/workspace/src/file.ts',
+            send: ' /workspace/src/file.ts ',
+            sourceUri: uri,
+            sourceViewColumn: undefined,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_FILE_PATH',
+          fnName: 'pasteFilePath',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
     });
 
     it('proceeds when handleDirtyBufferWarning returns ContinueAnyway', async () => {
@@ -246,11 +303,36 @@ describe('FilePathPaster', () => {
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: '/workspace/src/file.ts',
+            send: ' /workspace/src/file.ts ',
+            sourceUri: uri,
+            sourceViewColumn: undefined,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_FILE_PATH',
+          fnName: 'pasteFilePath',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
     });
 
     it('passes document, configReader, and R-F message codes to handleDirtyBufferWarning', async () => {
@@ -277,12 +359,37 @@ describe('FilePathPaster', () => {
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       const warningSpy = jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning');
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
       expect(warningSpy).not.toHaveBeenCalled();
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: '/workspace/src/file.ts',
+            send: ' /workspace/src/file.ts ',
+            sourceUri: uri,
+            sourceViewColumn: undefined,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_FILE_PATH',
+          fnName: 'pasteFilePath',
+          selfPastePolicy: 'block-on-editor-selection',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
     });
   });
 });

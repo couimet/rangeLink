@@ -12,6 +12,7 @@ export const createMockOperationFeedbackProvider = (): jest.Mocked<
     notifyAutoUnbind: jest.fn(),
     notifyDuplicateTabWarning: jest.fn(),
     notifyBound: jest.fn(),
+    notifyRebound: jest.fn(),
     notifyAlreadyBound: jest.fn(),
     notifyBindFailedEditor: jest.fn(),
     notifyBindFailedNotAvailable: jest.fn(),

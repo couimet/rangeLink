@@ -168,4 +168,99 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
 
     ss.log('✓ Editor-tab "Unbind" fired the unbind path; context key flipped to false');
   });
+
+  test('[assisted] context-menus-editor-tab-005: Editor tab "Send File Path" (unbound) opens picker and sends absolute path to selected terminal', async () => {
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-005', FILE_CONTENT);
+    const fn = path.basename(uri.fsPath);
+
+    const terminalName = 'rl-ctxmenu-tab-005';
+    const capturing = await ss.createCapturingTerminal(terminalName);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-005") — File path sent',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-tab-005');
+    capturing.clearCaptured();
+
+    await waitForHuman(
+      'context-menus-editor-tab-005',
+      `Right-click tab "${fn}" → "RangeLink: Send File Path" → select "${terminalName}" from the destination picker`,
+      [
+        `1. Locate the "${fn}" tab in the editor tab bar`,
+        '2. Right-click the tab',
+        '3. Select "RangeLink: Send File Path"',
+        `4. In the destination picker, select "${terminalName}"`,
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-ctxmenu-tab-005');
+
+    assertFilePathLogged(lines, {
+      pathFormat: 'absolute',
+      uriSource: 'context-menu',
+      filePath: uri.fsPath,
+    });
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
+
+    ss.log(
+      '✓ Unbound editor-tab absolute path → picker → bind+send (merged message, pty capture verified content)',
+    );
+  });
+
+  test('[assisted] context-menus-editor-tab-006: Editor tab "Send Relative File Path" (unbound) opens picker and sends relative path to selected terminal', async () => {
+    const uri = await ss.createAndOpenFile('ctxmenu-tab-006', FILE_CONTENT);
+    const fn = path.basename(uri.fsPath);
+    const relativePath = vscode.workspace.asRelativePath(uri, false);
+
+    const terminalName = 'rl-ctxmenu-tab-006';
+    const capturing = await ss.createCapturingTerminal(terminalName);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-006") — File path sent',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-tab-006');
+    capturing.clearCaptured();
+
+    await waitForHuman(
+      'context-menus-editor-tab-006',
+      `Right-click tab "${fn}" → "RangeLink: Send Relative File Path" → select "${terminalName}" from the destination picker`,
+      [
+        `1. Locate the "${fn}" tab in the editor tab bar`,
+        '2. Right-click the tab',
+        '3. Select "RangeLink: Send Relative File Path"',
+        `4. In the destination picker, select "${terminalName}"`,
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-ctxmenu-tab-006');
+
+    assertFilePathLogged(lines, {
+      pathFormat: 'workspace-relative',
+      uriSource: 'context-menu',
+      filePath: relativePath,
+    });
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
+
+    ss.log(
+      '✓ Unbound editor-tab relative path → picker → bind+send (merged message, pty capture verified content)',
+    );
+  });
 });

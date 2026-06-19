@@ -106,12 +106,39 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      const link = createMockFormattedLink('src/file.ts#L1');
+      mockGenLink.mockReturnValue(Result.ok(link));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await generator.createLink();
 
+      const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Link',
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: { ...link, link: ' src/file.ts#L1 ' },
+            sourceUri: mockDoc.uri,
+            sourceViewColumn: expectedViewColumn,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_RANGELINK',
+          fnName: 'copyToClipboardAndDestination',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
     });
 
     it('aborts when generateLinkFromSelection returns undefined', async () => {
@@ -153,7 +180,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
 
@@ -213,12 +240,39 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      const link = createMockFormattedLink('src/file.ts#L1');
+      mockGenLink.mockReturnValue(Result.ok(link));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await generator.createPortableLink();
 
+      const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Link',
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: { ...link, link: ' src/file.ts#L1 ' },
+            sourceUri: mockDoc.uri,
+            sourceViewColumn: expectedViewColumn,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_PORTABLE_RANGELINK',
+          fnName: 'copyToClipboardAndDestination',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
     });
   });
 
@@ -308,7 +362,7 @@ describe('LinkGenerator', () => {
       mockGenLink.mockReturnValue(Result.ok(link));
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
 
@@ -343,7 +397,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L4C1-L4C11')));
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
 
@@ -416,7 +470,7 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
 
@@ -433,7 +487,10 @@ describe('LinkGenerator', () => {
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       const link = createMockFormattedLink('src/file.ts#L1');
       mockGenLink.mockReturnValue(Result.ok(link));
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await generator.createLink();
 
@@ -447,25 +504,28 @@ describe('LinkGenerator', () => {
       );
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
       const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
-      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
-        control: {
-          contentType: 'Link',
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Link',
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: { ...link, link: ' src/file.ts#L1 ' },
+            sourceUri: mockDoc.uri,
+            sourceViewColumn: expectedViewColumn,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_RANGELINK',
+          fnName: 'copyToClipboardAndDestination',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: true,
         },
-        content: {
-          clipboard: 'src/file.ts#L1',
-          send: { ...link, link: ' src/file.ts#L1 ' },
-          sourceUri: mockDoc.uri,
-          sourceViewColumn: expectedViewColumn,
-        },
-        strategies: {
-          sendFn: expect.any(Function) as unknown,
-          isEligibleFn: expect.any(Function) as unknown,
-        },
-        contentNameCode: 'CONTENT_NAME_RANGELINK',
-        fnName: 'copyToClipboardAndDestination',
-        selfPastePolicy: 'block-on-uri',
-        writeClipboardOnSelfPasteBlock: true,
-      });
+        undefined,
+      );
     });
   });
 });

@@ -325,8 +325,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Terminal ("${destName}")`,
-      `✓ RangeLink: Selected text sent to Terminal ("${destName}")`,
+      `✓ RangeLink: Bound to Terminal ("${destName}") — Selected text sent`,
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -600,8 +599,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-011-DEST")',
+      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST") — Selected text sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,

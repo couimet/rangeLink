@@ -51,25 +51,28 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     private readonly logger: Logger,
   ) {}
 
-  async bind(options: BindOptions): Promise<ExtensionResult<BindSuccessInfo>> {
+  async bind(
+    options: BindOptions,
+    statusBarOptions?: StatusBarOptions,
+  ): Promise<ExtensionResult<BindSuccessInfo>> {
     switch (options.kind) {
       case 'terminal': {
         const newDestination = this.registry.create({
           kind: 'terminal',
           terminal: options.terminal,
         });
-        return this.commitBind(newDestination);
+        return this.commitBind(newDestination, statusBarOptions ? { statusBarOptions } : undefined);
       }
       case 'text-editor':
-        return this.bindTextEditor(options);
+        return this.bindTextEditor(options, statusBarOptions);
       case 'cursor-ai':
       case 'gemini-code-assist':
       case 'github-copilot-chat':
       case 'claude-code':
-        return this.bindGenericDestination(options.kind);
+        return this.bindGenericDestination(options.kind, statusBarOptions);
       default:
         if (isCustomAiAssistantKind(options.kind)) {
-          return this.bindGenericDestination(options.kind);
+          return this.bindGenericDestination(options.kind, statusBarOptions);
         }
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
@@ -211,6 +214,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    */
   private async bindTextEditor(
     options: TextEditorBindOptions,
+    statusBarOptions?: StatusBarOptions,
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindTextEditor';
 
@@ -279,10 +283,8 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
 
     const newDestination = this.registry.create(options);
 
-    return this.commitBind(
-      newDestination,
-      wasBackgroundTab ? { suppressAutoPaste: true } : undefined,
-    );
+    const bindOptions = this.buildCommitBindOptions(wasBackgroundTab, statusBarOptions);
+    return this.commitBind(newDestination, bindOptions);
   }
 
   /**
@@ -293,6 +295,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    */
   private async bindGenericDestination(
     kind: DestinationKind,
+    statusBarOptions?: StatusBarOptions,
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindGenericDestination';
 
@@ -313,7 +316,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
       );
     }
 
-    return this.commitBind(newDestination);
+    return this.commitBind(newDestination, statusBarOptions ? { statusBarOptions } : undefined);
   }
 
   /**
@@ -323,11 +326,11 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    * then delegate the common bind flow here.
    *
    * @param newDestination - The destination to bind
-   * @param options - Optional bind metadata (e.g., suppressAutoPaste for background-tab binds)
+   * @param bindOptions - Optional bind metadata (suppressAutoPaste for background-tab binds, statusBarOptions to suppress toast)
    */
   private async commitBind(
     newDestination: PasteDestination,
-    options?: { suppressAutoPaste?: true },
+    bindOptions?: { suppressAutoPaste?: true; statusBarOptions?: StatusBarOptions },
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const kind = newDestination.id;
     const logCtx = { fn: 'PasteDestinationManager.commitBind', kind };
@@ -379,13 +382,31 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
       `Successfully bound to "${newDestination.displayName}"`,
     );
 
-    this.feedback.notifyBound(newDestination.displayName, replacedName);
+    if (!bindOptions?.statusBarOptions?.skipMessage) {
+      if (replacedName) {
+        this.feedback.notifyRebound(newDestination.displayName, replacedName);
+      } else {
+        this.feedback.notifyBound(newDestination.displayName);
+      }
+    }
 
     return ExtensionResult.ok({
       destinationName: newDestination.displayName,
       destinationKind: kind,
-      ...(options?.suppressAutoPaste && { suppressAutoPaste: true as const }),
+      ...(bindOptions?.suppressAutoPaste && { suppressAutoPaste: true as const }),
     });
+  }
+
+  private buildCommitBindOptions(
+    wasBackgroundTab: boolean,
+    statusBarOptions?: StatusBarOptions,
+  ): { suppressAutoPaste?: true; statusBarOptions?: StatusBarOptions } | undefined {
+    return wasBackgroundTab || statusBarOptions
+      ? {
+          ...(wasBackgroundTab && { suppressAutoPaste: true as const }),
+          ...(statusBarOptions && { statusBarOptions }),
+        }
+      : undefined;
   }
 
   private async executeSend(options: {

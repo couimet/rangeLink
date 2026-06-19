@@ -12,8 +12,16 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { OperationFeedbackProvider } from '../feedback';
 import type { PasteContext, PasteSendOutcome } from '../feedback';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
-import { AutoPasteResult, MessageCode, type QuickPickBindResult, type SendOptions } from '../types';
+import {
+  AutoPasteResult,
+  type BindContext,
+  MessageCode,
+  type QuickPickBindResult,
+  type SendOptions,
+} from '../types';
 import { formatMessage, isEditorDestination, isSameFileDestination } from '../utils';
+
+import type { ResolveResult } from './types';
 
 /**
  * Routes content through clipboard and to a bound destination.
@@ -33,28 +41,34 @@ export class SendRouter {
 
   /**
    * Ensure a destination is bound, showing the picker if needed.
-   * Returns true if a destination is available (already bound or user picked one).
+   * Returns a discriminated union describing what happened: already bound,
+   * newly bound via picker (with destination name), or no destination available.
    */
-  async resolveDestination(logCtx: LoggingContext): Promise<boolean> {
+  async resolveDestination(logCtx: LoggingContext): Promise<ResolveResult> {
     if (!this.session.isSet()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
       const pickerResult = await this.showPickerAndBind();
-      if (pickerResult.outcome !== 'bound') {
-        this.logger.debug(
-          { ...logCtx, outcome: pickerResult.outcome },
-          'Picker did not bind, aborting',
-        );
-        return false;
+      if (pickerResult.outcome === 'bound') {
+        return {
+          canProceed: true,
+          bindPerformed: true,
+          destinationName: pickerResult.bindInfo.destinationName,
+        };
       }
+      this.logger.debug(
+        { ...logCtx, outcome: pickerResult.outcome },
+        'Picker did not bind, aborting',
+      );
+      return { canProceed: false };
     }
-    return true;
+    return { canProceed: true, bindPerformed: false };
   }
 
   /**
    * Routes content through clipboard and to the bound destination.
    * Handles clipboard preservation, eligibility, self-paste detection, and feedback.
    */
-  async sendToDestination<T>(options: SendOptions<T>): Promise<void> {
+  async sendToDestination<T>(options: SendOptions<T>, bindContext?: BindContext): Promise<void> {
     const destinationSnapshot = this.session.get();
     const shouldRoute = destinationSnapshot !== undefined;
     if (shouldRoute) {
@@ -74,6 +88,7 @@ export class SendRouter {
           this.feedbackProvider.provideSendFeedback(
             this.buildPasteContext(options, destinationSnapshot),
             { kind: 'clipboard-preservation-failed' },
+            bindContext,
           );
         }
         return;
@@ -82,6 +97,7 @@ export class SendRouter {
         this.feedbackProvider.provideSendFeedback(
           this.buildPasteContext(options, destinationSnapshot),
           outcome,
+          bindContext,
         );
       }
     } else {
@@ -272,7 +288,7 @@ export class SendRouter {
         return { outcome: 'cancelled' };
 
       case 'selected': {
-        const bindResult = await this.binder.bind(result.bindOptions);
+        const bindResult = await this.binder.bind(result.bindOptions, { skipMessage: true });
         if (!bindResult.success) {
           this.logger.error(
             { ...logCtx, error: bindResult.error },
