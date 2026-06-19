@@ -16,6 +16,7 @@ export * from './RelativePathFormat';
 export * from './ResolvedPath';
 export * from './TerminalFocusType';
 
+export type * from './BindContext';
 export type * from './BindOptions';
 export type * from './BoundDestinationInfo';
 export type * from './BoundState';

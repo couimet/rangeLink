@@ -11,6 +11,7 @@ import { applySmartPadding } from '../utils';
 
 import type { SelectionValidator } from './SelectionValidator';
 import type { SendRouter } from './SendRouter';
+import { toBindContext } from './toBindContext';
 
 /**
  * Pastes the current editor text selection to the bound destination.
@@ -48,28 +49,32 @@ export class TextSelectionPaster {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
-    const resolved = await this.sendRouter.resolveDestination(logCtx);
-    if (!resolved) return;
+    const resolveResult = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolveResult.canProceed) return;
 
     const paddedContent = applySmartPadding(content, paddingMode);
+    const bindContext = toBindContext(resolveResult);
 
-    await this.sendRouter.sendToDestination({
-      control: {
-        contentType: PasteContentType.Text,
+    await this.sendRouter.sendToDestination(
+      {
+        control: {
+          contentType: PasteContentType.Text,
+        },
+        content: {
+          clipboard: paddedContent,
+          send: paddedContent,
+          sourceUri: editor.document.uri,
+          sourceViewColumn: editor.viewColumn,
+        },
+        strategies: {
+          sendFn: (text) => this.destinationManager.sendTextToDestination(text),
+          isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+        },
+        contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
+        fnName: 'pasteSelectedTextToDestination',
+        selfPastePolicy: 'block-on-editor-selection',
       },
-      content: {
-        clipboard: paddedContent,
-        send: paddedContent,
-        sourceUri: editor.document.uri,
-        sourceViewColumn: editor.viewColumn,
-      },
-      strategies: {
-        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
-        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
-      },
-      contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
-      fnName: 'pasteSelectedTextToDestination',
-      selfPastePolicy: 'block-on-editor-selection',
-    });
+      bindContext,
+    );
   }
 }

@@ -331,8 +331,7 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+      '✓ RangeLink: Bound to Dummy AI (Tier 1) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
@@ -376,8 +375,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+      '✓ RangeLink: Bound to Dummy AI (Tier 1) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
@@ -410,8 +408,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
 
   test('custom-ai-assistant-011: Tier 1 clipboard isolation — sentinel preserved', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
+      '✓ RangeLink: Bound to Dummy AI (Tier 1) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-tier1-clip', 'clipboard test');
@@ -432,8 +429,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
 
   test('custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 3)',
-      '✓ RangeLink: RangeLink copied to clipboard',
+      '✓ RangeLink: Bound to Dummy AI (Tier 3) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
@@ -471,8 +467,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
 
   test('custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Fallback)',
-      '✓ RangeLink: RangeLink copied to clipboard',
+      '✓ RangeLink: Bound to Dummy AI (Fallback) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([
@@ -510,8 +505,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
 
   test('custom-ai-assistant-014: ${content} template delivers text via insertWithArgs', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Template)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Template)',
+      '✓ RangeLink: Bound to Dummy AI (Template) — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-template', 'template test content');
@@ -549,8 +543,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
+      '✓ RangeLink: Bound to GitHub Copilot Chat — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
@@ -579,8 +572,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
 
   test('custom-ai-assistant-019: misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast', async () => {
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Gemini Code Assist',
-      '✓ RangeLink: RangeLink copied to clipboard',
+      '✓ RangeLink: Bound to Gemini Code Assist — RangeLink copied to clipboard',
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([

@@ -76,7 +76,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(true);
+      expect(result).toStrictEqual({ canProceed: true, bindPerformed: false });
       expect(mockDestinationPicker.pick).not.toHaveBeenCalled();
     });
 
@@ -95,7 +95,11 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(true);
+      expect(result).toStrictEqual({
+        canProceed: true,
+        bindPerformed: true,
+        destinationName: 'Terminal',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'test' },
         'No destination bound, showing quick pick',
@@ -108,7 +112,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'test', outcome: 'no-resource' },
         'Picker did not bind, aborting',
@@ -121,7 +125,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
     });
 
     it('returns false when bind fails', async () => {
@@ -139,7 +143,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
       expect(mockFeedbackProvider.showError).toHaveBeenCalled();
     });
   });
@@ -197,6 +201,7 @@ describe('SendRouter', () => {
           },
         },
         { kind: 'clipboard-preservation-failed' },
+        undefined,
       );
     });
 
@@ -224,6 +229,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
 
@@ -311,6 +317,7 @@ describe('SendRouter', () => {
           toastMessage:
             'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
         },
+        undefined,
       );
     });
 
@@ -369,6 +376,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
 
@@ -397,6 +405,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-manual', instruction: 'Press Cmd+V to paste' },
+        undefined,
       );
     });
 
@@ -437,6 +446,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'failed-manual', instruction: 'Manual paste required' },
+        undefined,
       );
     });
 
@@ -471,6 +481,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'failed-automatic', destinationKind: 'terminal' },
+        undefined,
       );
     });
 
@@ -501,6 +512,7 @@ describe('SendRouter', () => {
           destination: { kind: 'terminal', label: 'bash', displayName: '' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
   });
@@ -536,6 +548,7 @@ describe('SendRouter', () => {
           destination: { kind: 'text-editor', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
 
@@ -592,6 +605,7 @@ describe('SendRouter', () => {
           toastMessage:
             'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
         },
+        undefined,
       );
     });
 
@@ -632,6 +646,7 @@ describe('SendRouter', () => {
           destination: { kind: 'text-editor', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
 
@@ -680,6 +695,7 @@ describe('SendRouter', () => {
           toastMessage:
             'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
         },
+        undefined,
       );
       expect(
         jest
@@ -733,6 +749,7 @@ describe('SendRouter', () => {
           clipboardWritten: false,
           toastMessage: 'Cannot paste when bound editor has an active selection.',
         },
+        undefined,
       );
       expect(
         jest
@@ -788,6 +805,7 @@ describe('SendRouter', () => {
           destination: { kind: 'text-editor', label: 'bash', displayName: 'Terminal ("bash")' },
         },
         { kind: 'sent-automatic' },
+        undefined,
       );
     });
   });
@@ -899,7 +917,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
       expect(mockLogger.info).toHaveBeenCalledWith(
         { fn: 'SendRouter.showPickerAndBind' },
         'No destinations available - no action taken',
@@ -912,7 +930,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
       expect(mockLogger.info).toHaveBeenCalledWith(
         { fn: 'SendRouter.showPickerAndBind' },
         'User cancelled quick pick - no action taken',
@@ -934,7 +952,15 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(true);
+      expect(result).toStrictEqual({
+        canProceed: true,
+        bindPerformed: true,
+        destinationName: 'Terminal',
+      });
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(
+        { kind: 'terminal', terminal: { name: 'bash' } },
+        { skipMessage: true },
+      );
     });
 
     it('returns bind-failed when bind returns error', async () => {
@@ -952,7 +978,7 @@ describe('SendRouter', () => {
 
       const result = await router.resolveDestination({ fn: 'test' });
 
-      expect(result).toBe(false);
+      expect(result).toStrictEqual({ canProceed: false });
       expect(mockLogger.error).toHaveBeenCalled();
       expect(mockFeedbackProvider.showError).toHaveBeenCalled();
     });

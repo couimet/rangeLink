@@ -63,30 +63,33 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockSendRouter.resolveDestination.mockResolvedValue(true);
+    mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: true, bindPerformed: false });
     mockConfigReader.getPaddingMode.mockReturnValue('both');
 
     await paster.pasteSelectedTextToDestination();
 
     expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
-    expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
-      control: {
-        contentType: 'Text',
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+      {
+        control: {
+          contentType: 'Text',
+        },
+        content: {
+          clipboard: ' selected text ',
+          send: ' selected text ',
+          sourceUri: mockDoc.uri,
+          sourceViewColumn: mockEditor.viewColumn,
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
+        fnName: 'pasteSelectedTextToDestination',
+        selfPastePolicy: 'block-on-editor-selection',
       },
-      content: {
-        clipboard: ' selected text ',
-        send: ' selected text ',
-        sourceUri: mockDoc.uri,
-        sourceViewColumn: mockEditor.viewColumn,
-      },
-      strategies: {
-        sendFn: expect.any(Function) as unknown,
-        isEligibleFn: expect.any(Function) as unknown,
-      },
-      contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
-      fnName: 'pasteSelectedTextToDestination',
-      selfPastePolicy: 'block-on-editor-selection',
-    });
+      undefined,
+    );
     expect(mockLogger.debug).toHaveBeenCalledWith(
       {
         fn: 'TextSelectionPaster.pasteSelectedTextToDestination',
@@ -110,10 +113,32 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel1, sel2],
     });
-    mockSendRouter.resolveDestination.mockResolvedValue(true);
+    mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: true, bindPerformed: false });
 
     await paster.pasteSelectedTextToDestination();
 
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+      {
+        control: {
+          contentType: 'Text',
+        },
+        content: {
+          clipboard: 'line1\nline2',
+          send: 'line1\nline2',
+          sourceUri: mockDoc.uri,
+          sourceViewColumn: mockEditor.viewColumn,
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
+        fnName: 'pasteSelectedTextToDestination',
+        selfPastePolicy: 'block-on-editor-selection',
+      },
+      undefined,
+    );
     expect(mockLogger.debug).toHaveBeenCalledWith(
       {
         fn: 'TextSelectionPaster.pasteSelectedTextToDestination',
@@ -135,7 +160,7 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockSendRouter.resolveDestination.mockResolvedValue(false);
+    mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
     await paster.pasteSelectedTextToDestination();
 
@@ -153,10 +178,31 @@ describe('TextSelectionPaster', () => {
       editor: mockEditor,
       selections: [sel],
     });
-    mockSendRouter.resolveDestination.mockResolvedValue(true);
+    mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: true, bindPerformed: false });
 
     await paster.pasteSelectedTextToDestination();
 
     expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+    expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+      {
+        control: {
+          contentType: 'Text',
+        },
+        content: {
+          clipboard: 'text',
+          send: 'text',
+          sourceUri: mockDoc.uri,
+          sourceViewColumn: mockEditor.viewColumn,
+        },
+        strategies: {
+          sendFn: expect.any(Function) as unknown,
+          isEligibleFn: expect.any(Function) as unknown,
+        },
+        contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
+        fnName: 'pasteSelectedTextToDestination',
+        selfPastePolicy: 'block-on-editor-selection',
+      },
+      undefined,
+    );
   });
 });

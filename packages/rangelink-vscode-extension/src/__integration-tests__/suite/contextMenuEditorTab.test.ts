@@ -25,8 +25,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-001")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-001")',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-001") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -75,8 +74,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await ss.settle();
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-002")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-002")',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-002") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,

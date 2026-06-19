@@ -147,7 +147,7 @@ describe('TerminalSelectionService', () => {
       mockClipboardService.capture.mockResolvedValue(
         ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
       );
-      mockSendRouter.resolveDestination.mockResolvedValue(false);
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       const result = await service.pasteTerminalSelectionToDestination();
 
@@ -161,28 +161,34 @@ describe('TerminalSelectionService', () => {
       mockClipboardService.capture.mockResolvedValue(
         ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
       );
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
       mockConfigReader.getPaddingMode.mockReturnValue('both');
 
       const result = await service.pasteTerminalSelectionToDestination();
 
       expect(result).toStrictEqual({ outcome: 'success' });
       expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
-      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith({
-        control: {
-          contentType: 'Text',
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: ' selected text ',
+            send: ' selected text ',
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
+          fnName: 'pasteTerminalSelectionToDestination',
         },
-        content: {
-          clipboard: ' selected text ',
-          send: ' selected text ',
-        },
-        strategies: {
-          sendFn: expect.any(Function) as unknown,
-          isEligibleFn: expect.any(Function) as unknown,
-        },
-        contentNameCode: 'CONTENT_NAME_SELECTED_TEXT',
-        fnName: 'pasteTerminalSelectionToDestination',
-      });
+        undefined,
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
@@ -201,7 +207,10 @@ describe('TerminalSelectionService', () => {
       mockClipboardService.capture.mockResolvedValue(
         ExtensionResult.ok({ clipboard: 'text', produced: undefined }),
       );
-      mockSendRouter.resolveDestination.mockResolvedValue(true);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
 
       await service.terminalLinkBridge();
 

@@ -26,8 +26,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -73,8 +72,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002") — File path sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,

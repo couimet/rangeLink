@@ -14,6 +14,7 @@ import { MessageCode, PasteContentType, type TerminalPasteResult } from '../type
 import { applySmartPadding, formatMessage } from '../utils';
 
 import type { SendRouter } from './SendRouter';
+import { toBindContext } from './toBindContext';
 
 interface CaptureErrorInfo {
   readonly logMessage: string;
@@ -90,8 +91,8 @@ export class TerminalSelectionService {
       `Read ${terminalText.length} chars from terminal selection`,
     );
 
-    const resolved = await this.sendRouter.resolveDestination(logCtx);
-    if (!resolved) return { outcome: 'picker-cancelled' };
+    const resolveResult = await this.sendRouter.resolveDestination(logCtx);
+    if (!resolveResult.canProceed) return { outcome: 'picker-cancelled' };
 
     const paddingMode = this.configReader.getPaddingMode(
       SETTING_SMART_PADDING_PASTE_CONTENT,
@@ -99,22 +100,26 @@ export class TerminalSelectionService {
     );
 
     const paddedText = applySmartPadding(terminalText, paddingMode);
+    const bindContext = toBindContext(resolveResult);
 
-    await this.sendRouter.sendToDestination({
-      control: {
-        contentType: PasteContentType.Text,
+    await this.sendRouter.sendToDestination(
+      {
+        control: {
+          contentType: PasteContentType.Text,
+        },
+        content: {
+          clipboard: paddedText,
+          send: paddedText,
+        },
+        strategies: {
+          sendFn: (text) => this.destinationManager.sendTextToDestination(text),
+          isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+        },
+        contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
+        fnName: 'pasteTerminalSelectionToDestination',
       },
-      content: {
-        clipboard: paddedText,
-        send: paddedText,
-      },
-      strategies: {
-        sendFn: (text) => this.destinationManager.sendTextToDestination(text),
-        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
-      },
-      contentNameCode: MessageCode.CONTENT_NAME_SELECTED_TEXT,
-      fnName: 'pasteTerminalSelectionToDestination',
-    });
+      bindContext,
+    );
 
     return { outcome: 'success' };
   }

@@ -325,8 +325,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Terminal ("${destName}")`,
-      `✓ RangeLink: Selected text sent to Terminal ("${destName}")`,
+      `✓ RangeLink: Bound to Terminal ("${destName}") — Selected text sent`,
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -457,8 +456,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${editorFn}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`,
+      `✓ RangeLink: Bound to Text Editor ("${editorFn}") — Selected text sent`,
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -509,8 +507,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")',
+      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND") — Selected text sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -600,8 +597,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-011-DEST")',
+      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST") — Selected text sent',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -706,8 +702,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)',
+      '✓ RangeLink: Bound to Dummy AI (Tier 1) — Selected text copied to clipboard',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
