@@ -456,7 +456,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${editorFn}") — Selected text sent`,
+      `✓ RangeLink: Bound to Text Editor ("${editorFn}")`,
+      `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`,
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -507,7 +508,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND") — Selected text sent',
+      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")',
+      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -702,7 +704,8 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await ss.settle(TERMINAL_READY_MS);
 
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1) — Selected text copied to clipboard',
+      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
+      '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,

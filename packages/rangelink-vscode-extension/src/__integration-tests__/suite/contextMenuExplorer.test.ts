@@ -26,7 +26,8 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001") — File path sent',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -72,7 +73,8 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
     ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002") — File path sent',
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")',
+      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")',
     ]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
@@ -186,6 +188,101 @@ standardSuite('Context Menus — Explorer', (ss) => {
 
     ss.log(
       '✓ Unbound state: "Unbind" absent from Explorer context menu (human verdict + state invariant)',
+    );
+  });
+
+  test('[assisted] context-menus-explorer-006: Explorer "Send File Path" (unbound) opens picker and sends absolute path to selected terminal', async () => {
+    const uri = await ss.createAndOpenFile('ctxmenu-exp-006', FILE_CONTENT);
+    const fn = path.basename(uri.fsPath);
+
+    const terminalName = 'rl-ctxmenu-exp-006';
+    const capturing = await ss.createCapturingTerminal(terminalName);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-006") — File path sent',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-exp-006');
+    capturing.clearCaptured();
+
+    await waitForHuman(
+      'context-menus-explorer-006',
+      `Right-click "${fn}" in Explorer → "RangeLink: Send File Path" → select "${terminalName}" from the destination picker`,
+      [
+        `1. Locate "${fn}" in the Explorer panel`,
+        '2. Right-click it',
+        '3. Select "RangeLink: Send File Path"',
+        `4. In the destination picker, select "${terminalName}"`,
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-ctxmenu-exp-006');
+
+    assertFilePathLogged(lines, {
+      pathFormat: 'absolute',
+      uriSource: 'context-menu',
+      filePath: uri.fsPath,
+    });
+    const expectedPath = ` ${uri.fsPath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
+
+    ss.log(
+      '✓ Unbound explorer absolute path → picker → bind+send (merged message, pty capture verified content)',
+    );
+  });
+
+  test('[assisted] context-menus-explorer-007: Explorer "Send Relative File Path" (unbound) opens picker and sends relative path to selected terminal', async () => {
+    const uri = await ss.createAndOpenFile('ctxmenu-exp-007', FILE_CONTENT);
+    const fn = path.basename(uri.fsPath);
+    const relativePath = vscode.workspace.asRelativePath(uri, false);
+
+    const terminalName = 'rl-ctxmenu-exp-007';
+    const capturing = await ss.createCapturingTerminal(terminalName);
+
+    ss.expectStatusBarMessages([
+      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-007") — File path sent',
+    ]);
+    ss.expectContextKeys({
+      'rangelink.isActiveTerminalBindable': true,
+      'rangelink.isActiveTerminalPasteDestination': true,
+      'rangelink.isBound': true,
+    });
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-ctxmenu-exp-007');
+    capturing.clearCaptured();
+
+    await waitForHuman(
+      'context-menus-explorer-007',
+      `Right-click "${fn}" in Explorer → "RangeLink: Send Relative File Path" → select "${terminalName}" from the destination picker`,
+      [
+        `1. Locate "${fn}" in the Explorer panel`,
+        '2. Right-click it',
+        '3. Select "RangeLink: Send Relative File Path"',
+        `4. In the destination picker, select "${terminalName}"`,
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-ctxmenu-exp-007');
+
+    assertFilePathLogged(lines, {
+      pathFormat: 'workspace-relative',
+      uriSource: 'context-menu',
+      filePath: relativePath,
+    });
+    const expectedPath = ` ${relativePath} `;
+    assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
+    assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
+
+    ss.log(
+      '✓ Unbound explorer relative path → picker → bind+send (merged message, pty capture verified content)',
     );
   });
 });
