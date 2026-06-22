@@ -3421,8 +3421,17 @@ describe('VscodeAdapter', () => {
 
     describe('createFileSystemWatcherForFile', () => {
       it('constructs a RelativePattern and delegates to workspace.createFileSystemWatcher', () => {
-        const fileUri = { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' } as vscode.Uri;
-        const mockWatcher = { dispose: jest.fn(), onDidDelete: jest.fn(), onDidCreate: jest.fn(), onDidChange: jest.fn() };
+        const fileUri = {
+          scheme: 'file',
+          fsPath: '/test/file.ts',
+          toString: () => 'file:///test/file.ts',
+        } as vscode.Uri;
+        const mockWatcher = {
+          dispose: jest.fn(),
+          onDidDelete: jest.fn(),
+          onDidCreate: jest.fn(),
+          onDidChange: jest.fn(),
+        };
         (mockVSCode.workspace.createFileSystemWatcher as jest.Mock).mockReturnValue(mockWatcher);
 
         const result = adapter.createFileSystemWatcherForFile(fileUri, true, true, false);
