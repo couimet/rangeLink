@@ -27,6 +27,7 @@ import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
 import type { EventSubscriptionProvider } from '../EventSubscriptionProvider';
+import type { FileSystemWatcherFactory } from '../FileSystemWatcherFactory';
 import type { MessageProvider } from '../MessageProvider';
 import type { QuickPickProvider } from '../QuickPickProvider';
 import type { TerminalPasteAdapter } from '../TerminalPasteAdapter';
@@ -100,6 +101,7 @@ export class VscodeAdapter
     ConfigurationProvider,
     ErrorFeedbackProvider,
     EventSubscriptionProvider,
+    FileSystemWatcherFactory,
     MessageProvider,
     QuickPickProvider,
     TerminalPasteAdapter,
@@ -845,6 +847,30 @@ export class VscodeAdapter
    */
   onDidChangeTabs(listener: (event: vscode.TabChangeEvent) => void): vscode.Disposable {
     return this.ideInstance.window.tabGroups.onDidChangeTabs(listener);
+  }
+
+  /**
+   * Create a file system watcher scoped to a specific file's directory.
+   *
+   * @param fileUri - URI of the file to watch for deletion
+   * @param ignoreCreateEvents - Ignore when files have been created
+   * @param ignoreChangeEvents - Ignore when files have been changed
+   * @param ignoreDeleteEvents - Ignore when files have been deleted
+   * @returns A new file system watcher instance. Must be disposed when no longer needed.
+   */
+  createFileSystemWatcherForFile(
+    fileUri: vscode.Uri,
+    ignoreCreateEvents?: boolean,
+    ignoreChangeEvents?: boolean,
+    ignoreDeleteEvents?: boolean,
+  ): vscode.FileSystemWatcher {
+    const pattern = new this.ideInstance.RelativePattern(fileUri, '*');
+    return this.ideInstance.workspace.createFileSystemWatcher(
+      pattern,
+      ignoreCreateEvents,
+      ignoreChangeEvents,
+      ignoreDeleteEvents,
+    );
   }
 
   // ============================================================================

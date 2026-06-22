@@ -125,7 +125,13 @@ export const createWiringServices = (
   );
   const destinationPicker = new DestinationPicker(ideAdapter, availabilityService, logger);
   const feedbackProvider = new OperationFeedbackProvider(ideAdapter);
-  const boundSession = new BoundSession(ideAdapter, ideAdapter, feedbackProvider, logger);
+  const boundSession = new BoundSession(
+    ideAdapter,
+    ideAdapter,
+    feedbackProvider,
+    ideAdapter,
+    logger,
+  );
   const destinationManager = new PasteDestinationManager(
     registry,
     ideAdapter,

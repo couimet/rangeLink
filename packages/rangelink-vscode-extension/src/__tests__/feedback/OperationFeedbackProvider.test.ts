@@ -346,6 +346,23 @@ describe('OperationFeedbackProvider', () => {
       );
     });
 
+    it('shows file-deleted status bar message and warning toast', () => {
+      provider.notifyAutoUnbind('Text Editor ("server.ts")', 'file-deleted');
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED', {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        'Unbound from Text Editor ("server.ts") — file deleted',
+      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('WARN_DESTINATION_UNBOUND_FILE_DELETED', {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
+        'Unbound from Text Editor ("server.ts") — file was deleted from disk',
+      );
+    });
+
     it('throws on unexpected reason', () => {
       expect(() =>
         provider.notifyAutoUnbind('Test', 'unknown-reason' as any),

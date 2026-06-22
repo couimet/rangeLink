@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 
-import { closeAllEditors } from './fileHelpers';
+import { cleanupTrackedFiles, closeAllEditors } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { createLogger } from './logHelpers';
 import { resetRangelinkSettings } from './settingsHelpers';
@@ -32,6 +32,7 @@ export const standardSuite = (name: string, fn: (ss: SsContext) => void): void =
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await closeAllEditors();
       disposeAllTerminals();
+      cleanupTrackedFiles();
       await ss.clearDummyAi();
       await settle();
       testWindow = ss.beginTest();
@@ -47,6 +48,7 @@ export const standardSuite = (name: string, fn: (ss: SsContext) => void): void =
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await settle();
       await closeAllEditors();
+      cleanupTrackedFiles();
     });
 
     fn(ss);

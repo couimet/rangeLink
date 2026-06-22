@@ -7,7 +7,6 @@ import type { LogCapture } from '../../LogCapture';
 import type { CapturingTerminal } from './capturingPtyHelpers';
 import { createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
 import {
-  cleanupTrackedFiles,
   createAndOpenFile,
   createFileAt,
   createPngFixture,
@@ -112,12 +111,12 @@ export class SsContextImpl implements SsContext {
   constructor(suiteLog: (msg: string) => void) {
     this.suiteLog = suiteLog;
     teardown(async () => {
-      // Terminal disposal is deferred to standardSuite setup (next test), which
-      // calls disposeAllTerminals() + CMD_UNBIND_DESTINATION before beginTest().
-      // Disposing here would fire onDidCloseTerminal during the observation window
-      // and leak status bar messages into verify().
+      // Terminal disposal and file cleanup are deferred to standardSuite setup
+      // (next test), which calls disposeAllTerminals() + CMD_UNBIND_DESTINATION +
+      // cleanupTrackedFiles() before beginTest(). Cleaning up here would fire
+      // lifecycle listeners during the observation window and leak status bar
+      // messages into verify().
       this.tmpTerminals.splice(0);
-      cleanupTrackedFiles();
       await this.settle();
     });
   }

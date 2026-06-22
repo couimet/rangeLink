@@ -2755,6 +2755,21 @@ describe('VscodeAdapter', () => {
         );
       });
 
+      it('falls back to unknown when the tab input has no constructor name', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const input = Object.assign(Object.create(null), { uri: mockUri });
+        const tab = { input } as unknown as vscode.Tab;
+        setActiveTab(tab);
+
+        const result = adapter.getActiveTabUri();
+
+        expect(result).toBe(mockUri);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unknown' },
+          'Resolving active tab URI',
+        );
+      });
+
       it('returns undefined and logs unsupported when the tab input has no file URI', () => {
         const tab = { input: { viewType: 'markdown.preview' } } as unknown as vscode.Tab;
         setActiveTab(tab);
@@ -3403,6 +3418,24 @@ describe('VscodeAdapter', () => {
         expect(result).toBe(mockDisposable);
       });
     });
+
+    describe('createFileSystemWatcherForFile', () => {
+      it('constructs a RelativePattern and delegates to workspace.createFileSystemWatcher', () => {
+        const fileUri = { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' } as vscode.Uri;
+        const mockWatcher = { dispose: jest.fn(), onDidDelete: jest.fn(), onDidCreate: jest.fn(), onDidChange: jest.fn() };
+        (mockVSCode.workspace.createFileSystemWatcher as jest.Mock).mockReturnValue(mockWatcher);
+
+        const result = adapter.createFileSystemWatcherForFile(fileUri, true, true, false);
+
+        expect(mockVSCode.workspace.createFileSystemWatcher).toHaveBeenCalledWith(
+          { base: fileUri, pattern: '*' },
+          true,
+          true,
+          false,
+        );
+        expect(result).toBe(mockWatcher);
+      });
+    });
   });
 
   describe('createStatusBarItem', () => {
@@ -3515,6 +3548,26 @@ describe('VscodeAdapter', () => {
       const result = adapter.editorHasActiveSelection(TEST_URI as any, 1);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('delay', () => {
+    it('resolves after the specified number of milliseconds', async () => {
+      jest.useFakeTimers();
+      const promise = (adapter as any).delay(500);
+      jest.advanceTimersByTime(499);
+      await Promise.resolve();
+
+      let resolved = false;
+      promise.then(() => {
+        resolved = true;
+      });
+
+      expect(resolved).toBe(false);
+      jest.advanceTimersByTime(1);
+      await promise;
+      expect(resolved).toBe(true);
+      jest.useRealTimers();
     });
   });
 });

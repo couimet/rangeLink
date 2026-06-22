@@ -2,6 +2,7 @@ export * from './ClipboardProvider';
 export * from './ConfigurationProvider';
 export * from './ErrorFeedbackProvider';
 export * from './EventSubscriptionProvider';
+export * from './FileSystemWatcherFactory';
 export * from './MessageProvider';
 export * from './QuickPickProvider';
 export * from './TerminalPasteAdapter';

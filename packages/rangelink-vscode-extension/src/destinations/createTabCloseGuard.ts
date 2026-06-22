@@ -11,12 +11,12 @@ import type { EventSubscriptionProvider } from '../ide';
  * because visible editors may be stale during onDidChangeTabs.
  */
 export const createTabCloseGuard = (deps: {
+  boundUri: vscode.Uri;
   events: EventSubscriptionProvider;
   feedback: LifecycleFeedbackProvider;
-  logger: Logger;
-  boundUri: vscode.Uri;
   displayName: string;
   clearBinding: () => void;
+  logger: Logger;
 }): vscode.Disposable => {
   const boundUriString = deps.boundUri.toString();
 

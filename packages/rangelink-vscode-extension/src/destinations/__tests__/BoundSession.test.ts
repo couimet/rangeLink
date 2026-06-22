@@ -22,9 +22,15 @@ describe('BoundSession', () => {
     notifyDuplicateTabWarning: jest.Mock;
   };
   let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockWatcherFactory: { createFileSystemWatcherForFile: jest.Mock };
+
+  const createMockFileDeleteWatcher = (): vscode.Disposable & { onDidDelete: jest.Mock } => ({
+    dispose: jest.fn(),
+    onDidDelete: jest.fn(),
+  });
 
   const createSession = (): BoundSession =>
-    new BoundSession(mockEvents, mockEditors, mockFeedback, mockLogger);
+    new BoundSession(mockEvents, mockEditors, mockFeedback, mockWatcherFactory, mockLogger);
 
   beforeEach(() => {
     mockEvents = {
@@ -38,6 +44,9 @@ describe('BoundSession', () => {
       notifyDuplicateTabWarning: jest.fn(),
     };
     mockLogger = createMockLogger();
+    mockWatcherFactory = {
+      createFileSystemWatcherForFile: jest.fn().mockReturnValue(createMockFileDeleteWatcher()),
+    };
   });
 
   // ── constructor ──────────────────────────────────────────────────
@@ -214,7 +223,7 @@ describe('BoundSession', () => {
   // ── Per-binding guards ───────────────────────────────────────────
 
   describe('per-binding guards', () => {
-    it('creates tab-close and multi-column guards when binding an editor', () => {
+    it('creates tab-close, multi-column, and file-delete guards when binding an editor', () => {
       const session = createSession();
       const dest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor ("test.ts")',
@@ -225,6 +234,7 @@ describe('BoundSession', () => {
       session.set(dest);
 
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(2);
+      expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(1);
     });
 
     it('does not create guards when binding a non-editor destination', () => {
@@ -237,14 +247,20 @@ describe('BoundSession', () => {
       session.set(dest);
 
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(0);
+      expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(0);
     });
 
     it('disposes guards and re-creates them on rebind', () => {
       const dispose1 = jest.fn();
       const dispose2 = jest.fn();
+      const fileDeleteDispose1 = jest.fn();
       mockEvents.onDidChangeTabs
         .mockReturnValueOnce({ dispose: dispose1 })
         .mockReturnValueOnce({ dispose: dispose2 });
+      mockWatcherFactory.createFileSystemWatcherForFile.mockReturnValueOnce({
+        dispose: fileDeleteDispose1,
+        onDidDelete: jest.fn(),
+      });
 
       const session = createSession();
       const dest = createMockEditorComposablePasteDestination({
@@ -255,16 +271,23 @@ describe('BoundSession', () => {
 
       session.set(dest);
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(2);
+      expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(1);
 
       const dispose3 = jest.fn();
       const dispose4 = jest.fn();
+      const fileDeleteDispose2 = jest.fn();
       mockEvents.onDidChangeTabs
         .mockReturnValueOnce({ dispose: dispose3 })
         .mockReturnValueOnce({ dispose: dispose4 });
+      mockWatcherFactory.createFileSystemWatcherForFile.mockReturnValueOnce({
+        dispose: fileDeleteDispose2,
+        onDidDelete: jest.fn(),
+      });
 
       session.clear();
       expect(dispose1).toHaveBeenCalledTimes(1);
       expect(dispose2).toHaveBeenCalledTimes(1);
+      expect(fileDeleteDispose1).toHaveBeenCalledTimes(1);
 
       const newDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor ("test.ts")',
@@ -273,6 +296,7 @@ describe('BoundSession', () => {
       });
       session.set(newDest);
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(4);
+      expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(2);
     });
   });
 
