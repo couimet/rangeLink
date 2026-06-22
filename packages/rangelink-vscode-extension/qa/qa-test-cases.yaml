@@ -284,7 +284,7 @@ test_cases:
   - id: auto-unbind-terminal-001
     feature: 'terminal-picker'
     scenario: 'Closing a bound terminal triggers auto-unbind with status bar message'
-    expected_result: 'The status bar shows "RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed". The terminal is no longer bound.'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Terminal (<terminal>) — terminal closed". The terminal is no longer bound.'
     automated: true
 
   # ---------------------------------------------------------------------------
@@ -1962,13 +1962,23 @@ test_cases:
   - id: auto-unbind-editor-002
     feature: 'text-editor-destination'
     scenario: 'Closing a bound saved (disk-based) text editor triggers auto-unbind with status bar message'
-    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor ("__rl-test-aue-002-...") — editor closed". The editor is no longer bound.'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — editor closed". The editor is no longer bound.'
     automated: true
 
   - id: auto-unbind-editor-003
     feature: 'text-editor-destination'
     scenario: 'Closing all editors unbinds only the bound one when multiple saved-file tabs are open'
     expected_result: 'The status bar shows the bind confirmation and auto-unbind message for the bound file only. The non-bound file in the other tab group is ignored. The rangelink.isBound context key is false.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Lifecycle: Auto-Unbind on File Delete
+  # ---------------------------------------------------------------------------
+
+  - id: file-delete-auto-unbind-001
+    feature: 'text-editor-destination'
+    scenario: 'Deleting a bound file from disk triggers auto-unbind with status bar message and warning toast'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file deleted". A warning toast appears: "Unbound from Text Editor (<file>) — file was deleted from disk". The rangelink.isBound context key is false.'
     automated: true
 
   # ---------------------------------------------------------------------------

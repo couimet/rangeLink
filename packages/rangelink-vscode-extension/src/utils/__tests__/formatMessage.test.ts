@@ -366,6 +366,22 @@ describe('formatMessage', () => {
       expect(result).toBe('Unbound from Terminal ("bash") — terminal closed');
     });
 
+    it('should format STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED, {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+
+      expect(result).toBe('Unbound from Text Editor ("server.ts") — file deleted');
+    });
+
+    it('should format WARN_DESTINATION_UNBOUND_FILE_DELETED with destinationName param', () => {
+      const result = formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED, {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+
+      expect(result).toBe('Unbound from Text Editor ("server.ts") — file was deleted from disk');
+    });
+
     it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {
       const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
         destinationName: 'Cursor AI Assistant',

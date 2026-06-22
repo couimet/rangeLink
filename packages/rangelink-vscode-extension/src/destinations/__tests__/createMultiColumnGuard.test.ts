@@ -29,11 +29,11 @@ describe('createMultiColumnGuard', () => {
 
   const createGuard = () =>
     createMultiColumnGuard({
+      boundUri: testUri,
       events: mockEvents,
       editors: mockEditors,
       feedback: mockFeedback,
       logger: mockLogger,
-      boundUri: testUri,
     });
 
   it('warns when bound editor appears in 2+ tab groups', () => {

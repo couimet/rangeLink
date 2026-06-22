@@ -351,6 +351,13 @@
   <rationale>Re-exports create indirection, making it unclear where a symbol originates. Callers should depend directly on the canonical source, not a pass-through module</rationale>
 </rule>
 
+<rule id="P006" priority="critical">
+  <title>Logger parameter always last</title>
+  <do>Place `logger: Logger` as the last parameter in all method, constructor, and function signatures</do>
+  <never>Place any parameter after `logger` in a signature</never>
+  <rationale>Logger is a cross-cutting concern, not a domain parameter. Placing it last keeps the primary parameters grouped together and makes the signature easier to read.</rationale>
+</rule>
+
 </critical-rules>
 
 ---

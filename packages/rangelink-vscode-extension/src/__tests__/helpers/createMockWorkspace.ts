@@ -47,6 +47,12 @@ export const createMockWorkspace = (
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeConfiguration: jest.fn(() => ({ dispose: jest.fn() })),
     findFiles: jest.fn().mockResolvedValue([]),
+    createFileSystemWatcher: jest.fn(() => ({
+      dispose: jest.fn(),
+      onDidCreate: jest.fn(),
+      onDidChange: jest.fn(),
+      onDidDelete: jest.fn(),
+    })),
     fs: {
       stat: jest.fn(),
     },

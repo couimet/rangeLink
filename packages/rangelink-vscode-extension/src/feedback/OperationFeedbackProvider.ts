@@ -33,6 +33,9 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       case 'editor-closed':
         messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED;
         break;
+      case 'file-deleted':
+        messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED;
+        break;
       default:
         throw RangeLinkExtensionError.forUnexpected(
           'auto-unbind reason',
@@ -41,6 +44,12 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         );
     }
     this.vscodeAdapter.setStatusBarMessage(formatMessage(messageCode, { destinationName }));
+
+    if (reason === 'file-deleted') {
+      void this.vscodeAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED, { destinationName }),
+      );
+    }
   }
 
   notifyDuplicateTabWarning(): void {

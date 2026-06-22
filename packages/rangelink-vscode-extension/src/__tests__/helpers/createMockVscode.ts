@@ -96,6 +96,7 @@ export const createMockVscode = (
     Range: jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end })),
     DocumentLink: createMockDocumentLink(),
     TabInputText: MockTabInputText,
+    RelativePattern: jest.fn((base: vscode.Uri | string, pattern: string) => ({ base, pattern })),
     ...overrides,
   };
 };

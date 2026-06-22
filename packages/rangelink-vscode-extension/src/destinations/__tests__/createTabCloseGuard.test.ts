@@ -21,12 +21,12 @@ describe('createTabCloseGuard', () => {
 
   const createGuard = () =>
     createTabCloseGuard({
+      boundUri: testUri,
       events: mockEvents,
       feedback: mockFeedback,
-      logger: mockLogger,
-      boundUri: testUri,
       displayName: 'Text Editor ("test.ts")',
       clearBinding,
+      logger: mockLogger,
     });
 
   beforeEach(() => {

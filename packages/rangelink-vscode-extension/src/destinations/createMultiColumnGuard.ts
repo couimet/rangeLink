@@ -8,11 +8,11 @@ import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
  * Warn when the bound editor appears in multiple tab groups.
  */
 export const createMultiColumnGuard = (deps: {
+  boundUri: vscode.Uri;
   events: EventSubscriptionProvider;
   editors: VisibleEditorProvider;
   feedback: LifecycleFeedbackProvider;
   logger: Logger;
-  boundUri: vscode.Uri;
 }): vscode.Disposable => {
   let isInDuplicateTabState = false;
 

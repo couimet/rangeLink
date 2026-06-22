@@ -3,10 +3,12 @@ import * as vscode from 'vscode';
 
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
+import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
 import type { BoundDestinationInfo } from '../types';
 import { AutoPasteResult } from '../types';
 import { isEditorDestination, isTerminalDestination } from '../utils';
 
+import { createFileDeleteWatcher } from './createFileDeleteWatcher';
 import { createMultiColumnGuard } from './createMultiColumnGuard';
 import { createTabCloseGuard } from './createTabCloseGuard';
 import type { PasteDestination } from './PasteDestination';
@@ -36,6 +38,7 @@ export class BoundSession implements vscode.Disposable {
     private readonly events: EventSubscriptionProvider,
     private readonly editors: VisibleEditorProvider,
     private readonly feedback: LifecycleFeedbackProvider,
+    private readonly watcherFactory: FileSystemWatcherFactory,
     private readonly logger: Logger,
   ) {
     this.setupTerminalCloseListener();
@@ -55,19 +58,27 @@ export class BoundSession implements vscode.Disposable {
     if (isEditorDestination(destination)) {
       this.bindingDisposables.push(
         createTabCloseGuard({
+          boundUri: destination.resource.uri,
           events: this.events,
           feedback: this.feedback,
-          logger: this.logger,
-          boundUri: destination.resource.uri,
           displayName: destination.displayName,
           clearBinding: () => this.clear(),
+          logger: this.logger,
         }),
         createMultiColumnGuard({
+          boundUri: destination.resource.uri,
           events: this.events,
           editors: this.editors,
           feedback: this.feedback,
           logger: this.logger,
+        }),
+        createFileDeleteWatcher({
           boundUri: destination.resource.uri,
+          watcherFactory: this.watcherFactory,
+          feedback: this.feedback,
+          displayName: destination.displayName,
+          clearBinding: () => this.clear(),
+          logger: this.logger,
         }),
       );
     }

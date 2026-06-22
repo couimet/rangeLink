@@ -1,1 +1,1 @@
-export type AutoUnbindReason = 'editor-closed' | 'terminal-closed';
+export type AutoUnbindReason = 'editor-closed' | 'file-deleted' | 'terminal-closed';
