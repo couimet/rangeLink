@@ -263,7 +263,7 @@ packages/rangelink-vscode-extension/
 
 **Used for:** Packaging, marketplace distribution
 
-**Build command:** `pnpm compile` or `pnpm package` (includes compilation)
+**Build command:** `pnpm build` or `pnpm package` (includes compilation)
 
 **Characteristics:**
 

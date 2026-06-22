@@ -128,6 +128,6 @@ Include in your CI pipeline:
 
 ```bash
 npm install
-npm run compile
+npm run build
 npm test  # Fails if coverage below 100%
 ```

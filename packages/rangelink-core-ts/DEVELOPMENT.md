@@ -70,7 +70,7 @@ pnpm test:watch
 
 ```bash
 # Compile TypeScript
-pnpm compile
+pnpm build
 
 # Watch mode (auto-compile on changes)
 pnpm watch

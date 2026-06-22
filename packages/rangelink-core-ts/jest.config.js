@@ -31,6 +31,7 @@ module.exports = {
       statements: 99,
     },
   },
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json-summary'],
   coverageDirectory: 'coverage',
   verbose: true,
 };

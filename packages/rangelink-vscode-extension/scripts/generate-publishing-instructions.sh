@@ -45,7 +45,7 @@ fi
 VERSION_JSON_PATH="src/version.json"
 if [ ! -f "$VERSION_JSON_PATH" ]; then
   echo -e "${RED}Error: version.json not found at $VERSION_JSON_PATH${NC}" >&2
-  echo -e "${YELLOW}Run 'pnpm compile' to generate version.json${NC}" >&2
+  echo -e "${YELLOW}Run 'pnpm build' to generate version.json${NC}" >&2
   exit 1
 fi
 

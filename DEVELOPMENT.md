@@ -52,7 +52,7 @@ pnpm test
 
 ```bash
 # Build all packages
-pnpm compile
+pnpm build
 
 # Clean build artifacts
 pnpm clean
