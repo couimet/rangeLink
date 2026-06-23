@@ -358,6 +358,13 @@
   <rationale>Logger is a cross-cutting concern, not a domain parameter. Placing it last keeps the primary parameters grouped together and makes the signature easier to read.</rationale>
 </rule>
 
+<rule id="CI001" priority="critical">
+  <title>couimet/github-actions actions always use @main, never a commit SHA</title>
+  <do>Reference all `couimet/github-actions/*` actions with `@main`: `uses: couimet/github-actions/typescript-ci@main`</do>
+  <never>Pin to a commit SHA for `couimet/github-actions` actions</never>
+  <rationale>`@main` is the rolling release channel for our own actions. We control the repo, so breaking changes are intentional and versioned. SHAs add pin-update churn with no benefit for first-party actions.</rationale>
+</rule>
+
 </critical-rules>
 
 ---
@@ -368,7 +375,7 @@
 <!-- Claude proceeds without asking permission for these -->
 <action>Reading files - any project files for context</action>
 <action>Running tests - `pnpm test`, `pnpm --filter pkg test`</action>
-<action>Compiling - `pnpm compile`, `pnpm clean`, `tsc`</action>
+<action>Compiling - `pnpm build`, `pnpm compile`, `pnpm clean`, `tsc`</action>
 <action>Git status - `git status`, `git log`, `git diff`</action>
 <action>Searching code - grep, find, ripgrep</action>
 <action>Installing deps - `pnpm install` after package.json changes</action>

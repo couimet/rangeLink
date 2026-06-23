@@ -57,9 +57,9 @@ npm run enable-pnpm
 echo "📥 Installing dependencies..."
 pnpm install
 
-# Compile
-echo "🔨 Compiling TypeScript..."
-pnpm compile
+# Build
+echo "🔨 Building TypeScript..."
+pnpm build
 
 echo ""
 echo "✅ Setup complete!"

@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -24,21 +25,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup Node.js and pnpm
-        uses: couimet/github-actions/setup-node-pnpm@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
-
-      - name: Install dependencies
-        uses: couimet/github-actions/install-deps@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
-
-      - name: Check formatting and linting
-        uses: ./.github/actions/check-formatting
+      - name: Test & Validate
+        uses: couimet/github-actions/typescript-ci@main
 
       - name: Check no prerelease deps
-        uses: ./.github/actions/check-no-prerelease-deps
-
-      - name: Run tests with coverage
-        id: run-tests
-        uses: ./.github/actions/run-tests
+        uses: couimet/github-actions/check-no-prerelease-deps@main
 
       - name: Check TODOs/FIXMEs
         uses: ./.github/actions/check-todos
@@ -82,10 +73,10 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js and pnpm
-        uses: couimet/github-actions/setup-node-pnpm@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
+        uses: couimet/github-actions/setup-node-pnpm@main
 
       - name: Install dependencies
-        uses: couimet/github-actions/install-deps@6fdd7198970bf6c7f1cdede338d3d50f801ae170 # main
+        uses: couimet/github-actions/install-deps@main
 
       - name: Run integration tests
         id: run-integration-tests

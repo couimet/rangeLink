@@ -210,14 +210,11 @@ CI runs automatically on every pull request and on pushes to `main`. The job is 
 
 Steps run in this order:
 
-| Step                         | What it does                                                                                   |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| Setup Node.js and pnpm       | Installs the Node version from `.nvmrc` via the `setup-node-pnpm` composite action             |
-| Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                                    |
-| Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                                |
-| Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                              |
-| Run integration tests        | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
-| Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced              |
+| Step                  | What it does                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| Test & Validate       | Runs format, lint, build, test, and coverage comment via `typescript-ci` composite action      |
+| Run integration tests | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
+| Check TODOs/FIXMEs    | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced              |
 
 ---
 

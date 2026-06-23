@@ -87,14 +87,14 @@ if (result.success) {
 # Install dependencies
 pnpm install
 
-# Compile
-pnpm compile
+# Build
+pnpm build
 
 # Run tests with coverage
 pnpm test
 
-# Type check
-pnpm compile --noEmit
+# Type check only (no emit)
+cd packages/rangelink-core-ts && pnpm compile --noEmit
 ```
 
 ## License
