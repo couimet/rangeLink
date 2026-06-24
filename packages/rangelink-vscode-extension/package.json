@@ -966,6 +966,7 @@
     "rangelink-core-ts": "workspace:*"
   },
   "devDependencies": {
+    "@couimet/dynamic-testing": "^0.1.0",
     "@couimet/logger-contract-testing": "^1.0.0",
     "@types/jest": "^29.5.0",
     "@types/mocha": "^10.0.10",

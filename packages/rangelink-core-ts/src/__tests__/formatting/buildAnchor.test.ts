@@ -1,36 +1,63 @@
+import { getUniqueInt } from '@couimet/dynamic-testing';
+
 import { buildAnchor } from '../../formatting/buildAnchor';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { RangeFormat } from '../../types/RangeFormat';
 
+const DEFAULT_DELIMITERS = {
+  line: 'L',
+  position: 'C',
+  hash: '#',
+  range: '-',
+} as const;
+
 describe('buildAnchor', () => {
-  const defaultDelimiters: DelimiterConfig = {
-    line: 'L',
-    position: 'C',
-    hash: '#',
-    range: '-',
-  };
+  let startLine: number;
+  let endLine: number;
+  let startPosition: number;
+  let endPosition: number;
+
+  beforeEach(() => {
+    startLine = getUniqueInt();
+    endLine = getUniqueInt();
+    startPosition = getUniqueInt();
+    endPosition = getUniqueInt();
+  });
 
   describe('with positions', () => {
     it('should build anchor with positions', () => {
-      const result = buildAnchor(11, 21, 6, 16, defaultDelimiters, RangeFormat.WithPositions);
-      expect(result).toBe('L11C6-L21C16');
+      const result = buildAnchor(
+        startLine,
+        endLine,
+        startPosition,
+        endPosition,
+        DEFAULT_DELIMITERS,
+        RangeFormat.WithPositions,
+      );
+      expect(result).toBe(`L${startLine}C${startPosition}-L${endLine}C${endPosition}`);
     });
 
     it('should default to WithPositions format when not specified', () => {
-      const result = buildAnchor(11, 21, 6, 16, defaultDelimiters);
-      expect(result).toBe('L11C6-L21C16');
+      const result = buildAnchor(
+        startLine,
+        endLine,
+        startPosition,
+        endPosition,
+        DEFAULT_DELIMITERS,
+      );
+      expect(result).toBe(`L${startLine}C${startPosition}-L${endLine}C${endPosition}`);
     });
 
     it('should default to position 1 when positions are undefined', () => {
       const result = buildAnchor(
-        11,
-        21,
+        startLine,
+        endLine,
         undefined,
         undefined,
-        defaultDelimiters,
+        DEFAULT_DELIMITERS,
         RangeFormat.WithPositions,
       );
-      expect(result).toBe('L11C1-L21C1');
+      expect(result).toBe(`L${startLine}C1-L${endLine}C1`);
     });
 
     it('should work with custom delimiters', () => {
@@ -40,27 +67,41 @@ describe('buildAnchor', () => {
         hash: '#',
         range: 'TO',
       };
-      const result = buildAnchor(10, 20, 5, 15, customDelimiters, RangeFormat.WithPositions);
-      expect(result).toBe('LINE10COL5TOLINE20COL15');
+      const result = buildAnchor(
+        startLine,
+        endLine,
+        startPosition,
+        endPosition,
+        customDelimiters,
+        RangeFormat.WithPositions,
+      );
+      expect(result).toBe(`LINE${startLine}COL${startPosition}TOLINE${endLine}COL${endPosition}`);
     });
   });
 
   describe('line only', () => {
     it('should build anchor without positions', () => {
-      const result = buildAnchor(11, 21, 6, 16, defaultDelimiters, RangeFormat.LineOnly);
-      expect(result).toBe('L11-L21');
+      const result = buildAnchor(
+        startLine,
+        endLine,
+        startPosition,
+        endPosition,
+        DEFAULT_DELIMITERS,
+        RangeFormat.LineOnly,
+      );
+      expect(result).toBe(`L${startLine}-L${endLine}`);
     });
 
     it('should ignore position values when format is LineOnly', () => {
       const result = buildAnchor(
-        11,
-        21,
+        startLine,
+        endLine,
         undefined,
         undefined,
-        defaultDelimiters,
+        DEFAULT_DELIMITERS,
         RangeFormat.LineOnly,
       );
-      expect(result).toBe('L11-L21');
+      expect(result).toBe(`L${startLine}-L${endLine}`);
     });
 
     it('should work with custom delimiters for line-only format', () => {
@@ -71,33 +112,40 @@ describe('buildAnchor', () => {
         range: 'thru',
       };
       const result = buildAnchor(
-        10,
-        20,
+        startLine,
+        endLine,
         undefined,
         undefined,
         customDelimiters,
         RangeFormat.LineOnly,
       );
-      expect(result).toBe('LINE10thruLINE20');
+      expect(result).toBe(`LINE${startLine}thruLINE${endLine}`);
     });
   });
 
   describe('single line', () => {
     it('should handle single-line selection with positions', () => {
-      const result = buildAnchor(11, 11, 6, 16, defaultDelimiters, RangeFormat.WithPositions);
-      expect(result).toBe('L11C6-L11C16');
+      const result = buildAnchor(
+        startLine,
+        startLine,
+        startPosition,
+        endPosition,
+        DEFAULT_DELIMITERS,
+        RangeFormat.WithPositions,
+      );
+      expect(result).toBe(`L${startLine}C${startPosition}-L${startLine}C${endPosition}`);
     });
 
     it('should handle single-line selection without positions', () => {
       const result = buildAnchor(
-        11,
-        11,
+        startLine,
+        startLine,
         undefined,
         undefined,
-        defaultDelimiters,
+        DEFAULT_DELIMITERS,
         RangeFormat.LineOnly,
       );
-      expect(result).toBe('L11-L11');
+      expect(result).toBe(`L${startLine}-L${startLine}`);
     });
   });
 });

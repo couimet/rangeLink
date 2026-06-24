@@ -1,3 +1,5 @@
+import { getUniqueInt } from '@couimet/dynamic-testing';
+
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { validateInputSelection } from '../../selection/validateInputSelection';
@@ -7,7 +9,6 @@ import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
 
-// Mock the mode-specific validators to test only validateInputSelection's logic
 jest.mock('../../selection/validateNormalMode');
 jest.mock('../../selection/validateRectangularMode');
 
@@ -37,11 +38,14 @@ describe('validateInputSelection', () => {
 
   describe('Backward line selection', () => {
     it('should throw error when startLine > endLine', () => {
+      const base = getUniqueInt();
+      const startLine = base + 10;
+      const endLine = base;
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 20, character: 0 },
-            end: { line: 10, character: 10 }, // Backward
+            start: { line: startLine, character: getUniqueInt() },
+            end: { line: endLine, character: getUniqueInt() },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -51,12 +55,12 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_BACKWARD_LINE',
         {
-          message: 'Backward selection not allowed (startLine=20 > endLine=10)',
+          message: `Backward selection not allowed (startLine=${startLine} > endLine=${endLine})`,
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
-            startLine: 20,
-            endLine: 10,
+            startLine,
+            endLine,
           },
         },
       );
@@ -65,12 +69,15 @@ describe('validateInputSelection', () => {
 
   describe('Backward character selection', () => {
     it('should throw error when startCharacter > endCharacter on same line', () => {
+      const base = getUniqueInt();
+      const line = getUniqueInt();
+      const startPosition = base + 15;
+      const endPosition = base;
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 20 },
-
-            end: { line: 10, character: 5 }, // Backward on same line
+            start: { line, character: startPosition },
+            end: { line, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -80,26 +87,29 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_BACKWARD_CHARACTER',
         {
-          message:
-            'Backward character selection not allowed (startCharacter=20 > endCharacter=5 on line 10)',
+          message: `Backward character selection not allowed (startCharacter=${startPosition} > endCharacter=${endPosition} on line ${line})`,
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
-            line: 10,
-            startCharacter: 20,
-            endCharacter: 5,
+            line,
+            startCharacter: startPosition,
+            endCharacter: endPosition,
           },
         },
       );
     });
 
     it('should allow startCharacter > endCharacter when on different lines', () => {
+      const base = getUniqueInt();
+      const startLine = getUniqueInt();
+      const endLine = startLine + 5;
+      const startPosition = base + 15;
+      const endPosition = base;
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 20 },
-
-            end: { line: 15, character: 5 }, // Different line, OK
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -243,7 +253,7 @@ describe('validateInputSelection', () => {
             coverage: SelectionCoverage.PartialLine,
           },
         ],
-        selectionType: 'InvalidType' as any, // Force invalid type
+        selectionType: 'InvalidType' as any,
       };
 
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
@@ -259,12 +269,13 @@ describe('validateInputSelection', () => {
 
   describe('ERR_3011: Zero-width selection', () => {
     it('should throw error for zero-width selection (cursor position)', () => {
+      const line = getUniqueInt();
+      const position = getUniqueInt();
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 5 }, // Same position = zero-width
+            start: { line, character: position },
+            end: { line, character: position },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -274,12 +285,12 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_ZERO_WIDTH',
         {
-          message: 'Zero-width selection not allowed (cursor position at line 10, character 5)',
+          message: `Zero-width selection not allowed (cursor position at line ${line}, character ${position})`,
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
-            line: 10,
-            character: 5,
+            line,
+            character: position,
           },
         },
       );
@@ -316,15 +327,13 @@ describe('validateInputSelection', () => {
   describe('Mode-specific validation delegation', () => {
     describe('Normal mode', () => {
       it('should call validateNormalMode with selections array', () => {
-        mockValidateNormalMode.mockImplementation(() => {
-          // Mock successful validation
-        });
+        mockValidateNormalMode.mockImplementation(() => {});
 
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 20, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -351,13 +360,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 10, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 15, character: 0 },
-              end: { line: 15, character: 10 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -368,15 +377,13 @@ describe('validateInputSelection', () => {
       });
 
       it('should not call validateRectangularMode for Normal mode', () => {
-        mockValidateNormalMode.mockImplementation(() => {
-          // Mock successful validation
-        });
+        mockValidateNormalMode.mockImplementation(() => {});
 
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 20, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -391,20 +398,18 @@ describe('validateInputSelection', () => {
 
     describe('Rectangular mode', () => {
       it('should call validateRectangularMode with selections array', () => {
-        mockValidateRectangularMode.mockImplementation(() => {
-          // Mock successful validation
-        });
+        mockValidateRectangularMode.mockImplementation(() => {});
 
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 10, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 11, character: 5 },
-              end: { line: 11, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -431,13 +436,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 10, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 8, character: 5 },
-              end: { line: 8, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -448,20 +453,18 @@ describe('validateInputSelection', () => {
       });
 
       it('should not call validateNormalMode for Rectangular mode', () => {
-        mockValidateRectangularMode.mockImplementation(() => {
-          // Mock successful validation
-        });
+        mockValidateRectangularMode.mockImplementation(() => {});
 
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 10, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 11, character: 5 },
-              end: { line: 11, character: 15 },
+              start: { line: getUniqueInt(), character: getUniqueInt() },
+              end: { line: getUniqueInt(), character: getUniqueInt() },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -477,16 +480,13 @@ describe('validateInputSelection', () => {
 
   describe('Integration: Valid selections', () => {
     it('should not throw for valid Normal selection', () => {
-      mockValidateNormalMode.mockImplementation(() => {
-        // Mock successful validation
-      });
+      mockValidateNormalMode.mockImplementation(() => {});
 
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 20, character: 15 },
+            start: { line: getUniqueInt(), character: getUniqueInt() },
+            end: { line: getUniqueInt(), character: getUniqueInt() },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -498,28 +498,23 @@ describe('validateInputSelection', () => {
     });
 
     it('should not throw for valid Rectangular selections', () => {
-      mockValidateRectangularMode.mockImplementation(() => {
-        // Mock successful validation
-      });
+      mockValidateRectangularMode.mockImplementation(() => {});
 
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: getUniqueInt(), character: getUniqueInt() },
+            end: { line: getUniqueInt(), character: getUniqueInt() },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, character: 5 },
-
-            end: { line: 11, character: 15 },
+            start: { line: getUniqueInt(), character: getUniqueInt() },
+            end: { line: getUniqueInt(), character: getUniqueInt() },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 12, character: 5 },
-
-            end: { line: 12, character: 15 },
+            start: { line: getUniqueInt(), character: getUniqueInt() },
+            end: { line: getUniqueInt(), character: getUniqueInt() },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

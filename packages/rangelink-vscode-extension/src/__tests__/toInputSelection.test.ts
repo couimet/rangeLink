@@ -1,5 +1,6 @@
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
+import { getUniqueInt } from '@couimet/dynamic-testing';
 import { InputSelection } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -16,17 +17,17 @@ let mockLogger: Logger;
  */
 const createSelection = (
   startLine: number,
-  startCharacter: number,
+  startPosition: number,
   endLine: number,
-  endCharacter: number,
+  endPosition: number,
 ): vscode.Selection => {
   return {
-    start: { line: startLine, character: startCharacter },
-    end: { line: endLine, character: endCharacter },
-    anchor: { line: startLine, character: startCharacter },
-    active: { line: endLine, character: endCharacter },
+    start: { line: startLine, character: startPosition },
+    end: { line: endLine, character: endPosition },
+    anchor: { line: startLine, character: startPosition },
+    active: { line: endLine, character: endPosition },
     isReversed: false,
-    isEmpty: startLine === endLine && startCharacter === endCharacter,
+    isEmpty: startLine === endLine && startPosition === endPosition,
   } as vscode.Selection;
 };
 
@@ -150,7 +151,11 @@ describe('toInputSelection', () => {
     describe('PartialLine coverage', () => {
       it('should detect PartialLine when selection does not start at column 0', () => {
         const lineText = 'const x = 5;';
-        const editor = createMockEditor([createSelection(0, 5, 0, lineText.length)], [lineText]);
+        const startPosition = getUniqueInt();
+        const editor = createMockEditor(
+          [createSelection(0, startPosition, 0, lineText.length)],
+          [lineText],
+        );
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -158,13 +163,14 @@ describe('toInputSelection', () => {
 
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('PartialLine');
-          expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+          expect(value.selections[0].start).toStrictEqual({ line: 0, character: startPosition });
         });
       });
 
       it('should detect PartialLine when selection does not reach end of line', () => {
         const lineText = 'const x = 5; more text';
-        const editor = createMockEditor([createSelection(0, 0, 0, 10)], [lineText]);
+        const endPosition = getUniqueInt();
+        const editor = createMockEditor([createSelection(0, 0, 0, endPosition)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -172,13 +178,18 @@ describe('toInputSelection', () => {
 
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('PartialLine');
-          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 10 });
+          expect(value.selections[0].end).toStrictEqual({ line: 0, character: endPosition });
         });
       });
 
       it('should detect PartialLine when selection starts mid-line and ends mid-line', () => {
         const lineText = 'const x = 5; more text';
-        const editor = createMockEditor([createSelection(0, 6, 0, 11)], [lineText]);
+        const startPosition = getUniqueInt();
+        const endPosition = startPosition + 5;
+        const editor = createMockEditor(
+          [createSelection(0, startPosition, 0, endPosition)],
+          [lineText],
+        );
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -204,8 +215,9 @@ describe('toInputSelection', () => {
 
       it('should normalize end line for partial selection ending at next line char 0', () => {
         // User selects from L0 C5 to L1 C0 (partial start, includes newline)
+        const startPosition = getUniqueInt();
         const lineTexts = ['line zero content', 'line one'];
-        const editor = createMockEditor([createSelection(0, 5, 1, 0)], lineTexts);
+        const editor = createMockEditor([createSelection(0, startPosition, 1, 0)], lineTexts);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -213,8 +225,11 @@ describe('toInputSelection', () => {
 
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('PartialLine'); // NOT FullLine (start != 0)
-          expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
-          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 17 });
+          expect(value.selections[0].start).toStrictEqual({ line: 0, character: startPosition });
+          expect(value.selections[0].end).toStrictEqual({
+            line: 0,
+            character: lineTexts[0].length,
+          });
         });
       });
     });
@@ -222,12 +237,19 @@ describe('toInputSelection', () => {
 
   describe('Rectangular selection delegation', () => {
     it('should call isRectangularSelection with provided selections', () => {
+      const startLine = getUniqueInt();
+      const startPosition = getUniqueInt();
+      const endPosition = startPosition + 5;
       const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(1, 5, 1, 10),
-        createSelection(2, 5, 2, 10),
+        createSelection(startLine, startPosition, startLine, endPosition),
+        createSelection(startLine + 1, startPosition, startLine + 1, endPosition),
+        createSelection(startLine + 2, startPosition, startLine + 2, endPosition),
       ];
-      const editor = createMockEditor(selections, ['line one', 'line two', 'line three']);
+      const lineTexts: string[] = [];
+      lineTexts[startLine] = 'line one';
+      lineTexts[startLine + 1] = 'line two';
+      lineTexts[startLine + 2] = 'line three';
+      const editor = createMockEditor(selections, lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
@@ -238,8 +260,17 @@ describe('toInputSelection', () => {
     });
 
     it('should return SelectionType.Rectangular when isRectangularSelection returns true', () => {
-      const selections = [createSelection(0, 5, 0, 10), createSelection(1, 5, 1, 10)];
-      const editor = createMockEditor(selections, ['line one', 'line two']);
+      const startLine = getUniqueInt();
+      const startPosition = getUniqueInt();
+      const endPosition = startPosition + 5;
+      const selections = [
+        createSelection(startLine, startPosition, startLine, endPosition),
+        createSelection(startLine + 1, startPosition, startLine + 1, endPosition),
+      ];
+      const lineTexts: string[] = [];
+      lineTexts[startLine] = 'line one';
+      lineTexts[startLine + 1] = 'line two';
+      const editor = createMockEditor(selections, lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
@@ -252,11 +283,18 @@ describe('toInputSelection', () => {
     });
 
     it('should return SelectionType.Normal when isRectangularSelection returns false', () => {
+      const startLine = getUniqueInt();
+      const startPosition = getUniqueInt();
+      const endPosition = startPosition + 5;
       const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(2, 3, 2, 8), // Non-rectangular
+        createSelection(startLine, startPosition, startLine, endPosition),
+        createSelection(startLine + 2, startPosition + 1, startLine + 2, endPosition + 1), // Non-rectangular
       ];
-      const editor = createMockEditor(selections, ['line one', 'line two', 'line three']);
+      const lineTexts: string[] = [];
+      lineTexts[startLine] = 'line one';
+      lineTexts[startLine + 1] = 'line two';
+      lineTexts[startLine + 2] = 'line three';
+      const editor = createMockEditor(selections, lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -269,12 +307,19 @@ describe('toInputSelection', () => {
     });
 
     it('should convert all selections when rectangular', () => {
+      const startLine = getUniqueInt();
+      const startPosition = getUniqueInt();
+      const endPosition = startPosition + 5;
       const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(1, 5, 1, 10),
-        createSelection(2, 5, 2, 10),
+        createSelection(startLine, startPosition, startLine, endPosition),
+        createSelection(startLine + 1, startPosition, startLine + 1, endPosition),
+        createSelection(startLine + 2, startPosition, startLine + 2, endPosition),
       ];
-      const editor = createMockEditor(selections, ['aaaaa12345', 'bbbbb12345', 'ccccc12345']);
+      const lineTexts: string[] = [];
+      lineTexts[startLine] = 'aaaaa12345';
+      lineTexts[startLine + 1] = 'bbbbb12345';
+      lineTexts[startLine + 2] = 'ccccc12345';
+      const editor = createMockEditor(selections, lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
@@ -283,36 +328,39 @@ describe('toInputSelection', () => {
       expect(result).toBeOkWith((value: InputSelection) => {
         expect(value.selections).toHaveLength(3);
         expect(value.selections[0]).toStrictEqual({
-          start: { line: 0, character: 5 },
-          end: { line: 0, character: 10 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: 'PartialLine',
         });
         expect(value.selections[1]).toStrictEqual({
-          start: { line: 1, character: 5 },
-          end: { line: 1, character: 10 },
+          start: { line: startLine + 1, character: startPosition },
+          end: { line: startLine + 1, character: endPosition },
           coverage: 'PartialLine',
         });
         expect(value.selections[2]).toStrictEqual({
-          start: { line: 2, character: 5 },
-          end: { line: 2, character: 10 },
+          start: { line: startLine + 2, character: startPosition },
+          end: { line: startLine + 2, character: endPosition },
           coverage: 'PartialLine',
         });
       });
     });
 
     it('should only convert first selection when not rectangular', () => {
+      const startLine = getUniqueInt();
+      const startPosition = getUniqueInt();
+      const endPosition = startPosition + 5;
       const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(5, 3, 5, 8), // Different line - not rectangular
+        createSelection(startLine, startPosition, startLine, endPosition),
+        createSelection(startLine + 5, startPosition + 1, startLine + 5, endPosition + 1), // Different line - not rectangular
       ];
-      const editor = createMockEditor(selections, [
-        'aaaaa12345',
-        'line2',
-        'line3',
-        'line4',
-        'line5',
-        'bbb12345',
-      ]);
+      const lineTexts: string[] = [];
+      lineTexts[startLine] = 'aaaaa12345';
+      lineTexts[startLine + 1] = 'line2';
+      lineTexts[startLine + 2] = 'line3';
+      lineTexts[startLine + 3] = 'line4';
+      lineTexts[startLine + 4] = 'line5';
+      lineTexts[startLine + 5] = 'bbb12345';
+      const editor = createMockEditor(selections, lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -320,7 +368,10 @@ describe('toInputSelection', () => {
 
       expect(result).toBeOkWith((value: InputSelection) => {
         expect(value.selections).toHaveLength(1);
-        expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+        expect(value.selections[0].start).toStrictEqual({
+          line: startLine,
+          character: startPosition,
+        });
       });
     });
   });

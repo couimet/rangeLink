@@ -34,6 +34,7 @@
     "@couimet/logger-contract": "^1.0.0"
   },
   "devDependencies": {
+    "@couimet/dynamic-testing": "^0.1.0",
     "@couimet/logger-contract-testing": "^1.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.0.0",
