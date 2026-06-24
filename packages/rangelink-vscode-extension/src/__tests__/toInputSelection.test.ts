@@ -1,4 +1,4 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
+import { getRandomInt, getUniqueInt } from '@couimet/dynamic-testing';
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { InputSelection } from 'rangelink-core-ts';
@@ -169,7 +169,7 @@ describe('toInputSelection', () => {
 
       it('should detect PartialLine when selection does not reach end of line', () => {
         const lineText = 'const x = 5; more text';
-        const endPosition = getUniqueInt();
+        const endPosition = getRandomInt(1, lineText.length - 1);
         const editor = createMockEditor([createSelection(0, 0, 0, endPosition)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
@@ -466,6 +466,98 @@ describe('toInputSelection', () => {
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
       });
+    });
+
+    it('should retrieve start line content when end line is out of bounds', () => {
+      const LINE_COUNT = 5;
+      const VALID_START_LINE = 2;
+      const VALID_LINE_CONTENT = 'valid line content';
+      const INVALID_END_LINE = 10;
+      const lineAtError = new Error('Line out of bounds');
+
+      const mockDocument = {
+        lineAt: jest.fn((line: number) => {
+          if (line === INVALID_END_LINE) {
+            throw lineAtError;
+          }
+          return {
+            text: VALID_LINE_CONTENT,
+            range: { start: { character: 0 }, end: { character: VALID_LINE_CONTENT.length } },
+          };
+        }),
+        lineCount: LINE_COUNT,
+        version: 42,
+      } as unknown as vscode.TextDocument;
+
+      const selections = [createSelection(VALID_START_LINE, 0, INVALID_END_LINE, 10)];
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      const result = toInputSelection(mockDocument, selections, mockLogger);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+        message:
+          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        functionName: 'toInputSelection',
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'toInputSelection',
+          error: lineAtError,
+          selection: {
+            start: { line: VALID_START_LINE, char: 0 },
+            end: { line: INVALID_END_LINE, char: 10 },
+            isEmpty: false,
+          },
+          documentVersion: 42,
+          documentLineCount: LINE_COUNT,
+          startLineContent: VALID_LINE_CONTENT,
+          endLineContent: undefined,
+        },
+        'Document modified during link generation - selection out of bounds',
+      );
+    });
+
+    it('should return undefined for all lines when lineAt throws for in-bounds lines', () => {
+      const LINE_COUNT = 5;
+      const VALID_LINE = 2;
+      const lineAtError = new Error('Document corrupt');
+
+      const mockDocument = {
+        lineAt: jest.fn(() => {
+          throw lineAtError;
+        }),
+        lineCount: LINE_COUNT,
+        version: 3,
+      } as unknown as vscode.TextDocument;
+
+      const selections = [createSelection(VALID_LINE, 0, VALID_LINE, 10)];
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      const result = toInputSelection(mockDocument, selections, mockLogger);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+        message:
+          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        functionName: 'toInputSelection',
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'toInputSelection',
+          error: lineAtError,
+          selection: {
+            start: { line: VALID_LINE, char: 0 },
+            end: { line: VALID_LINE, char: 10 },
+            isEmpty: false,
+          },
+          documentVersion: 3,
+          documentLineCount: LINE_COUNT,
+          startLineContent: undefined,
+          endLineContent: undefined,
+        },
+        'Document modified during link generation - selection out of bounds',
+      );
     });
   });
 
