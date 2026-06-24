@@ -2,7 +2,7 @@ import { getLogger } from '@couimet/logger-contract';
 
 import { formatMessage } from '..';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import { getCurrentLocale, messagesEn, setLocale, supportedLocales } from '../../i18n';
+import { getCurrentLocale, messagesEn, setLocale, supportedLocales, type LocaleCode } from '../../i18n';
 import { MessageCode } from '../../types';
 
 /**
@@ -397,6 +397,35 @@ describe('formatMessage', () => {
       });
 
       expect(result).toStrictEqual('Unbound Terminal, now bound to Cursor AI Assistant');
+    });
+  });
+
+  describe('Missing translation fallback', () => {
+    beforeEach(() => {
+      supportedLocales.en = messagesEn;
+      setLocale('en');
+    });
+
+    it('should fallback to English when code is missing from non-English locale', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supportedLocales as any)['fr'] = {};
+      const enResult = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND);
+
+      const result = formatMessage(
+        MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND,
+        undefined,
+        'fr' as LocaleCode,
+      );
+
+      expect(result).toBe(enResult);
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
+        {
+          fn: 'formatMessage',
+          code: MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND,
+          locale: 'fr',
+        },
+        "Missing translation for message code 'STATUS_BAR_DESTINATION_NOT_BOUND' in locale 'fr', using English fallback",
+      );
     });
   });
 
