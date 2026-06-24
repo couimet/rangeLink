@@ -1,6 +1,6 @@
+import { getUniqueInt } from '@couimet/dynamic-testing';
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { getUniqueInt } from '@couimet/dynamic-testing';
 import { InputSelection } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
