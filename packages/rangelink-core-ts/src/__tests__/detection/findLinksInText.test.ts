@@ -2,9 +2,12 @@ import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { DEFAULT_DELIMITERS } from '../../constants';
+import { detectQuotedLinks } from '../../detection/detectQuotedLinks';
 import { findLinksInText } from '../../detection/findLinksInText';
+import type { OccupiedRange } from '../../detection/types';
 import { RangeLinkError, RangeLinkErrorCodes } from '../../errors';
 import { parseLink } from '../../parsing/parseLink';
+import type { DetectedLink } from '../../types';
 import { Result } from '../../types/Result';
 
 jest.mock('../../parsing/parseLink', () => ({
@@ -398,6 +401,24 @@ describe('findLinksInText', () => {
         },
         'Link detection complete',
       );
+    });
+  });
+
+  describe('detectQuotedLinks overlap handling', () => {
+    it('should skip quoted link when it partially overlaps an unquoted match', () => {
+      // "prefix'src/file.ts#L10'"
+      //  ^0    ^6              ^23
+      // Quoted segment spans [6, 24). Occupied range [0, 18) starts before the
+      // quoted segment and ends inside it — not fully encompassed, so partial.
+      const text = "prefix'src/file.ts#L10'";
+      const links: DetectedLink[] = [];
+      const occupiedRanges: OccupiedRange[] = [{ start: 0, end: 18 }];
+
+      const result = detectQuotedLinks(text, links, occupiedRanges, DEFAULT_DELIMITERS, logger);
+
+      expect(result.quotedCandidates).toBe(1);
+      expect(result.quotedReplacements).toBe(0);
+      expect(links).toHaveLength(0);
     });
   });
 });

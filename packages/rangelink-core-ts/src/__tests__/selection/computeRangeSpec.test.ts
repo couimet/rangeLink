@@ -1,3 +1,5 @@
+import { getUniqueInt } from '@couimet/dynamic-testing';
+
 import { computeRangeSpec } from '../../selection/computeRangeSpec';
 import * as validateInputSelectionModule from '../../selection/validateInputSelection';
 import { InputSelection } from '../../types/InputSelection';
@@ -7,14 +9,29 @@ import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
 
 describe('computeRangeSpec', () => {
+  let startLine: number;
+  let endLine: number;
+  let startPosition: number;
+  let endPosition: number;
+
+  beforeEach(() => {
+    startLine = getUniqueInt();
+    endLine = getUniqueInt();
+    startPosition = getUniqueInt();
+    endPosition = getUniqueInt();
+  });
+
   describe('Default behavior (no options)', () => {
     it('should default to Auto notation for PartialLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -24,22 +41,23 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
     });
 
     it('should default to Auto notation for FullLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 10, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -49,8 +67,8 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -59,12 +77,15 @@ describe('computeRangeSpec', () => {
 
   describe('Auto notation - Normal selections', () => {
     it('should use WithPositions format for partial line coverage', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -74,22 +95,26 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11, // 1-based
-          endLine: 11,
-          startPosition: 6, // 1-based
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
     });
 
     it('should use WithPositions format for multi-line partial selection', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 20, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -99,22 +124,24 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 21,
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
     });
 
     it('should use LineOnly format when all selections have FullLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 15, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -124,20 +151,21 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 16,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
     });
 
     it('should use LineOnly format for single line with FullLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 10, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -147,8 +175,8 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -157,24 +185,25 @@ describe('computeRangeSpec', () => {
 
   describe('Auto notation - Rectangular selections', () => {
     it('should always use WithPositions and double-hash for rectangular mode', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, character: 5 },
-
-            end: { line: 11, character: 15 },
+            start: { line: startLine + 1, character: startPosition },
+            end: { line: startLine + 1, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 12, character: 5 },
-
-            end: { line: 12, character: 15 },
+            start: { line: startLine + 2, character: startPosition },
+            end: { line: startLine + 2, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -184,34 +213,35 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 13, // Last selection line
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine + 2,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
     });
 
     it('should use first and last selection lines for rectangular mode', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 10 },
-
-            end: { line: 9, character: 20 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 10, character: 10 },
-
-            end: { line: 10, character: 20 },
+            start: { line: startLine + 1, character: startPosition },
+            end: { line: startLine + 1, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, character: 10 },
-
-            end: { line: 11, character: 20 },
+            start: { line: startLine + 2, character: startPosition },
+            end: { line: startLine + 2, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -221,10 +251,10 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 10, // First selection + 1
-          endLine: 12, // Last selection + 1
-          startPosition: 11,
-          endPosition: 21,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine + 2,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
@@ -233,12 +263,13 @@ describe('computeRangeSpec', () => {
 
   describe('EnforceFullLine notation', () => {
     it('should use LineOnly format even for PartialLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -248,20 +279,22 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
     });
 
     it('should discard position information for multi-line partial selection', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 20, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -271,20 +304,22 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 21,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
     });
 
     it('should use LineOnly format for FullLine coverage (consistent with Auto)', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 15, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -294,8 +329,8 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 16,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -304,12 +339,14 @@ describe('computeRangeSpec', () => {
 
   describe('EnforcePositions notation', () => {
     it('should use WithPositions format even for FullLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 10, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -319,22 +356,24 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           startPosition: 1,
-          endPosition: 51,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
     });
 
     it('should include positions for multi-line FullLine coverage', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-
-            end: { line: 15, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -344,8 +383,8 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 16,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           startPosition: 1,
           endPosition: 1,
           rangeFormat: RangeFormat.WithPositions,
@@ -354,12 +393,15 @@ describe('computeRangeSpec', () => {
     });
 
     it('should use WithPositions format for PartialLine coverage (consistent with Auto)', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -369,10 +411,10 @@ describe('computeRangeSpec', () => {
 
       expect(result).toBeOkWith((value) => {
         expect(value).toStrictEqual({
-          startLine: 11,
-          endLine: 11,
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: RangeFormat.WithPositions,
         });
       });
@@ -381,9 +423,8 @@ describe('computeRangeSpec', () => {
 
   describe('Error handling', () => {
     it('should return Err Result when validateInputSelection throws RangeLinkError', () => {
-      // Create invalid input that will cause validateInputSelection to throw RangeLinkError
       const inputSelection: InputSelection = {
-        selections: [], // Empty selections array is invalid
+        selections: [],
         selectionType: SelectionType.Normal,
       };
 
@@ -397,13 +438,10 @@ describe('computeRangeSpec', () => {
     });
 
     it('should re-throw unexpected errors from validateInputSelection', () => {
-      // Input doesn't matter - mock will intercept before validation
       const inputSelection = {} as InputSelection;
 
-      // Define expected error as test-scoped constant
       const expectedError = new TypeError('Unexpected validation error');
 
-      // Mock validateInputSelection to throw unexpected error
       const spy = jest
         .spyOn(validateInputSelectionModule, 'validateInputSelection')
         .mockImplementationOnce(() => {
@@ -412,7 +450,6 @@ describe('computeRangeSpec', () => {
 
       expect(() => computeRangeSpec(inputSelection)).toThrow(expectedError);
 
-      // Verify spy was called with the input (validates integration point)
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(inputSelection);
     });

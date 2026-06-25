@@ -1,3 +1,4 @@
+import { getUniqueInt } from '@couimet/dynamic-testing';
 import { getLogger } from '@couimet/logger-contract';
 
 import { formatLink } from '../../formatting/formatLink';
@@ -9,41 +10,62 @@ import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
 
+const DEFAULT_DELIMITERS = {
+  line: 'L',
+  position: 'C',
+  hash: '#',
+  range: '-',
+} as const;
+
+const byodSuffix = (d: DelimiterConfig, withPositions: boolean): string => {
+  const base = `~${d.hash}~${d.line}~${d.range}~`;
+  return withPositions ? `${base}${d.position}~` : base;
+};
+
 describe('formatLink', () => {
-  const defaultDelimiters: DelimiterConfig = {
-    line: 'L',
-    position: 'C',
-    hash: '#',
-    range: '-',
-  };
+  let startLine: number;
+  let endLine: number;
+  let startPosition: number;
+  let endPosition: number;
+
+  beforeEach(() => {
+    startLine = getUniqueInt();
+    endLine = getUniqueInt();
+    startPosition = getUniqueInt();
+    endPosition = getUniqueInt();
+  });
 
   it('should format a simple multi-line selection', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedEndLine = endLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 10, character: 5 },
-
-          end: { line: 20, character: 15 },
+          start: { line: startLine, character: startPosition },
+          end: { line: endLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L11C6-L21C16',
-        rawLink: 'src/file.ts#L11C6-L21C16',
+        link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
+        rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 11,
-          endLine: 21,
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -51,32 +73,35 @@ describe('formatLink', () => {
   });
 
   it('should format a single-line selection', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 10, character: 5 },
-
-          end: { line: 10, character: 15 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L11C6-L11C16',
-        rawLink: 'src/file.ts#L11C6-L11C16',
+        link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
+        rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 11,
-          endLine: 11,
-          startPosition: 6,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -84,30 +109,32 @@ describe('formatLink', () => {
   });
 
   it('should use line-only format for full-block selection with FullLine coverage', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedEndLine = endLine + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 10, character: 0 },
-
-          end: { line: 20, character: 0 },
+          start: { line: startLine, character: 0 },
+          end: { line: endLine, character: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L11-L21',
-        rawLink: 'src/file.ts#L11-L21',
+        link: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}`,
+        rawLink: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}`,
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 11,
-          endLine: 21,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           rangeFormat: 'LineOnly',
         },
       });
@@ -115,30 +142,31 @@ describe('formatLink', () => {
   });
 
   it('should use simple line reference format for single line with FullLine coverage', () => {
+    const expectedStartLine = startLine + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 41, character: 0 },
-
-          end: { line: 41, character: 50 },
+          start: { line: startLine, character: 0 },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.FullLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L42',
-        rawLink: 'src/file.ts#L42',
+        link: `src/file.ts#L${expectedStartLine}`,
+        rawLink: `src/file.ts#L${expectedStartLine}`,
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 42,
-          endLine: 42,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           rangeFormat: 'LineOnly',
         },
       });
@@ -146,32 +174,33 @@ describe('formatLink', () => {
   });
 
   it('should use line-only format with EnforceFullLine notation even for PartialLine', () => {
+    const expectedStartLine = startLine + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 10, character: 5 },
-
-          end: { line: 10, character: 15 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
       notation: RangeNotation.EnforceFullLine,
     });
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L11',
-        rawLink: 'src/file.ts#L11',
+        link: `src/file.ts#L${expectedStartLine}`,
+        rawLink: `src/file.ts#L${expectedStartLine}`,
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 11,
-          endLine: 11,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine,
           rangeFormat: 'LineOnly',
         },
       });
@@ -184,7 +213,7 @@ describe('formatLink', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
     expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
       message: 'Selections array must not be empty',
       functionName: 'validateInputSelection',
@@ -193,6 +222,11 @@ describe('formatLink', () => {
   });
 
   it('should work with custom delimiters', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedEndLine = endLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const customDelimiters: DelimiterConfig = {
       line: 'LINE',
       position: 'COL',
@@ -202,9 +236,8 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 9, character: 4 },
-
-          end: { line: 19, character: 14 },
+          start: { line: startLine, character: startPosition },
+          end: { line: endLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -214,17 +247,17 @@ describe('formatLink', () => {
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'path/to/file.ts>>LINE10COL5thruLINE20COL15',
-        rawLink: 'path/to/file.ts>>LINE10COL5thruLINE20COL15',
+        link: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
+        rawLink: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
         delimiters: customDelimiters,
         computedSelection: {
-          startLine: 10,
-          endLine: 20,
-          startPosition: 5,
-          endPosition: 15,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -232,44 +265,45 @@ describe('formatLink', () => {
   });
 
   it('should format rectangular selection with double hash', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 5, character: 10 },
-
-          end: { line: 5, character: 20 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 6, character: 10 },
-
-          end: { line: 6, character: 20 },
+          start: { line: startLine + 1, character: startPosition },
+          end: { line: startLine + 1, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 7, character: 10 },
-
-          end: { line: 7, character: 20 },
+          start: { line: startLine + 2, character: startPosition },
+          end: { line: startLine + 2, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
       selectionType: SelectionType.Rectangular,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts##L6C11-L8C21',
-        rawLink: 'src/file.ts##L6C11-L8C21',
+        link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
+        rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 6,
-          endLine: 8,
-          startPosition: 11,
-          endPosition: 21,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine + 2,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -277,6 +311,10 @@ describe('formatLink', () => {
   });
 
   it('should format rectangular selection with custom single-char delimiters', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const customDelimiters: DelimiterConfig = {
       line: 'X',
       position: 'Y',
@@ -286,18 +324,18 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 5, character: 3 },
-          end: { line: 5, character: 8 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 6, character: 3 },
-          end: { line: 6, character: 8 },
+          start: { line: startLine + 1, character: startPosition },
+          end: { line: startLine + 1, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 7, character: 3 },
-          end: { line: 7, character: 8 },
+          start: { line: startLine + 2, character: startPosition },
+          end: { line: startLine + 2, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -307,17 +345,17 @@ describe('formatLink', () => {
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts@@X6Y4..X8Y9',
-        rawLink: 'src/file.ts@@X6Y4..X8Y9',
+        link: `src/file.ts@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
+        rawLink: `src/file.ts@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
         delimiters: customDelimiters,
         computedSelection: {
-          startLine: 6,
-          endLine: 8,
-          startPosition: 4,
-          endPosition: 9,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine + 2,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -325,6 +363,10 @@ describe('formatLink', () => {
   });
 
   it('should format rectangular selection with custom multi-char delimiters (hash doubling)', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedStartPosition = startPosition + 1;
+    const expectedEndPosition = endPosition + 1;
+
     const customDelimiters: DelimiterConfig = {
       line: 'LINE',
       position: 'COL',
@@ -334,18 +376,18 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 20, character: 10 },
-          end: { line: 20, character: 15 },
+          start: { line: startLine, character: startPosition },
+          end: { line: startLine, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 21, character: 10 },
-          end: { line: 21, character: 15 },
+          start: { line: startLine + 1, character: startPosition },
+          end: { line: startLine + 1, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 22, character: 10 },
-          end: { line: 22, character: 15 },
+          start: { line: startLine + 2, character: startPosition },
+          end: { line: startLine + 2, character: endPosition },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -355,17 +397,17 @@ describe('formatLink', () => {
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts####LINE21COL11TOLINE23COL16',
-        rawLink: 'src/file.ts####LINE21COL11TOLINE23COL16',
+        link: `src/file.ts####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
+        rawLink: `src/file.ts####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
         delimiters: customDelimiters,
         computedSelection: {
-          startLine: 21,
-          endLine: 23,
-          startPosition: 11,
-          endPosition: 16,
+          startLine: expectedStartLine,
+          endLine: expectedStartLine + 2,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
           rangeFormat: 'WithPositions',
         },
       });
@@ -373,32 +415,34 @@ describe('formatLink', () => {
   });
 
   it('should use WithPositions format with EnforcePositions notation even for FullLine', () => {
+    const expectedStartLine = startLine + 1;
+    const expectedEndLine = endLine + 1;
+
     const inputSelection: InputSelection = {
       selections: [
         {
-          start: { line: 10, character: 0 },
-
-          end: { line: 20, character: 0 },
+          start: { line: startLine, character: 0 },
+          end: { line: endLine, character: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
       notation: RangeNotation.EnforcePositions,
     });
 
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
-        link: 'src/file.ts#L11C1-L21C1',
-        rawLink: 'src/file.ts#L11C1-L21C1',
+        link: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1`,
+        rawLink: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1`,
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
-        delimiters: defaultDelimiters,
+        delimiters: DEFAULT_DELIMITERS,
         computedSelection: {
-          startLine: 11,
-          endLine: 21,
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
           startPosition: 1,
           endPosition: 1,
           rangeFormat: 'WithPositions',
@@ -409,31 +453,33 @@ describe('formatLink', () => {
 
   describe('portable links', () => {
     it('should append BYOD metadata for single-line FullLine selection', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 41, character: 0 },
-            end: { line: 41, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L42~#~L~-~',
-          rawLink: 'src/file.ts#L42~#~L~-~',
+          link: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+          rawLink: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 42,
-            endLine: 42,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -441,31 +487,34 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata for multi-line FullLine selection', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-            end: { line: 20, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L11-L21~#~L~-~',
-          rawLink: 'src/file.ts#L11-L21~#~L~-~',
+          link: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+          rawLink: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 11,
-            endLine: 21,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -473,33 +522,38 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata with positions for PartialLine selection', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-            end: { line: 20, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L11C6-L21C16~#~L~-~C~',
-          rawLink: 'src/file.ts#L11C6-L21C16~#~L~-~C~',
+          link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+          rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 11,
-            endLine: 21,
-            startPosition: 6,
-            endPosition: 16,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -507,43 +561,47 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata for rectangular selection', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 5, character: 10 },
-            end: { line: 5, character: 20 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 6, character: 10 },
-            end: { line: 6, character: 20 },
+            start: { line: startLine + 1, character: startPosition },
+            end: { line: startLine + 1, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 7, character: 10 },
-            end: { line: 7, character: 20 },
+            start: { line: startLine + 2, character: startPosition },
+            end: { line: startLine + 2, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Rectangular,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts##L6C11-L8C21~#~L~-~C~',
-          rawLink: 'src/file.ts##L6C11-L8C21~#~L~-~C~',
+          link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+          rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 6,
-            endLine: 8,
-            startPosition: 11,
-            endPosition: 21,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine + 2,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -551,6 +609,10 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata for rectangular selection with custom delimiters', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const customDelimiters: DelimiterConfig = {
         line: 'LINE',
         position: 'COL',
@@ -560,18 +622,18 @@ describe('formatLink', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 4 },
-            end: { line: 9, character: 9 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 10, character: 4 },
-            end: { line: 10, character: 9 },
+            start: { line: startLine + 1, character: startPosition },
+            end: { line: startLine + 1, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, character: 4 },
-            end: { line: 11, character: 9 },
+            start: { line: startLine + 2, character: startPosition },
+            end: { line: startLine + 2, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -583,17 +645,17 @@ describe('formatLink', () => {
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts##LINE10COL5TOLINE12COL10~#~LINE~TO~COL~',
-          rawLink: 'src/file.ts##LINE10COL5TOLINE12COL10~#~LINE~TO~COL~',
+          link: `src/file.ts##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+          rawLink: `src/file.ts##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
           delimiters: customDelimiters,
           computedSelection: {
-            startLine: 10,
-            endLine: 12,
-            startPosition: 5,
-            endPosition: 10,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine + 2,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -601,6 +663,9 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata with custom delimiters (line-only)', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const customDelimiters: DelimiterConfig = {
         line: 'LINE',
         position: 'COL',
@@ -610,8 +675,8 @@ describe('formatLink', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 0 },
-            end: { line: 19, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -623,15 +688,15 @@ describe('formatLink', () => {
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'path/to/file.ts>>LINE10thruLINE20~>>~LINE~thru~',
-          rawLink: 'path/to/file.ts>>LINE10thruLINE20~>>~LINE~thru~',
+          link: `path/to/file.ts>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
+          rawLink: `path/to/file.ts>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
           delimiters: customDelimiters,
           computedSelection: {
-            startLine: 10,
-            endLine: 20,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -639,6 +704,11 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata with custom delimiters (with positions)', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const customDelimiters: DelimiterConfig = {
         line: 'LINE',
         position: 'COL',
@@ -648,8 +718,8 @@ describe('formatLink', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 4 },
-            end: { line: 19, character: 14 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -661,17 +731,17 @@ describe('formatLink', () => {
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'path/to/file.ts>>LINE10COL5thruLINE20COL15~>>~LINE~thru~COL~',
-          rawLink: 'path/to/file.ts>>LINE10COL5thruLINE20COL15~>>~LINE~thru~COL~',
+          link: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+          rawLink: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
           delimiters: customDelimiters,
           computedSelection: {
-            startLine: 10,
-            endLine: 20,
-            startPosition: 5,
-            endPosition: 15,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -679,32 +749,34 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata for EnforceFullLine notation', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-            end: { line: 10, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         notation: RangeNotation.EnforceFullLine,
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L11~#~L~-~',
-          rawLink: 'src/file.ts#L11~#~L~-~',
+          link: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+          rawLink: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 11,
-            endLine: 11,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -712,32 +784,35 @@ describe('formatLink', () => {
     });
 
     it('should append BYOD metadata for EnforcePositions notation', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 0 },
-            end: { line: 20, character: 0 },
+            start: { line: startLine, character: 0 },
+            end: { line: endLine, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         notation: RangeNotation.EnforcePositions,
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L11C1-L21C1~#~L~-~C~',
-          rawLink: 'src/file.ts#L11C1-L21C1~#~L~-~C~',
+          link: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+          rawLink: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 11,
-            endLine: 21,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
             startPosition: 1,
             endPosition: 1,
             rangeFormat: 'WithPositions',
@@ -750,38 +825,43 @@ describe('formatLink', () => {
   describe('integration', () => {
     it.each([
       { linkType: LinkType.Regular, suffix: '' },
-      { linkType: LinkType.Portable, suffix: '~#~L~-~C~' },
+      { linkType: LinkType.Portable, suffix: byodSuffix(DEFAULT_DELIMITERS, true) },
     ])(
       'should handle end-to-end link generation with linkType=$linkType',
       ({ linkType, suffix }) => {
+        const expectedStartLine = startLine + 1;
+        const expectedEndLine = endLine + 1;
+        const expectedStartPosition = startPosition + 1;
+        const expectedEndPosition = endPosition + 1;
+
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, character: 5 },
-              end: { line: 20, character: 15 },
+              start: { line: startLine, character: startPosition },
+              end: { line: endLine, character: endPosition },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
           selectionType: SelectionType.Normal,
         };
 
-        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
           linkType,
         });
 
         expect(result).toBeOkWith((value: FormattedLink) => {
           expect(value).toStrictEqual({
-            link: `src/file.ts#L11C6-L21C16${suffix}`,
-            rawLink: `src/file.ts#L11C6-L21C16${suffix}`,
+            link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
+            rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
             linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
             rangeFormat: 'WithPositions',
             selectionType: 'Normal',
-            delimiters: defaultDelimiters,
+            delimiters: DEFAULT_DELIMITERS,
             computedSelection: {
-              startLine: 11,
-              endLine: 21,
-              startPosition: 6,
-              endPosition: 16,
+              startLine: expectedStartLine,
+              endLine: expectedEndLine,
+              startPosition: expectedStartPosition,
+              endPosition: expectedEndPosition,
               rangeFormat: 'WithPositions',
             },
           });
@@ -791,41 +871,45 @@ describe('formatLink', () => {
 
     it.each([
       { linkType: LinkType.Regular, suffix: '' },
-      { linkType: LinkType.Portable, suffix: '~#~L~-~C~' },
+      { linkType: LinkType.Portable, suffix: byodSuffix(DEFAULT_DELIMITERS, true) },
     ])('should handle rectangular selection with linkType=$linkType', ({ linkType, suffix }) => {
+      const expectedStartLine = startLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 5, character: 10 },
-            end: { line: 5, character: 20 },
+            start: { line: startLine, character: startPosition },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 6, character: 10 },
-            end: { line: 6, character: 20 },
+            start: { line: startLine + 1, character: startPosition },
+            end: { line: startLine + 1, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Rectangular,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType,
       });
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: `src/file.ts##L6C11-L7C21${suffix}`,
-          rawLink: `src/file.ts##L6C11-L7C21${suffix}`,
+          link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
+          rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
           linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 6,
-            endLine: 7,
-            startPosition: 11,
-            endPosition: 21,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine + 1,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -840,7 +924,7 @@ describe('formatLink', () => {
           selectionType: SelectionType.Normal,
         };
 
-        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
           linkType,
         });
 
@@ -855,30 +939,32 @@ describe('formatLink', () => {
 
   describe('quoting', () => {
     it('should quote link when path contains spaces', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 0 },
-            end: { line: 9, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('My Folder/file.ts', inputSelection, defaultDelimiters);
+      const result = formatLink('My Folder/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: "'My Folder/file.ts#L10'",
-          rawLink: 'My Folder/file.ts#L10',
+          link: `'My Folder/file.ts#L${expectedStartLine}'`,
+          rawLink: `My Folder/file.ts#L${expectedStartLine}`,
           linkType: 'regular',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 10,
-            endLine: 10,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -886,32 +972,37 @@ describe('formatLink', () => {
     });
 
     it('should quote link when path contains parentheses', () => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 4, character: 3 },
-            end: { line: 14, character: 10 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/(group)/file.ts', inputSelection, defaultDelimiters);
+      const result = formatLink('src/(group)/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: "'src/(group)/file.ts#L5C4-L15C11'",
-          rawLink: 'src/(group)/file.ts#L5C4-L15C11',
+          link: `'src/(group)/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}'`,
+          rawLink: `src/(group)/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
           linkType: 'regular',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 5,
-            endLine: 15,
-            startPosition: 4,
-            endPosition: 11,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -919,61 +1010,65 @@ describe('formatLink', () => {
     });
 
     it('should not quote link when path is safe', () => {
+      const expectedStartLine = startLine + 1;
+
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, character: 0 },
-            end: { line: 9, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: FormattedLink) => {
-        expect(value.link).toBe('src/file.ts#L10');
-        expect(value.rawLink).toBe('src/file.ts#L10');
+        expect(value.link).toBe(`src/file.ts#L${expectedStartLine}`);
+        expect(value.rawLink).toBe(`src/file.ts#L${expectedStartLine}`);
       });
     });
   });
 
   describe('logging integration', () => {
     it('should log with correct attributes through standard anchor path', () => {
-      // Integration test: Verifies formatLink → finalizeLinkGeneration → logger flow
-      // Tests standard anchor path (multi-line PartialLine selection)
-
       const mockDebug = jest.fn();
       jest.spyOn(getLogger(), 'debug').mockImplementation(mockDebug);
+
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
 
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, character: 5 },
-            end: { line: 20, character: 15 },
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
 
-      // Call formatLink (internally generates logContext that would collide)
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
 
+      const expectedLink = `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`;
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L11C6-L21C16',
-          rawLink: 'src/file.ts#L11C6-L21C16',
+          link: expectedLink,
+          rawLink: expectedLink,
           linkType: 'regular',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 11,
-            endLine: 21,
-            startPosition: 6,
-            endPosition: 16,
+            startLine: expectedStartLine,
+            endLine: expectedEndLine,
+            startPosition: expectedStartPosition,
+            endPosition: expectedEndPosition,
             rangeFormat: 'WithPositions',
           },
         });
@@ -982,9 +1077,9 @@ describe('formatLink', () => {
       expect(mockDebug).toHaveBeenCalledWith(
         {
           fn: 'formatLink',
-          link: 'src/file.ts#L11C6-L21C16',
-          rawLink: 'src/file.ts#L11C6-L21C16',
-          linkLength: 24,
+          link: expectedLink,
+          rawLink: expectedLink,
+          linkLength: expectedLink.length,
           selectionType: 'Normal',
           rangeFormat: 'WithPositions',
         },
@@ -995,37 +1090,38 @@ describe('formatLink', () => {
     });
 
     it('should log with correct attributes through simple line reference path', () => {
-      // Integration test: Verifies portable link generation through simple line reference path
-      // Tests single-line FullLine selection (uses formatSimpleLineReference)
       const mockDebug = jest.fn();
       jest.spyOn(getLogger(), 'debug').mockImplementation(mockDebug);
+
+      const expectedStartLine = startLine + 1;
 
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 41, character: 0 },
-            end: { line: 41, character: 50 },
+            start: { line: startLine, character: 0 },
+            end: { line: startLine, character: endPosition },
             coverage: SelectionCoverage.FullLine,
           },
         ],
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
+      const expectedLink = `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`;
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
-          link: 'src/file.ts#L42~#~L~-~',
-          rawLink: 'src/file.ts#L42~#~L~-~',
+          link: expectedLink,
+          rawLink: expectedLink,
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
-          delimiters: defaultDelimiters,
+          delimiters: DEFAULT_DELIMITERS,
           computedSelection: {
-            startLine: 42,
-            endLine: 42,
+            startLine: expectedStartLine,
+            endLine: expectedStartLine,
             rangeFormat: 'LineOnly',
           },
         });
@@ -1034,9 +1130,9 @@ describe('formatLink', () => {
       expect(mockDebug).toHaveBeenCalledWith(
         {
           fn: 'formatLink',
-          link: 'src/file.ts#L42~#~L~-~',
-          rawLink: 'src/file.ts#L42~#~L~-~',
-          linkLength: 22,
+          link: expectedLink,
+          rawLink: expectedLink,
+          linkLength: expectedLink.length,
           format: 'simple',
         },
         'Generated link',

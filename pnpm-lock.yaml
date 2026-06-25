@@ -54,6 +54,9 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
     devDependencies:
+      '@couimet/dynamic-testing':
+        specifier: ^0.1.0
+        version: 0.1.1
       '@couimet/logger-contract-testing':
         specifier: ^1.0.0
         version: 1.0.0(@couimet/logger-contract@1.0.0)(jest@29.7.0(@types/node@18.19.130))
@@ -85,6 +88,9 @@ importers:
         specifier: workspace:*
         version: link:../rangelink-core-ts
     devDependencies:
+      '@couimet/dynamic-testing':
+        specifier: ^0.1.0
+        version: 0.1.1
       '@couimet/logger-contract-testing':
         specifier: ^1.0.0
         version: 1.0.0(@couimet/logger-contract@1.0.0)(jest@29.7.0(@types/node@20.19.24))
@@ -342,6 +348,14 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@couimet/dynamic-testing@0.1.1':
+    resolution: {integrity: sha512-7rf2k8GYRRxk2X5lhOV+HDZuG3dPdgfyzj6qaNz4Ms4JBGebqmsrtNZbOgwNmteaJawwaqbDwE9fJf1ro2oDjg==}
+    peerDependencies:
+      decimal.js: '>=10.0.0'
+    peerDependenciesMeta:
+      decimal.js:
+        optional: true
 
   '@couimet/logger-contract-testing@1.0.0':
     resolution: {integrity: sha512-Ug2SKE1RS/MPNKh0yoEtBftNFMWgfigiVbynytokf0XFnXwVMywHjAnfvU3amnNiQkV2HQYorl44wUWxvdZGqg==}
@@ -3918,6 +3932,8 @@ snapshots:
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@couimet/dynamic-testing@0.1.1': {}
 
   '@couimet/logger-contract-testing@1.0.0(@couimet/logger-contract@1.0.0)(jest@29.7.0(@types/node@18.19.130))':
     dependencies:

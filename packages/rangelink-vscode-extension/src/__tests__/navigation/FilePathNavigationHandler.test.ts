@@ -220,5 +220,23 @@ describe('FilePathNavigationHandler', () => {
         'Navigation failed',
       );
     });
+
+    it('should convert non-Error throwables to string for error message', async () => {
+      const fileUri = createMockUri('/path/file.ts');
+      jest
+        .spyOn(mockAdapter, 'resolveWorkspacePath')
+        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
+      const nonErrorThrowable = 'Disk I/O failure';
+      jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorThrowable);
+      const showErrorMessageSpy = jest
+        .spyOn(mockAdapter, 'showErrorMessage')
+        .mockResolvedValue(undefined);
+
+      await expect(handler.navigateToFile('/path/file.ts')).rejects.toBe(nonErrorThrowable);
+
+      expect(showErrorMessageSpy).toHaveBeenCalledWith(
+        'Failed to open file /path/file.ts: Disk I/O failure',
+      );
+    });
   });
 });
