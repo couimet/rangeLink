@@ -2,7 +2,13 @@ import { getLogger } from '@couimet/logger-contract';
 
 import { formatMessage } from '..';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import { getCurrentLocale, messagesEn, setLocale, supportedLocales, type LocaleCode } from '../../i18n';
+import {
+  getCurrentLocale,
+  messagesEn,
+  setLocale,
+  supportedLocales,
+  type LocaleCode,
+} from '../../i18n';
 import { MessageCode } from '../../types';
 
 /**
@@ -407,7 +413,6 @@ describe('formatMessage', () => {
     });
 
     it('should fallback to English when code is missing from non-English locale', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supportedLocales as any)['fr'] = {};
       const enResult = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND);
 

@@ -6,8 +6,8 @@ import { detectQuotedLinks } from '../../detection/detectQuotedLinks';
 import { findLinksInText } from '../../detection/findLinksInText';
 import type { OccupiedRange } from '../../detection/types';
 import { RangeLinkError, RangeLinkErrorCodes } from '../../errors';
-import type { DetectedLink } from '../../types';
 import { parseLink } from '../../parsing/parseLink';
+import type { DetectedLink } from '../../types';
 import { Result } from '../../types/Result';
 
 jest.mock('../../parsing/parseLink', () => ({
@@ -414,13 +414,7 @@ describe('findLinksInText', () => {
       const links: DetectedLink[] = [];
       const occupiedRanges: OccupiedRange[] = [{ start: 0, end: 18 }];
 
-      const result = detectQuotedLinks(
-        text,
-        links,
-        occupiedRanges,
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const result = detectQuotedLinks(text, links, occupiedRanges, DEFAULT_DELIMITERS, logger);
 
       expect(result.quotedCandidates).toBe(1);
       expect(result.quotedReplacements).toBe(0);
