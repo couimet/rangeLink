@@ -782,7 +782,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should return error for invalid link', () => {
         const result = handler.parseLink('invalid');
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+        expect(result).toBeDetailedError('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain # separator',
           functionName: 'parseLink',
           details: { hash: '#' },

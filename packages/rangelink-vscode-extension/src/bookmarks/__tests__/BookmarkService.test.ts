@@ -131,12 +131,13 @@ describe('BookmarkService', () => {
         mockLogger,
       );
 
-      await expect(async () =>
-        service.sendBookmark('bookmark-1'),
-      ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_BOUND', {
-        message: 'Cannot send bookmark: no destination is currently bound',
-        functionName: 'BookmarkService.sendBookmark',
-      });
+      await expect(async () => service.sendBookmark('bookmark-1')).toThrowDetailedErrorAsync(
+        'DESTINATION_NOT_BOUND',
+        {
+          message: 'Cannot send bookmark: no destination is currently bound',
+          functionName: 'BookmarkService.sendBookmark',
+        },
+      );
     });
 
     it('logs warning and returns early when bookmark is not found', async () => {

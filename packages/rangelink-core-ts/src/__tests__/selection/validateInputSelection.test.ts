@@ -25,14 +25,11 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_EMPTY',
-        {
-          message: 'Selections array must not be empty',
-          functionName: 'validateInputSelection',
-          details: { selectionsLength: 0 },
-        },
-      );
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_EMPTY', {
+        message: 'Selections array must not be empty',
+        functionName: 'validateInputSelection',
+        details: { selectionsLength: 0 },
+      });
     });
   });
 
@@ -52,7 +49,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_BACKWARD_LINE',
         {
           message: `Backward selection not allowed (startLine=${startLine} > endLine=${endLine})`,
@@ -84,7 +81,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_BACKWARD_CHARACTER',
         {
           message: `Backward character selection not allowed (startCharacter=${startPosition} > endCharacter=${endPosition} on line ${line})`,
@@ -134,7 +131,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
@@ -164,7 +161,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
@@ -194,7 +191,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
@@ -224,7 +221,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
@@ -256,7 +253,7 @@ describe('validateInputSelection', () => {
         selectionType: 'InvalidType' as any,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_UNKNOWN_TYPE',
         {
           message: 'Unknown SelectionType: "InvalidType"',
@@ -282,7 +279,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_ZERO_WIDTH',
         {
           message: `Zero-width selection not allowed (cursor position at line ${line}, character ${position})`,
@@ -309,7 +306,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
         'SELECTION_ZERO_WIDTH',
         {
           message: 'Zero-width selection not allowed (cursor position at line 0, character 0)',

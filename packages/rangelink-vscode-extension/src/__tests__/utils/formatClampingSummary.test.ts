@@ -76,10 +76,10 @@ describe('formatClampingSummary', () => {
     });
   });
 
-  describe('no clamping (unexpected code path)', () => {
-    it('should throw UNEXPECTED_CODE_PATH when no clamping flags are set', () => {
-      expect(() => formatClampingSummary(NO_CLAMPING, NO_CLAMPING)).toThrowRangeLinkExtensionError(
-        'UNEXPECTED_CODE_PATH',
+  describe('no clamping (unexpected switch value)', () => {
+    it('should throw UNEXPECTED_SWITCH_VALUE when no clamping flags are set', () => {
+      expect(() => formatClampingSummary(NO_CLAMPING, NO_CLAMPING)).toThrowDetailedError(
+        'UNEXPECTED_SWITCH_VALUE',
         {
           message:
             'Unexpected clamping summary state: {"lineClamped":false,"characterClamped":false}',

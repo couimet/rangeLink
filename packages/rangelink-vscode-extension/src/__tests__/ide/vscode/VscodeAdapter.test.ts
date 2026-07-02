@@ -871,7 +871,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.showTerminal(undefinedTerminal, TerminalFocusType.StealFocus);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -882,7 +882,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.showTerminal(nullTerminal, TerminalFocusType.StealFocus);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -894,7 +894,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.showTerminal(mockTerminal, invalidFocusType);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('UNKNOWN_FOCUS_TYPE', {
+      expect(result).toBeDetailedError('UNKNOWN_FOCUS_TYPE', {
         message: 'Unknown focus type: invalid-focus-type',
         functionName: 'VscodeAdapter.showTerminal',
         details: { focusType: 'invalid-focus-type' },
@@ -930,7 +930,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.getTerminalName(undefinedTerminal);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -941,7 +941,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.getTerminalName(nullTerminal);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });

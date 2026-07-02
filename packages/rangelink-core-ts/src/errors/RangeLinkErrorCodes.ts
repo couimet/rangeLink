@@ -1,4 +1,4 @@
-import { SharedErrorCodes } from './sharedErrorCodes';
+import { SharedErrorCodes } from '@couimet/detailed-error';
 
 /**
  * RangeLink-specific error codes.
@@ -16,7 +16,7 @@ import { SharedErrorCodes } from './sharedErrorCodes';
  *
  * Please keep alphabetical order within each category for ease of maintenance.
  */
-export enum RangeLinkSpecificCodes {
+enum RangeLinkSpecificCodes {
   //
   // Clipboard errors
   //

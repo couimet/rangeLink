@@ -129,7 +129,7 @@ describe('LogCapture', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.mark('test')).toThrowRangeLinkExtensionError('LOG_CAPTURE_DISABLED', {
+      expect(() => capture.mark('test')).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
         message:
           'LogCapture.mark() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.mark',
@@ -140,21 +140,18 @@ describe('LogCapture', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.getLinesSince('test')).toThrowRangeLinkExtensionError(
-        'LOG_CAPTURE_DISABLED',
-        {
-          message:
-            'LogCapture.getLinesSince() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
-          functionName: 'LogCapture.getLinesSince',
-        },
-      );
+      expect(() => capture.getLinesSince('test')).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
+        message:
+          'LogCapture.getLinesSince() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        functionName: 'LogCapture.getLinesSince',
+      });
     });
 
     it('getAllLines() throws LOG_CAPTURE_DISABLED', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.getAllLines()).toThrowRangeLinkExtensionError('LOG_CAPTURE_DISABLED', {
+      expect(() => capture.getAllLines()).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
         message:
           'LogCapture.getAllLines() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.getAllLines',
@@ -165,7 +162,7 @@ describe('LogCapture', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.clear()).toThrowRangeLinkExtensionError('LOG_CAPTURE_DISABLED', {
+      expect(() => capture.clear()).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
         message:
           'LogCapture.clear() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.clear',

@@ -93,7 +93,7 @@ describe('destinationBuilders', () => {
           { kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 },
           context,
         ),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
+      ).toThrowDetailedError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildTerminalDestination called with wrong kind: text-editor',
         functionName: 'buildTerminalDestination',
         details: { actualKind: 'text-editor', expectedKind: 'terminal' },
@@ -105,7 +105,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildTerminalDestination({ kind: 'terminal', terminal: undefined as any }, context),
-      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+      ).toThrowDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -216,7 +216,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildTextEditorDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
+      ).toThrowDetailedError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildTextEditorDestination called with wrong kind: terminal',
         functionName: 'buildTextEditorDestination',
         details: { actualKind: 'terminal', expectedKind: 'text-editor' },

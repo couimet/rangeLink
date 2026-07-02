@@ -490,7 +490,7 @@ describe('parseLink', () => {
         const longPath = 'a'.repeat(MAX_LINK_LENGTH + 1);
         const result = parseLink(longPath, DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_LINK_TOO_LONG', {
+        expect(result).toBeDetailedError('PARSE_LINK_TOO_LONG', {
           message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
           functionName: 'parseLink',
           details: { received: longPath.length, maximum: MAX_LINK_LENGTH },
@@ -511,7 +511,7 @@ describe('parseLink', () => {
       it('should reject empty string', () => {
         const result = parseLink('', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_LINK', {
+        expect(result).toBeDetailedError('PARSE_EMPTY_LINK', {
           message: 'Link cannot be empty',
           functionName: 'parseLink',
         });
@@ -520,7 +520,7 @@ describe('parseLink', () => {
       it('should reject whitespace-only string', () => {
         const result = parseLink('   ', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_LINK', {
+        expect(result).toBeDetailedError('PARSE_EMPTY_LINK', {
           message: 'Link cannot be empty',
           functionName: 'parseLink',
         });
@@ -531,7 +531,7 @@ describe('parseLink', () => {
       it('should reject link starting with hash', () => {
         const result = parseLink('#L10', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_PATH', {
+        expect(result).toBeDetailedError('PARSE_EMPTY_PATH', {
           message: 'Path cannot be empty',
           functionName: 'parseLink',
         });
@@ -540,7 +540,7 @@ describe('parseLink', () => {
       it('should reject link starting with double hash', () => {
         const result = parseLink('##L10C5', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_PATH', {
+        expect(result).toBeDetailedError('PARSE_EMPTY_PATH', {
           message: 'Path cannot be empty',
           functionName: 'parseLink',
         });
@@ -556,7 +556,7 @@ describe('parseLink', () => {
 
         const result = parseLink('@L10', customDelimiters);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_PATH', {
+        expect(result).toBeDetailedError('PARSE_EMPTY_PATH', {
           message: 'Path cannot be empty',
           functionName: 'parseLink',
         });
@@ -567,7 +567,7 @@ describe('parseLink', () => {
       it('should reject link without hash separator', () => {
         const result = parseLink('file.ts', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+        expect(result).toBeDetailedError('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain # separator',
           functionName: 'parseLink',
           details: { hash: '#' },
@@ -584,7 +584,7 @@ describe('parseLink', () => {
 
         const result = parseLink('file.ts#L10', customDelimiters);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+        expect(result).toBeDetailedError('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain @ separator',
           functionName: 'parseLink',
           details: { hash: '@' },
@@ -599,7 +599,7 @@ describe('parseLink', () => {
           DEFAULT_DELIMITERS,
         );
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+        expect(result).toBeDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
           functionName: 'parseLink',
           details: { link: 'https://github.com/org/repo/blob/main/file.ts#L10' },
@@ -609,7 +609,7 @@ describe('parseLink', () => {
       it('should reject http:// URLs', () => {
         const result = parseLink('http://example.com/file.ts#L5', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+        expect(result).toBeDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
           functionName: 'parseLink',
           details: { link: 'http://example.com/file.ts#L5' },
@@ -619,7 +619,7 @@ describe('parseLink', () => {
       it('should reject ftp:// URLs', () => {
         const result = parseLink('ftp://server.com/path/file.ts#L10', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+        expect(result).toBeDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
           functionName: 'parseLink',
           details: { link: 'ftp://server.com/path/file.ts#L10' },
@@ -647,7 +647,7 @@ describe('parseLink', () => {
           DEFAULT_DELIMITERS,
         );
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+        expect(result).toBeDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
           functionName: 'parseLink',
           details: {
@@ -659,7 +659,7 @@ describe('parseLink', () => {
       it('should reject partial URL matches (ttps:// from shifted regex match)', () => {
         const result = parseLink('ttps://github.com/file.ts#L10', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+        expect(result).toBeDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
           functionName: 'parseLink',
           details: { link: 'ttps://github.com/file.ts#L10' },
@@ -746,7 +746,7 @@ describe('parseLink', () => {
       it('should reject hash without line number', () => {
         const result = parseLink('file.ts#', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -759,7 +759,7 @@ describe('parseLink', () => {
       it('should reject line without number', () => {
         const result = parseLink('file.ts#L', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -772,7 +772,7 @@ describe('parseLink', () => {
       it('should reject invalid range delimiter', () => {
         const result = parseLink('file.ts#L10_L20', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -785,7 +785,7 @@ describe('parseLink', () => {
       it('should reject column without number', () => {
         const result = parseLink('file.ts#L10C', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -798,7 +798,7 @@ describe('parseLink', () => {
       it('should reject malformed range', () => {
         const result = parseLink('file.ts#L10-L20C', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -813,7 +813,7 @@ describe('parseLink', () => {
       it('should reject line 0', () => {
         const result = parseLink('file.ts#L0', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_LINE_BELOW_MINIMUM', {
+        expect(result).toBeDetailedError('PARSE_LINE_BELOW_MINIMUM', {
           message: 'Start line must be >= 1',
           functionName: 'parseLink',
           details: { received: 0, minimum: 1, position: 'start' },
@@ -823,7 +823,7 @@ describe('parseLink', () => {
       it('should reject negative line number', () => {
         const result = parseLink('file.ts#L-5', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
           details: {
@@ -838,7 +838,7 @@ describe('parseLink', () => {
       it('should reject end line before start line', () => {
         const result = parseLink('file.ts#L20-L10', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_LINE_BACKWARD', {
+        expect(result).toBeDetailedError('PARSE_LINE_BACKWARD', {
           message: 'End line cannot be before start line',
           functionName: 'parseLink',
           details: { startLine: 20, endLine: 10 },
@@ -850,7 +850,7 @@ describe('parseLink', () => {
       it('should reject start char 0', () => {
         const result = parseLink('file.ts#L10C0', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BELOW_MINIMUM', {
+        expect(result).toBeDetailedError('PARSE_CHAR_BELOW_MINIMUM', {
           message: 'Start character must be >= 1',
           functionName: 'parseLink',
           details: { received: 0, minimum: 1, position: 'start' },
@@ -860,7 +860,7 @@ describe('parseLink', () => {
       it('should reject end char 0', () => {
         const result = parseLink('file.ts#L10-L20C0', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BELOW_MINIMUM', {
+        expect(result).toBeDetailedError('PARSE_CHAR_BELOW_MINIMUM', {
           message: 'End character must be >= 1',
           functionName: 'parseLink',
           details: { received: 0, minimum: 1, position: 'end' },
@@ -872,7 +872,7 @@ describe('parseLink', () => {
       it('should reject end char before start char on same line', () => {
         const result = parseLink('file.ts#L10C20-L10C5', DEFAULT_DELIMITERS);
 
-        expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BACKWARD_SAME_LINE', {
+        expect(result).toBeDetailedError('PARSE_CHAR_BACKWARD_SAME_LINE', {
           message: 'End character cannot be before start character on same line',
           functionName: 'parseLink',
           details: { startCharacter: 20, endCharacter: 5, line: 10 },
@@ -947,7 +947,7 @@ describe('parseLink', () => {
     it('should reject two quotes as missing hash separator', () => {
       const result = parseLink("''", DEFAULT_DELIMITERS);
 
-      expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+      expect(result).toBeDetailedError('PARSE_NO_HASH_SEPARATOR', {
         message: 'Link must contain # separator',
         functionName: 'parseLink',
         details: { hash: '#' },
@@ -995,7 +995,7 @@ describe('parseLink', () => {
     it('should not strip mismatched quotes', () => {
       const result = parseLink('\'file.ts#L10"', DEFAULT_DELIMITERS);
 
-      expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+      expect(result).toBeDetailedError('PARSE_INVALID_RANGE_FORMAT', {
         message: 'Invalid range format',
         functionName: 'parseLink',
         details: {

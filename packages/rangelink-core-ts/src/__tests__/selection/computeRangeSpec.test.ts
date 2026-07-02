@@ -430,7 +430,7 @@ describe('computeRangeSpec', () => {
 
       const result = computeRangeSpec(inputSelection);
 
-      expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+      expect(result).toBeDetailedError('SELECTION_EMPTY', {
         message: 'Selections array must not be empty',
         functionName: 'validateInputSelection',
         details: { selectionsLength: 0 },

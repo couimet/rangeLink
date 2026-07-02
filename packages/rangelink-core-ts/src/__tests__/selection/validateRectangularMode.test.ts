@@ -23,7 +23,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_MULTILINE',
         {
           message:
@@ -52,7 +52,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_MULTILINE',
         {
           message:
@@ -95,7 +95,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
         {
           message:
@@ -126,7 +126,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
         {
           message:
@@ -157,7 +157,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
         {
           message:
@@ -212,7 +212,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_UNSORTED',
         {
           message:
@@ -246,7 +246,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_UNSORTED',
         {
           message:
@@ -299,7 +299,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_NON_CONTIGUOUS',
         {
           message: 'Rectangular mode requires contiguous lines (gap between line 10 and 12)',
@@ -328,7 +328,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).toThrowRangeLinkError(
+      expect(() => validateRectangularMode(selections)).toThrowDetailedError(
         'SELECTION_RECTANGULAR_NON_CONTIGUOUS',
         {
           message: 'Rectangular mode requires contiguous lines (gap between line 10 and 16)',

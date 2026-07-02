@@ -236,7 +236,7 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await controlledManager.bind({ kind: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Already bound to same destination',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -321,7 +321,7 @@ describe('PasteDestinationManager', () => {
       // Mock non-Cursor IDE (already configured in beforeEach as non-Cursor)
       const result = await manager.bind({ kind: 'cursor-ai' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Cursor AI Assistant not available',
         functionName: 'PasteDestinationManager.bindGenericDestination',
         details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
@@ -342,7 +342,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'claude-code' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Claude Code Chat not available',
         functionName: 'PasteDestinationManager.bindGenericDestination',
         details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
@@ -428,7 +428,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'gemini-code-assist' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Gemini Code Assist not available',
         functionName: 'PasteDestinationManager.bindGenericDestination',
         details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
@@ -473,7 +473,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'github-copilot-chat' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'GitHub Copilot Chat not available',
         functionName: 'PasteDestinationManager.bindGenericDestination',
         details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
@@ -497,7 +497,7 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await localManager.bind({ kind: 'cursor-ai' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Already bound to same destination',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -520,7 +520,7 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await manager.bind({ kind: 'github-copilot-chat' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Already bound to same destination',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -563,7 +563,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: CUSTOM_AI_KIND });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: `${DISPLAY_NAME} not available`,
         functionName: 'PasteDestinationManager.bindGenericDestination',
         details: { failedBindDetails: 'DESTINATION_NOT_AVAILABLE' },
@@ -654,7 +654,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'text-editor', uri: missingUri, viewColumn: 1 });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'No visible editor for file:///workspace/src/gone.ts at viewColumn 1',
         functionName: 'PasteDestinationManager.bindTextEditor',
         details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
@@ -739,7 +739,7 @@ describe('PasteDestinationManager', () => {
         viewColumn: 1,
       });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Editor opened but not visible at expected viewColumn 1',
         functionName: 'PasteDestinationManager.bindTextEditor',
         details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
@@ -780,7 +780,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'text-editor', uri: readOnlyUri, viewColumn: 1 });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Editor is read-only (scheme: git)',
         functionName: 'PasteDestinationManager.bindTextEditor',
         details: { failedBindDetails: 'EDITOR_READ_ONLY' },
@@ -812,7 +812,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'text-editor', uri: binaryUri, viewColumn: 1 });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Editor is a binary file',
         functionName: 'PasteDestinationManager.bindTextEditor',
         details: { failedBindDetails: 'EDITOR_BINARY_FILE' },
@@ -888,7 +888,7 @@ describe('PasteDestinationManager', () => {
       // Try binding to Cursor AI
       const result = await localManager.bind({ kind: 'cursor-ai' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -916,7 +916,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await localManager.bind({ kind: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -946,7 +946,7 @@ describe('PasteDestinationManager', () => {
       // Try binding to GitHub Copilot Chat
       const result = await manager.bind({ kind: 'github-copilot-chat' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -990,7 +990,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ kind: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -1025,7 +1025,7 @@ describe('PasteDestinationManager', () => {
       // Try binding to GitHub Copilot Chat
       const result = await localManager.bind({ kind: 'github-copilot-chat' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -1063,7 +1063,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await localManager.bind({ kind: 'claude-code' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'Already bound to same destination',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -1106,7 +1106,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await localManager.bind({ kind: 'cursor-ai' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
         message: 'User cancelled binding replacement',
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -1643,7 +1643,7 @@ describe('PasteDestinationManager', () => {
         });
 
         // Assert: Bind failed (cancelled)
-        expect(secondBindResult).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        expect(secondBindResult).toBeDetailedError('DESTINATION_BIND_FAILED', {
           message: 'User cancelled binding replacement',
           functionName: 'PasteDestinationManager.commitBind',
           details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -1685,7 +1685,7 @@ describe('PasteDestinationManager', () => {
         // Second bind: Try to bind to Terminal again
         const result = await manager.bind({ kind: 'terminal', terminal: testTerminal });
 
-        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
           message: 'Already bound to same destination',
           functionName: 'PasteDestinationManager.commitBind',
           details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -1779,7 +1779,7 @@ describe('PasteDestinationManager', () => {
           viewColumn: 1,
         });
 
-        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
           message: 'User cancelled binding replacement',
           functionName: 'PasteDestinationManager.commitBind',
           details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
@@ -1918,7 +1918,7 @@ describe('PasteDestinationManager', () => {
 
         const result = await manager.bind({ kind: 'terminal', terminal: mockTerminal });
 
-        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
           message: 'Already bound to same destination',
           functionName: 'PasteDestinationManager.commitBind',
           details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
@@ -1965,7 +1965,7 @@ describe('PasteDestinationManager', () => {
     it('returns err with DESTINATION_NOT_BOUND when no destination bound', async () => {
       const result = await manager.focusBoundDestination();
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_NOT_BOUND', {
+      expect(result).toBeDetailedError('DESTINATION_NOT_BOUND', {
         message: 'No destination is currently bound',
         functionName: 'PasteDestinationManager.focusBoundDestination',
       });
@@ -2069,7 +2069,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.focusBoundDestination();
 
-      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_FOCUS_FAILED', {
+      expect(result).toBeDetailedError('DESTINATION_FOCUS_FAILED', {
         message: 'Failed to focus destination: Terminal',
         functionName: 'PasteDestinationManager.focusBoundDestination',
         details: { destinationKind: 'terminal', displayName: 'Terminal' },
@@ -2092,7 +2092,7 @@ describe('PasteDestinationManager', () => {
     it('throws UNEXPECTED_DESTINATION_KIND for unhandled options kind', async () => {
       const bogusOptions = { kind: 'unknown-kind' } as unknown as BindOptions;
 
-      await expect(() => manager.bind(bogusOptions)).toThrowRangeLinkExtensionErrorAsync(
+      await expect(() => manager.bind(bogusOptions)).toThrowDetailedErrorAsync(
         'UNEXPECTED_DESTINATION_KIND',
         {
           message: 'Unhandled bind options kind: unknown-kind',

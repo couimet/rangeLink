@@ -31,9 +31,11 @@
     "watch": "tsc -p . --watch"
   },
   "dependencies": {
+    "@couimet/detailed-error": "^1.0.0",
     "@couimet/logger-contract": "^1.0.0"
   },
   "devDependencies": {
+    "@couimet/detailed-error-testing": "^0.1.3",
     "@couimet/dynamic-testing": "^0.1.0",
     "@couimet/logger-contract-testing": "^1.0.0",
     "@types/jest": "^29.5.0",

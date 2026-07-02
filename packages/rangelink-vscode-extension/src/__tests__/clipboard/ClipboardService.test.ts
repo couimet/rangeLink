@@ -51,10 +51,10 @@ describe('ClipboardService', () => {
 
       const result = await service.stage(NEW_TEXT, fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_READ_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::stage::read',
-        details: { error: readError },
+        cause: readError,
       });
       expect(fn).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -73,10 +73,10 @@ describe('ClipboardService', () => {
 
       const result = await service.stage(NEW_TEXT, fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_STAGE_WRITE_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_STAGE_WRITE_FAILED', {
         message: 'Failed to write text to clipboard',
         functionName: 'ClipboardService::stage::write',
-        details: { error: writeError },
+        cause: writeError,
       });
       expect(fn).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -95,10 +95,10 @@ describe('ClipboardService', () => {
 
       const result = await service.stage(NEW_TEXT, fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_FN_EXECUTION_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_FN_EXECUTION_FAILED', {
         message: 'The callback threw an error',
         functionName: 'ClipboardService::stage',
-        details: { error: fnError },
+        cause: fnError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -165,10 +165,10 @@ describe('ClipboardService', () => {
 
       const result = await service.route(fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_FN_EXECUTION_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_FN_EXECUTION_FAILED', {
         message: 'The callback threw an error',
         functionName: 'ClipboardService::route',
-        details: { error: fnError },
+        cause: fnError,
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'ClipboardService::route', mode: 'never', error: fnError },
@@ -238,10 +238,10 @@ describe('ClipboardService', () => {
 
       const result = await service.route(fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_READ_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::route::read',
-        details: { error: readError },
+        cause: readError,
       });
       expect(fn).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -263,10 +263,10 @@ describe('ClipboardService', () => {
 
       const result = await service.route(fn);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_FN_EXECUTION_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_FN_EXECUTION_FAILED', {
         message: 'The callback threw an error',
         functionName: 'ClipboardService::route',
-        details: { error: fnError },
+        cause: fnError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -333,10 +333,10 @@ describe('ClipboardService', () => {
 
       const result = await service.capture(producer, LOG_CTX);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_READ_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'test::capture::read',
-        details: { error: readError },
+        cause: readError,
       });
       expect(producer).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -355,10 +355,10 @@ describe('ClipboardService', () => {
 
       const result = await service.capture(producer, LOG_CTX);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_CAPTURE_EXECUTION_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_CAPTURE_EXECUTION_FAILED', {
         message: 'The producer callback threw an error',
         functionName: 'test::capture',
-        details: { error: producerError },
+        cause: producerError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -378,10 +378,10 @@ describe('ClipboardService', () => {
 
       const result = await service.capture(producer, LOG_CTX);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_READ_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'test::capture::read',
-        details: { error: readError },
+        cause: readError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
       expect(mockLogger.error).toHaveBeenCalledWith(

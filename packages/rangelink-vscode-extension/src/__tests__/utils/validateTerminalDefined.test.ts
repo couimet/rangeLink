@@ -16,7 +16,7 @@ describe('validateTerminalDefined', () => {
   it('returns err when terminal is undefined', () => {
     const result = validateTerminalDefined(undefined);
 
-    expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+    expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
       message: 'Terminal reference is not defined',
       functionName: 'validateTerminalDefined',
     });

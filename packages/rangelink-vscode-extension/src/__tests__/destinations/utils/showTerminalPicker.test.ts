@@ -43,7 +43,7 @@ describe('showTerminalPicker', () => {
 
       await expect(() =>
         showTerminalPicker([], quickPickProvider, createHandlers(identityCallback), logger),
-      ).toThrowRangeLinkExtensionErrorAsync('TERMINAL_PICKER_EMPTY_ITEMS', {
+      ).toThrowDetailedErrorAsync('TERMINAL_PICKER_EMPTY_ITEMS', {
         message: 'showTerminalPicker called with no terminal items',
         functionName: 'showTerminalPicker',
       });

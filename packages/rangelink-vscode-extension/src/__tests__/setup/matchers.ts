@@ -1,58 +1,49 @@
-import {
-  toBeRangeLinkError,
-  toBeRangeLinkErrorErr,
-  toThrowRangeLinkError,
-  type ExpectedRangeLinkError,
-} from '../matchers/toBeRangeLinkError';
-import {
-  toBeRangeLinkExtensionError,
-  toBeRangeLinkExtensionErrorErr,
-  toThrowRangeLinkExtensionError,
-  toThrowRangeLinkExtensionErrorAsync,
-  type ExpectedRangeLinkExtensionError,
-} from '../matchers/toBeRangeLinkExtensionError';
+import '@couimet/detailed-error-testing/setup-before-jest-30';
+
+import type { ExpectedDetailedError } from '@couimet/detailed-error-testing';
+import { toBeDetailedError as _toBeDetailedError } from '@couimet/detailed-error-testing';
+import { Result } from 'rangelink-core-ts';
+
 import { toBeErr, toBeErrWith, toBeOk, toBeOkWith } from '../matchers/toBeResult';
+
+const isResult = (value: unknown): value is Result<unknown, unknown> => value instanceof Result;
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace -- Jest matcher type augmentation requires namespace
   namespace jest {
     interface Matchers<R> {
-      // Result matchers
       toBeOk(): R;
       toBeOkWith<T>(assertValue: (value: T) => void): R;
       toBeErr(): R;
       toBeErrWith<E>(assertError: (error: E) => void): R;
-      // RangeLinkError matchers
-      toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
-      toBeRangeLinkErrorErr(code: string, expected: ExpectedRangeLinkError): R;
-      toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
-      // RangeLinkExtensionError matchers
-      toBeRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
-      toBeRangeLinkExtensionErrorErr(code: string, expected: ExpectedRangeLinkExtensionError): R;
-      toThrowRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
-      toThrowRangeLinkExtensionErrorAsync(
-        code: string,
-        expected: ExpectedRangeLinkExtensionError,
-      ): Promise<R>;
+      toBeDetailedError(expectedCode: string, expected: ExpectedDetailedError): R;
     }
   }
 }
 
 expect.extend({
-  // Result matchers
+  // Result-aware toBeDetailedError — unwraps Result before delegating to the package matcher
+  toBeDetailedError(
+    received: unknown,
+    expectedCode: string,
+    expected: ExpectedDetailedError,
+  ): jest.CustomMatcherResult {
+    if (isResult(received)) {
+      if (received.success) {
+        return {
+          pass: false,
+          message: () =>
+            `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`,
+        };
+      }
+      return _toBeDetailedError(received.error, expectedCode, expected);
+    }
+    return _toBeDetailedError(received, expectedCode, expected);
+  },
+
+  // Result matchers (project-specific, not in @couimet/detailed-error-testing)
   toBeOk,
   toBeOkWith,
   toBeErr,
   toBeErrWith,
-  // RangeLinkError matchers
-  toBeRangeLinkError,
-  toBeRangeLinkErrorErr,
-  toThrowRangeLinkError,
-  // RangeLinkExtensionError matchers
-  toBeRangeLinkExtensionError,
-  toBeRangeLinkExtensionErrorErr,
-  toThrowRangeLinkExtensionError,
-  toThrowRangeLinkExtensionErrorAsync,
 });
-
-export {};

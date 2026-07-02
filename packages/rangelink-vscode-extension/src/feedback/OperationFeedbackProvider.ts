@@ -37,7 +37,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED;
         break;
       default:
-        throw RangeLinkExtensionError.forUnexpected(
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
           'auto-unbind reason',
           reason,
           'OperationFeedbackProvider.notifyAutoUnbind',
@@ -189,7 +189,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         break;
       }
       default:
-        throw RangeLinkExtensionError.forUnexpected(
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
           'paste send outcome',
           outcome,
           'OperationFeedbackProvider.provideSendFeedback',
@@ -221,7 +221,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       case 'cursor-ai':
       case 'gemini-code-assist':
       case 'github-copilot-chat':
-        throw RangeLinkExtensionError.forUnexpected(
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
           'paste failure destination kind',
           destinationKind,
           'OperationFeedbackProvider.buildPasteFailureMessage',
@@ -231,7 +231,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         );
       default:
         if (isAnyAiAssistantKind(destinationKind as DestinationKind)) {
-          throw RangeLinkExtensionError.forUnexpected(
+          throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
             'paste failure destination kind',
             destinationKind,
             'OperationFeedbackProvider.buildPasteFailureMessage',
