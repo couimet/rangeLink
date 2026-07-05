@@ -16,7 +16,7 @@ import { SharedErrorCodes } from '@couimet/detailed-error';
  *
  * Please keep alphabetical order within each category for ease of maintenance.
  */
-enum RangeLinkSpecificCodes {
+export enum RangeLinkSpecificCodes {
   //
   // Clipboard errors
   //

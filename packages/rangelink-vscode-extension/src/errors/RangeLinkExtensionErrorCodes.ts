@@ -11,7 +11,7 @@ import { RangeLinkErrorCodes } from 'rangelink-core-ts';
  *
  * Please keep alphabetical order within each category for ease of maintenance.
  */
-enum RangeLinkExtensionSpecificCodes {
+export enum RangeLinkExtensionSpecificCodes {
   //
   // Keep alphabetical order
   //
