@@ -461,7 +461,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -495,7 +495,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -537,7 +537,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -707,7 +707,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('SELECTION_CONVERSION_FAILED', {
+      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',

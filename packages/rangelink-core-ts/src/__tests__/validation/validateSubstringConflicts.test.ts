@@ -32,7 +32,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -47,7 +47,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -62,7 +62,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -77,7 +77,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -92,7 +92,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -118,7 +118,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },

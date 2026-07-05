@@ -95,7 +95,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_NO_SELECTION', {
+      expect(result).toBeDetailedError('GENERATE_LINK_NO_SELECTION', {
         message: 'No selections provided',
         functionName: 'generateLinkFromSelections',
       });
@@ -119,7 +119,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_EMPTY', {
+      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_EMPTY', {
         message: 'All selections are empty',
         functionName: 'generateLinkFromSelections',
       });
@@ -246,7 +246,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
         message: 'Document modified during selection',
         functionName: 'generateLinkFromSelections',
         cause: conversionError,
@@ -291,7 +291,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkErrorErr('VALIDATION', {
+      expect(result).toBeDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
@@ -335,7 +335,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeRangeLinkErrorErr('VALIDATION', {
+      expect(result).toBeDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });

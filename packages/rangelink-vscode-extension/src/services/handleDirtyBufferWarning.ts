@@ -92,7 +92,7 @@ export const handleDirtyBufferWarning = async (
       );
       return result;
     default:
-      throw RangeLinkExtensionError.forUnexpected(
+      throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
         'dirty buffer warning result',
         result,
         'handleDirtyBufferWarning',

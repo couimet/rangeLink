@@ -313,7 +313,7 @@ describe('OperationFeedbackProvider', () => {
           createPasteContext() as any,
           { kind: 'unexpected-value' } as any,
         ),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
+      ).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
         message: 'Unexpected paste send outcome: {"kind":"unexpected-value"}',
         functionName: 'OperationFeedbackProvider.provideSendFeedback',
         details: { unexpectedValue: { kind: 'unexpected-value' } },
@@ -364,13 +364,14 @@ describe('OperationFeedbackProvider', () => {
     });
 
     it('throws on unexpected reason', () => {
-      expect(() =>
-        provider.notifyAutoUnbind('Test', 'unknown-reason' as any),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
-        message: 'Unexpected auto-unbind reason: "unknown-reason"',
-        functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
-        details: { unexpectedValue: 'unknown-reason' },
-      });
+      expect(() => provider.notifyAutoUnbind('Test', 'unknown-reason' as any)).toThrowDetailedError(
+        'UNEXPECTED_SWITCH_VALUE',
+        {
+          message: 'Unexpected auto-unbind reason: "unknown-reason"',
+          functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
+          details: { unexpectedValue: 'unknown-reason' },
+        },
+      );
     });
   });
 
@@ -407,20 +408,21 @@ describe('OperationFeedbackProvider', () => {
     });
 
     it('throws for claude-code chat assistant destination', () => {
-      expect(() =>
-        (provider as any).buildPasteFailureMessage('claude-code'),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
-        message:
-          "Chat assistant destination 'claude-code' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
-        functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-        details: { unexpectedValue: 'claude-code' },
-      });
+      expect(() => (provider as any).buildPasteFailureMessage('claude-code')).toThrowDetailedError(
+        'UNEXPECTED_SWITCH_VALUE',
+        {
+          message:
+            "Chat assistant destination 'claude-code' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+          functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
+          details: { unexpectedValue: 'claude-code' },
+        },
+      );
     });
 
     it('throws for custom AI assistant destination', () => {
       expect(() =>
         (provider as any).buildPasteFailureMessage('custom-ai:my-extension'),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_CODE_PATH', {
+      ).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
         message:
           "AI assistant destination 'custom-ai:my-extension' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
         functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
@@ -429,14 +431,15 @@ describe('OperationFeedbackProvider', () => {
     });
 
     it('throws DESTINATION_NOT_IMPLEMENTED for unknown destination kind', () => {
-      expect(() =>
-        (provider as any).buildPasteFailureMessage('unknown-kind'),
-      ).toThrowRangeLinkExtensionError('DESTINATION_NOT_IMPLEMENTED', {
-        message:
-          "Unknown destination kind 'unknown-kind' - missing case in buildPasteFailureMessage()",
-        functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-        details: { destinationKind: 'unknown-kind' },
-      });
+      expect(() => (provider as any).buildPasteFailureMessage('unknown-kind')).toThrowDetailedError(
+        'DESTINATION_NOT_IMPLEMENTED',
+        {
+          message:
+            "Unknown destination kind 'unknown-kind' - missing case in buildPasteFailureMessage()",
+          functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
+          details: { destinationKind: 'unknown-kind' },
+        },
+      );
     });
   });
 

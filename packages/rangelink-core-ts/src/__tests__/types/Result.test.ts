@@ -100,7 +100,7 @@ describe('Result Value Object', () => {
       it('should throw RESULT_VALUE_ACCESS_ON_ERROR for err Results', () => {
         const result = Result.err('error message');
 
-        expect(() => result.value).toThrowRangeLinkError('RESULT_VALUE_ACCESS_ON_ERROR', {
+        expect(() => result.value).toThrowDetailedError('RESULT_VALUE_ACCESS_ON_ERROR', {
           message: 'Cannot access value on an error Result. Check .success before accessing .value',
           functionName: 'Result.value',
         });
@@ -114,7 +114,7 @@ describe('Result Value Object', () => {
         });
         const result = Result.err(error);
 
-        expect(() => result.value).toThrowRangeLinkError('RESULT_VALUE_ACCESS_ON_ERROR', {
+        expect(() => result.value).toThrowDetailedError('RESULT_VALUE_ACCESS_ON_ERROR', {
           message: 'Cannot access value on an error Result. Check .success before accessing .value',
           functionName: 'Result.value',
         });
@@ -146,7 +146,7 @@ describe('Result Value Object', () => {
       it('should throw RESULT_ERROR_ACCESS_ON_SUCCESS for ok Results', () => {
         const result = Result.ok(42);
 
-        expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
+        expect(() => result.error).toThrowDetailedError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
           message:
             'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
@@ -156,7 +156,7 @@ describe('Result Value Object', () => {
       it('should throw with correct error for ok Results with complex value', () => {
         const result = Result.ok({ foo: 'bar', num: 123 });
 
-        expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
+        expect(() => result.error).toThrowDetailedError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
           message:
             'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
@@ -377,7 +377,7 @@ describe('Result Value Object', () => {
           error?: unknown,
         ) => Result<unknown, unknown>;
 
-        expect(() => new ResultConstructor(true, 42, 'error')).toThrowRangeLinkError(
+        expect(() => new ResultConstructor(true, 42, 'error')).toThrowDetailedError(
           'RESULT_INVALID_STATE',
           {
             message: 'Result marked as success cannot have an error defined',
@@ -402,7 +402,7 @@ describe('Result Value Object', () => {
           error?: unknown,
         ) => Result<unknown, unknown>;
 
-        expect(() => new ResultConstructor(false, 42, 'error')).toThrowRangeLinkError(
+        expect(() => new ResultConstructor(false, 42, 'error')).toThrowDetailedError(
           'RESULT_INVALID_STATE',
           {
             message: 'Result marked as error cannot have a value defined',

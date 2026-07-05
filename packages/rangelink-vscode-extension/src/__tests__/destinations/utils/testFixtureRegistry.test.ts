@@ -27,7 +27,7 @@ describe('testFixtureRegistry', () => {
 
     it('markRangeLinkTestFixture throws TEST_FIXTURE_REGISTRY_DISABLED', () => {
       const terminal = createMockTerminal({ name: 'any' });
-      expect(() => markRangeLinkTestFixture(terminal)).toThrowRangeLinkExtensionError(
+      expect(() => markRangeLinkTestFixture(terminal)).toThrowDetailedError(
         'TEST_FIXTURE_REGISTRY_DISABLED',
         {
           message: 'markRangeLinkTestFixture requires RANGELINK_TEST_FIXTURES_ENABLED=true',

@@ -156,7 +156,7 @@
 
 <rule id="T008" priority="critical">
   <title>Use custom matchers for Result and error assertions</title>
-  <do>Use `toBeRangeLinkExtensionErrorErr(code, { message, functionName, details? })` for error Result assertions</do>
+  <do>Use `toBeDetailedError(code, { message, functionName, details?, cause? })` for both direct errors and error Result assertions — the matcher is Result-aware</do>
   <do>Use `toBeOkWith((value) => { expect(value).toStrictEqual({...}) })` for success Result assertions</do>
   <do>Use `toStrictEqual()` on the full value object inside `toBeOkWith` callbacks — never pick individual properties</do>
   <never>Use `result.success` + `if` guard patterns to manually unwrap Result types</never>
@@ -164,9 +164,9 @@
     - `toBeOk()` / `toBeErr()` - simple success/error check
     - `toBeOkWith(callback)` - success with value assertion
     - `toBeErrWith(callback)` - error with assertion
-    - `toBeRangeLinkExtensionErrorErr(code, expected)` - error Result with full RangeLinkExtensionError validation
-    - `toThrowRangeLinkExtensionError(code, expected)` - sync throw
-    - `toThrowRangeLinkExtensionErrorAsync(code, expected)` - async throw
+    - `toBeDetailedError(code, expected)` - direct error validation (from @couimet/detailed-error-testing)
+    - `toThrowDetailedError(code, expected)` - sync throw (from @couimet/detailed-error-testing)
+    - `toThrowDetailedErrorAsync(code, expected)` - async throw (from @couimet/detailed-error-testing)
   </available-matchers>
   <bad-example>
     ```typescript
@@ -179,7 +179,7 @@
   </bad-example>
   <good-example>
     ```typescript
-    expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_NOT_BOUND', {
+    expect(result).toBeDetailedError('DESTINATION_NOT_BOUND', {
       message: 'No destination is currently bound',
       functionName: 'PasteDestinationManager.focusBoundDestination',
     });
@@ -347,8 +347,9 @@
   <title>No re-exporting imported symbols</title>
   <do>Import types, values, and functions from their canonical source file — never re-export them from an intermediate module</do>
   <never>Use `export { X } from './Y'` or `import { X } from './Y'; export { X }` outside of barrel files (index.ts)</never>
-  <exception>Barrel files (`index.ts`) exist to re-export — this is their sole purpose</exception>
-  <rationale>Re-exports create indirection, making it unclear where a symbol originates. Callers should depend directly on the canonical source, not a pass-through module</rationale>
+  <exception>Barrel files (`index.ts`) exist to re-export project-internal modules only</exception>
+  <never>Re-export symbols from external packages (npm dependencies) — even in barrel files. Callers must import from the canonical package directly</never>
+  <rationale>Re-exports create indirection, making it unclear where a symbol originates. External re-exports add a layer that obscures the true source and makes dependency management harder. Callers should depend directly on the canonical source, not a pass-through module</rationale>
 </rule>
 
 <rule id="P006" priority="critical">

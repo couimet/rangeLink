@@ -14,7 +14,10 @@ module.exports = {
 
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.test.ts'],
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/matchers.ts'],
+  setupFilesAfterEnv: [
+    '@couimet/detailed-error-testing/setup-before-jest-30',
+    '<rootDir>/src/__tests__/setup/matchers.ts',
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.test.ts',

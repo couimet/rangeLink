@@ -89,7 +89,7 @@ describe('TerminalPasteService', () => {
 
       const result = await service.pasteIntoTerminal('test content', terminal);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('TERMINAL_NOT_DEFINED', {
+      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -113,7 +113,7 @@ describe('TerminalPasteService', () => {
       const result = await service.pasteIntoTerminal('bad content', terminal);
 
       expect(mockClipboardService.stage).toHaveBeenCalledWith('bad content', expect.any(Function));
-      expect(result).toBeRangeLinkExtensionErrorErr('CLIPBOARD_READ_FAILED', {
+      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::stage',
       });

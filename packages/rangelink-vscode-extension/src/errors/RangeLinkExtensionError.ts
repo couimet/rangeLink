@@ -1,7 +1,6 @@
-import { DetailedError, type ErrorDetails, type ErrorOptions } from 'rangelink-core-ts';
+import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
 
 import type { RangeLinkExtensionErrorCodes } from './RangeLinkExtensionErrorCodes';
-import { RangeLinkExtensionErrorCodes as ErrorCodes } from './RangeLinkExtensionErrorCodes';
 
 /**
  * Base error class for all rangelink-vscode-extension errors.
@@ -19,30 +18,5 @@ export class RangeLinkExtensionError extends DetailedError<RangeLinkExtensionErr
   constructor(options: ErrorOptions<RangeLinkExtensionErrorCodes>) {
     super(options);
     this.name = 'RangeLinkExtensionError';
-
-    // Maintains proper stack trace for where error was thrown (V8 only)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, RangeLinkExtensionError);
-    }
-  }
-
-  /**
-   * Create an UNEXPECTED_CODE_PATH error with uniform `details.unexpectedValue`.
-   *
-   * Use this for every `default:` block or unexpected-value guard.
-   * All call sites share the same details key, making error tooling consistent.
-   */
-  static forUnexpected(
-    label: string,
-    value: unknown,
-    functionName: string,
-    options?: { message?: string; extraDetails?: ErrorDetails },
-  ): RangeLinkExtensionError {
-    return new RangeLinkExtensionError({
-      code: ErrorCodes.UNEXPECTED_CODE_PATH,
-      message: options?.message ?? `Unexpected ${label}: ${JSON.stringify(value)}`,
-      functionName,
-      details: { ...options?.extraDetails, unexpectedValue: value },
-    });
   }
 }

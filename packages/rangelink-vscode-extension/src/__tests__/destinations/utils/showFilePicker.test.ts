@@ -34,7 +34,7 @@ describe('showFilePicker', () => {
 
       await expect(() =>
         showFilePicker([], quickPickProvider, createHandlers(identityCallback), logger),
-      ).toThrowRangeLinkExtensionErrorAsync('FILE_PICKER_EMPTY_ITEMS', {
+      ).toThrowDetailedErrorAsync('FILE_PICKER_EMPTY_ITEMS', {
         message: 'showFilePicker called with no file items',
         functionName: 'showFilePicker',
       });

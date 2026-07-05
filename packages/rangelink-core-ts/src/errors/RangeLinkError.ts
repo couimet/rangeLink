@@ -1,4 +1,5 @@
-import { DetailedError, ErrorOptions } from './detailedError';
+import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
+
 import type { RangeLinkErrorCodes } from './RangeLinkErrorCodes';
 
 /**
@@ -14,10 +15,5 @@ export class RangeLinkError extends DetailedError<RangeLinkErrorCodes> {
   constructor(options: ErrorOptions<RangeLinkErrorCodes>) {
     super(options);
     this.name = 'RangeLinkError';
-
-    // Maintains proper stack trace for where error was thrown (V8 only)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, RangeLinkError);
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { SharedErrorCodes } from './sharedErrorCodes';
+import { SharedErrorCodes } from '@couimet/detailed-error';
 
 /**
  * RangeLink-specific error codes.

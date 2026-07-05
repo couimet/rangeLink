@@ -105,7 +105,7 @@ export class ClipboardService {
             code: RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED,
             message: 'The producer callback threw an error',
             functionName: logCtx.fn,
-            details: { error: producerError },
+            cause: producerError,
           }),
         );
       }
@@ -178,7 +178,7 @@ export class ClipboardService {
           code: RangeLinkExtensionErrorCodes.CLIPBOARD_READ_FAILED,
           message: 'Failed to read clipboard',
           functionName: logCtx.fn,
-          details: { error: err },
+          cause: err,
         }),
       );
     }
@@ -208,7 +208,7 @@ export class ClipboardService {
           code: RangeLinkExtensionErrorCodes.CLIPBOARD_STAGE_WRITE_FAILED,
           message: 'Failed to write text to clipboard',
           functionName: logCtx.fn,
-          details: { error: err },
+          cause: err,
         }),
       );
     }
@@ -227,7 +227,7 @@ export class ClipboardService {
           code: RangeLinkExtensionErrorCodes.CLIPBOARD_FN_EXECUTION_FAILED,
           message: 'The callback threw an error',
           functionName: logCtx.fn,
-          details: { error: fnError },
+          cause: fnError,
         }),
       );
     }

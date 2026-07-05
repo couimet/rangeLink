@@ -72,12 +72,13 @@ describe('BookmarksStore', () => {
     });
 
     it('throws when globalState is undefined', () => {
-      expect(
-        () => new BookmarksStore(undefined as never, mockLogger),
-      ).toThrowRangeLinkExtensionError('BOOKMARK_STORE_NOT_AVAILABLE', {
-        message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
-        functionName: 'BookmarksStore.constructor',
-      });
+      expect(() => new BookmarksStore(undefined as never, mockLogger)).toThrowDetailedError(
+        'BOOKMARK_STORE_NOT_AVAILABLE',
+        {
+          message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
+          functionName: 'BookmarksStore.constructor',
+        },
+      );
     });
   });
 
@@ -204,7 +205,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'New', link: '/new#L1' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_ID_GENERATION_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_ID_GENERATION_FAILED', {
         message: 'Failed to generate unique bookmark ID after 10 attempts',
         functionName: 'BookmarksStore.generateUniqueId',
       });
@@ -392,7 +393,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('non-existent', { label: 'New' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot update bookmark: not found',
         functionName: 'BookmarksStore.update',
         details: { bookmarkId: 'non-existent' },
@@ -456,7 +457,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove('non-existent');
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot remove bookmark: not found',
         functionName: 'BookmarksStore.remove',
         details: { bookmarkId: 'non-existent' },
@@ -549,7 +550,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess('non-existent');
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot record access: bookmark not found',
         functionName: 'BookmarksStore.recordAccess',
         details: { bookmarkId: 'non-existent' },
@@ -667,7 +668,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during add',
         functionName: 'BookmarksStore.add',
         details: { operation: 'add' },
@@ -686,7 +687,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update(TEST_ID, { label: 'updated' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during update',
         functionName: 'BookmarksStore.update',
         details: { operation: 'update' },
@@ -705,7 +706,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove(TEST_ID);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during remove',
         functionName: 'BookmarksStore.remove',
         details: { operation: 'remove' },
@@ -724,7 +725,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess(TEST_ID);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during recordAccess',
         functionName: 'BookmarksStore.recordAccess',
         details: { operation: 'recordAccess' },
@@ -746,7 +747,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while adding bookmark',
         functionName: 'BookmarksStore.add',
         cause: genericError,
@@ -762,7 +763,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update(TEST_ID, { label: 'updated' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while updating bookmark',
         functionName: 'BookmarksStore.update',
         cause: genericError,
@@ -778,7 +779,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove(TEST_ID);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while removing bookmark',
         functionName: 'BookmarksStore.remove',
         cause: genericError,
@@ -794,7 +795,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess(TEST_ID);
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while recording bookmark access',
         functionName: 'BookmarksStore.recordAccess',
         cause: genericError,
@@ -808,7 +809,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while adding bookmark',
         functionName: 'BookmarksStore.add',
       });
@@ -819,7 +820,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during add',
         functionName: 'BookmarksStore.add',
         details: { operation: 'add' },

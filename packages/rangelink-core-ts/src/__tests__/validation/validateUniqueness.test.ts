@@ -21,7 +21,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -36,7 +36,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -51,7 +51,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -77,7 +77,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -92,7 +92,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },

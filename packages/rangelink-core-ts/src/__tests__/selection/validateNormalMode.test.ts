@@ -18,7 +18,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).toThrowRangeLinkError(
+      expect(() => validateNormalMode(selections)).toThrowDetailedError(
         'SELECTION_NORMAL_MULTIPLE',
         {
           message:
@@ -48,7 +48,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).toThrowRangeLinkError(
+      expect(() => validateNormalMode(selections)).toThrowDetailedError(
         'SELECTION_NORMAL_MULTIPLE',
         {
           message:
@@ -66,7 +66,7 @@ describe('validateNormalMode', () => {
         coverage: SelectionCoverage.PartialLine,
       }));
 
-      expect(() => validateNormalMode(selections)).toThrowRangeLinkError(
+      expect(() => validateNormalMode(selections)).toThrowDetailedError(
         'SELECTION_NORMAL_MULTIPLE',
         {
           message:
@@ -82,7 +82,7 @@ describe('validateNormalMode', () => {
     it('should throw error for 0 selections', () => {
       const selections: InputSelection['selections'] = [];
 
-      expect(() => validateNormalMode(selections)).toThrowRangeLinkError(
+      expect(() => validateNormalMode(selections)).toThrowDetailedError(
         'SELECTION_NORMAL_MULTIPLE',
         {
           message:

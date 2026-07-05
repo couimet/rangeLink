@@ -23,7 +23,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(undefined);
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -41,7 +41,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(null);
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -53,7 +53,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler('anthropic.claude-code');
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -65,7 +65,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(['anthropic.claude-code']);
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -77,7 +77,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({});
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -94,7 +94,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: '' });
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -106,7 +106,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 123 });
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -121,7 +121,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 'unknown.missing' });
 
-    expect(result).toBeRangeLinkExtensionErrorErr('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: "No AI assistant found with extension ID 'unknown.missing'",
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -219,7 +219,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 'google.geminicodeassist' });
 
-    expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+    expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
       message: 'Destination not available',
       functionName: 'PasteDestinationManager.bindGenericDestination',
     });

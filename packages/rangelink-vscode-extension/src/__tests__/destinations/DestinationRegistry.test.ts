@@ -176,7 +176,7 @@ describe('DestinationRegistry', () => {
 
       expect(() =>
         registry.create({ kind: 'terminal', terminal: {} as never }),
-      ).toThrowRangeLinkExtensionError('DESTINATION_NOT_IMPLEMENTED', {
+      ).toThrowDetailedError('DESTINATION_NOT_IMPLEMENTED', {
         message: 'No builder registered for destination kind: terminal',
         functionName: 'DestinationRegistry.create',
         details: { kind: 'terminal' },
@@ -186,7 +186,7 @@ describe('DestinationRegistry', () => {
     it('should include destination kind in error message', () => {
       const registry = createRegistry();
 
-      expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowRangeLinkExtensionError(
+      expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowDetailedError(
         'DESTINATION_NOT_IMPLEMENTED',
         {
           message: 'No builder registered for destination kind: github-copilot-chat',
