@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Auto-unbind when a bound file is deleted from disk**, matching the existing terminal-close behavior. Deleting a bound file now triggers an auto-unbind with a status bar message and warning toast. Previously the binding survived and subsequent paste attempts would target a non-existent file. (#611)
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
+- **RangeLink context menu items now appear in devcontainers and other remote workspaces.** (#679)
 
 ## [2.0.0]
 
