@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
 - **RangeLinks inside parentheses now navigate correctly** — `(path#Lx-Ly)` no longer includes the leading `(` in the file path, so navigation works instead of failing with "Cannot find file: (path...". Also applies to `[]`, `{}`, `<>` wrappers, and trailing sentence terminators. (#661, #666)
 - **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
+- **RangeLink context menu items now appear in devcontainers and other remote workspaces.** (#679)
 
 <!-- markdownlint-disable MD038 -->
 

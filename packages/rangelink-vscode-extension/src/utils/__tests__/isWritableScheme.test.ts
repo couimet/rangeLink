@@ -9,6 +9,10 @@ describe('isWritableScheme', () => {
     it('returns true for untitled scheme', () => {
       expect(isWritableScheme('untitled')).toBe(true);
     });
+
+    it('returns true for vscode-remote scheme', () => {
+      expect(isWritableScheme('vscode-remote')).toBe(true);
+    });
   });
 
   describe('read-only schemes', () => {
@@ -26,10 +30,6 @@ describe('isWritableScheme', () => {
 
     it('returns false for debug scheme', () => {
       expect(isWritableScheme('debug')).toBe(false);
-    });
-
-    it('returns false for vscode-remote scheme', () => {
-      expect(isWritableScheme('vscode-remote')).toBe(false);
     });
 
     it('returns false for walkThrough scheme', () => {
