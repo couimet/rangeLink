@@ -241,7 +241,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE]: 'Save & Send',
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE_FAILED]:
     'File could not be saved. File path send aborted.',
-  [MessageCode.WARN_FILE_PATH_NOT_FOUND]: 'Cannot find file: {path}',
+  [MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST]: 'File does not exist at: {path}',
   [MessageCode.WARN_LINK_DIRTY_BUFFER]:
     'File has unsaved changes. Link may point to wrong position after save.',
   [MessageCode.WARN_LINK_DIRTY_BUFFER_CONTINUE]: 'Generate Anyway',

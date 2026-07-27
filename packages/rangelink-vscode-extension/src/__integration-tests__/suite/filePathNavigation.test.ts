@@ -31,7 +31,9 @@ standardSuite('File Path Navigation', (ss) => {
 
     const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
 
-    ss.expectToastMessages([{ level: 'warning', message: `Cannot find file: ${nonExistentPath}` }]);
+    ss.expectToastMessages([
+      { level: 'warning', message: `File does not exist at: ${nonExistentPath}` },
+    ]);
 
     void vscode.commands.executeCommand(CMD_HANDLE_FILE_PATH_CLICK, {
       filePath: nonExistentPath,

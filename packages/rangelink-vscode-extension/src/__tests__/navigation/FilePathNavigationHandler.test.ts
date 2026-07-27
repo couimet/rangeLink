@@ -152,7 +152,9 @@ describe('FilePathNavigationHandler', () => {
 
       await handler.navigateToFile('/nonexistent/file.ts');
 
-      expect(showWarningMessageSpy).toHaveBeenCalledWith('Cannot find file: /nonexistent/file.ts');
+      expect(showWarningMessageSpy).toHaveBeenCalledWith(
+        'File does not exist at: /nonexistent/file.ts',
+      );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',

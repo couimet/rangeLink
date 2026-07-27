@@ -319,6 +319,51 @@ describe('validateInputSelection', () => {
         },
       );
     });
+
+    it('should allow empty-line FullLine zero-width selection', () => {
+      mockValidateNormalMode.mockImplementation(() => {});
+
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 5, character: 0 },
+            end: { line: 5, character: 0 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      validateInputSelection(inputSelection);
+
+      expect(mockValidateNormalMode).toHaveBeenCalledWith(inputSelection.selections);
+    });
+
+    it('should still reject cursor-position PartialLine zero-width selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 5, character: 3 },
+            end: { line: 5, character: 3 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
+        'SELECTION_ZERO_WIDTH',
+        {
+          message: 'Zero-width selection not allowed (cursor position at line 5, character 3)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            line: 5,
+            character: 3,
+          },
+        },
+      );
+    });
   });
 
   describe('Mode-specific validation delegation', () => {

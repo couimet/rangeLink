@@ -60,6 +60,48 @@ describe('findLinksInText', () => {
       expect(results).toHaveLength(0);
     });
 
+    describe('surrounding punctuation trimming', () => {
+      it('should strip leading and trailing parens from a matched link', () => {
+        const results = findLinksInText('(path#L1-L2)', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should strip leading paren when link is followed by trailing punctuation', () => {
+        const results = findLinksInText('(path#L1-L2):', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should not produce a link from bare punctuation with no valid path', () => {
+        const results = findLinksInText('()', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(0);
+      });
+
+      it('should leave a clean path unchanged', () => {
+        const results = findLinksInText('path#L1-L2', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(0);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+      });
+    });
+
     describe('markdown link syntax', () => {
       it('should detect the path from a simple markdown link', () => {
         const results = findLinksInText('[text](src/auth.ts#L10)', DEFAULT_DELIMITERS, logger);

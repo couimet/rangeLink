@@ -121,6 +121,36 @@ standardSuite('Link Generation', (ss) => {
     );
   });
 
+  test('wrapped-link-navigation-005: detects paren-wrapped link ((src/foo.ts#L5))', () => {
+    const links = findLinksInText('(src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
+
+    assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
+  });
+
+  test('wrapped-link-navigation-006: detects paren-then-colon-wrapped link ((src/foo.ts#L5):)', () => {
+    const links = findLinksInText('(src/foo.ts#L5):\n', DEFAULT_DELIMITERS, LOGGER);
+
+    assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
+  });
+
   test('markdown-link-navigation-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 

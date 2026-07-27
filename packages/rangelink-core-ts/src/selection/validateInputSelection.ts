@@ -1,6 +1,7 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
 import { InputSelection } from '../types/InputSelection';
+import { SelectionCoverage } from '../types/SelectionCoverage';
 import { SelectionType } from '../types/SelectionType';
 
 import { validateNormalMode } from './validateNormalMode';
@@ -77,7 +78,11 @@ export function validateInputSelection(inputSelection: InputSelection): void {
       });
     }
 
-    if (sel.start.line === sel.end.line && sel.start.character === sel.end.character) {
+    if (
+      sel.start.line === sel.end.line &&
+      sel.start.character === sel.end.character &&
+      sel.coverage !== SelectionCoverage.FullLine
+    ) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_ZERO_WIDTH,
         message: `Zero-width selection not allowed (cursor position at line ${sel.start.line}, character ${sel.start.character})`,
