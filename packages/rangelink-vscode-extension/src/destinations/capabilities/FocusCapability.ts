@@ -1,5 +1,5 @@
+import { DetailedResult } from '@couimet/detailed-result';
 import type { LoggingContext } from '@couimet/logger-contract';
-import type { Result } from 'rangelink-core-ts';
 
 /**
  * Reasons why focusing a paste destination can fail.
@@ -33,12 +33,23 @@ export interface FocusError {
   cause?: unknown;
 }
 
-/**
- * Result of focusing a paste destination.
- * On success, contains a FocusedDestination with inserter capability.
- * On failure, contains a typed error with reason.
- */
-export type FocusResult = Result<FocusedDestination, FocusError>;
+export class FocusResult extends DetailedResult<FocusedDestination, FocusError> {
+  private constructor(
+    success: boolean,
+    value: FocusedDestination | undefined,
+    error: FocusError | undefined,
+  ) {
+    super(success, value, error);
+  }
+
+  static ok(value: FocusedDestination): FocusResult {
+    return new FocusResult(true, value, undefined);
+  }
+
+  static err(error: FocusError): FocusResult {
+    return new FocusResult(false, undefined, error);
+  }
+}
 
 /**
  * Capability for focusing paste destinations and obtaining inserter handles.

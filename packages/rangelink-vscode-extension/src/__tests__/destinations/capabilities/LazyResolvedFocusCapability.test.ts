@@ -37,12 +37,12 @@ describe('LazyResolvedFocusCapability', () => {
     expect(capability.resolvedTierLabel).toBeUndefined();
 
     const result1 = await capability.focus(CONTEXT);
-    expect(result1).toBeOk();
+    expect(result1.success).toBe(true);
     expect(capability.resolvedTierLabel).toBe('insertCommands');
     expect(getCommandsSpy).toHaveBeenCalledTimes(1);
 
     const result2 = await capability.focus(CONTEXT);
-    expect(result2).toBeOk();
+    expect(result2.success).toBe(true);
     expect(getCommandsSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -60,12 +60,12 @@ describe('LazyResolvedFocusCapability', () => {
     const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     const result1 = await capability.focus(CONTEXT);
-    expect(result1).toBeErrWith((error: { reason: string }) => {
-      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
+    expect(result1).toBeFailureWith((error) => {
+      expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
 
     const result2 = await capability.focus(CONTEXT);
-    expect(result2).toBeErrWith((error: { reason: string }) => {
+    expect(result2).toBeFailureWith((error) => {
       expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
   });
@@ -153,7 +153,7 @@ describe('LazyResolvedFocusCapability', () => {
 
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(executeCommandSpy).toHaveBeenCalledWith('sparkAi.focus');
     expect(capability.resolvedTierLabel).toBe('focusAndPasteCommands');
   });
@@ -184,8 +184,8 @@ describe('LazyResolvedFocusCapability', () => {
 
     const [result1, result2] = await Promise.all([focus1, focus2]);
 
-    expect(result1).toBeOk();
-    expect(result2).toBeOk();
+    expect(result1.success).toBe(true);
+    expect(result2.success).toBe(true);
     expect(mockAdapter.getCommands).toHaveBeenCalledTimes(1);
   });
 
@@ -208,8 +208,8 @@ describe('LazyResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue([]);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeErrWith((error: { reason: string }) => {
-      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
+    expect(result).toBeFailureWith((error) => {
+      expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
   });
 });

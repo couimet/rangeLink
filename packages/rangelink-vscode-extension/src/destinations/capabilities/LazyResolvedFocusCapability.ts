@@ -1,10 +1,9 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier, FocusTierLabel } from '../types';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
 import { ResolvedFocusCapability } from './ResolvedFocusCapability';
 import { resolveFocusTier, type TierResolutionResult } from './resolveFocusTier';
 
@@ -51,7 +50,7 @@ export class LazyResolvedFocusCapability implements FocusCapability {
 
   async focus(context: LoggingContext): Promise<FocusResult> {
     if (this.resolutionFailed) {
-      return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
+      return FocusResult.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
     }
 
     if (!this.resolved) {
@@ -68,7 +67,7 @@ export class LazyResolvedFocusCapability implements FocusCapability {
     }
 
     if (this.resolutionFailed) {
-      return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
+      return FocusResult.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
     }
 
     return this.resolved!.focus(context);

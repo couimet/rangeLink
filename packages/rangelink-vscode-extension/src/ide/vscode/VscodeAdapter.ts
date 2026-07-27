@@ -1,5 +1,4 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { displayName } from '../../../package.json';
@@ -17,6 +16,7 @@ import {
   type ResolveWorkspacePathResult,
   TerminalFocusType,
 } from '../../types';
+import { ExtensionResult } from '../../types/ExtensionResult';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -359,10 +359,7 @@ export class VscodeAdapter
    * Architecture note: Uses enum parameter instead of boolean for extensibility.
    * Additional focus types can be added later without breaking existing code.
    */
-  showTerminal(
-    terminal: vscode.Terminal,
-    focusType: TerminalFocusType,
-  ): Result<void, RangeLinkExtensionError> {
+  showTerminal(terminal: vscode.Terminal, focusType: TerminalFocusType): ExtensionResult<void> {
     const logCtx: LoggingContext = {
       fn: 'VscodeAdapter.showTerminal',
       terminalName: terminal?.name,
@@ -372,17 +369,17 @@ export class VscodeAdapter
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
       this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal validation failed');
-      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
+      return validationResult as unknown as ExtensionResult<void>;
     }
 
     switch (focusType) {
       case TerminalFocusType.StealFocus:
         terminal.show(false); // false = don't preserve focus, steal it to terminal
         this.logger.debug(logCtx, 'Showing terminal');
-        return Result.ok(undefined);
+        return ExtensionResult.ok(undefined);
       default:
         this.logger.error(logCtx, `Unknown focus type: ${focusType}`);
-        return Result.err(
+        return ExtensionResult.err(
           new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
             message: `Unknown focus type: ${focusType}`,
@@ -398,16 +395,16 @@ export class VscodeAdapter
    *
    * Wrapper for terminal.name property access to isolate destination classes.
    */
-  getTerminalName(terminal: vscode.Terminal): Result<string, RangeLinkExtensionError> {
+  getTerminalName(terminal: vscode.Terminal): ExtensionResult<string> {
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
       this.logger.error(
         { fn: 'VscodeAdapter.getTerminalName', error: validationResult.error },
         'Terminal validation failed',
       );
-      return validationResult as unknown as Result<string, RangeLinkExtensionError>;
+      return validationResult as unknown as ExtensionResult<string>;
     }
-    return Result.ok(terminal.name);
+    return ExtensionResult.ok(terminal.name);
   }
 
   // ============================================================================

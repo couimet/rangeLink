@@ -8,15 +8,13 @@ describe('validateTerminalDefined', () => {
 
     const result = validateTerminalDefined(terminal);
 
-    expect(result).toBeOkWith((value: unknown) => {
-      expect(value).toBe(terminal);
-    });
+    expect(result).toBeSuccess(terminal);
   });
 
   it('returns err when terminal is undefined', () => {
     const result = validateTerminalDefined(undefined);
 
-    expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
+    expect(result).toHaveDetailedError('TERMINAL_NOT_DEFINED', {
       message: 'Terminal reference is not defined',
       functionName: 'validateTerminalDefined',
     });

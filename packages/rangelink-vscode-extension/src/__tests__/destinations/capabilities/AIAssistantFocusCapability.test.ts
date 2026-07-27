@@ -3,7 +3,6 @@ import { createMockLogger } from '@couimet/logger-contract-testing';
 
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from '../../../destinations/capabilities/ColdRefocusConfig';
-import type { FocusResult } from '../../../destinations/capabilities/FocusCapability';
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { createMockVscodeAdapter } from '../../helpers';
 
@@ -49,7 +48,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledWith('ai.focus');
@@ -69,7 +68,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(2);
@@ -82,7 +81,7 @@ describe('AIAssistantFocusCapability', () => {
     const capability = createCapability(['cmd.a', 'cmd.b']);
     const result = await capability.focus(CTX);
 
-    expect(result).toBeErrWith((error: FocusResult['error']) => {
+    expect(result).toBeFailureWith((error) => {
       expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -99,7 +98,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
   });
@@ -117,7 +116,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await secondFocus;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
   });
@@ -132,7 +131,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(900);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(3);
@@ -180,7 +179,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -199,7 +198,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
@@ -214,7 +213,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(200);
     const result = await focusPromise;
 
-    expect(result).toBeOkWith((value: FocusResult['value']) => {
+    expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(

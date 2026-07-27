@@ -8,7 +8,7 @@ import type { OccupiedRange } from '../../detection/types';
 import { RangeLinkError, RangeLinkErrorCodes } from '../../errors';
 import { parseLink } from '../../parsing/parseLink';
 import type { DetectedLink } from '../../types';
-import { Result } from '../../types/Result';
+import { CoreResult } from '../../types/CoreResult';
 
 jest.mock('../../parsing/parseLink', () => ({
   ...jest.requireActual('../../parsing/parseLink'),
@@ -376,7 +376,7 @@ describe('findLinksInText', () => {
         message: 'Bad format',
         functionName: 'parseLink',
       });
-      mockParseLink.mockReturnValueOnce(Result.err(mockError));
+      mockParseLink.mockReturnValueOnce(CoreResult.err(mockError));
 
       const results = findLinksInText(
         'Check src/auth.ts#L10 for details',
@@ -397,7 +397,7 @@ describe('findLinksInText', () => {
         message: 'Bad format',
         functionName: 'parseLink',
       });
-      mockParseLink.mockReturnValueOnce(Result.err(mockError));
+      mockParseLink.mockReturnValueOnce(CoreResult.err(mockError));
 
       findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 

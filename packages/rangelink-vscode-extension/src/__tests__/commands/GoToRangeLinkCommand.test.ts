@@ -1,11 +1,6 @@
+import { DetailedResult } from '@couimet/detailed-result';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import {
-  LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  Result,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { LinkType, RangeLinkError, RangeLinkErrorCodes, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { GoToRangeLinkCommand } from '../../commands/GoToRangeLinkCommand';
@@ -122,7 +117,7 @@ describe('GoToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
+        mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.failure(mockError));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
@@ -154,7 +149,7 @@ describe('GoToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
+        mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.failure(mockError));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
@@ -191,7 +186,7 @@ describe('GoToRangeLinkCommand', () => {
             showInputBox: mockShowInputBox,
           },
         });
-        mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
+        mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.success(mockParsedLink));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
@@ -224,7 +219,7 @@ describe('GoToRangeLinkCommand', () => {
             showInputBox: mockShowInputBox,
           },
         });
-        mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
+        mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.success(mockParsedLink));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();

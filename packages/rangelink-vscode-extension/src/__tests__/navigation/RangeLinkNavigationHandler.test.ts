@@ -772,7 +772,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should parse valid link and return success result', () => {
         const result = handler.parseLink('file.ts#L10');
 
-        expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.path).toBe('file.ts');
           expect(value.start.line).toBe(10);
           expect(value.end.line).toBe(10);
@@ -782,7 +782,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should return error for invalid link', () => {
         const result = handler.parseLink('invalid');
 
-        expect(result).toBeDetailedError('PARSE_NO_HASH_SEPARATOR', {
+        expect(result).toHaveDetailedError('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain # separator',
           functionName: 'parseLink',
           details: { hash: '#' },

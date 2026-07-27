@@ -32,9 +32,7 @@ describe('TerminalFocusCapability', () => {
 
     const result = await capability.focus(LOGGING_CONTEXT);
 
-    expect(result).toBeOkWith((value: { inserter: unknown }) => {
-      expect(value.inserter).toBe(mockInserterFn);
-    });
+    expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
     expect(mockLogger.debug).toHaveBeenCalledWith(
       { fn: 'test::focus', terminalName: 'zsh' },
       'Terminal focused via showTerminal()',
@@ -60,11 +58,9 @@ describe('TerminalFocusCapability', () => {
 
     const result = await capability.focus(LOGGING_CONTEXT);
 
-    expect(result).toBeErrWith((error: { reason: string; cause: unknown }) => {
-      expect(error).toStrictEqual({
-        reason: 'TERMINAL_FOCUS_FAILED',
-        cause: focusError,
-      });
+    expect(result).toBeFailure({
+      reason: 'TERMINAL_FOCUS_FAILED',
+      cause: focusError,
     });
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { fn: 'test::focus', terminalName: 'bash', error: focusError },

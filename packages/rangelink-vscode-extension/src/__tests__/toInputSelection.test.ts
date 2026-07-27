@@ -1,7 +1,6 @@
 import { getRandomInt, getUniqueInt } from '@couimet/dynamic-testing';
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { InputSelection } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { isRectangularSelection } from '../isRectangularSelection';
@@ -73,7 +72,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections).toHaveLength(1);
           expect(value.selections[0].coverage).toBe('FullLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -92,7 +91,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('FullLine');
         });
       });
@@ -105,7 +104,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           // The selection is processed as a single selection from line 0 to line 2
           // Character 0 at end of multi-line selection counts as full line
           expect(value.selections[0].coverage).toBe('FullLine');
@@ -124,7 +123,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('FullLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
           expect(value.selections[0].end).toStrictEqual({ line: 0, character: 17 });
@@ -140,7 +139,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('FullLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
           expect(value.selections[0].end).toStrictEqual({ line: 2, character: 8 });
@@ -161,7 +160,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('PartialLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: startPosition });
         });
@@ -176,7 +175,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('PartialLine');
           expect(value.selections[0].end).toStrictEqual({ line: 0, character: endPosition });
         });
@@ -195,7 +194,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('PartialLine');
         });
       });
@@ -207,7 +206,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           // Empty selection at start of empty line - technically FullLine
           expect(value.selections[0].coverage).toBe('FullLine');
         });
@@ -223,7 +222,7 @@ describe('toInputSelection', () => {
 
         const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-        expect(result).toBeOkWith((value: InputSelection) => {
+        expect(result).toBeSuccessWith((value) => {
           expect(value.selections[0].coverage).toBe('PartialLine'); // NOT FullLine (start != 0)
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: startPosition });
           expect(value.selections[0].end).toStrictEqual({
@@ -276,7 +275,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selectionType).toBe('Rectangular');
         expect(value.selections).toHaveLength(2); // Both selections converted
       });
@@ -300,7 +299,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selectionType).toBe('Normal');
         expect(value.selections).toHaveLength(1); // Only first selection used
       });
@@ -325,7 +324,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections).toHaveLength(3);
         expect(value.selections[0]).toStrictEqual({
           start: { line: startLine, character: startPosition },
@@ -366,7 +365,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections).toHaveLength(1);
         expect(value.selections[0].start).toStrictEqual({
           line: startLine,
@@ -385,7 +384,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections).toHaveLength(1);
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
         expect(value.selections[0].end).toStrictEqual({ line: 2, character: lineTexts[2].length });
@@ -401,7 +400,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].coverage).toBe('PartialLine');
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
         expect(value.selections[0].end).toStrictEqual({ line: 2, character: 8 });
@@ -418,7 +417,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].coverage).toBe('PartialLine');
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
         expect(value.selections[0].end).toStrictEqual({ line: 2, character: 8 }); // NOT normalized
@@ -435,7 +434,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].coverage).toBe('PartialLine');
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
         expect(value.selections[0].end).toStrictEqual({ line: 2, character: lineTexts[2].length }); // NOT normalized
@@ -461,7 +460,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -495,7 +494,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
-      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -537,7 +536,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
-      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
@@ -569,7 +568,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].coverage).toBe('FullLine');
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
         expect(value.selections[0].end).toStrictEqual({ line: 0, character: 0 });
@@ -584,7 +583,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].coverage).toBe('FullLine');
       });
     });
@@ -596,7 +595,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.selections[0].start.line).toBe(0);
       });
     });
@@ -618,7 +617,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, [selection], mockLogger);
 
-      expect(result).toBeOkWith((value: InputSelection) => {
+      expect(result).toBeSuccessWith((value) => {
         // Should use start/end, not anchor/active
         expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
         expect(value.selections[0].end).toStrictEqual({ line: 0, character: 10 });
@@ -707,7 +706,7 @@ describe('toInputSelection', () => {
 
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
-      expect(result).toBeDetailedError('SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
         message:
           'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',

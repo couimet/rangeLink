@@ -3,7 +3,6 @@ import { createMockLogger } from '@couimet/logger-contract-testing';
 import {
   CoreResult,
   DelimiterConfig,
-  type FormattedLink,
   LinkType,
   RangeLinkError,
   RangeLinkErrorCodes,
@@ -95,7 +94,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_NO_SELECTION', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_NO_SELECTION', {
         message: 'No selections provided',
         functionName: 'generateLinkFromSelections',
       });
@@ -119,7 +118,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_EMPTY', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_SELECTION_EMPTY', {
         message: 'All selections are empty',
         functionName: 'generateLinkFromSelections',
       });
@@ -161,7 +160,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeOkWith((value: FormattedLink) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.link).toBe('src/utils/test.ts#L1C1-C11');
         expect(value.linkType).toBe('regular');
       });
@@ -203,9 +202,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeOkWith((value: FormattedLink) => {
-        expect(value.linkType).toBe('portable');
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ linkType: 'portable' }));
       expect(formatLinkSpy).toHaveBeenCalledWith(
         REFERENCE_PATH,
         {
@@ -246,7 +243,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
         message: 'Document modified during selection',
         functionName: 'generateLinkFromSelections',
         cause: conversionError,
@@ -291,7 +288,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('VALIDATION', {
+      expect(result).toHaveDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
@@ -335,7 +332,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('VALIDATION', {
+      expect(result).toHaveDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });

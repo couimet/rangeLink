@@ -1,12 +1,11 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../../types/MessageCode';
 import { formatMessage } from '../../utils';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
 
 /**
@@ -44,10 +43,10 @@ export class EditorFocusCapability implements FocusCapability {
   async focus(context: LoggingContext): Promise<FocusResult> {
     const resolvedViewColumn = this.resolveViewColumn();
     if (resolvedViewColumn === undefined) {
-      return Result.err({ reason: FocusErrorReason.EDITOR_NOT_VISIBLE });
+      return FocusResult.err({ reason: FocusErrorReason.EDITOR_NOT_VISIBLE });
     }
     if (resolvedViewColumn === 'ambiguous') {
-      return Result.err({ reason: FocusErrorReason.EDITOR_AMBIGUOUS_COLUMNS });
+      return FocusResult.err({ reason: FocusErrorReason.EDITOR_AMBIGUOUS_COLUMNS });
     }
 
     const editorUri = this.documentUri.toString();
@@ -62,7 +61,7 @@ export class EditorFocusCapability implements FocusCapability {
         { ...context, editorUri, viewColumn: resolvedViewColumn, error },
         'Failed to focus editor',
       );
-      return Result.err({
+      return FocusResult.err({
         reason: FocusErrorReason.SHOW_DOCUMENT_FAILED,
         cause: error,
       });
@@ -73,7 +72,7 @@ export class EditorFocusCapability implements FocusCapability {
       'Editor focused via showTextDocument()',
     );
 
-    return Result.ok({ inserter: this.insertFactory.forTarget(freshEditor) });
+    return FocusResult.ok({ inserter: this.insertFactory.forTarget(freshEditor) });
   }
 
   /**

@@ -8,7 +8,7 @@
  * Purpose: Ensure mocks used in unit tests accurately represent real rangelink-core-ts behavior.
  */
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { type DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
+import { type DelimiterConfig, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
@@ -94,9 +94,7 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
+    expect(result).toBeSuccess(expectedFormattedLink);
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
       'Generated link: src/file.ts#L5',
@@ -132,9 +130,7 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
+    expect(result).toBeSuccess(expectedFormattedLink);
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
       'Generated link: src/file.ts#L5-L7',
@@ -172,9 +168,7 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
+    expect(result).toBeSuccess(expectedFormattedLink);
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
       'Generated link: src/file.ts#L5C9-L5C19',

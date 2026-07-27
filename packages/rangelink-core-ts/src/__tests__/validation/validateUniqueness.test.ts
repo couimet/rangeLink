@@ -10,7 +10,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 
   it('should return Err when line and position are the same', () => {
@@ -21,7 +21,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -36,7 +36,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -51,7 +51,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -66,7 +66,7 @@ describe('validateUniqueness', () => {
       range: 'TO',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 
   it('should return Err for multi-character delimiters that match', () => {
@@ -77,7 +77,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
@@ -92,7 +92,7 @@ describe('validateUniqueness', () => {
       range: '-',
     };
     const result = validateUniqueness(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_NOT_UNIQUE', {
       message: 'Delimiters must be unique (case-insensitive)',
       functionName: 'validateUniqueness',
       details: { delimiters },
