@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { BoundSession, DestinationFocuser } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { type BindOptions, MessageCode } from '../types';
 import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for jumping to the bound destination.

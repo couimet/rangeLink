@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_GO_TO_RANGELINK,
@@ -32,6 +28,9 @@ import {
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const APPEARANCE_FN = 'RangeLinkStatusBar.updateStatusBarAppearance';
 

@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import type { FocusTier } from '../../../destinations/types';
 import { createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const CONTEXT = { fn: 'test' };
 const LOG_PREFIX = 'TestAssistant';

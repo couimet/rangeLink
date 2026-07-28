@@ -1,13 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { findLinksInText } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, type RangeLinkTerminalLink } from '../types';
 import { formatLinkTooltip, formatMessage } from '../utils';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { DelimiterConfigGetter, findLinksInText } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Terminal link provider for RangeLink format detection.
@@ -21,9 +20,7 @@ import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
  * - Rectangular: `file.ts##L10C5-L20C10`
  * - Hash in filename: `file#1.ts#L10`
  */
-export class RangeLinkTerminalProvider
-  implements vscode.TerminalLinkProvider<RangeLinkTerminalLink>
-{
+export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<RangeLinkTerminalLink> {
   /**
    * Create a new terminal link provider.
    *

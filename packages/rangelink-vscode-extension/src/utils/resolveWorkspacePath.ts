@@ -1,9 +1,7 @@
+import { FILENAME_AMBIGUOUS, ResolveWorkspacePathResult } from '../types/ResolvedPath';
+
 import * as path from 'node:path';
-
 import type * as vscode from 'vscode';
-
-import { FILENAME_AMBIGUOUS } from '../types/ResolvedPath';
-import type { ResolveWorkspacePathResult } from '../types/ResolvedPath';
 
 const AMBIGUITY_THRESHOLD = 2;
 

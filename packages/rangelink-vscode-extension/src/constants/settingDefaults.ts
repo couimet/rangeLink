@@ -1,7 +1,7 @@
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-
 import type { ClipboardPreservationMode } from '../types/ClipboardPreservationMode';
 import type { PaddingMode } from '../utils/applySmartPadding';
+
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 /**
  * Single source of truth for default values for all RangeLink extension settings.
@@ -20,7 +20,7 @@ export const DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS = 300;
 export const DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS = 2500;
 
 // =============================================================================
-// Feature Flag Defaults — TODO: #366 remove when bookmarks graduates from beta
+// Feature Flag Defaults — TODO [2026-12-31]: #366 remove when bookmarks graduates from beta
 // =============================================================================
 
 export const DEFAULT_FEATURES_BOOKMARKS_ENABLED = false;

@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_TERMINAL,
@@ -18,6 +14,9 @@ import {
   standardSuite,
   waitForHuman,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const SEPARATOR_KIND = -1;
 const TERMINAL_OVERFLOW_COUNT = 6;

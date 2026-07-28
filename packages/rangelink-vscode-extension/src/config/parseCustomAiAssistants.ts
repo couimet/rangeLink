@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { InsertCommandEntry } from '../destinations/capabilities/insertFactories';
 import type { CustomAiAssistantKind } from '../types';
 
 import type { ConfigReader } from './ConfigReader';
+
+import type { Logger } from '@couimet/logger-contract';
 
 const SETTING_KEY = 'customAiAssistants';
 

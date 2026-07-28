@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import { getEligibleTerminals } from '../../../destinations/utils';
 import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
+
+import type * as vscode from 'vscode';
 
 const minimalPty: vscode.Pseudoterminal = {
   onDidWrite: jest.fn(),

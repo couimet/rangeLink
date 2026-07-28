@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import { buildFilePickerItems } from '../../../destinations/utils/buildFilePickerItems';
 import { createMockEligibleFile, createMockTextEditorQuickPickItem } from '../../helpers';
+
+import * as vscode from 'vscode';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,

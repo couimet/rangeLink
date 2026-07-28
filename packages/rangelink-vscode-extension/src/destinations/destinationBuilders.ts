@@ -5,8 +5,6 @@
  * Each builder is registered with the DestinationRegistry and invoked when
  * PasteDestinationManager needs to create a destination.
  */
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
 import {
   DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
@@ -22,8 +20,8 @@ import {
 } from '../constants/settingKeys';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import {
-  AutoPasteResult,
   type AIAssistantDestinationKind,
+  AutoPasteResult,
   type CustomAiAssistantKind,
   type DestinationKind,
   MessageCode,
@@ -43,18 +41,20 @@ import {
   EXTENSION_ID_GITHUB_COPILOT_CHAT,
 } from '../utils/aiAssistants/';
 
+import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
+import { compareEditorsByUri } from './equality/compareEditorsByUri';
+import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
 import {
   CLAUDE_CODE_FOCUS_COMMANDS,
   CURSOR_AI_FOCUS_COMMANDS,
   GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
   GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from './aiAssistantFocusCommands';
-import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
 import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
-import { compareEditorsByUri } from './equality/compareEditorsByUri';
-import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
 import type { PasteDestination } from './PasteDestination';
+
+import type * as vscode from 'vscode';
 
 // ============================================================================
 // Built-in AI assistant lookup
@@ -265,7 +265,7 @@ const buildBuiltinAiAssistantDestination = (
       [...def.focusCommands],
       def.getColdRefocus !== undefined ? () => def.getColdRefocus!(context) : undefined,
     ),
-    isAvailable: async () => def.isAvailable(context),
+    isAvailable: async () => await def.isAvailable(context),
     jumpSuccessMessage: formatMessage(def.jumpMessageCode),
     loggingDetails: {},
     logger: context.logger,
@@ -393,7 +393,7 @@ const createOverriddenBuiltinBuilder =
       displayName: builtin.displayName,
       focusCapability: lazyCapability,
       shouldPreserveClipboard: () => lazyCapability.resolvedTierLabel !== 'focusCommands',
-      isAvailable: async () => builtin.isAvailable(context),
+      isAvailable: () => Promise.resolve(builtin.isAvailable(context)),
       jumpSuccessMessage: formatMessage(builtin.jumpMessageCode),
       loggingDetails: { extensionId: config.extensionId, overridden: true },
       logger: context.logger,

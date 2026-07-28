@@ -1,9 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type { ParsedLink } from 'rangelink-core-ts';
-import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import {
@@ -18,6 +12,11 @@ import {
   spyOnFindLinksInText,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { DEFAULT_DELIMITERS, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 

@@ -1,5 +1,4 @@
 import { Console } from 'node:console';
-
 import * as vscode from 'vscode';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
@@ -105,7 +104,7 @@ let activeVerdictReject: ((reason: unknown) => void) | undefined;
  * @param consoleSteps - Optional bulleted steps (shown in the terminal console)
  * @returns `'pass'` if the human clicked the Pass status bar item, `'fail'` otherwise
  */
-export const waitForHumanVerdict = async (
+export const waitForHumanVerdict = (
   tcId: string,
   action: string,
   consoleSteps?: string[],

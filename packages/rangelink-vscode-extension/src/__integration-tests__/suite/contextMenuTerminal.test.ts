@@ -1,24 +1,23 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_CONTEXT_EDITOR_CONTENT_BIND,
 } from '../../constants/commandIds';
 import {
-  TERMINAL_READY_MS,
   assertQuickPickContains,
   assertTerminalBufferContains,
   echoToTerminal,
   getLogCapture,
   parseLogContext,
   standardSuite,
+  TERMINAL_READY_MS,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
@@ -730,8 +729,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.ok(
       textResult!.tier1.includes(markerText),

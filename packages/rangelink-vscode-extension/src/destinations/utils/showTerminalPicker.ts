@@ -1,13 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { QuickPickProvider } from '../../ide/QuickPickProvider';
-import type { TerminalBindableQuickPickItem } from '../../types';
-import { MessageCode } from '../../types';
+import { MessageCode, TerminalBindableQuickPickItem } from '../../types';
 import { formatMessage } from '../../utils';
 import type { TerminalPickerHandlers } from '../types';
 
 import { buildTerminalPickerItems } from './buildTerminalPickerItems';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Show a QuickPick to select a terminal from a list of eligible terminals.

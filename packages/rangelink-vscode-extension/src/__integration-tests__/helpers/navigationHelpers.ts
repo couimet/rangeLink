@@ -1,7 +1,7 @@
+import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
+
 import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
-
-import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 
 const STABLE_MS = 300;
 const TIMEOUT_MS = 10000;

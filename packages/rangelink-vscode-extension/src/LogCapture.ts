@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
-import { ENV_RANGELINK_CAPTURE_LOGS } from './constants';
 import { RangeLinkExtensionError } from './errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from './errors/RangeLinkExtensionErrorCodes';
+import { ENV_RANGELINK_CAPTURE_LOGS } from './constants';
+
+import type * as vscode from 'vscode';
 
 /**
  * Wraps an OutputChannel to optionally capture log lines in memory.

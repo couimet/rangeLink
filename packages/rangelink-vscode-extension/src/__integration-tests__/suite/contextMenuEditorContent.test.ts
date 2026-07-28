@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_PASTE_TO_DESTINATION } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
@@ -18,6 +13,10 @@ import {
   waitForHumanVerdict,
   withClipboardSentinel,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
 

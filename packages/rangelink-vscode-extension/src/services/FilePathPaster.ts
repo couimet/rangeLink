@@ -1,7 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { quotePath } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
@@ -22,6 +18,10 @@ import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 import type { SendRouter } from './SendRouter';
 import { toBindContext } from './toBindContext';
 import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { quotePath } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 /**
  * Resolves a file URI to a reference path based on the requested format.

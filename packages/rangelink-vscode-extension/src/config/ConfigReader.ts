@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { SETTING_NAMESPACE } from '../constants/settingKeys';
 import type { ConfigurationProvider } from '../ide/ConfigurationProvider';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
 import type { ConfigGetter, ConfigGetterFactory, ConfigInspection } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Facade for RangeLink extension configuration access.

@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { TerminalPickerHandlers } from '../../../destinations/types';
 import { showTerminalPicker } from '../../../destinations/utils';
 import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../../types';
@@ -8,6 +6,8 @@ import {
   createMockTerminal,
   createMockTerminalQuickPickItem,
 } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('showTerminalPicker', () => {
   const identityCallback = (eligible: EligibleTerminal): EligibleTerminal => eligible;
@@ -105,7 +105,7 @@ describe('showTerminalPicker', () => {
       const result = await showTerminalPicker(
         items,
         quickPickProvider,
-        createHandlers(async (terminal) => `bound-${terminal.name}`),
+        createHandlers((terminal) => `bound-${terminal.name}`),
         logger,
       );
 
@@ -206,8 +206,8 @@ describe('showTerminalPicker', () => {
       const result = await showTerminalPicker(
         items,
         quickPickProvider,
-        createHandlers(async (terminal) => terminal.name, {
-          onDismissed: async () => 'async-dismissed',
+        createHandlers((terminal) => terminal.name, {
+          onDismissed: () => 'async-dismissed',
         }),
         logger,
       );

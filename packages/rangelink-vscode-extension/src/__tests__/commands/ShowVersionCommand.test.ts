@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ShowVersionCommand } from '../../commands/ShowVersionCommand';
 import type { VersionInfo } from '../../types';
 import { createMockClipboard, createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ShowVersionCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

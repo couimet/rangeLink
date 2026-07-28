@@ -1,12 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
-import type { BindSuccessInfo } from '../../destinations';
-import type { BoundSession } from '../../destinations';
+import type { BindSuccessInfo, BoundSession } from '../../destinations';
 import type { TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import { ExtensionResult } from '../../types';
-import type { TerminalBindableQuickPickItem } from '../../types';
+import { ExtensionResult, TerminalBindableQuickPickItem } from '../../types';
 import {
   createMockBoundSession,
   createMockDestinationAvailabilityService,
@@ -17,6 +13,8 @@ import {
   createMockVscodeAdapter,
   spyOnShowTerminalPicker,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BindToTerminalCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -169,7 +167,7 @@ describe('BindToTerminalCommand', () => {
         });
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(bindOk);
         showTerminalPickerSpy.mockImplementation(
-          async (
+          (
             _terminals: readonly TerminalBindableQuickPickItem[],
             _provider: unknown,
             handlers: TerminalPickerHandlers<ExtensionResult<BindSuccessInfo>>,
@@ -245,7 +243,7 @@ describe('BindToTerminalCommand', () => {
           ExtensionResult.err(bindError),
         );
         showTerminalPickerSpy.mockImplementation(
-          async (
+          (
             _terminals: readonly TerminalBindableQuickPickItem[],
             _provider: unknown,
             handlers: TerminalPickerHandlers<ExtensionResult<BindSuccessInfo>>,

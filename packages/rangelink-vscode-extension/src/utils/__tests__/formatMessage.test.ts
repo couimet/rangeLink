@@ -1,15 +1,15 @@
-import { getLogger } from '@couimet/logger-contract';
-
-import { formatMessage } from '..';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
   getCurrentLocale,
+  type LocaleCode,
   messagesEn,
   setLocale,
   supportedLocales,
-  type LocaleCode,
 } from '../../i18n';
 import { MessageCode } from '../../types';
+import { formatMessage } from '..';
+
+import { getLogger } from '@couimet/logger-contract';
 
 /**
  * Test-only message codes (decoupled from actual UI MessageCode enum).

@@ -11,8 +11,10 @@ import {
  * Extends base config, excluding resource (always singleton).
  * Requires explicit `id` for consistency with other mock helpers.
  */
-export interface MockSingletonComposablePasteDestinationConfig
-  extends Omit<MockComposablePasteDestinationConfig, 'resource' | 'id'> {
+export interface MockSingletonComposablePasteDestinationConfig extends Omit<
+  MockComposablePasteDestinationConfig,
+  'resource' | 'id'
+> {
   /** Required: The destination kind being mocked */
   id: DestinationKind;
 }

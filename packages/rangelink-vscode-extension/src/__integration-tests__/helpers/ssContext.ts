@@ -1,11 +1,10 @@
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import type { LogCapture } from '../../LogCapture';
 
-import type { CapturingTerminal } from './capturingPtyHelpers';
-import { createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
+import {
+  CapturingTerminal,
+  createAndBindCapturingTerminal,
+  createCapturingTerminal,
+} from './capturingPtyHelpers';
 import {
   createAndOpenFile,
   createFileAt,
@@ -17,16 +16,18 @@ import {
 import { getLogCapture } from './getLogCapture';
 import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
 import {
-  TEST_START_MARKER,
-  TestWindowImpl,
   type ModalDialogExpectation,
+  TEST_START_MARKER,
   type TestWindow,
+  TestWindowImpl,
   type ToastExpectation,
 } from './testWindow';
 
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+
 export type CreateTerminalOptions =
-  | Omit<vscode.TerminalOptions, 'name'>
-  | Omit<vscode.ExtensionTerminalOptions, 'name'>;
+  Omit<vscode.TerminalOptions, 'name'> | Omit<vscode.ExtensionTerminalOptions, 'name'>;
 
 export interface SsContext {
   log: (msg: string) => void;
@@ -130,8 +131,7 @@ export class SsContextImpl implements SsContext {
     options: CreateTerminalOptions = {},
   ): Promise<vscode.Terminal> {
     const t = vscode.window.createTerminal({ ...options, name } as
-      | vscode.TerminalOptions
-      | vscode.ExtensionTerminalOptions);
+      vscode.TerminalOptions | vscode.ExtensionTerminalOptions);
     this.tmpTerminals.push(t);
     t.show(true);
     await this.settle(TERMINAL_READY_MS);
@@ -170,7 +170,7 @@ export class SsContextImpl implements SsContext {
     return createPngFixture(descriptor, mode);
   }
 
-  async createAndOpenFile(
+  createAndOpenFile(
     descriptor: string,
     content: string,
     viewColumn?: vscode.ViewColumn,
@@ -217,7 +217,7 @@ export class SsContextImpl implements SsContext {
     Object.assign(this.expectedContextKeys, keys);
   }
 
-  async openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {
+  openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {
     return openEditor(uri, viewColumn);
   }
 

@@ -42,4 +42,4 @@ class DataProcessor {
   }
 }
 
-export { processInput, loadConfig, DataProcessor, HelperOptions, CONFIG_PATH, VERSION };
+export { CONFIG_PATH, DataProcessor, HelperOptions, loadConfig, processInput, VERSION };

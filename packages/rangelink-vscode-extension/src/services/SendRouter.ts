@@ -1,16 +1,13 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type {
+  BoundSession,
   DestinationBinder,
   DestinationPicker,
   PasteDestination,
-  BoundSession,
 } from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { OperationFeedbackProvider } from '../feedback';
-import type { PasteContext, PasteSendOutcome } from '../feedback';
+import type { OperationFeedbackProvider, PasteContext, PasteSendOutcome } from '../feedback';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
 import {
   AutoPasteResult,
@@ -22,6 +19,8 @@ import {
 import { formatMessage, isEditorDestination, isSameFileDestination } from '../utils';
 
 import type { ResolveResult } from './types';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * Routes content through clipboard and to a bound destination.

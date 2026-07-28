@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { TerminalPasteService } from '../../../services';
 
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * InsertFactory for terminal destinations.

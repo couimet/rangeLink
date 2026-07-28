@@ -1,5 +1,4 @@
-import type { EligibleFile } from '../../types';
-import { MessageCode } from '../../types';
+import { EligibleFile, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
 
 /**

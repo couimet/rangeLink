@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import {
   CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
   CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
@@ -11,6 +7,9 @@ import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
 
 import { getLogCapture } from './getLogCapture';
 import { parseLogContext } from './logBasedUiAssertions';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const STATUS_BAR_FNS = [
   'VscodeAdapter.setStatusBarMessage',

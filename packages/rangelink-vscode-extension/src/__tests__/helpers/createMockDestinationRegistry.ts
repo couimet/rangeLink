@@ -1,5 +1,3 @@
-import type * as vscode from 'vscode';
-
 import type { DestinationRegistry, PasteDestination } from '../../destinations';
 import { DESTINATION_KINDS, type DestinationKind } from '../../types';
 
@@ -10,6 +8,8 @@ import { createMockGeminiCodeAssistComposableDestination } from './createMockGem
 import { createMockGitHubCopilotChatComposableDestination } from './createMockGitHubCopilotChatComposableDestination';
 import { createMockTerminalComposablePasteDestination } from './createMockTerminalComposablePasteDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
+
+import type * as vscode from 'vscode';
 
 /**
  * Options for configuring mock destination registry behavior.

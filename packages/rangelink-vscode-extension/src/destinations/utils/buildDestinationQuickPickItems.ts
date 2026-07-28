@@ -1,16 +1,14 @@
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
   AI_ASSISTANT_KINDS,
   type BindableQuickPickItem,
   DESTINATION_KINDS,
-  type DestinationQuickPickItem,
   type DestinationKind,
-  isCustomAiAssistantKind,
+  type DestinationQuickPickItem,
   type FileBindableQuickPickItem,
   type FileMoreQuickPickItem,
   type GroupedDestinationItems,
+  isCustomAiAssistantKind,
   MessageCode,
   type TerminalBindableQuickPickItem,
   type TerminalMoreQuickPickItem,
@@ -18,6 +16,8 @@ import {
 import { formatMessage } from '../../utils';
 
 import { buildTerminalDescription } from './buildTerminalDescription';
+
+import * as vscode from 'vscode';
 
 export const BUILTIN_AI_COUNT = AI_ASSISTANT_KINDS.length;
 

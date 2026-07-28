@@ -1,13 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
-import type { BindSuccessInfo, PasteDestination } from '../../destinations';
-import type { BoundSession } from '../../destinations';
+import type { BindSuccessInfo, BoundSession, PasteDestination } from '../../destinations';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { SendRouter } from '../../services/SendRouter';
 import { AutoPasteResult, ExtensionResult, MessageCode } from '../../types';
 import {
+  createMockBoundSession,
   createMockClipboardService,
   createMockClipboardWriter,
   createMockComposablePasteDestination,
@@ -17,7 +14,9 @@ import {
   createMockPasteDestinationForSendRouter,
   createMockUri,
 } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 describe('SendRouter', () => {
   let router: SendRouter;

@@ -1,8 +1,8 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
-
 import { buildAnchor } from '../../formatting/buildAnchor';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { RangeFormat } from '../../types/RangeFormat';
+
+import { getUniqueInt } from '@couimet/dynamic-testing';
 
 const DEFAULT_DELIMITERS = {
   line: 'L',

@@ -1,13 +1,12 @@
-import * as vscode from 'vscode';
-
 import {
   buildDestinationQuickPickItems,
   BUILTIN_AI_COUNT,
   DESTINATION_PICKER_SEQUENCE,
 } from '../../../destinations/utils/buildDestinationQuickPickItems';
-import type { FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
-import { AI_ASSISTANT_KINDS } from '../../../types';
+import { AI_ASSISTANT_KINDS, FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
 import { createMockEligibleFile, createMockTextEditorQuickPickItem } from '../../helpers';
+
+import * as vscode from 'vscode';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,

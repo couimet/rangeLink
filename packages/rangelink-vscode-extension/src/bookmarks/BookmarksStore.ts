@@ -1,7 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { nanoid } from 'nanoid';
-import type * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../types';
@@ -16,6 +12,10 @@ import type {
   IdGenerator,
   TimestampGenerator,
 } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { nanoid } from 'nanoid';
+import type * as vscode from 'vscode';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 const MAX_ID_GENERATION_RETRIES = 10;

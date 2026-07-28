@@ -1,5 +1,3 @@
-import type * as vscode from 'vscode';
-
 import { createBindAIAssistantCommand } from './commands/createBindAIAssistantCommand';
 import { createBindToCustomAiByIdCommand } from './commands/createBindToCustomAiByIdCommand';
 import {
@@ -64,6 +62,8 @@ import {
   PathFormat,
   type RangeLinkClickArgs,
 } from './types';
+
+import type * as vscode from 'vscode';
 
 /**
  * Wire all commands and providers into subscriptions.

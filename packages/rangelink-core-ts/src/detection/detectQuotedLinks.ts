@@ -1,11 +1,11 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { parseLink } from '../parsing/parseLink';
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 
 import { classifyOverlap } from './classifyOverlap';
 import type { Cancellable, OccupiedRange } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 const QUOTED_SEGMENT = /(['"])([^'"]+)\1/g;
 

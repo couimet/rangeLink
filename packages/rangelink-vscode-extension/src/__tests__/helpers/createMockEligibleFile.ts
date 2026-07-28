@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import type { EligibleFile } from '../../types';
 
 import { createMockUri } from './createMockUri';
+
+import type * as vscode from 'vscode';
 
 export interface MockEligibleFileOptions {
   readonly filename?: string;

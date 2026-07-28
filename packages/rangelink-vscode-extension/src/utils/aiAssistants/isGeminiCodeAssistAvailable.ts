@@ -1,13 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { EXTENSION_ID_GEMINI_CODE_ASSIST } from './builtInAiAssistants';
 
-export const isGeminiCodeAssistAvailable = async (
-  ideAdapter: VscodeAdapter,
-  logger: Logger,
-): Promise<boolean> => {
+import type { Logger } from '@couimet/logger-contract';
+
+export const isGeminiCodeAssistAvailable = (ideAdapter: VscodeAdapter, logger: Logger): boolean => {
   const extension = ideAdapter.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST);
   const isAvailable = extension !== undefined && extension.isActive;
 

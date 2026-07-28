@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { parseLink } from '../parsing/parseLink';
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 
 import type { Cancellable, OccupiedRange } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Result of the unquoted detection pass.

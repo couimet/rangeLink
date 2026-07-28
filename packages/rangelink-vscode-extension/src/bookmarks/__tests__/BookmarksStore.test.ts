@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockMemento, type MockMemento } from '../../__tests__/helpers';
 import { BookmarksStore } from '../BookmarksStore';
 import type { Bookmark, BookmarksStoreData } from '../types';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 

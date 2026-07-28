@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { ResolvedFocusCapability } from '../../../destinations/capabilities/ResolvedFocusCapability';
 import type { FocusTier } from '../../../destinations/types';
 import { createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const CONTEXT = { fn: 'test' };
 

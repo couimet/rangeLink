@@ -1,7 +1,7 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { ContentEligibilityChecker } from './ContentEligibilityChecker';
 import type { EligibilityChecker } from './EligibilityChecker';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Factory for creating EligibilityChecker instances.

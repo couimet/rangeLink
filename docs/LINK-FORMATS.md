@@ -112,15 +112,15 @@ recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~
 
 These characters **cannot be used** as custom delimiters:
 
-| Character | Reason                  | Context                        |
+| Character | Reason | Context |
 | --------- | ----------------------- | ------------------------------ | -------------------- |
-| `~`       | BYOD separator          | Fixed separator in BYOD format |
-| `         | `                       | Future multi-range separator   | Reserved for Phase 6 |
-| `/` `\`   | Path separators         | File system paths              |
-| `:`       | Windows drive separator | `C:\path\file.txt`             |
-| `,`       | Future use              | Reserved                       |
-| `@`       | Future use              | Reserved                       |
-| `0-9`     | Digits                  | Line/column numbers            |
+| `~` | BYOD separator | Fixed separator in BYOD format |
+| `        |` | Future multi-range separator | Reserved for Phase 6 |
+| `/` `\` | Path separators | File system paths |
+| `:` | Windows drive separator | `C:\path\file.txt` |
+| `,` | Future use | Reserved |
+| `@` | Future use | Reserved |
+| `0-9` | Digits | Line/column numbers |
 
 ### BYOD Benefits
 

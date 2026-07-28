@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   AIAssistantFocusCapability,
   AIAssistantInsertFactory,
@@ -21,6 +19,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ComposablePasteDestination Integration Tests', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -113,9 +113,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
         return ExtensionResult.ok(undefined);
       });
 
-      jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(async () => {
+      jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(() => {
         callOrder.push('insert');
-        return ExtensionResult.ok(undefined);
+        return Promise.resolve(ExtensionResult.ok(undefined));
       });
 
       const destination = ComposablePasteDestination.createForTesting({

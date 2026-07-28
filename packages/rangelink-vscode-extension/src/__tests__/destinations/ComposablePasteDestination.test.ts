@@ -1,6 +1,3 @@
-import { DetailedResult } from '@couimet/detailed-result';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { FocusErrorReason } from '../../destinations/capabilities/FocusCapability';
 import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { AutoPasteResult, PasteContentType } from '../../types';
@@ -11,6 +8,9 @@ import {
   createMockFormattedLink,
   createMockTerminalComposablePasteDestination,
 } from '../helpers';
+
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ComposablePasteDestination', () => {
   const mockLogger = createMockLogger();
@@ -60,15 +60,15 @@ describe('ComposablePasteDestination', () => {
 
     it('should focus before inserting text', async () => {
       const callOrder: string[] = [];
-      const mockInsert = jest.fn().mockImplementation(async () => {
+      const mockInsert = jest.fn().mockImplementation(() => {
         callOrder.push('insert');
         return true;
       });
 
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockImplementation(async () => {
+      focusCapability.focus.mockImplementation(() => {
         callOrder.push('focus');
-        return DetailedResult.success({ inserter: mockInsert });
+        return Promise.resolve(DetailedResult.success({ inserter: mockInsert }));
       });
 
       const destination = createMockComposablePasteDestination({

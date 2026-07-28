@@ -235,11 +235,7 @@ class DestinationFactory {
 
 ```typescript
 export type DestinationType =
-  | 'terminal'
-  | 'text-editor'
-  | 'cursor-ai'
-  | 'github-copilot'
-  | 'claude-code';
+  'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
 
 export interface PasteDestination {
   /** Unique identifier for this destination type */

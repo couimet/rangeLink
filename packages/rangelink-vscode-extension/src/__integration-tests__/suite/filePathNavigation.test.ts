@@ -1,10 +1,9 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_HANDLE_FILE_PATH_CLICK } from '../../constants/commandIds';
 import { getWorkspaceRoot, openEditor, standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 

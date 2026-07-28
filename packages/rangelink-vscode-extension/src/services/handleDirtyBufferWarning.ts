@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_WARN_ON_DIRTY_BUFFER, SETTING_WARN_ON_DIRTY_BUFFER } from '../constants';
 import { RangeLinkExtensionError } from '../errors';
@@ -9,6 +6,9 @@ import { DirtyBufferWarningResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { DirtyBufferMessageCodes } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Checks whether a document has unsaved changes and, if so, shows the dirty

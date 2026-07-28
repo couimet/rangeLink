@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../types/ExtensionResult';
+
+import type * as vscode from 'vscode';
 
 export const validateTerminalDefined = (
   terminal: vscode.Terminal | undefined,

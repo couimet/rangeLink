@@ -1,13 +1,12 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import { markRangeLinkTestFixture } from '../../destinations/utils/testFixtureRegistry';
 
 import { withClipboardSentinel } from './clipboardHelpers';
 import { getGeneratedLink } from './logHelpers';
-import { TERMINAL_READY_MS, settle } from './testEnv';
+import { settle, TERMINAL_READY_MS } from './testEnv';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 /**
  * A VS Code terminal backed by a custom pseudoterminal that records every

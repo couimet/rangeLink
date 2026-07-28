@@ -1,7 +1,3 @@
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import {
   assertClipboardWriteLogged,
@@ -11,6 +7,9 @@ import {
   standardSuite,
   waitForHuman,
 } from '../helpers';
+
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const FILE_CONTENT = 'editor-tab context-menu test file\n';
 

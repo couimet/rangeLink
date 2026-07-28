@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * InsertFactory for text editor destinations.

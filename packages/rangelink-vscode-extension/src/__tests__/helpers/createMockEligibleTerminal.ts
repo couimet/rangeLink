@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import type { EligibleTerminal } from '../../types';
 
 import { createMockTerminal } from './createMockTerminal';
+
+import type * as vscode from 'vscode';
 
 export interface MockEligibleTerminalOptions {
   readonly name?: string;

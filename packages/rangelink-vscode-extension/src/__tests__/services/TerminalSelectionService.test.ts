@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
@@ -13,6 +11,8 @@ import {
   spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalSelectionService', () => {
   let service: TerminalSelectionService;

@@ -1,17 +1,16 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
-import type { BoundDestinationInfo } from '../types';
-import { AutoPasteResult } from '../types';
+import { AutoPasteResult, BoundDestinationInfo } from '../types';
 import { isEditorDestination, isTerminalDestination } from '../utils';
 
 import { createFileDeleteWatcher } from './createFileDeleteWatcher';
 import { createMultiColumnGuard } from './createMultiColumnGuard';
 import { createTabCloseGuard } from './createTabCloseGuard';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Manages the lifecycle of a bound destination.

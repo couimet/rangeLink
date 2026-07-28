@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { TerminalInsertFactory } from '../../../../destinations/capabilities/insertFactories/terminalInsertFactory';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../../../errors';
 import { ExtensionResult } from '../../../../types';
 import { createMockTerminal, createMockTerminalPasteService } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalInsertFactory', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

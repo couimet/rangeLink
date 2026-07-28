@@ -1,12 +1,10 @@
-import assert from 'node:assert';
-
-import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-import type { ParsedLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
 import { clearEditorSelection, openUntitledDoc, standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import { DEFAULT_DELIMITERS, ParsedLink, parseLink } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Navigate to a RangeLink targeting an untitled file.

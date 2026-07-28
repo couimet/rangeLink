@@ -212,7 +212,6 @@ class MockThemeColor {
 // Mocking enums values to match the real vscode enums -- END
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// eslint-disable-next-line no-undef
 module.exports = {
   ...vscode,
   createMockEvent,

@@ -1,10 +1,10 @@
-import type * as vscode from 'vscode';
-
 import type { PasteDestination } from '../destinations/PasteDestination';
 
 import type { MessageCode } from './MessageCode';
 import type { PasteContentType } from './PasteContentType';
 import type { SelfPastePolicy } from './SelfPastePolicy';
+
+import type * as vscode from 'vscode';
 
 /**
  * Options for send operations through SendRouter.

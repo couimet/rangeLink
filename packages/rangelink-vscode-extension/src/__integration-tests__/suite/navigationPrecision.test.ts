@@ -1,8 +1,7 @@
-import assert from 'node:assert';
-
-import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-
 import { clearEditorSelection, navigateViaHandleLinkClick, standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 
 standardSuite('Navigation Precision', (ss) => {
   const NAV_TEST_LINE_COUNT = 25;

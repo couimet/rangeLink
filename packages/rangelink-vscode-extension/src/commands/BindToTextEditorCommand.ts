@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type {
   BindSuccessInfo,
   BoundSession,
@@ -11,6 +8,9 @@ import { showFilePicker } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage, isEditorDestination } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Command handler for binding to a text editor file.
@@ -43,7 +43,7 @@ export class BindToTextEditorCommand {
     );
   }
 
-  async execute(explorerUri?: vscode.Uri): Promise<QuickPickBindResult> {
+  execute(explorerUri?: vscode.Uri): Promise<QuickPickBindResult> {
     if (explorerUri) {
       return this.executeWithUri(explorerUri);
     }

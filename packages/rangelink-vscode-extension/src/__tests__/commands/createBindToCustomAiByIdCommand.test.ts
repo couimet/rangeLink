@@ -1,11 +1,11 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createBindToCustomAiByIdCommand } from '../../commands/createBindToCustomAiByIdCommand';
 import type { BindSuccessInfo } from '../../destinations';
 import * as destinationBuilders from '../../destinations/destinationBuilders';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { ExtensionResult } from '../../types';
 import { createMockDestinationManager } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('createBindToCustomAiByIdCommand', () => {
   const mockLogger = createMockLogger();

@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-
 import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS, settle } from './testEnv';
+
+import * as vscode from 'vscode';
 
 export const waitForActiveEditor = async (
   expectedUri: string,

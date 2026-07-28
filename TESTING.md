@@ -79,12 +79,8 @@ Example:
 it('should handle [specific edge case]', async () => {
   // Setup mock conditions
   mockWindow.activeTextEditor = {
-    selection: {
-      /* ... */
-    },
-    document: {
-      /* ... */
-    },
+    selection: {/* ... */},
+    document: {/* ... */},
   };
 
   await service.createLink(false);

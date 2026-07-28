@@ -1,8 +1,7 @@
-import assert from 'node:assert';
-
-import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-
 import { clearEditorSelection, navigateViaHandleLinkClick, standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 
 const LINE_COUNT = 10;
 const LINE_CONTENT = 'abcdefghijklmnopqrst';

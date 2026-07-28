@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Auto-unbind when the bound editor's underlying file is deleted from disk.

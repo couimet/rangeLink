@@ -1,12 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { BindToTextEditorCommand } from '../../commands';
 import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import { ExtensionResult } from '../../types';
-import type { FileBindableQuickPickItem } from '../../types';
+import { ExtensionResult, FileBindableQuickPickItem } from '../../types';
 import {
+  createMockBoundSession,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockEditor,
@@ -20,7 +18,8 @@ import {
   createMockVscodeAdapter,
   spyOnShowFilePicker,
 } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BindToTextEditorCommand', () => {
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
@@ -121,7 +120,7 @@ describe('BindToTextEditorCommand', () => {
         ExtensionResult.ok({ destinationName: 'utils.ts', destinationKind: 'text-editor' }),
       );
       showFilePickerSpy.mockImplementation(
-        async (
+        (
           _files: readonly FileBindableQuickPickItem[],
           _provider: unknown,
           handlers: FilePickerHandlers<unknown>,
@@ -156,7 +155,7 @@ describe('BindToTextEditorCommand', () => {
       });
       mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
       showFilePickerSpy.mockImplementation(
-        async (
+        (
           _files: readonly FileBindableQuickPickItem[],
           _provider: unknown,
           handlers: FilePickerHandlers<unknown>,
@@ -227,7 +226,7 @@ describe('BindToTextEditorCommand', () => {
         createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
       showFilePickerSpy.mockImplementation(
-        async (
+        (
           _files: readonly FileBindableQuickPickItem[],
           _provider: unknown,
           handlers: FilePickerHandlers<unknown>,

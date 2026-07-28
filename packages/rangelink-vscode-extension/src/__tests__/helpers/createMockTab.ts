@@ -2,9 +2,9 @@
  * Mock Tab factory for tab group tests
  */
 
-import * as vscode from 'vscode';
-
 import { MockTabInputText } from './tabTestHelpers';
+
+import * as vscode from 'vscode';
 
 /**
  * Create a mock Tab for tab group tests.

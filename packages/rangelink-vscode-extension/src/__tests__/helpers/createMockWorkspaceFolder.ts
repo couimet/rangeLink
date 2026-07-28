@@ -2,9 +2,9 @@
  * Create a mock workspace folder for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockUri } from './createMockUri';
+
+import * as vscode from 'vscode';
 
 /**
  * Create a mock workspace folder with sensible defaults.

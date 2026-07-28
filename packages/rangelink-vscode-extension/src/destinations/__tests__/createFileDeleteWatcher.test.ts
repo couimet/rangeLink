@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import { createMockOperationFeedbackProvider, createMockUri } from '../../__tests__/helpers';
 import { createFileDeleteWatcher } from '../createFileDeleteWatcher';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 describe('createFileDeleteWatcher', () => {
   let mockWatcherFactory: { createFileSystemWatcherForFile: jest.Mock };

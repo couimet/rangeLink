@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * InsertFactory for AI assistant destinations.

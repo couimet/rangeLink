@@ -1,6 +1,6 @@
-import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
-
 import type { RangeLinkErrorCodes } from './RangeLinkErrorCodes';
+
+import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
 
 /**
  * Base error class for all RangeLink errors.

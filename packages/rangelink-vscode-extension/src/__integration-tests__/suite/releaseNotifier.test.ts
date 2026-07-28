@@ -1,10 +1,9 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
 import { getExtensionVersion, getLogCapture, standardSuite, waitForHuman } from '../helpers';
 import { parseLogContext } from '../helpers/logBasedUiAssertions';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 

@@ -1,11 +1,11 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
 
-import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * FocusCapability for terminal destinations.
@@ -20,7 +20,7 @@ export class TerminalFocusCapability implements FocusCapability {
     private readonly logger: Logger,
   ) {}
 
-  async focus(context: LoggingContext): Promise<FocusResult> {
+  focus(context: LoggingContext): Promise<FocusResult> {
     const logCtx: LoggingContext = {
       ...context,
       terminalName: this.terminal.name,
@@ -30,16 +30,20 @@ export class TerminalFocusCapability implements FocusCapability {
     const showResult = this.ideAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
     if (!showResult.success) {
       this.logger.warn({ ...logCtx, error: showResult.error }, 'Failed to focus terminal');
-      return FocusResult.err({
-        reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
-        cause: showResult.error,
-      });
+      return Promise.resolve(
+        FocusResult.err({
+          reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
+          cause: showResult.error,
+        }),
+      );
     }
 
     this.logger.debug(logCtx, 'Terminal focused via showTerminal()');
 
-    return FocusResult.ok({
-      inserter: this.insertFactory.forTarget(this.terminal),
-    });
+    return Promise.resolve(
+      FocusResult.ok({
+        inserter: this.insertFactory.forTarget(this.terminal),
+      }),
+    );
   }
 }

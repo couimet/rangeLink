@@ -1,10 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-
 import { AddBookmarkCommand } from '../../commands/AddBookmarkCommand';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { ExtensionResult } from '../../types';
 import { createMockBookmarkService, createMockEditor, createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 

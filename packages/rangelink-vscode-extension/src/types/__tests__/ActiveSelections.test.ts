@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import { createMockEditor } from '../../__tests__/helpers/createMockEditor';
 import { ActiveSelections } from '../ActiveSelections';
+
+import * as vscode from 'vscode';
 
 describe('ActiveSelections', () => {
   describe('create', () => {

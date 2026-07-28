@@ -1,10 +1,9 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { getLogCapture } from './getLogCapture';
 import { parseLogContext } from './logBasedUiAssertions';
 import { getGeneratedLink } from './logHelpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 export const CLIPBOARD_SENTINEL = 'rangelink-test-sentinel-value';
 

@@ -1,14 +1,17 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
-import type { Bookmark } from '../bookmarks';
-import type { BookmarkService } from '../bookmarks';
+import type { Bookmark, BookmarkService } from '../bookmarks';
 import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem } from '../types';
-import { MessageCode } from '../types';
+import {
+  BookmarkQuickPickItem,
+  CommandQuickPickItem,
+  InfoQuickPickItem,
+  MessageCode,
+} from '../types';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 type ListBookmarksQuickPickItem = BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem;
 

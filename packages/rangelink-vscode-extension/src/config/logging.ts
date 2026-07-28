@@ -1,7 +1,7 @@
+import type { DelimiterConfigSources } from './types';
+
 import type { Logger } from '@couimet/logger-contract';
 import type { DelimiterConfig, RangeLinkError } from 'rangelink-core-ts';
-
-import type { DelimiterConfigSources } from './types';
 
 /**
  * Logs validation errors in a structured way

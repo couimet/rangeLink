@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   type DestinationBuilder,
   type DestinationBuilderContext,
@@ -14,6 +12,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('DestinationRegistry', () => {
   const mockLogger = createMockLogger();

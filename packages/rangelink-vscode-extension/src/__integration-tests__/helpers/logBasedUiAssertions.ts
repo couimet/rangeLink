@@ -1,6 +1,5 @@
-import assert from 'node:assert';
-
 import type { LoggingContext } from '@couimet/logger-contract';
+import assert from 'node:assert';
 
 // ---------------------------------------------------------------------------
 // Utility
@@ -232,8 +231,7 @@ export const assertTerminalPasteLogged = (
 ): void => {
   const found = lines.some((line) => {
     const ctx = parseLogContext(line) as
-      | (LoggingContext & { terminalName?: unknown; textLength?: unknown })
-      | undefined;
+      (LoggingContext & { terminalName?: unknown; textLength?: unknown }) | undefined;
     if (ctx?.fn !== TERMINAL_PASTE_FN || ctx.terminalName !== opts.terminalName) return false;
     if (opts.minTextLength === undefined) return true;
     return typeof ctx.textLength === 'number' && ctx.textLength >= opts.minTextLength;

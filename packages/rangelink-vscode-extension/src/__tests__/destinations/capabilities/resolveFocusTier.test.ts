@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { resolveFocusTier } from '../../../destinations/capabilities/resolveFocusTier';
 import type { FocusTier } from '../../../destinations/types';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const createMockInsertFactory = (): jest.Mocked<InsertFactory<void>> => ({
   forTarget: jest.fn().mockReturnValue(jest.fn().mockResolvedValue(true)),

@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { handleDirtyBufferWarning } from '../../services/handleDirtyBufferWarning';
 import { FILE_PATH_DIRTY_BUFFER_CODES, LINK_DIRTY_BUFFER_CODES } from '../../services/types';
 import {
@@ -9,6 +7,8 @@ import {
   createMockVscodeAdapter,
   spyOnFormatMessage,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const MOCK_URI = createMockUri('/test/file.ts');
 

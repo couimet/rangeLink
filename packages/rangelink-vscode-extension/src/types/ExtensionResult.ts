@@ -1,6 +1,6 @@
-import { DetailedResult } from '@couimet/detailed-result';
-
 import type { ExtensionError } from './ExtensionError';
+
+import { DetailedResult } from '@couimet/detailed-result';
 
 export class ExtensionResult<T> extends DetailedResult<T, ExtensionError> {
   private constructor(success: boolean, value: T | undefined, error: ExtensionError | undefined) {

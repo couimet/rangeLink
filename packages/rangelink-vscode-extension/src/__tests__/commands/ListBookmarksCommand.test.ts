@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import type { Bookmark } from '../../bookmarks';
 import { ListBookmarksCommand } from '../../commands/ListBookmarksCommand';
 import { createMockBookmarkService, createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 describe('ListBookmarksCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

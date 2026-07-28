@@ -1,5 +1,3 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_CLIPBOARD_PRESERVE } from '../constants/settingDefaults';
 import { SETTING_CLIPBOARD_PRESERVE } from '../constants/settingKeys';
@@ -7,6 +5,8 @@ import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { ClipboardProvider } from '../ide/ClipboardProvider';
 import { ExtensionResult } from '../types/ExtensionResult';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * Central clipboard lifecycle management.
@@ -30,7 +30,7 @@ export class ClipboardService {
    * The clipboard acts as a transport: stage loads it with content,
    * the callback consumes it, and the original value is restored afterward.
    */
-  async stage<T>(text: string, fn: () => Promise<T>): Promise<ExtensionResult<T>> {
+  stage<T>(text: string, fn: () => Promise<T>): Promise<ExtensionResult<T>> {
     return this.withClipboardPipeline(fn, { fn: 'ClipboardService::stage' }, { textToWrite: text });
   }
 
@@ -45,7 +45,7 @@ export class ClipboardService {
    * it on the way to the bound destination. This method is the single
    * entry point for all R-* command send flows via SendRouter.
    */
-  async route<T>(fn: () => Promise<T>, shouldRestore?: () => boolean): Promise<ExtensionResult<T>> {
+  route<T>(fn: () => Promise<T>, shouldRestore?: () => boolean): Promise<ExtensionResult<T>> {
     const logCtx: LoggingContext = { fn: 'ClipboardService::route' };
 
     const mode = this.configReader.getWithDefault(

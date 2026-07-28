@@ -1,8 +1,7 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const EXPECTED_COMMAND_IDS = [
   'rangelink.copyLinkWithRelativePath',
@@ -27,9 +26,9 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.openStatusBarMenu',
   'rangelink.bookmark.add',
   'rangelink.bookmark.list',
-  // TODO: https://github.com/couimet/rangeLink/issues/461 — unskip after https://github.com/couimet/rangeLink/issues/366 unhides bookmarks
+  // TODO [2026-12-31]: https://github.com/couimet/rangeLink/issues/461 — unskip after https://github.com/couimet/rangeLink/issues/366 unhides bookmarks
   // 'rangelink.bookmark.manage',
-  // TODO: https://github.com/couimet/rangeLink/issues/461 — unskip after https://github.com/couimet/rangeLink/issues/366 unhides bookmarks
+  // TODO [2026-12-31]: https://github.com/couimet/rangeLink/issues/461 — unskip after https://github.com/couimet/rangeLink/issues/366 unhides bookmarks
   // 'rangelink.bookmark.navigate',
   'rangelink.pasteFileAbsolutePath',
   'rangelink.pasteFileRelativePath',

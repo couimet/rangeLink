@@ -1,9 +1,3 @@
-import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -23,6 +17,11 @@ import {
   waitForHuman,
 } from '../helpers';
 
+import assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+
 const DUMMY_AI_EXTENSION_ID = 'rangelink.dummy-ai-extension';
 const DUMMY_AI_GET_TEXT_COMMAND = 'dummyAi.getText';
 
@@ -37,14 +36,14 @@ const DUMMY_AI_GET_TEXT_COMMAND = 'dummyAi.getText';
 standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
   let sourceFileUri: vscode.Uri;
 
-  setup(async () => {
+  setup(() => {
     const ts = Date.now();
     const sourcePath = path.join(getWorkspaceRoot(), `__rl-test-sp-source-${ts}.txt`);
     fs.writeFileSync(sourcePath, '', 'utf8');
     sourceFileUri = vscode.Uri.file(sourcePath);
   });
 
-  teardown(async () => {
+  teardown(() => {
     cleanupFiles([sourceFileUri]);
   });
 
@@ -91,7 +90,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
   let sourceFileUri001: vscode.Uri;
   let sourceFileUri002: vscode.Uri;
 
-  setup(async () => {
+  setup(() => {
     const ts = Date.now();
     const sourcePath001 = path.join(getWorkspaceRoot(), `__rl-test-sp-ls1-${ts}.txt`);
     const sourcePath002 = path.join(getWorkspaceRoot(), `__rl-test-sp-ls2-${ts}.txt`);
@@ -101,7 +100,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     sourceFileUri002 = vscode.Uri.file(sourcePath002);
   });
 
-  teardown(async () => {
+  teardown(() => {
     cleanupFiles([sourceFileUri001, sourceFileUri002]);
   });
 
@@ -425,8 +424,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
     const textResult = (await vscode.commands.executeCommand(DUMMY_AI_GET_TEXT_COMMAND)) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, `Expected ${DUMMY_AI_GET_TEXT_COMMAND} to return a result`);
     assert.ok(
       textResult!.tier1.startsWith(' ') && textResult!.tier1.endsWith(' '),

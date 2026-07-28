@@ -1,6 +1,3 @@
-import { DetailedResult } from '@couimet/detailed-result';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   ComposablePasteDestination,
   type ComposablePasteDestinationConfig,
@@ -11,13 +8,15 @@ import {
 } from '../../destinations';
 import type { AutoPasteResult } from '../../types';
 
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+
 /**
  * Configuration overrides for creating a mock ComposablePasteDestination.
  *
  * All properties are optional with sensible defaults.
  */
-export interface MockComposablePasteDestinationConfig
-  extends Partial<ComposablePasteDestinationConfig> {
+export interface MockComposablePasteDestinationConfig extends Partial<ComposablePasteDestinationConfig> {
   focusCapability?: jest.Mocked<FocusCapability>;
   eligibilityChecker?: jest.Mocked<EligibilityChecker>;
   getUserInstruction?: jest.Mock<string | undefined, [AutoPasteResult]>;

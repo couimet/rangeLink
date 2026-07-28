@@ -5,11 +5,11 @@
  * contract and behavior. Reduces duplication across destination test files.
  */
 
-import type { Logger } from '@couimet/logger-contract';
-
 import type { PasteDestination } from '../../destinations';
 
 import { createMockFormattedLink } from './createMockFormattedLink';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Test logging behavior for a destination

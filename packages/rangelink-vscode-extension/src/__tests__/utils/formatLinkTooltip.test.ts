@@ -1,7 +1,6 @@
-import type { ParsedLink } from 'rangelink-core-ts';
-import { LinkType, SelectionType } from 'rangelink-core-ts';
-
 import { formatLinkTooltip } from '../../utils';
+
+import { LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
 
 describe('formatLinkTooltip', () => {
   describe('Parse success with line and character', () => {

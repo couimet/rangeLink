@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_RELATIVE,
@@ -17,6 +12,10 @@ import {
   parseLogContext,
   standardSuite,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Text Editor Destination', (ss) => {
   test('text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {

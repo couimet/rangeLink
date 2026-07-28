@@ -1,6 +1,3 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
-import { getLogger } from '@couimet/logger-contract';
-
 import { formatLink } from '../../formatting/formatLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { InputSelection } from '../../types/InputSelection';
@@ -8,6 +5,9 @@ import { LinkType } from '../../types/LinkType';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+import { getUniqueInt } from '@couimet/dynamic-testing';
+import { getLogger } from '@couimet/logger-contract';
 
 const DEFAULT_DELIMITERS = {
   line: 'L',

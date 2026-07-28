@@ -1,5 +1,3 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { ConfigReader } from '../config/ConfigReader';
 import {
@@ -15,6 +13,8 @@ import { applySmartPadding, formatMessage } from '../utils';
 
 import type { SendRouter } from './SendRouter';
 import { toBindContext } from './toBindContext';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 interface CaptureErrorInfo {
   readonly logMessage: string;

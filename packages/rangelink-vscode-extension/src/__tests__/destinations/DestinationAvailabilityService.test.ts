@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { DestinationAvailabilityService } from '../../destinations';
 import type { AIAssistantDestinationKind } from '../../types';
 import {
@@ -13,6 +11,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('DestinationAvailabilityService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

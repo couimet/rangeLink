@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { Bookmark, BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 interface ManageBookmarkItem extends vscode.QuickPickItem {
   bookmark: Bookmark;
@@ -50,7 +50,7 @@ export class ManageBookmarksCommand {
     await this.showManageQuickPick(bookmarks);
   }
 
-  private async showManageQuickPick(bookmarks: Bookmark[]): Promise<void> {
+  private showManageQuickPick(bookmarks: Bookmark[]): void {
     const logCtx = { fn: 'ManageBookmarksCommand.showManageQuickPick' };
 
     const quickPick = this.ideAdapter.createQuickPick<ManageBookmarkItem>();

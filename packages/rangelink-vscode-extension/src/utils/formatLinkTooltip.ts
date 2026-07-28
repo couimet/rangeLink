@@ -1,6 +1,6 @@
-import type { ParsedLink } from 'rangelink-core-ts';
-
 import { formatLinkPosition } from './formatLinkPosition';
+
+import type { ParsedLink } from 'rangelink-core-ts';
 
 /**
  * Format tooltip text for a terminal link.

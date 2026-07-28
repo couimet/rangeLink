@@ -1,5 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { BoundSession, DestinationBinder } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
@@ -7,6 +5,8 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import { MessageCode } from '../types';
 import type { QuickPickBindResult } from '../types/QuickPickBindResult';
 import { isEditorDestination } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for binding to a destination via picker.

@@ -1,17 +1,16 @@
-import * as path from 'node:path';
+import type { BookmarkService } from '../bookmarks';
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types';
+import { formatMessage, generateLinkFromSelections } from '../utils';
 
 import type { Logger } from '@couimet/logger-contract';
+import * as path from 'node:path';
 import {
   type DelimiterConfigGetter,
   LinkType,
   type ParsedLink,
   parseLink,
 } from 'rangelink-core-ts';
-
-import type { BookmarkService } from '../bookmarks';
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
-import { formatMessage, generateLinkFromSelections } from '../utils';
 
 /**
  * Command handler for adding a bookmark from the current editor selection.

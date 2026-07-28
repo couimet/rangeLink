@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { AIAssistantDestinationKind } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Creates a command handler for binding to an AI assistant destination.

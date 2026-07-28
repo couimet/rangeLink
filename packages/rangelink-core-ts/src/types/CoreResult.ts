@@ -1,6 +1,6 @@
-import { DetailedResult } from '@couimet/detailed-result';
-
 import type { RangeLinkError } from '../errors';
+
+import { DetailedResult } from '@couimet/detailed-result';
 
 export class CoreResult<T> extends DetailedResult<T, RangeLinkError> {
   private constructor(success: boolean, value: T | undefined, error: RangeLinkError | undefined) {

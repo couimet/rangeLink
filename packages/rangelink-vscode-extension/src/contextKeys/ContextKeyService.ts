@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import {
   CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
   CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
@@ -10,6 +7,9 @@ import type { BoundSession } from '../destinations';
 import { classifyTerminalForBinding } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { isTerminalDestination } from '../utils/destinationKindGuards';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 const FN = 'ContextKeyService';
 

@@ -2,10 +2,10 @@
  * Create a mock vscode.window object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockQuickPick } from './createMockQuickPick';
 import { createMockStatusBarItem } from './createMockStatusBarItem';
+
+import * as vscode from 'vscode';
 
 /**
  * Mock vscode.window object for testing.

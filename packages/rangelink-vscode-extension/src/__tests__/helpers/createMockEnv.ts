@@ -2,9 +2,9 @@
  * Create a mock vscode.env object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockClipboard, type MockClipboard } from './createMockClipboard';
+
+import * as vscode from 'vscode';
 
 /**
  * Options for creating mock vscode.env

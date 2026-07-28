@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
@@ -7,6 +5,8 @@ import {
 import { CLAUDE_CODE_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { EXTENSION_ID_CLAUDE_CODE } from '../../aiAssistants/builtInAiAssistants';
 import { isClaudeCodeAvailable } from '../../aiAssistants/isClaudeCodeAvailable';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('isClaudeCodeAvailable', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;

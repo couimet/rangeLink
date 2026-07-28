@@ -1,11 +1,11 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier, FocusTierLabel } from '../types';
 
-import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import { ResolvedFocusCapability } from './ResolvedFocusCapability';
 import { resolveFocusTier, type TierResolutionResult } from './resolveFocusTier';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * FocusCapability that resolves the winning tier lazily on first focus() call.

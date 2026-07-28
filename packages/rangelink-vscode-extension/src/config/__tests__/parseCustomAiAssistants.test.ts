@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockConfigReader } from '../../__tests__/helpers';
 import { parseCustomAiAssistants } from '../parseCustomAiAssistants';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('parseCustomAiAssistants', () => {
   const mockLogger = createMockLogger();

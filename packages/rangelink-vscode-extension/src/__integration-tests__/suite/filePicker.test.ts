@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -19,6 +14,10 @@ import {
   standardSuite,
   waitForHuman,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const SEPARATOR_KIND = -1;
 const FILE_OVERFLOW_THRESHOLD = 5;

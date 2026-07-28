@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import type { Bookmark } from '../../bookmarks';
 import { ManageBookmarksCommand } from '../../commands/ManageBookmarksCommand';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
@@ -10,6 +7,9 @@ import {
   createMockQuickPick,
   createMockVscodeAdapter,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 describe('ManageBookmarksCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

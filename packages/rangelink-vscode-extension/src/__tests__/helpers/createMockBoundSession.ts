@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import type { BoundSession } from '../../destinations';
 import type { BoundDestinationInfo } from '../../types';
+
+import * as vscode from 'vscode';
 
 export const createMockBoundSession = (overrides?: { get?: jest.Mock; isSet?: jest.Mock }) => {
   let stored: BoundDestinationInfo | undefined = undefined;

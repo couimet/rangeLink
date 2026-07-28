@@ -1,7 +1,10 @@
 import assert from 'node:assert';
-
-import type { DelimiterConfig } from 'rangelink-core-ts';
-import { buildFilePathPattern, DEFAULT_DELIMITERS, extractFilePath } from 'rangelink-core-ts';
+import {
+  buildFilePathPattern,
+  DEFAULT_DELIMITERS,
+  DelimiterConfig,
+  extractFilePath,
+} from 'rangelink-core-ts';
 
 const matchPaths = (text: string, delimiters: DelimiterConfig = DEFAULT_DELIMITERS): string[] => {
   const pattern = buildFilePathPattern(delimiters);

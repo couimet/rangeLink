@@ -1,5 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { MessageProvider } from '../ide/MessageProvider';
 import type { QuickPickProvider } from '../ide/QuickPickProvider';
@@ -10,13 +8,14 @@ import { formatMessage, isSelectableQuickPickItem } from '../utils';
 import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import { buildDestinationQuickPickItems, showFilePicker, showTerminalPicker } from './utils';
 
+import type { Logger } from '@couimet/logger-contract';
+
 /**
  * Internal result type that includes 'returned-to-main-picker' for loop control.
  * Not exposed publicly - pick() converts this to DestinationPickerResult.
  */
 type InternalPickerResult =
-  | DestinationPickerResult
-  | { readonly outcome: 'returned-to-main-picker' };
+  DestinationPickerResult | { readonly outcome: 'returned-to-main-picker' };
 
 /**
  * Context-specific options for the destination picker.
@@ -126,7 +125,7 @@ export class DestinationPicker {
 
       case 'file-more':
         this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');
-        return this.showSecondaryFilePicker(
+        return await this.showSecondaryFilePicker(
           placeholderMessageCode,
           boundFileUriString,
           boundFileViewColumn,
@@ -134,7 +133,10 @@ export class DestinationPicker {
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
-        return this.showSecondaryTerminalPicker(placeholderMessageCode, boundTerminalProcessId);
+        return await this.showSecondaryTerminalPicker(
+          placeholderMessageCode,
+          boundTerminalProcessId,
+        );
 
       default: {
         const _exhaustiveCheck: never = selected;

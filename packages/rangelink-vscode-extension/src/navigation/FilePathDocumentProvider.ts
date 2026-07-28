@@ -1,15 +1,13 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { CMD_HANDLE_FILE_PATH_CLICK } from '../constants/commandIds';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { FilePathClickArgs } from '../types';
-import { MessageCode } from '../types';
+import { FilePathClickArgs, MessageCode } from '../types';
 import { expandPathForDisplay, formatMessage } from '../utils';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { buildFilePathPattern, DelimiterConfigGetter, extractFilePath } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Document link provider for plain file path detection in editor files.

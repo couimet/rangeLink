@@ -1,10 +1,10 @@
+import { isRectangularSelection } from '../isRectangularSelection';
+import { toInputSelection } from '../utils';
+
 import { getRandomInt, getUniqueInt } from '@couimet/dynamic-testing';
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import * as vscode from 'vscode';
-
-import { isRectangularSelection } from '../isRectangularSelection';
-import { toInputSelection } from '../utils';
 
 // Mock the isRectangularSelection function
 jest.mock('../isRectangularSelection');
