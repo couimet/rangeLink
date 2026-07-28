@@ -37,208 +37,47 @@ standardSuite('Link Generation', (ss) => {
     );
   });
 
-  test('[assisted] wrapped-link-navigation-baseline: plain RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-baseline-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
+  const WRAPPER_CASES = [
+    { tcId: 'baseline', label: 'plain', wrapperDesc: 'a plain RangeLink with no wrapping characters', open: '', close: '', suffix: '' },
+    { tcId: '001', label: 'backtick-wrapped', wrapperDesc: 'the RangeLink wrapped in backticks', open: '`', close: '`', suffix: '' },
+    { tcId: '002', label: 'single-quote-wrapped', wrapperDesc: 'the RangeLink wrapped in single quotes', open: "'", close: "'", suffix: '' },
+    { tcId: '003', label: 'double-quote-wrapped', wrapperDesc: 'the RangeLink wrapped in double quotes', open: '"', close: '"', suffix: '' },
+    { tcId: '004', label: 'angle-bracket-wrapped', wrapperDesc: 'the RangeLink wrapped in angle brackets', open: '<', close: '>', suffix: '' },
+    { tcId: '005', label: 'paren-wrapped', wrapperDesc: 'the RangeLink enclosed in parentheses', open: '(', close: ')', suffix: '' },
+    { tcId: '006', label: 'paren-then-colon-wrapped', wrapperDesc: 'the RangeLink wrapped in parens with trailing colon', open: '(', close: ')', suffix: ':' },
+  ];
 
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
+  for (const { tcId, label, wrapperDesc, open, close, suffix } of WRAPPER_CASES) {
+    test(`[assisted] wrapped-link-navigation-${tcId}: ${label} RangeLink in terminal is clickable and navigates correctly`, async () => {
+      const targetUri = ss.createWorkspaceFile(
+        `wln-${tcId}-target`,
+        'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
+      );
+      const relativePath = vscode.workspace.asRelativePath(targetUri, false);
+      const displayLink = `${open}${relativePath}#L5${close}${suffix}`;
 
-    const terminal = await ss.createTerminal('wln-baseline');
-    echoToTerminal(terminal, `${relativePath}#L5`);
-    await ss.settle();
+      ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
+      ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-baseline',
-      `Cmd+click the RangeLink ${relativePath}#L5 in terminal "wln-baseline". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-baseline" in the terminal panel',
-        `2. Cmd+click on ${relativePath}#L5 — a plain RangeLink with no wrapping characters`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
+      const terminal = await ss.createTerminal(`wln-${tcId}`);
+      echoToTerminal(terminal, displayLink);
+      await ss.settle();
 
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: plain RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-baseline — plain RangeLink navigated (human verified)');
-  });
+      const verdict = await waitForHumanVerdict(
+        `wrapped-link-navigation-${tcId}`,
+        `Cmd+click the RangeLink ${displayLink} in terminal "wln-${tcId}". Did VS Code open the target file showing "TARGET LINE 5"?`,
+        [
+          `1. Find terminal "wln-${tcId}" in the terminal panel`,
+          `2. Cmd+click on ${displayLink} — ${wrapperDesc}`,
+          '3. Verify the target file opens showing "TARGET LINE 5"',
+          'Verdict:',
+        ],
+      );
 
-  test('[assisted] wrapped-link-navigation-001: backtick-wrapped RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-001-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-001');
-    echoToTerminal(terminal, `\`${relativePath}#L5\``);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-001',
-      `Cmd+click the RangeLink \`${relativePath}#L5\` in terminal "wln-001". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-001" in the terminal panel',
-        `2. Cmd+click on \`${relativePath}#L5\` — the RangeLink wrapped in backticks`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: backtick-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-001 — backtick-wrapped RangeLink navigated (human verified)');
-  });
-
-  test('[assisted] wrapped-link-navigation-002: single-quote-wrapped RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-002-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-002');
-    echoToTerminal(terminal, `'${relativePath}#L5'`);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-002',
-      `Cmd+click the RangeLink '${relativePath}#L5' in terminal "wln-002". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-002" in the terminal panel',
-        `2. Cmd+click on '${relativePath}#L5' — the RangeLink wrapped in single quotes`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: single-quote-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-002 — single-quote-wrapped RangeLink navigated (human verified)');
-  });
-
-  test('[assisted] wrapped-link-navigation-003: double-quote-wrapped RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-003-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-003');
-    echoToTerminal(terminal, `"${relativePath}#L5"`);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-003',
-      `Cmd+click the RangeLink "${relativePath}#L5" in terminal "wln-003". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-003" in the terminal panel',
-        `2. Cmd+click on "${relativePath}#L5" — the RangeLink wrapped in double quotes`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: double-quote-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-003 — double-quote-wrapped RangeLink navigated (human verified)');
-  });
-
-  test('[assisted] wrapped-link-navigation-004: angle-bracket-wrapped RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-004-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-004');
-    echoToTerminal(terminal, `<${relativePath}#L5>`);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-004',
-      `Cmd+click the RangeLink <${relativePath}#L5> in terminal "wln-004". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-004" in the terminal panel',
-        `2. Cmd+click on <${relativePath}#L5> — the RangeLink wrapped in angle brackets`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: angle-bracket-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-004 — angle-bracket-wrapped RangeLink navigated (human verified)');
-  });
-
-  test('[assisted] wrapped-link-navigation-005: paren-wrapped RangeLink in terminal is clickable and navigates to the correct file', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-005-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-005');
-    echoToTerminal(terminal, `(${relativePath}#L5)`);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-005',
-      `Cmd+click the RangeLink (${relativePath}#L5) in terminal "wln-005". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-005" in the terminal panel',
-        `2. Cmd+click on (${relativePath}#L5) — the RangeLink enclosed in parentheses`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: paren-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-005 — paren-wrapped RangeLink navigated (human verified)');
-  });
-
-  test('[assisted] wrapped-link-navigation-006: paren-then-colon-wrapped RangeLink in terminal is clickable and navigates correctly', async () => {
-    const targetUri = ss.createWorkspaceFile(
-      'wln-006-target',
-      'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n',
-    );
-    const relativePath = vscode.workspace.asRelativePath(targetUri, false);
-
-    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativePath} @ 5` }]);
-    ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
-
-    const terminal = await ss.createTerminal('wln-006');
-    echoToTerminal(terminal, `(${relativePath}#L5):`);
-    await ss.settle();
-
-    const verdict = await waitForHumanVerdict(
-      'wrapped-link-navigation-006',
-      `Cmd+click the RangeLink (${relativePath}#L5): in terminal "wln-006". Did VS Code open the target file showing "TARGET LINE 5"?`,
-      [
-        '1. Find terminal "wln-006" in the terminal panel',
-        `2. Cmd+click on (${relativePath}#L5): — the RangeLink wrapped in parens with trailing colon`,
-        '3. Verify the target file opens showing "TARGET LINE 5"',
-        'Verdict:',
-      ],
-    );
-
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: paren-then-colon-wrapped RangeLink did not navigate correctly');
-    ss.log('✓ wrapped-link-navigation-006 — paren-then-colon-wrapped RangeLink navigated (human verified)');
-  });
+      assert.strictEqual(verdict, 'pass', `Human reported FAIL: ${label} RangeLink did not navigate correctly`);
+      ss.log(`✓ wrapped-link-navigation-${tcId} — ${label} RangeLink navigated (human verified)`);
+    });
+  }
 
   test('[assisted] markdown-link-navigation-001: Markdown link [label](path#L5) in a document is clickable and navigates correctly', async () => {
     const targetUri = ss.createWorkspaceFile(
