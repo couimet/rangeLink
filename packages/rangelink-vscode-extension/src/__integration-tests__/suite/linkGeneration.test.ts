@@ -3,7 +3,12 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import { CMD_COPY_LINK_ONLY_RELATIVE } from '../../constants/commandIds';
-import { assertClipboardEqualsGeneratedLink, echoToTerminal, standardSuite, waitForHumanVerdict } from '../helpers';
+import {
+  assertClipboardEqualsGeneratedLink,
+  echoToTerminal,
+  standardSuite,
+  waitForHumanVerdict,
+} from '../helpers';
 
 standardSuite('Link Generation', (ss) => {
   test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
@@ -38,13 +43,62 @@ standardSuite('Link Generation', (ss) => {
   });
 
   const WRAPPER_CASES = [
-    { tcId: 'baseline', label: 'plain', wrapperDesc: 'a plain RangeLink with no wrapping characters', open: '', close: '', suffix: '' },
-    { tcId: '001', label: 'backtick-wrapped', wrapperDesc: 'the RangeLink wrapped in backticks', open: '`', close: '`', suffix: '' },
-    { tcId: '002', label: 'single-quote-wrapped', wrapperDesc: 'the RangeLink wrapped in single quotes', open: "'", close: "'", suffix: '' },
-    { tcId: '003', label: 'double-quote-wrapped', wrapperDesc: 'the RangeLink wrapped in double quotes', open: '"', close: '"', suffix: '' },
-    { tcId: '004', label: 'angle-bracket-wrapped', wrapperDesc: 'the RangeLink wrapped in angle brackets', open: '<', close: '>', suffix: '' },
-    { tcId: '005', label: 'paren-wrapped', wrapperDesc: 'the RangeLink enclosed in parentheses', open: '(', close: ')', suffix: '' },
-    { tcId: '006', label: 'paren-then-colon-wrapped', wrapperDesc: 'the RangeLink wrapped in parens with trailing colon', open: '(', close: ')', suffix: ':' },
+    {
+      tcId: 'baseline',
+      label: 'plain',
+      wrapperDesc: 'a plain RangeLink with no wrapping characters',
+      open: '',
+      close: '',
+      suffix: '',
+    },
+    {
+      tcId: '001',
+      label: 'backtick-wrapped',
+      wrapperDesc: 'the RangeLink wrapped in backticks',
+      open: '`',
+      close: '`',
+      suffix: '',
+    },
+    {
+      tcId: '002',
+      label: 'single-quote-wrapped',
+      wrapperDesc: 'the RangeLink wrapped in single quotes',
+      open: "'",
+      close: "'",
+      suffix: '',
+    },
+    {
+      tcId: '003',
+      label: 'double-quote-wrapped',
+      wrapperDesc: 'the RangeLink wrapped in double quotes',
+      open: '"',
+      close: '"',
+      suffix: '',
+    },
+    {
+      tcId: '004',
+      label: 'angle-bracket-wrapped',
+      wrapperDesc: 'the RangeLink wrapped in angle brackets',
+      open: '<',
+      close: '>',
+      suffix: '',
+    },
+    {
+      tcId: '005',
+      label: 'paren-wrapped',
+      wrapperDesc: 'the RangeLink enclosed in parentheses',
+      open: '(',
+      close: ')',
+      suffix: '',
+    },
+    {
+      tcId: '006',
+      label: 'paren-then-colon-wrapped',
+      wrapperDesc: 'the RangeLink wrapped in parens with trailing colon',
+      open: '(',
+      close: ')',
+      suffix: ':',
+    },
   ];
 
   for (const { tcId, label, wrapperDesc, open, close, suffix } of WRAPPER_CASES) {
@@ -74,7 +128,11 @@ standardSuite('Link Generation', (ss) => {
         ],
       );
 
-      assert.strictEqual(verdict, 'pass', `Human reported FAIL: ${label} RangeLink did not navigate correctly`);
+      assert.strictEqual(
+        verdict,
+        'pass',
+        `Human reported FAIL: ${label} RangeLink did not navigate correctly`,
+      );
       ss.log(`✓ wrapped-link-navigation-${tcId} — ${label} RangeLink navigated (human verified)`);
     });
   }
@@ -105,7 +163,11 @@ standardSuite('Link Generation', (ss) => {
       ],
     );
 
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: Markdown link did not navigate correctly');
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported FAIL: Markdown link did not navigate correctly',
+    );
     ss.log('✓ markdown-link-navigation-001 — Markdown link navigated (human verified)');
   });
 
@@ -127,7 +189,11 @@ standardSuite('Link Generation', (ss) => {
       ],
     );
 
-    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: HTTPS URL was incorrectly intercepted as a RangeLink');
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported FAIL: HTTPS URL was incorrectly intercepted as a RangeLink',
+    );
     ss.log('✓ url-exclusion-001 — HTTPS URL not intercepted (human verified)');
   });
 });
