@@ -68,7 +68,7 @@ export class FilePathNavigationHandler {
     if (!resolved) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
       await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_FILE_PATH_NOT_FOUND, { path: rawPath }),
+        formatMessage(MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST, { path: rawPath }),
       );
       return;
     }

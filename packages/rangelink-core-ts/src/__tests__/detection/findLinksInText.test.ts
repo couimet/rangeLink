@@ -60,6 +60,104 @@ describe('findLinksInText', () => {
       expect(results).toHaveLength(0);
     });
 
+    describe('surrounding punctuation trimming', () => {
+      it('should strip leading and trailing parens from a matched link', () => {
+        const results = findLinksInText('(path#L1-L2)', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should strip leading paren when link is followed by trailing punctuation', () => {
+        const results = findLinksInText('(path#L1-L2):', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should not produce a link from bare punctuation with no valid path', () => {
+        const results = findLinksInText('()', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(0);
+      });
+
+      it('should leave a clean path unchanged', () => {
+        const results = findLinksInText('path#L1-L2', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(0);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+      });
+
+      describe('prefix-only (opening character without matching closer)', () => {
+        it.each([
+          ['( (opening paren)', '(path#L5', 1],
+          ['[ (opening bracket)', '[path#L5', 1],
+          ['{ (opening brace)', '{path#L5', 1],
+          ['< (opening angle)', '<path#L5', 1],
+          ['` (backtick)', '`path#L5', 1],
+          ["' (single quote)", "'path#L5", 1],
+          ['" (double quote)', '"path#L5', 1],
+        ])('should detect link with prefix-only %s', (_label, text, expectedStartIndex) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(1);
+          expect(results[0].linkText).toBe('path#L5');
+          expect(results[0].startIndex).toBe(expectedStartIndex);
+          expect(results[0].parsed.path).toBe('path');
+          expect(results[0].parsed.start.line).toBe(5);
+        });
+      });
+
+      describe('suffix-only (closing character without matching opener)', () => {
+        it.each([
+          [') (closing paren)', 'path#L5)'],
+          ['] (closing bracket)', 'path#L5]'],
+          ['} (closing brace)', 'path#L5}'],
+          ['> (closing angle)', 'path#L5>'],
+          ['` (backtick)', 'path#L5`'],
+          ["' (single quote)", "path#L5'"],
+          ['" (double quote)', 'path#L5"'],
+        ])('should detect link with suffix-only %s', (_label, text) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(1);
+          expect(results[0].linkText).toBe('path#L5');
+          expect(results[0].startIndex).toBe(0);
+          expect(results[0].parsed.path).toBe('path');
+          expect(results[0].parsed.start.line).toBe(5);
+        });
+      });
+
+      describe('single wrapping char — no valid path', () => {
+        it.each([
+          ['bare opening paren', '('],
+          ['bare closing paren', ')'],
+          ['bare backtick', '`'],
+          ['bare single quote', "'"],
+          ['bare double quote', '"'],
+          ['bare opening angle', '<'],
+          ['bare closing angle', '>'],
+        ])('should return empty when text is just %s', (_label, text) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(0);
+        });
+      });
+    });
+
     describe('markdown link syntax', () => {
       it('should detect the path from a simple markdown link', () => {
         const results = findLinksInText('[text](src/auth.ts#L10)', DEFAULT_DELIMITERS, logger);

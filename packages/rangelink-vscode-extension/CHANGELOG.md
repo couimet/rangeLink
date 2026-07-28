@@ -12,11 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Single status bar message when binding and sending in one step via the destination picker**, instead of two back-to-back messages. The merged message reads "Bound to &lt;destination&gt; — &lt;link&gt; sent". (#621)
+- **Improved warning message when a bare file path doesn't exist on disk** — changed from "Cannot find file" to "File does not exist at" to distinguish benign detection from failed navigation. (#685)
 
 ### Fixed
 
 - **Auto-unbind when a bound file is deleted from disk**, matching the existing terminal-close behavior. Deleting a bound file now triggers an auto-unbind with a status bar message and warning toast. Previously the binding survived and subsequent paste attempts would target a non-existent file. (#611)
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
+- **RangeLinks inside parentheses now navigate correctly** — `(path#Lx-Ly)` no longer includes the leading `(` in the file path, so navigation works instead of failing with "Cannot find file: (path...". Also applies to `[]`, `{}`, `<>` wrappers, and trailing sentence terminators. (#661, #666)
+- **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
 
 ## [2.0.0]
 
