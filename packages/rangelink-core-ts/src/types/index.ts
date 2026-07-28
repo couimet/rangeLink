@@ -1,4 +1,3 @@
-export { Result } from './Result';
 export { CoreResult } from './CoreResult';
 export { Selection } from './Selection';
 export { InputSelection } from './InputSelection';

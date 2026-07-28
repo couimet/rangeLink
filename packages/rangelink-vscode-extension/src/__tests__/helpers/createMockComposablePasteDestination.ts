@@ -1,5 +1,5 @@
+import { DetailedResult } from '@couimet/detailed-result';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
 
 import {
   ComposablePasteDestination,
@@ -28,7 +28,7 @@ export interface MockComposablePasteDestinationConfig
  * Create a mock jest.Mocked<FocusCapability> for testing.
  *
  * @param insertReturns - What inserter() should return (default: true)
- * @returns Mocked FocusCapability with focus() returning Result.ok({ inserter: ... })
+ * @returns Mocked FocusCapability with focus() returning DetailedResult.success({ inserter: ... })
  */
 export const createMockFocusCapability = (
   insertReturns: boolean = true,
@@ -37,7 +37,7 @@ export const createMockFocusCapability = (
   const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
   const capability: jest.Mocked<FocusCapability> & { _mockInsert: jest.Mock } = {
-    focus: jest.fn().mockResolvedValue(Result.ok(focusedDestination)),
+    focus: jest.fn().mockResolvedValue(DetailedResult.success(focusedDestination)),
     _mockInsert: mockInsert,
   };
   return capability;
@@ -57,7 +57,7 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
  * Create a mock ComposablePasteDestination for testing.
  *
  * Provides default mocks for all capabilities with sensible behaviors:
- * - FocusCapability: Returns Result.ok({ inserter: ... }) that returns true
+ * - FocusCapability: Returns DetailedResult.success({ inserter: ... }) that returns true
  * - EligibilityChecker: Returns true (always eligible)
  * - isAvailable: Returns true (always available)
  * - All other config: Sensible defaults

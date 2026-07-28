@@ -1,4 +1,4 @@
-import { Result } from 'rangelink-core-ts';
+import { DetailedResult } from '@couimet/detailed-result';
 
 import type { ClipboardService } from '../../clipboard/ClipboardService';
 
@@ -6,20 +6,20 @@ export const createMockClipboardService = (): jest.Mocked<ClipboardService> =>
   ({
     stage: jest.fn((_text: string, fn: () => Promise<unknown>) =>
       fn()
-        .then((v) => Result.ok(v))
-        .catch((err) => Result.err(err)),
+        .then((v) => DetailedResult.success(v))
+        .catch((err) => DetailedResult.failure(err)),
     ),
     route: jest.fn((fn: () => Promise<unknown>, _shouldRestore?: () => boolean) =>
       fn()
-        .then((v) => Result.ok(v))
-        .catch((err) => Result.err(err)),
+        .then((v) => DetailedResult.success(v))
+        .catch((err) => DetailedResult.failure(err)),
     ),
-    read: jest.fn().mockResolvedValue(Result.ok('')),
-    write: jest.fn().mockResolvedValue(Result.ok(undefined)),
+    read: jest.fn().mockResolvedValue(DetailedResult.success('')),
+    write: jest.fn().mockResolvedValue(DetailedResult.success(undefined)),
     restoreClipboard: jest.fn().mockResolvedValue(undefined),
     capture: jest.fn((producer: () => Promise<unknown>) =>
       producer()
-        .then((produced) => Result.ok({ clipboard: '', produced }))
-        .catch((err) => Result.err(err)),
+        .then((produced) => DetailedResult.success({ clipboard: '', produced }))
+        .catch((err) => DetailedResult.failure(err)),
     ),
   }) as unknown as jest.Mocked<ClipboardService>;

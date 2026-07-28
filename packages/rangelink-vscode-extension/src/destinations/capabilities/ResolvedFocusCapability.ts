@@ -1,10 +1,9 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier, FocusTierLabel } from '../types';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
 
 /**
  * FocusCapability for a single resolved tier.
@@ -41,7 +40,7 @@ export class ResolvedFocusCapability implements FocusCapability {
         { ...context, tier: resolvedTier.label },
         `Resolved tier ${resolvedTier.label} — returning inserter directly`,
       );
-      return Result.ok({
+      return FocusResult.ok({
         inserter: resolvedTier.insertFactory.forTarget(),
       });
     }
@@ -53,7 +52,7 @@ export class ResolvedFocusCapability implements FocusCapability {
           { ...context, command, tier: resolvedTier.label },
           `Focus command succeeded (${resolvedTier.label})`,
         );
-        return Result.ok({
+        return FocusResult.ok({
           inserter: resolvedTier.insertFactory.forTarget(),
         });
       } catch (error) {
@@ -68,7 +67,7 @@ export class ResolvedFocusCapability implements FocusCapability {
       { ...context, tier: resolvedTier.label, allCommandsFailed: true },
       `All focus commands failed for resolved tier ${resolvedTier.label}`,
     );
-    return Result.err({
+    return FocusResult.err({
       reason: FocusErrorReason.COMMAND_FOCUS_FAILED,
     });
   }

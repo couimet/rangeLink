@@ -52,16 +52,14 @@ describe('finalizeLinkGeneration', () => {
       'src/file.ts',
     );
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L10-L20',
-        rawLink: 'src/file.ts#L10-L20',
-        linkType: 'regular',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'LineOnly',
-        selectionType: 'Normal',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L10-L20',
+      rawLink: 'src/file.ts#L10-L20',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
     });
   });
 
@@ -97,16 +95,14 @@ describe('finalizeLinkGeneration', () => {
       'src/file.ts',
     );
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L10-L20~#~L~-~',
-        rawLink: 'src/file.ts#L10-L20~#~L~-~',
-        linkType: 'portable',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'LineOnly',
-        selectionType: 'Normal',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L10-L20~#~L~-~',
+      rawLink: 'src/file.ts#L10-L20~#~L~-~',
+      linkType: 'portable',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
     });
   });
 
@@ -154,7 +150,15 @@ describe('finalizeLinkGeneration', () => {
       'src/test.ts',
     );
 
-    expect(result).toBeOk();
+    expect(result).toBeSuccess({
+      link: 'src/test.ts#L10',
+      rawLink: 'src/test.ts#L10',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
+    });
 
     // CRITICAL ASSERTIONS: Our attributes must win over malicious logContext
     expect(mockDebug).toHaveBeenCalledWith(
@@ -205,16 +209,14 @@ describe('finalizeLinkGeneration', () => {
       'src/file.ts',
     );
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L5C10-L15C20',
-        rawLink: 'src/file.ts#L5C10-L15C20',
-        linkType: 'regular',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'WithPositions',
-        selectionType: 'Rectangular',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L5C10-L15C20',
+      rawLink: 'src/file.ts#L5C10-L15C20',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'WithPositions',
+      selectionType: 'Rectangular',
     });
   });
 });

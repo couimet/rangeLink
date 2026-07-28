@@ -1,13 +1,12 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import { VSCODE_CMD_TERMINAL_PASTE } from '../constants';
-import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import type { TerminalPasteAdapter } from '../ide/TerminalPasteAdapter';
-import type { SendTextToTerminalOptions } from '../types';
 import { BehaviourAfterPaste } from '../types';
+import type { SendTextToTerminalOptions } from '../types';
+import { ExtensionResult } from '../types/ExtensionResult';
 import { validateTerminalDefined } from '../utils';
 
 /**
@@ -29,7 +28,7 @@ export class TerminalPasteService {
     content: string,
     terminal: vscode.Terminal,
     options?: SendTextToTerminalOptions,
-  ): Promise<Result<void, RangeLinkExtensionError>> {
+  ): Promise<ExtensionResult<void>> {
     const logCtx: LoggingContext = {
       fn: 'TerminalPasteService.pasteIntoTerminal',
       terminalName: terminal?.name,
@@ -41,7 +40,7 @@ export class TerminalPasteService {
         { ...logCtx, error: validationResult.error },
         'Terminal paste failed - terminal not defined',
       );
-      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
+      return validationResult as unknown as ExtensionResult<void>;
     }
 
     const stageResult = await this.clipboardService.stage(content, async () => {
@@ -62,6 +61,6 @@ export class TerminalPasteService {
     }
 
     this.logger.info(logCtx, 'Terminal paste succeeded');
-    return Result.ok(undefined);
+    return ExtensionResult.ok(undefined);
   }
 }

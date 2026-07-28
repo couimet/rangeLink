@@ -3,7 +3,6 @@ import { getUniqueInt } from '@couimet/dynamic-testing';
 import { computeRangeSpec } from '../../selection/computeRangeSpec';
 import * as validateInputSelectionModule from '../../selection/validateInputSelection';
 import { InputSelection } from '../../types/InputSelection';
-import { RangeFormat } from '../../types/RangeFormat';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
@@ -39,14 +38,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection);
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -65,12 +62,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection);
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        rangeFormat: 'LineOnly',
       });
     });
   });
@@ -93,14 +88,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -122,14 +115,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedEndLine,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedEndLine,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -149,12 +140,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedEndLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedEndLine,
+        rangeFormat: 'LineOnly',
       });
     });
 
@@ -173,12 +162,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        rangeFormat: 'LineOnly',
       });
     });
   });
@@ -211,14 +198,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine + 2,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine + 2,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -249,14 +234,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.Auto });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine + 2,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine + 2,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
   });
@@ -277,12 +260,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforceFullLine });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        rangeFormat: 'LineOnly',
       });
     });
 
@@ -302,12 +283,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforceFullLine });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedEndLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedEndLine,
+        rangeFormat: 'LineOnly',
       });
     });
 
@@ -327,12 +306,10 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforceFullLine });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedEndLine,
-          rangeFormat: RangeFormat.LineOnly,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedEndLine,
+        rangeFormat: 'LineOnly',
       });
     });
   });
@@ -354,14 +331,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforcePositions });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          startPosition: 1,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        startPosition: 1,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -381,14 +356,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforcePositions });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedEndLine,
-          startPosition: 1,
-          endPosition: 1,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedEndLine,
+        startPosition: 1,
+        endPosition: 1,
+        rangeFormat: 'WithPositions',
       });
     });
 
@@ -409,14 +382,12 @@ describe('computeRangeSpec', () => {
       };
       const result = computeRangeSpec(inputSelection, { notation: RangeNotation.EnforcePositions });
 
-      expect(result).toBeOkWith((value) => {
-        expect(value).toStrictEqual({
-          startLine: expectedStartLine,
-          endLine: expectedStartLine,
-          startPosition: expectedStartPosition,
-          endPosition: expectedEndPosition,
-          rangeFormat: RangeFormat.WithPositions,
-        });
+      expect(result).toBeSuccess({
+        startLine: expectedStartLine,
+        endLine: expectedStartLine,
+        startPosition: expectedStartPosition,
+        endPosition: expectedEndPosition,
+        rangeFormat: 'WithPositions',
       });
     });
   });
@@ -430,7 +401,7 @@ describe('computeRangeSpec', () => {
 
       const result = computeRangeSpec(inputSelection);
 
-      expect(result).toBeDetailedError('SELECTION_EMPTY', {
+      expect(result).toHaveDetailedError('SELECTION_EMPTY', {
         message: 'Selections array must not be empty',
         functionName: 'validateInputSelection',
         details: { selectionsLength: 0 },

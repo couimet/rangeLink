@@ -33,7 +33,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(factory.forTarget).toHaveBeenCalled();
     expect(executeCommandSpy).not.toHaveBeenCalled();
     expect(capability.resolvedTierLabel).toBe('insertCommands');
@@ -58,7 +58,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(factory.forTarget).toHaveBeenCalled();
     expect(capability.resolvedTierLabel).toBe('focusAndPasteCommands');
   });
@@ -81,7 +81,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(executeCommandSpy).toHaveBeenCalledTimes(2);
     expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'tier.primary');
     expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'tier.fallback');
@@ -101,9 +101,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeErrWith((error: { reason: string }) => {
-      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
-    });
+    expect(result).toBeFailure({ reason: 'COMMAND_FOCUS_FAILED' });
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { ...CONTEXT, tier: 'focusAndPasteCommands', allCommandsFailed: true },
       'All focus commands failed for resolved tier focusAndPasteCommands',

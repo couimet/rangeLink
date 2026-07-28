@@ -1,11 +1,10 @@
 import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
 
 /**
@@ -31,7 +30,7 @@ export class TerminalFocusCapability implements FocusCapability {
     const showResult = this.ideAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
     if (!showResult.success) {
       this.logger.warn({ ...logCtx, error: showResult.error }, 'Failed to focus terminal');
-      return Result.err({
+      return FocusResult.err({
         reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
         cause: showResult.error,
       });
@@ -39,7 +38,7 @@ export class TerminalFocusCapability implements FocusCapability {
 
     this.logger.debug(logCtx, 'Terminal focused via showTerminal()');
 
-    return Result.ok({
+    return FocusResult.ok({
       inserter: this.insertFactory.forTarget(this.terminal),
     });
   }
