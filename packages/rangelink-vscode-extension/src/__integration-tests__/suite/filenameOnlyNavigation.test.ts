@@ -24,6 +24,8 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
   let duplicateFilePath2: string;
 
   suiteSetup(() => {
+    const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
+
     uniqueFilename = `__rl-test-fallback-${Date.now()}.ts`;
     const subDir = path.join(getWorkspaceRoot(), 'src', 'nested');
     fs.mkdirSync(subDir, { recursive: true });
