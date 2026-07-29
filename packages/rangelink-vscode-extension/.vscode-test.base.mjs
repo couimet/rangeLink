@@ -22,7 +22,10 @@ export const BASE_CONFIG = {
   files: 'out/__integration-tests__/suite/**/*.test.js',
   extensionDevelopmentPath: ['./', './test-fixtures/dummy-ai-extension/'],
   workspaceFolder: './',
-  version: 'stable',
+  // Pinned to balance test coverage with arm64 availability. engines.vscode claims
+  // ^1.49.0 (minimum), but pre-1.54 lacks darwin-arm64. 1.95 predates the
+  // Electron→Code rename (1.131) and is recent enough to surface real API gaps.
+  version: '1.95.0',
   launchArgs: userDataDir(),
   env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true' },
   mocha: envMocha(),
