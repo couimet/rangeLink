@@ -1915,13 +1915,13 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('bind()', () => {
-    it('throws UNEXPECTED_DESTINATION_KIND for unhandled options kind', async () => {
+    it('throws UNEXPECTED_SWITCH_VALUE for unhandled options kind', async () => {
       const bogusOptions = { kind: 'unknown-kind' } as unknown as BindOptions;
 
-      await expect(() => manager.bind(bogusOptions)).toThrowDetailedErrorAsync('UNEXPECTED_DESTINATION_KIND', {
-        message: 'Unhandled bind options kind: unknown-kind',
+      await expect(() => manager.bind(bogusOptions)).toThrowDetailedErrorAsync('UNEXPECTED_SWITCH_VALUE', {
+        message: `Unexpected bind options kind: ${JSON.stringify(bogusOptions)}`,
         functionName: 'PasteDestinationManager.bind',
-        details: { options: bogusOptions },
+        details: { unexpectedValue: bogusOptions },
       });
       expect(mockFeedback.notifyBound).not.toHaveBeenCalled();
     });

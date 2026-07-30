@@ -1,6 +1,6 @@
 import type { BoundSession, DestinationFocuser } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import { type BindOptions, MessageCode } from '../types';
 import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
 
@@ -51,15 +51,8 @@ export class JumpToDestinationCommand {
       case 'selected':
         return this.bindAndFocus(pickerResult.bindOptions, logCtx);
 
-      default: {
-        const _exhaustiveCheck: never = pickerResult;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unhandled picker outcome in JumpToDestinationCommand',
-          functionName: 'JumpToDestinationCommand.execute',
-          details: { pickerResult: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('picker outcome', pickerResult, 'JumpToDestinationCommand.execute');
     }
   }
 

@@ -229,10 +229,10 @@ describe('validateInputSelection', () => {
         selectionType: 'InvalidType' as any,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_UNKNOWN_TYPE', {
-        message: 'Unknown SelectionType: "InvalidType"',
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: 'Unexpected selection type: "InvalidType"',
         functionName: 'validateInputSelection',
-        details: { selectionType: 'InvalidType' },
+        details: { unexpectedValue: 'InvalidType' },
       });
     });
   });

@@ -1,6 +1,6 @@
 import type { Bookmark, BookmarkService } from '../bookmarks';
 import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem, MessageCode } from '../types';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
@@ -59,15 +59,8 @@ export class ListBookmarksCommand {
       case 'info':
         this.logger.debug({ ...logCtx, selectedItem: selected }, 'Non-actionable item selected');
         break;
-      default: {
-        const _exhaustiveCheck: never = selected;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
-          message: 'Unhandled item kind in bookmark list',
-          functionName: 'ListBookmarksCommand.handleSelection',
-          details: { selectedItem: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('item kind', selected, 'ListBookmarksCommand.handleSelection');
     }
   }
 

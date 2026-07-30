@@ -94,14 +94,7 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     case SelectionType.Rectangular:
       validateRectangularMode(selections);
       break;
-    default: {
-      const _exhaustive: never = selectionType;
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_UNKNOWN_TYPE,
-        message: `Unknown SelectionType: "${_exhaustive}"`,
-        functionName: 'validateInputSelection',
-        details: { selectionType: _exhaustive },
-      });
-    }
+    default:
+      throw RangeLinkError.forUnexpectedSwitchDefault('selection type', selectionType, 'validateInputSelection');
   }
 }

@@ -850,16 +850,16 @@ describe('VscodeAdapter', () => {
       });
     });
 
-    it('should return UNKNOWN_FOCUS_TYPE error for invalid focus type', () => {
+    it('should return UNEXPECTED_SWITCH_VALUE error for invalid focus type', () => {
       const mockTerminal = createMockTerminal();
       const invalidFocusType = 'invalid-focus-type' as any;
 
       const result = adapter.showTerminal(mockTerminal, invalidFocusType);
 
-      expect(result).toHaveDetailedError('UNKNOWN_FOCUS_TYPE', {
-        message: 'Unknown focus type: invalid-focus-type',
+      expect(result).toHaveDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: `Unexpected focus type: ${JSON.stringify(invalidFocusType)}`,
         functionName: 'VscodeAdapter.showTerminal',
-        details: { focusType: 'invalid-focus-type' },
+        details: { unexpectedValue: invalidFocusType },
       });
     });
   });

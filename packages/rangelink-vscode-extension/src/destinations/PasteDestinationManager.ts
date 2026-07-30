@@ -71,12 +71,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
         if (isCustomAiAssistantKind(options.kind)) {
           return this.bindGenericDestination(options.kind, statusBarOptions);
         }
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
-          message: `Unhandled bind options kind: ${(options as BindOptions).kind}`,
-          functionName: 'PasteDestinationManager.bind',
-          details: { options },
-        });
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('bind options kind', options, 'PasteDestinationManager.bind');
     }
   }
 

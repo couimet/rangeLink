@@ -161,15 +161,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         this.logger.debug(logCtx, 'File overflow item selected');
         await this.showSecondaryFilePicker(logCtx);
         break;
-      default: {
-        const _exhaustiveCheck: never = selected;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
-          message: 'Unhandled item kind in status bar menu',
-          functionName: 'RangeLinkStatusBar.handleSelection',
-          details: { selectedItem: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('item kind', selected, 'RangeLinkStatusBar.handleSelection');
     }
   }
 
