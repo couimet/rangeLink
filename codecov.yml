@@ -1,0 +1,37 @@
+# Codecov configuration for couimet/rangeLink monorepo.
+# See: https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      core-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - core-ts
+      vscode-extension:
+        target: 98%
+        threshold: 0%
+        flags:
+          - vscode-extension
+
+    patch:
+      default:
+        informational: true
+
+flag_management:
+  default_rules:
+    carryforward: true
+
+flags:
+  core-ts:
+    paths:
+      - packages/rangelink-core-ts/
+  vscode-extension:
+    paths:
+      - packages/rangelink-vscode-extension/
+
+comment:
+  layout: 'reach, diff, flags, files, footer'
+  behavior: default
+  require_changes: false
