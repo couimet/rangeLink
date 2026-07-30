@@ -1,7 +1,6 @@
 import { displayName } from '../../../package.json';
 import { AI_ASSISTANT_PASTE_COMMANDS, CLIPBOARD_POST_PASTE_DELAY_MS, ENV_RANGELINK_CAPTURE_LOGS, FOCUS_TO_PASTE_DELAY_MS } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
-import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { MessageCode, RelativePathFormat, type ResolveWorkspacePathResult, TerminalFocusType } from '../../types';
 import { ExtensionResult } from '../../types/ExtensionResult';
 import { formatMessage, getUntitledDisplayName, resolveWorkspacePath, validateTerminalDefined } from '../../utils';
@@ -328,14 +327,7 @@ export class VscodeAdapter
         return ExtensionResult.ok(undefined);
       default:
         this.logger.error(logCtx, `Unknown focus type: ${focusType}`);
-        return ExtensionResult.err(
-          new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
-            message: `Unknown focus type: ${focusType}`,
-            functionName: 'VscodeAdapter.showTerminal',
-            details: { focusType: focusType as never },
-          }),
-        );
+        return ExtensionResult.err(RangeLinkExtensionError.forUnexpectedSwitchDefault('focus type', focusType, 'VscodeAdapter.showTerminal'));
     }
   }
 

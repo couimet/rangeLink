@@ -1,7 +1,7 @@
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { BoundSession, DestinationBinder, DestinationPicker, PasteDestination } from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import type { OperationFeedbackProvider, PasteContext, PasteSendOutcome } from '../feedback';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
 import { AutoPasteResult, type BindContext, MessageCode, type QuickPickBindResult, type SendOptions } from '../types';
@@ -256,15 +256,8 @@ export class SendRouter {
         return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unexpected picker result outcome',
-          functionName: 'SendRouter.showPickerAndBind',
-          details: { result: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('picker result', result, 'SendRouter.showPickerAndBind');
     }
   }
 }

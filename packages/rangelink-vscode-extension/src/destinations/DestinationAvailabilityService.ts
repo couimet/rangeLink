@@ -1,6 +1,6 @@
 import type { ConfigReader } from '../config';
 import { DEFAULT_TERMINAL_PICKER_MAX_INLINE, SETTING_TERMINAL_PICKER_MAX_INLINE } from '../constants';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
@@ -233,12 +233,7 @@ export class DestinationAvailabilityService {
             ];
             break;
           }
-          throw new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
-            message: `Unhandled destination kind in getGroupedDestinationItems`,
-            functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
-            details: { kind },
-          });
+          throw RangeLinkExtensionError.forUnexpectedSwitchDefault('destination kind', kind, 'DestinationAvailabilityService.getGroupedDestinationItems');
         }
       }
     }

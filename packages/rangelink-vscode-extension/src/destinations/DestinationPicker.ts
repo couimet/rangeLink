@@ -1,4 +1,4 @@
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import type { MessageProvider } from '../ide/MessageProvider';
 import type { QuickPickProvider } from '../ide/QuickPickProvider';
 import { type DestinationQuickPickItem, MessageCode } from '../types';
@@ -112,15 +112,8 @@ export class DestinationPicker {
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
         return await this.showSecondaryTerminalPicker(placeholderMessageCode, boundTerminalProcessId);
 
-      default: {
-        const _exhaustiveCheck: never = selected;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
-          message: 'Unhandled item kind in destination picker',
-          functionName: 'DestinationPicker.handleQuickPickSelection',
-          details: { selectedItem: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('item kind', selected, 'DestinationPicker.handleQuickPickSelection');
     }
   }
 
