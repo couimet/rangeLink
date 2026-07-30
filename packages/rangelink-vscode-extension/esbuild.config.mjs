@@ -1,4 +1,5 @@
-const esbuild = require('esbuild');
+import esbuild from 'esbuild';
+import { fileURLToPath } from 'node:url';
 
 const config = {
   entryPoints: ['src/extension.ts'],
@@ -10,9 +11,8 @@ const config = {
   sourcemap: true,
 };
 
-// When run directly, execute the build
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   esbuild.build(config).catch(() => process.exit(1));
 }
 
-module.exports = config;
+export default config;
