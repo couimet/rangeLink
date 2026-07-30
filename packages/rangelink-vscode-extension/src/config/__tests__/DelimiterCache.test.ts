@@ -1,8 +1,4 @@
-import {
-  createMockConfigGetter,
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../../__tests__/helpers';
+import { createMockConfigGetter, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../__tests__/helpers';
 import { DelimiterCache } from '../DelimiterCache';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
@@ -68,9 +64,7 @@ describe('DelimiterCache', () => {
     it('registers exactly one onDidChangeConfiguration listener', () => {
       new DelimiterCache(createDefaultConfig(), ideAdapter, createMockLogger());
 
-      expect(
-        ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration,
-      ).toHaveBeenCalledTimes(1);
+      expect(ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -80,15 +74,11 @@ describe('DelimiterCache', () => {
       const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, logger);
       expect(cache.getDelimiters()).toStrictEqual(DEFAULT_DELIMITERS);
 
-      const [capturedListener] =
-        ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
+      const [capturedListener] = ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
 
       capturedListener({ affectsConfiguration: (ns: string) => ns === 'rangelink' });
 
-      expect(logger.info).toHaveBeenCalledWith(
-        { fn: 'DelimiterCache' },
-        'rangelink configuration changed — reloading delimiter config',
-      );
+      expect(logger.info).toHaveBeenCalledWith({ fn: 'DelimiterCache' }, 'rangelink configuration changed — reloading delimiter config');
       expect(cache.getDelimiters()).toStrictEqual(DEFAULT_DELIMITERS);
     });
 
@@ -96,8 +86,7 @@ describe('DelimiterCache', () => {
       const logger = createMockLogger();
       const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, logger);
 
-      const [capturedListener] =
-        ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
+      const [capturedListener] = ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
 
       // Simulate a non-rangelink change
       capturedListener({ affectsConfiguration: (_ns: string) => false });
@@ -113,8 +102,7 @@ describe('DelimiterCache', () => {
     it('shows error message when updated config is invalid', () => {
       const cache = new DelimiterCache(createInvalidConfig(), ideAdapter, createMockLogger());
 
-      const [capturedListener] =
-        ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
+      const [capturedListener] = ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
       capturedListener({ affectsConfiguration: (ns: string) => ns === 'rangelink' });
 
       expect(ideAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledTimes(2);
@@ -125,9 +113,7 @@ describe('DelimiterCache', () => {
   describe('dispose', () => {
     it('disposes the underlying subscription', () => {
       const mockDisposable = { dispose: jest.fn() };
-      ideAdapter
-        .__getVscodeInstance()
-        .workspace.onDidChangeConfiguration.mockReturnValue(mockDisposable);
+      ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mockReturnValue(mockDisposable);
 
       const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, createMockLogger());
       cache.dispose();

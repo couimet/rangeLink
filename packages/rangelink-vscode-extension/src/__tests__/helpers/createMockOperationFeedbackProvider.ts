@@ -2,9 +2,7 @@ import type { BindingFeedback } from '../../feedback/BindingFeedback';
 import type { LifecycleFeedbackProvider } from '../../feedback/LifecycleFeedbackProvider';
 import type { OperationFeedbackProvider } from '../../feedback/OperationFeedbackProvider';
 
-export const createMockOperationFeedbackProvider = (): jest.Mocked<
-  OperationFeedbackProvider & LifecycleFeedbackProvider & BindingFeedback
-> =>
+export const createMockOperationFeedbackProvider = (): jest.Mocked<OperationFeedbackProvider & LifecycleFeedbackProvider & BindingFeedback> =>
   ({
     showError: jest.fn(),
     provideCopyFeedback: jest.fn(),
@@ -21,6 +19,4 @@ export const createMockOperationFeedbackProvider = (): jest.Mocked<
     notifyNothingToUnbind: jest.fn(),
     notifyJumpFocused: jest.fn(),
     notifyJumpFailed: jest.fn(),
-  }) as unknown as jest.Mocked<
-    OperationFeedbackProvider & LifecycleFeedbackProvider & BindingFeedback
-  >;
+  }) as unknown as jest.Mocked<OperationFeedbackProvider & LifecycleFeedbackProvider & BindingFeedback>;

@@ -35,10 +35,7 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<Ra
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'RangeLinkTerminalProvider.constructor' },
-      'RangeLinkTerminalProvider initialized',
-    );
+    this.logger.debug({ fn: 'RangeLinkTerminalProvider.constructor' }, 'RangeLinkTerminalProvider initialized');
   }
 
   /**
@@ -51,10 +48,7 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<Ra
    * @param token - Cancellation token
    * @returns Array of detected terminal links
    */
-  provideTerminalLinks(
-    context: vscode.TerminalLinkContext,
-    token: vscode.CancellationToken,
-  ): vscode.ProviderResult<RangeLinkTerminalLink[]> {
+  provideTerminalLinks(context: vscode.TerminalLinkContext, token: vscode.CancellationToken): vscode.ProviderResult<RangeLinkTerminalLink[]> {
     const detectedLinks = findLinksInText(context.line, this.getDelimiters(), this.logger, token);
 
     this.logger.debug(
@@ -99,19 +93,14 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<Ra
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, { linkText }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, { linkText }));
       return;
     }
 
     try {
       await this.handler.navigateToLink(link.parsed, linkText);
     } catch (error) {
-      this.logger.debug(
-        { ...logCtx, error },
-        'Terminal link handling completed with error (already handled by navigation handler)',
-      );
+      this.logger.debug({ ...logCtx, error }, 'Terminal link handling completed with error (already handled by navigation handler)');
     }
   }
 }

@@ -1,9 +1,5 @@
 import { compareTerminalsByProcessId } from '../../../destinations/equality/compareTerminalsByProcessId';
-import {
-  createMockCursorAIComposableDestination,
-  createMockTerminal,
-  createMockTerminalComposablePasteDestination,
-} from '../../helpers';
+import { createMockCursorAIComposableDestination, createMockTerminal, createMockTerminalComposablePasteDestination } from '../../helpers';
 
 describe('compareTerminalsByProcessId', () => {
   describe('when terminals have matching process IDs', () => {

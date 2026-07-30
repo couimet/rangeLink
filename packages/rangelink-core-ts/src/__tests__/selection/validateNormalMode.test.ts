@@ -18,15 +18,11 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).toThrowDetailedError(
-        'SELECTION_NORMAL_MULTIPLE',
-        {
-          message:
-            'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
-          functionName: 'validateNormalMode',
-          details: { selectionsLength: 2 },
-        },
-      );
+      expect(() => validateNormalMode(selections)).toThrowDetailedError('SELECTION_NORMAL_MULTIPLE', {
+        message: 'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
+        functionName: 'validateNormalMode',
+        details: { selectionsLength: 2 },
+      });
     });
 
     it('should throw error for 3 selections', () => {
@@ -48,15 +44,11 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).toThrowDetailedError(
-        'SELECTION_NORMAL_MULTIPLE',
-        {
-          message:
-            'Normal mode does not support multiple selections (got 3). Multiple non-contiguous selections are not yet implemented.',
-          functionName: 'validateNormalMode',
-          details: { selectionsLength: 3 },
-        },
-      );
+      expect(() => validateNormalMode(selections)).toThrowDetailedError('SELECTION_NORMAL_MULTIPLE', {
+        message: 'Normal mode does not support multiple selections (got 3). Multiple non-contiguous selections are not yet implemented.',
+        functionName: 'validateNormalMode',
+        details: { selectionsLength: 3 },
+      });
     });
 
     it('should throw error for 10 selections', () => {
@@ -66,15 +58,11 @@ describe('validateNormalMode', () => {
         coverage: SelectionCoverage.PartialLine,
       }));
 
-      expect(() => validateNormalMode(selections)).toThrowDetailedError(
-        'SELECTION_NORMAL_MULTIPLE',
-        {
-          message:
-            'Normal mode does not support multiple selections (got 10). Multiple non-contiguous selections are not yet implemented.',
-          functionName: 'validateNormalMode',
-          details: { selectionsLength: 10 },
-        },
-      );
+      expect(() => validateNormalMode(selections)).toThrowDetailedError('SELECTION_NORMAL_MULTIPLE', {
+        message: 'Normal mode does not support multiple selections (got 10). Multiple non-contiguous selections are not yet implemented.',
+        functionName: 'validateNormalMode',
+        details: { selectionsLength: 10 },
+      });
     });
   });
 
@@ -82,15 +70,11 @@ describe('validateNormalMode', () => {
     it('should throw error for 0 selections', () => {
       const selections: InputSelection['selections'] = [];
 
-      expect(() => validateNormalMode(selections)).toThrowDetailedError(
-        'SELECTION_NORMAL_MULTIPLE',
-        {
-          message:
-            'Normal mode does not support multiple selections (got 0). Multiple non-contiguous selections are not yet implemented.',
-          functionName: 'validateNormalMode',
-          details: { selectionsLength: 0 },
-        },
-      );
+      expect(() => validateNormalMode(selections)).toThrowDetailedError('SELECTION_NORMAL_MULTIPLE', {
+        message: 'Normal mode does not support multiple selections (got 0). Multiple non-contiguous selections are not yet implemented.',
+        functionName: 'validateNormalMode',
+        details: { selectionsLength: 0 },
+      });
     });
   });
 

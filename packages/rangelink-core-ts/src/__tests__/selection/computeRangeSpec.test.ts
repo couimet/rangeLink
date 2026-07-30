@@ -413,11 +413,9 @@ describe('computeRangeSpec', () => {
 
       const expectedError = new TypeError('Unexpected validation error');
 
-      const spy = jest
-        .spyOn(validateInputSelectionModule, 'validateInputSelection')
-        .mockImplementationOnce(() => {
-          throw expectedError;
-        });
+      const spy = jest.spyOn(validateInputSelectionModule, 'validateInputSelection').mockImplementationOnce(() => {
+        throw expectedError;
+      });
 
       expect(() => computeRangeSpec(inputSelection)).toThrow(expectedError);
 

@@ -38,10 +38,7 @@ describe('ReleaseNotifier', () => {
 
       new ReleaseNotifier(globalState as any, VERSION_INFO_100, adapter, mockLogger);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ReleaseNotifier.constructor' },
-        'ReleaseNotifier initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ReleaseNotifier.constructor' }, 'ReleaseNotifier initialized');
     });
   });
 
@@ -54,10 +51,7 @@ describe('ReleaseNotifier', () => {
 
         await notifier.maybeNotify();
 
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-          { fn: 'ReleaseNotifier.maybeNotify' },
-          'Version info unavailable — skipping release notification',
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'ReleaseNotifier.maybeNotify' }, 'Version info unavailable — skipping release notification');
         expect(globalState.get).not.toHaveBeenCalled();
         expect(globalState.update).not.toHaveBeenCalled();
       });
@@ -70,12 +64,7 @@ describe('ReleaseNotifier', () => {
         const adapter = createMockVscodeAdapter({
           windowOptions: { showInformationMessage: mockShowInformationMessage },
         });
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_100,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_100, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
@@ -96,21 +85,13 @@ describe('ReleaseNotifier', () => {
         const adapter = createMockVscodeAdapter({
           windowOptions: { showInformationMessage: mockShowInformationMessage },
         });
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_100,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_100, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
         expect(mockShowInformationMessage).not.toHaveBeenCalled();
         expect(globalState.update).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ReleaseNotifier.maybeNotify', version: '1.0.0' },
-          'Same version — skipping release notification',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ReleaseNotifier.maybeNotify', version: '1.0.0' }, 'Same version — skipping release notification');
       });
     });
 
@@ -121,20 +102,11 @@ describe('ReleaseNotifier', () => {
         const adapter = createMockVscodeAdapter({
           windowOptions: { showInformationMessage: mockShowInformationMessage },
         });
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_110,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_110, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          'RangeLink updated to v1.1.0. See what changed!',
-          "What's New",
-          'Skip for this version',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('RangeLink updated to v1.1.0. See what changed!', "What's New", 'Skip for this version');
         expect(globalState.update).not.toHaveBeenCalled();
         expect(mockLogger.info).toHaveBeenCalledWith(
           {
@@ -154,12 +126,7 @@ describe('ReleaseNotifier', () => {
           windowOptions: { showInformationMessage: mockShowInformationMessage },
           envOptions: { openExternal: mockOpenExternal },
         });
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_110,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_110, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
@@ -179,21 +146,13 @@ describe('ReleaseNotifier', () => {
           windowOptions: { showInformationMessage: mockShowInformationMessage },
           envOptions: { openExternal: mockOpenExternal },
         });
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_110,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_110, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
         expect(globalState.update).toHaveBeenCalledWith('rangelink.lastNotifiedVersion', '1.1.0');
         expect(mockOpenExternal).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ReleaseNotifier.maybeNotify', version: '1.1.0' },
-          'Release notification skipped for this version',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ReleaseNotifier.maybeNotify', version: '1.1.0' }, 'Release notification skipped for this version');
       });
 
       it("stores version and opens release notes URL when user clicks What's New", async () => {
@@ -203,23 +162,13 @@ describe('ReleaseNotifier', () => {
           windowOptions: { showInformationMessage: mockShowInformationMessage },
         });
         const openExternalSpy = jest.spyOn(adapter, 'openExternal').mockResolvedValue(true);
-        const notifier = new ReleaseNotifier(
-          globalState as any,
-          VERSION_INFO_110,
-          adapter,
-          mockLogger,
-        );
+        const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_110, adapter, mockLogger);
 
         await notifier.maybeNotify();
 
         expect(globalState.update).toHaveBeenCalledWith('rangelink.lastNotifiedVersion', '1.1.0');
-        expect(openExternalSpy).toHaveBeenCalledWith(
-          'https://github.com/couimet/rangeLink/releases/tag/vscode-extension-v1.1.0',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ReleaseNotifier.maybeNotify', version: '1.1.0' },
-          'Opened release notes in browser',
-        );
+        expect(openExternalSpy).toHaveBeenCalledWith('https://github.com/couimet/rangeLink/releases/tag/vscode-extension-v1.1.0');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ReleaseNotifier.maybeNotify', version: '1.1.0' }, 'Opened release notes in browser');
       });
     });
   });
@@ -228,12 +177,7 @@ describe('ReleaseNotifier', () => {
     it('returns the stored version from globalState', () => {
       const globalState = createMockGlobalState('1.0.0');
       const adapter = createMockVscodeAdapter();
-      const notifier = new ReleaseNotifier(
-        globalState as any,
-        VERSION_INFO_100,
-        adapter,
-        mockLogger,
-      );
+      const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_100, adapter, mockLogger);
 
       expect(notifier.getLastNotifiedVersion()).toBe('1.0.0');
       expect(globalState.get).toHaveBeenCalledWith('rangelink.lastNotifiedVersion');
@@ -242,12 +186,7 @@ describe('ReleaseNotifier', () => {
     it('returns undefined when no version is stored', () => {
       const globalState = createMockGlobalState(undefined);
       const adapter = createMockVscodeAdapter();
-      const notifier = new ReleaseNotifier(
-        globalState as any,
-        VERSION_INFO_100,
-        adapter,
-        mockLogger,
-      );
+      const notifier = new ReleaseNotifier(globalState as any, VERSION_INFO_100, adapter, mockLogger);
 
       expect(notifier.getLastNotifiedVersion()).toBeUndefined();
     });

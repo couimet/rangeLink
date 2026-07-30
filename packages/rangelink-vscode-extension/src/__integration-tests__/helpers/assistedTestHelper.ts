@@ -19,11 +19,7 @@ const SECTION_LINE = '─'.repeat(SECTION_LINE_WIDTH);
  * @param action - Short mechanical action the human should perform (notification title after TC ID)
  * @param consoleSteps - Optional extra step lines for multi-step actions (e.g., secondary picker flows)
  */
-export const waitForHuman = async (
-  tcId: string,
-  action: string,
-  consoleSteps?: string[],
-): Promise<void> => {
+export const waitForHuman = async (tcId: string, action: string, consoleSteps?: string[]): Promise<void> => {
   nodeConsole.log(`\n${SECTION_LINE}`);
   nodeConsole.log(`[${tcId}] ${action}`);
   if (consoleSteps !== undefined) {
@@ -104,11 +100,7 @@ let activeVerdictReject: ((reason: unknown) => void) | undefined;
  * @param consoleSteps - Optional bulleted steps (shown in the terminal console)
  * @returns `'pass'` if the human clicked the Pass status bar item, `'fail'` otherwise
  */
-export const waitForHumanVerdict = (
-  tcId: string,
-  action: string,
-  consoleSteps?: string[],
-): Promise<HumanVerdict> => {
+export const waitForHumanVerdict = (tcId: string, action: string, consoleSteps?: string[]): Promise<HumanVerdict> => {
   nodeConsole.log(`\n${SECTION_LINE}`);
   nodeConsole.log(`[${tcId}] ${action}`);
   if (consoleSteps !== undefined) {

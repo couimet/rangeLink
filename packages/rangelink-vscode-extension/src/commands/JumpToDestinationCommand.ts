@@ -22,10 +22,7 @@ export class JumpToDestinationCommand {
     private readonly destinationPicker: DestinationPicker,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'JumpToDestinationCommand.constructor' },
-      'JumpToDestinationCommand initialized',
-    );
+    this.logger.debug({ fn: 'JumpToDestinationCommand.constructor' }, 'JumpToDestinationCommand initialized');
   }
 
   async execute(): Promise<JumpToDestinationResult> {
@@ -77,10 +74,7 @@ export class JumpToDestinationCommand {
     return { outcome: 'focused', destinationName: focusResult.value.destinationName };
   }
 
-  private async bindAndFocus(
-    bindOptions: BindOptions,
-    logCtx: { fn: string },
-  ): Promise<JumpToDestinationResult> {
+  private async bindAndFocus(bindOptions: BindOptions, logCtx: { fn: string }): Promise<JumpToDestinationResult> {
     this.logger.debug(logCtx, 'Binding selected destination and focusing');
     const result = await this.focuser.bindAndFocus(bindOptions);
 

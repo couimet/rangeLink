@@ -19,14 +19,7 @@ import {
   SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
 } from '../constants/settingKeys';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import {
-  type AIAssistantDestinationKind,
-  AutoPasteResult,
-  type CustomAiAssistantKind,
-  type DestinationKind,
-  MessageCode,
-  RelativePathFormat,
-} from '../types';
+import { type AIAssistantDestinationKind, AutoPasteResult, type CustomAiAssistantKind, type DestinationKind, MessageCode, RelativePathFormat } from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -35,11 +28,7 @@ import {
   isGeminiCodeAssistAvailable,
   isGitHubCopilotChatAvailable,
 } from '../utils';
-import {
-  EXTENSION_ID_CLAUDE_CODE,
-  EXTENSION_ID_GEMINI_CODE_ASSIST,
-  EXTENSION_ID_GITHUB_COPILOT_CHAT,
-} from '../utils/aiAssistants/';
+import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_GEMINI_CODE_ASSIST, EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../utils/aiAssistants/';
 
 import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
@@ -254,10 +243,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
  *
  * Uses the standard focus+paste flow via AIAssistantFocusCapability.
  */
-const buildBuiltinAiAssistantDestination = (
-  def: BuiltinAiAssistantDef,
-  context: DestinationBuilderContext,
-): ComposablePasteDestination =>
+const buildBuiltinAiAssistantDestination = (def: BuiltinAiAssistantDef, context: DestinationBuilderContext): ComposablePasteDestination =>
   ComposablePasteDestination.createAiAssistant({
     id: def.kind,
     displayName: def.displayName,
@@ -269,10 +255,7 @@ const buildBuiltinAiAssistantDestination = (
     jumpSuccessMessage: formatMessage(def.jumpMessageCode),
     loggingDetails: {},
     logger: context.logger,
-    getUserInstruction: (autoPasteResult) =>
-      autoPasteResult === AutoPasteResult.Success
-        ? undefined
-        : formatMessage(def.userInstructionMessageCode),
+    getUserInstruction: (autoPasteResult) => (autoPasteResult === AutoPasteResult.Success ? undefined : formatMessage(def.userInstructionMessageCode)),
   });
 
 /**
@@ -294,22 +277,13 @@ const createBuiltinAiAssistantBuilder =
  * configured with the user's extensionId, displayName, and three-tier commands.
  * Tier resolution happens lazily on first focus() call via LazyResolvedFocusCapability.
  */
-export const createCustomAiAssistantBuilder = (
-  config: CustomAiAssistantConfig,
-): DestinationBuilder => {
+export const createCustomAiAssistantBuilder = (config: CustomAiAssistantConfig): DestinationBuilder => {
   const { kind, extensionId, extensionName } = config;
-  const allCommands = [
-    ...(config.insertCommands ?? []).map((e) => e.command),
-    ...(config.focusAndPasteCommands ?? []),
-    ...(config.focusCommands ?? []),
-  ];
+  const allCommands = [...(config.insertCommands ?? []).map((e) => e.command), ...(config.focusAndPasteCommands ?? []), ...(config.focusCommands ?? [])];
 
   return (_options, context) => {
     const tiers = context.factories.focusCapability.buildCustomAIAssistantTiers(config);
-    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(
-      tiers,
-      extensionName,
-    );
+    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(tiers, extensionName);
 
     return ComposablePasteDestination.createAiAssistant({
       id: kind,
@@ -375,18 +349,12 @@ const createOverriddenBuiltinBuilder =
   (config: CustomAiAssistantConfig, builtin: BuiltinAiAssistantDef): DestinationBuilder =>
   (_options, context) => {
     const userTiers = context.factories.focusCapability.buildCustomAIAssistantTiers(config);
-    const fallbackTier = context.factories.focusCapability.buildBuiltinFallbackTier(
-      builtin.focusCommands,
-    );
+    const fallbackTier = context.factories.focusCapability.buildBuiltinFallbackTier(builtin.focusCommands);
 
     const allTiers = [...userTiers, fallbackTier];
     const fallbackTierIndex = userTiers.length;
 
-    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(
-      allTiers,
-      builtin.displayName,
-      fallbackTierIndex,
-    );
+    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(allTiers, builtin.displayName, fallbackTierIndex);
 
     return ComposablePasteDestination.createAiAssistant({
       id: builtin.kind,

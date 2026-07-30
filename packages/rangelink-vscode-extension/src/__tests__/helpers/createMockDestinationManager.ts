@@ -10,14 +10,8 @@ export interface MockDestinationManagerOptions {
   bindResult?: ExtensionResult<BindSuccessInfo>;
 }
 
-export const createMockDestinationManager = (
-  options: MockDestinationManagerOptions = {},
-): jest.Mocked<PasteDestinationManager> => {
-  const {
-    sendLinkToDestinationResult = false,
-    sendTextToDestinationResult = false,
-    bindResult,
-  } = options;
+export const createMockDestinationManager = (options: MockDestinationManagerOptions = {}): jest.Mocked<PasteDestinationManager> => {
+  const { sendLinkToDestinationResult = false, sendTextToDestinationResult = false, bindResult } = options;
 
   const bindMock = bindResult !== undefined ? jest.fn().mockResolvedValue(bindResult) : jest.fn();
 

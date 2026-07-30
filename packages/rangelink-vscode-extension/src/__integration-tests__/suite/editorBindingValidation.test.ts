@@ -1,12 +1,5 @@
 import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
-import {
-  extractQuickPickItemsLogged,
-  findTestItemsByPrefix,
-  getLogCapture,
-  openAndDismiss,
-  standardSuite,
-  waitForHumanVerdict,
-} from '../helpers';
+import { extractQuickPickItemsLogged, findTestItemsByPrefix, getLogCapture, openAndDismiss, standardSuite, waitForHumanVerdict } from '../helpers';
 
 import assert from 'node:assert';
 import * as path from 'node:path';
@@ -26,11 +19,7 @@ standardSuite('Editor Binding Validation', (ss) => {
       ],
     );
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Link or bind commands were visible in the search editor content area context menu',
-    );
+    assert.strictEqual(verdict, 'pass', 'Link or bind commands were visible in the search editor content area context menu');
     ss.log('✓ Search editor content hides link/bind commands (human verdict)');
   });
 
@@ -48,11 +37,7 @@ standardSuite('Editor Binding Validation', (ss) => {
       ],
     );
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'File path or bind commands were visible in the output panel context menu',
-    );
+    assert.strictEqual(verdict, 'pass', 'File path or bind commands were visible in the output panel context menu');
     ss.log('✓ Output panel hides file path/bind commands (human verdict)');
   });
 
@@ -104,17 +89,10 @@ standardSuite('Editor Binding Validation', (ss) => {
     const txtFileName = path.basename(txtUri.fsPath);
 
     const pngItems = findTestItemsByPrefix(items!, pngFileName);
-    assert.strictEqual(
-      pngItems.length,
-      0,
-      `Binary .png file "${pngFileName}" must not appear in R-D picker`,
-    );
+    assert.strictEqual(pngItems.length, 0, `Binary .png file "${pngFileName}" must not appear in R-D picker`);
 
     const txtItems = findTestItemsByPrefix(items!, 'ebv-004-txt');
-    assert.ok(
-      txtItems.length > 0,
-      `Plain .txt file "${txtFileName}" must appear in R-D picker as positive control`,
-    );
+    assert.ok(txtItems.length > 0, `Plain .txt file "${txtFileName}" must appear in R-D picker as positive control`);
 
     ss.log('✓ Binary .png excluded from R-D picker; .txt control file present (log verified)');
   });
@@ -132,11 +110,7 @@ standardSuite('Editor Binding Validation', (ss) => {
       ],
     );
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'File path commands were visible in the search editor tab context menu',
-    );
+    assert.strictEqual(verdict, 'pass', 'File path commands were visible in the search editor tab context menu');
     ss.log('✓ Search editor tab hides file path commands (human verdict)');
   });
 });

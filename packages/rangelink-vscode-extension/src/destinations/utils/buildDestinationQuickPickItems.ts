@@ -21,14 +21,11 @@ import * as vscode from 'vscode';
 
 export const BUILTIN_AI_COUNT = AI_ASSISTANT_KINDS.length;
 
-const isDestinationKind = (key: string): key is DestinationKind =>
-  (DESTINATION_KINDS as readonly string[]).includes(key) || key.startsWith('custom-ai:');
+const isDestinationKind = (key: string): key is DestinationKind => (DESTINATION_KINDS as readonly string[]).includes(key) || key.startsWith('custom-ai:');
 
-const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem =>
-  'terminalInfo' in item;
+const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem => 'terminalInfo' in item;
 
-const isFileItem = (item: BindableQuickPickItem): item is FileBindableQuickPickItem =>
-  'fileInfo' in item;
+const isFileItem = (item: BindableQuickPickItem): item is FileBindableQuickPickItem => 'fileInfo' in item;
 
 type PickerSequenceKey = DestinationKind | 'file-more' | 'terminal-more';
 
@@ -90,9 +87,7 @@ export const buildDestinationQuickPickItems = (
   const items: (DestinationQuickPickItem | vscode.QuickPickItem)[] = [];
   let currentGroup: DestinationGroup | undefined;
 
-  const customAiKinds = Object.keys(grouped).filter(
-    (key) => isCustomAiAssistantKind(key) && grouped[key as keyof GroupedDestinationItems],
-  );
+  const customAiKinds = Object.keys(grouped).filter((key) => isCustomAiAssistantKind(key) && grouped[key as keyof GroupedDestinationItems]);
   const fullSequence: PickerSequenceKey[] = [
     ...DESTINATION_PICKER_SEQUENCE.slice(0, BUILTIN_AI_COUNT),
     ...(customAiKinds as PickerSequenceKey[]),
@@ -103,8 +98,7 @@ export const buildDestinationQuickPickItems = (
     const groupItems = grouped[key];
     if (!groupItems) continue;
 
-    const nextGroup =
-      DESTINATION_GROUP_MAP[key] ?? (isCustomAiAssistantKind(key) ? 'ai' : undefined);
+    const nextGroup = DESTINATION_GROUP_MAP[key] ?? (isCustomAiAssistantKind(key) ? 'ai' : undefined);
     if (!nextGroup) continue;
     if (nextGroup !== currentGroup) {
       items.push({
@@ -157,9 +151,7 @@ export const buildDestinationQuickPickItems = (
         });
       }
 
-      const groupLabel = isFileItem(item)
-        ? formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: item.fileInfo.viewColumn })
-        : undefined;
+      const groupLabel = isFileItem(item) ? formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: item.fileInfo.viewColumn }) : undefined;
       const description = isTerminalItem(item)
         ? buildTerminalDescription(item.terminalInfo)
         : isFileItem(item)

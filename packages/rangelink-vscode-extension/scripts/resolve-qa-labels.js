@@ -145,10 +145,7 @@ for (const rawLine of lines) {
   if (autoMatch) {
     const raw = autoMatch[1].trim();
     currentCase.automated =
-      raw.length >= 2 &&
-      ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
-        ? raw.slice(1, -1)
-        : raw;
+      raw.length >= 2 && ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) ? raw.slice(1, -1) : raw;
     inLabels = false;
     continue;
   }
@@ -157,10 +154,7 @@ for (const rawLine of lines) {
   if (reasonMatch) {
     const raw = reasonMatch[1].trim();
     currentCase.nonAutomatableReason =
-      raw.length >= 2 &&
-      ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
-        ? raw.slice(1, -1)
-        : raw;
+      raw.length >= 2 && ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) ? raw.slice(1, -1) : raw;
     inLabels = false;
     continue;
   }
@@ -169,9 +163,7 @@ for (const rawLine of lines) {
   if (featMatch) {
     const rawFeature = featMatch[1].trim();
     currentCase.feature =
-      rawFeature.length >= 2 &&
-      ((rawFeature.startsWith('"') && rawFeature.endsWith('"')) ||
-        (rawFeature.startsWith("'") && rawFeature.endsWith("'")))
+      rawFeature.length >= 2 && ((rawFeature.startsWith('"') && rawFeature.endsWith('"')) || (rawFeature.startsWith("'") && rawFeature.endsWith("'")))
         ? rawFeature.slice(1, -1)
         : rawFeature;
     inLabels = false;
@@ -182,9 +174,7 @@ for (const rawLine of lines) {
   if (scenarioMatch) {
     const rawScenario = scenarioMatch[1].trim();
     currentCase.scenario =
-      rawScenario.length >= 2 &&
-      ((rawScenario.startsWith('"') && rawScenario.endsWith('"')) ||
-        (rawScenario.startsWith("'") && rawScenario.endsWith("'")))
+      rawScenario.length >= 2 && ((rawScenario.startsWith('"') && rawScenario.endsWith('"')) || (rawScenario.startsWith("'") && rawScenario.endsWith("'")))
         ? rawScenario.slice(1, -1)
         : rawScenario;
     inLabels = false;

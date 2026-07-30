@@ -33,10 +33,7 @@ export const createFileDeleteWatcher = (deps: {
       return;
     }
 
-    deps.logger.info(
-      { fn: 'createFileDeleteWatcher', fileUri: boundUriString },
-      `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`,
-    );
+    deps.logger.info({ fn: 'createFileDeleteWatcher', fileUri: boundUriString }, `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`);
     deps.clearBinding();
     deps.feedback.notifyAutoUnbind(deps.displayName, 'file-deleted');
   });

@@ -29,17 +29,8 @@ describe('AIAssistantFocusCapability', () => {
     jest.useRealTimers();
   });
 
-  const createCapability = (
-    commands: string[] = FOCUS_COMMANDS,
-    getColdRefocus?: () => ColdRefocusConfig,
-  ): AIAssistantFocusCapability =>
-    new AIAssistantFocusCapability(
-      mockAdapter,
-      commands,
-      getColdRefocus,
-      mockInsertFactory,
-      mockLogger,
-    );
+  const createCapability = (commands: string[] = FOCUS_COMMANDS, getColdRefocus?: () => ColdRefocusConfig): AIAssistantFocusCapability =>
+    new AIAssistantFocusCapability(mockAdapter, commands, getColdRefocus, mockInsertFactory, mockLogger);
 
   it('succeeds on first focus command and returns inserter', async () => {
     jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
@@ -52,17 +43,11 @@ describe('AIAssistantFocusCapability', () => {
       expect(value.inserter).toBeUndefined();
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledWith('ai.focus');
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'test', command: 'ai.focus' },
-      'Focus command succeeded',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', command: 'ai.focus' }, 'Focus command succeeded');
   });
 
   it('falls back through command list until one succeeds', async () => {
-    jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockRejectedValueOnce(new Error('first failed'))
-      .mockResolvedValueOnce(undefined);
+    jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('first failed')).mockResolvedValueOnce(undefined);
     const capability = createCapability(['cmd.a', 'cmd.b', 'cmd.c']);
     const focusPromise = capability.focus(CTX);
     await jest.advanceTimersByTimeAsync(200);
@@ -84,10 +69,7 @@ describe('AIAssistantFocusCapability', () => {
     expect(result).toBeFailureWith((error) => {
       expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'test', allCommandsFailed: true },
-      'All focus commands failed',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test', allCommandsFailed: true }, 'All focus commands failed');
   });
 
   it('waits FOCUS_TO_PASTE_DELAY_MS when no coldRefocus configured (warm delay)', async () => {
@@ -164,10 +146,7 @@ describe('AIAssistantFocusCapability', () => {
     await jest.advanceTimersByTimeAsync(900);
     await focusPromise;
 
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'test', totalMs: expect.any(Number) as number, intervalMs: 300 },
-      'Cold refocus loop completed',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', totalMs: expect.any(Number) as number, intervalMs: 300 }, 'Cold refocus loop completed');
   });
 
   it('falls back to warm delay when intervalMs is 0', async () => {
@@ -182,10 +161,7 @@ describe('AIAssistantFocusCapability', () => {
     expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'test', totalMs: 2500, intervalMs: 0 },
-      'Invalid cold refocus config, falling back to warm delay',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test', totalMs: 2500, intervalMs: 0 }, 'Invalid cold refocus config, falling back to warm delay');
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
   });
 
@@ -216,10 +192,7 @@ describe('AIAssistantFocusCapability', () => {
     expect(result).toBeSuccessWith((value) => {
       expect(value.inserter).toBeUndefined();
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'test', totalMs: 300, intervalMs: 300 },
-      'Invalid cold refocus config, falling back to warm delay',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test', totalMs: 300, intervalMs: 300 }, 'Invalid cold refocus config, falling back to warm delay');
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
   });
 });

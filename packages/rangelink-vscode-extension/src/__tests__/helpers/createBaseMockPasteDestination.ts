@@ -58,8 +58,7 @@ const processConvenienceOptions = (options?: MockDestinationOptions): Record<str
 
   // Smart isAvailable handling: boolean → wrapped mock, jest.Mock → as-is
   if (isAvailable !== undefined) {
-    processed.isAvailable =
-      typeof isAvailable === 'boolean' ? jest.fn().mockResolvedValue(isAvailable) : isAvailable;
+    processed.isAvailable = typeof isAvailable === 'boolean' ? jest.fn().mockResolvedValue(isAvailable) : isAvailable;
   }
 
   return processed;
@@ -90,9 +89,7 @@ const processConvenienceOptions = (options?: MockDestinationOptions): Record<str
  * @param options - Configuration with REQUIRED `id` and optional overrides
  * @returns Mock destination with jest.fn() implementations
  */
-export const createBaseMockPasteDestination = (
-  options: BaseMockDestinationOptions,
-): jest.Mocked<PasteDestination> => {
+export const createBaseMockPasteDestination = (options: BaseMockDestinationOptions): jest.Mocked<PasteDestination> => {
   const { id, ...overrides } = options;
   const processedOverrides = processConvenienceOptions(overrides);
 

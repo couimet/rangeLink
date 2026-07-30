@@ -1,11 +1,7 @@
 import type { TerminalPickerHandlers } from '../../../destinations/types';
 import { showTerminalPicker } from '../../../destinations/utils';
 import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../../types';
-import {
-  createMockQuickPickProvider,
-  createMockTerminal,
-  createMockTerminalQuickPickItem,
-} from '../../helpers';
+import { createMockQuickPickProvider, createMockTerminal, createMockTerminalQuickPickItem } from '../../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -41,12 +37,13 @@ describe('showTerminalPicker', () => {
       const quickPickProvider = createMockQuickPickProvider();
       const logger = createMockLogger();
 
-      await expect(() =>
-        showTerminalPicker([], quickPickProvider, createHandlers(identityCallback), logger),
-      ).toThrowDetailedErrorAsync('TERMINAL_PICKER_EMPTY_ITEMS', {
-        message: 'showTerminalPicker called with no terminal items',
-        functionName: 'showTerminalPicker',
-      });
+      await expect(() => showTerminalPicker([], quickPickProvider, createHandlers(identityCallback), logger)).toThrowDetailedErrorAsync(
+        'TERMINAL_PICKER_EMPTY_ITEMS',
+        {
+          message: 'showTerminalPicker called with no terminal items',
+          functionName: 'showTerminalPicker',
+        },
+      );
       expect(quickPickProvider.showQuickPick).not.toHaveBeenCalled();
     });
   });
@@ -58,26 +55,15 @@ describe('showTerminalPicker', () => {
       quickPickProvider.showQuickPick.mockResolvedValueOnce(reformattedItem(items[1]));
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(
-        items,
-        quickPickProvider,
-        createHandlers(identityCallback),
-        logger,
-      );
+      const result = await showTerminalPicker(items, quickPickProvider, createHandlers(identityCallback), logger);
 
       expect(result).toStrictEqual(items[1].terminalInfo);
       expect(quickPickProvider.showQuickPick).toHaveBeenCalledWith(items.map(reformattedItem), {
         title: 'RangeLink',
         placeHolder: 'Choose a terminal to bind to',
       });
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 3, itemCount: 3 },
-        'Showing terminal picker',
-      );
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', selected: reformattedItem(items[1]) },
-        'Terminal selected',
-      );
+      expect(logger.debug).toHaveBeenCalledWith({ fn: 'showTerminalPicker', terminalCount: 3, itemCount: 3 }, 'Showing terminal picker');
+      expect(logger.debug).toHaveBeenCalledWith({ fn: 'showTerminalPicker', selected: reformattedItem(items[1]) }, 'Terminal selected');
     });
 
     it('passes handler return value through as result', async () => {
@@ -161,18 +147,10 @@ describe('showTerminalPicker', () => {
       quickPickProvider.showQuickPick.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(
-        items,
-        quickPickProvider,
-        createHandlers(identityCallback),
-        logger,
-      );
+      const result = await showTerminalPicker(items, quickPickProvider, createHandlers(identityCallback), logger);
 
       expect(result).toBeUndefined();
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 3 },
-        'User cancelled terminal picker',
-      );
+      expect(logger.debug).toHaveBeenCalledWith({ fn: 'showTerminalPicker', terminalCount: 3 }, 'User cancelled terminal picker');
     });
 
     it('calls onDismissed handler when provided and user dismisses', async () => {
@@ -191,10 +169,7 @@ describe('showTerminalPicker', () => {
       );
 
       expect(result).toBe('dismissed-value');
-      expect(logger.debug).not.toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 2 },
-        'User cancelled terminal picker',
-      );
+      expect(logger.debug).not.toHaveBeenCalledWith({ fn: 'showTerminalPicker', terminalCount: 2 }, 'User cancelled terminal picker');
     });
 
     it('supports async onDismissed handler', async () => {

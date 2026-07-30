@@ -192,9 +192,7 @@ function activate(context) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
     // Get relative path from workspace root
-    const relativePath = workspaceFolder
-      ? document.uri.path.substring(workspaceFolder.uri.path.length + 1)
-      : vscode.workspace.asRelativeUri(document.uri).path;
+    const relativePath = workspaceFolder ? document.uri.path.substring(workspaceFolder.uri.path.length + 1) : vscode.workspace.asRelativeUri(document.uri).path;
 
     const startLine = selection.start.line + 1;
     const startChar = selection.start.character + 1;

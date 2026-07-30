@@ -38,9 +38,7 @@ export const createMockBoundSession = (overrides?: { get?: jest.Mock; isSet?: je
       fn(getMock());
       return emitter.event(fn);
     }),
-    onDidChange: jest.fn((fn: (info: BoundDestinationInfo | undefined) => void) =>
-      emitter.event(fn),
-    ),
+    onDidChange: jest.fn((fn: (info: BoundDestinationInfo | undefined) => void) => emitter.event(fn)),
     _emitter: emitter,
     isClipboardRestorationApplicable: jest.fn().mockReturnValue(true),
     dispose: jest.fn(),

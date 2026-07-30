@@ -31,9 +31,7 @@ const normalizeExtensionConfig = (config: MockExtensionConfig): vscode.Extension
  * @param extensions - Array of extension configs (string IDs or detailed objects)
  * @returns Mock extensions object
  */
-export const createMockExtensions = (
-  extensions: MockExtensionConfig[] = [],
-): typeof vscode.extensions => {
+export const createMockExtensions = (extensions: MockExtensionConfig[] = []): typeof vscode.extensions => {
   const mockExtensions = extensions.map(normalizeExtensionConfig);
 
   return {

@@ -45,8 +45,4 @@ export const CLIPBOARD_POST_PASTE_DELAY_MS = 200;
  * for parking focus inside the AI panel before this loop runs, so #1 typically
  * throws (no editor focused) and the loop falls through to #2.
  */
-export const AI_ASSISTANT_PASTE_COMMANDS = [
-  'editor.action.clipboardPasteAction',
-  'execPaste',
-  'paste',
-] as const;
+export const AI_ASSISTANT_PASTE_COMMANDS = ['editor.action.clipboardPasteAction', 'execPaste', 'paste'] as const;

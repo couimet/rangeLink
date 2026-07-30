@@ -24,11 +24,9 @@ interface RawCustomAiAssistantEntry {
   focusCommands?: unknown;
 }
 
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === 'string' && value.trim().length > 0;
+const isNonEmptyString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 
-const isNonEmptyStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
+const isNonEmptyStringArray = (value: unknown): value is string[] => Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
 
 /**
  * Validate and normalize a single insertCommands entry.
@@ -41,9 +39,7 @@ const normalizeInsertCommandEntry = (item: unknown): InsertCommandEntry | undefi
   if (item && typeof item === 'object' && !Array.isArray(item)) {
     const obj = item as Record<string, unknown>;
     if (typeof obj.command === 'string' && obj.command.trim().length > 0) {
-      return obj.args !== undefined
-        ? { command: obj.command, args: obj.args }
-        : { command: obj.command };
+      return obj.args !== undefined ? { command: obj.command, args: obj.args } : { command: obj.command };
     }
   }
   return undefined;
@@ -53,11 +49,7 @@ const normalizeInsertCommandEntry = (item: unknown): InsertCommandEntry | undefi
  * Parse and normalize an insertCommands array from raw config.
  * Returns undefined if the array is absent/empty, or a normalized array skipping invalid entries.
  */
-const parseInsertCommands = (
-  raw: unknown,
-  index: number,
-  logger: Logger,
-): InsertCommandEntry[] | undefined => {
+const parseInsertCommands = (raw: unknown, index: number, logger: Logger): InsertCommandEntry[] | undefined => {
   if (raw === undefined) {
     return undefined;
   }
@@ -71,10 +63,7 @@ const parseInsertCommands = (
     if (normalized) {
       entries.push(normalized);
     } else {
-      logger.warn(
-        { fn: 'parseCustomAiAssistants', index, itemIndex },
-        `Skipping customAiAssistants[${index}].insertCommands[${itemIndex}]: invalid entry`,
-      );
+      logger.warn({ fn: 'parseCustomAiAssistants', index, itemIndex }, `Skipping customAiAssistants[${index}].insertCommands[${itemIndex}]: invalid entry`);
     }
   }
 
@@ -85,22 +74,14 @@ const parseInsertCommands = (
  * Parse an optional string array field. Returns undefined if absent or invalid.
  * Logs a warning when the value exists but is malformed.
  */
-const parseOptionalStringArray = (
-  raw: unknown,
-  fieldName: string,
-  index: number,
-  logger: Logger,
-): string[] | undefined => {
+const parseOptionalStringArray = (raw: unknown, fieldName: string, index: number, logger: Logger): string[] | undefined => {
   if (raw === undefined) {
     return undefined;
   }
   if (isNonEmptyStringArray(raw)) {
     return raw;
   }
-  logger.warn(
-    { fn: 'parseCustomAiAssistants', index, fieldName },
-    `Skipping customAiAssistants[${index}].${fieldName}: must be a non-empty array of strings`,
-  );
+  logger.warn({ fn: 'parseCustomAiAssistants', index, fieldName }, `Skipping customAiAssistants[${index}].${fieldName}: must be a non-empty array of strings`);
   return undefined;
 };
 
@@ -113,10 +94,7 @@ const parseOptionalStringArray = (
  * - focusAndPasteCommands: Tier 2 — focus + auto-paste via clipboard
  * - focusCommands: Tier 3 — focus only, user pastes manually
  */
-export const parseCustomAiAssistants = (
-  configReader: ConfigReader,
-  logger: Logger,
-): CustomAiAssistantConfig[] => {
+export const parseCustomAiAssistants = (configReader: ConfigReader, logger: Logger): CustomAiAssistantConfig[] => {
   const raw = configReader.get<RawCustomAiAssistantEntry[]>(SETTING_KEY);
 
   if (!Array.isArray(raw) || raw.length === 0) {
@@ -128,10 +106,7 @@ export const parseCustomAiAssistants = (
 
   for (const [index, entry] of raw.entries()) {
     if (!entry || typeof entry !== 'object') {
-      logger.warn(
-        { fn: 'parseCustomAiAssistants', index },
-        `Skipping customAiAssistants[${index}]: not an object`,
-      );
+      logger.warn({ fn: 'parseCustomAiAssistants', index }, `Skipping customAiAssistants[${index}]: not an object`);
       continue;
     }
 
@@ -157,18 +132,8 @@ export const parseCustomAiAssistants = (
     const extensionName = rawExtensionName.trim();
 
     const insertCommands = parseInsertCommands(entry.insertCommands, index, logger);
-    const focusAndPasteCommands = parseOptionalStringArray(
-      entry.focusAndPasteCommands,
-      'focusAndPasteCommands',
-      index,
-      logger,
-    );
-    const focusCommands = parseOptionalStringArray(
-      entry.focusCommands,
-      'focusCommands',
-      index,
-      logger,
-    );
+    const focusAndPasteCommands = parseOptionalStringArray(entry.focusAndPasteCommands, 'focusAndPasteCommands', index, logger);
+    const focusCommands = parseOptionalStringArray(entry.focusCommands, 'focusCommands', index, logger);
 
     if (!insertCommands && !focusAndPasteCommands && !focusCommands) {
       logger.warn(
@@ -179,10 +144,7 @@ export const parseCustomAiAssistants = (
     }
 
     if (seenIds.has(extensionId)) {
-      logger.warn(
-        { fn: 'parseCustomAiAssistants', index, extensionId },
-        `Skipping customAiAssistants[${index}]: duplicate extensionId '${extensionId}'`,
-      );
+      logger.warn({ fn: 'parseCustomAiAssistants', index, extensionId }, `Skipping customAiAssistants[${index}]: duplicate extensionId '${extensionId}'`);
       continue;
     }
 

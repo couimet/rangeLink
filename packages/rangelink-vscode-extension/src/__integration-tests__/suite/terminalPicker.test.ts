@@ -1,9 +1,4 @@
-import {
-  CMD_BIND_TO_DESTINATION,
-  CMD_BIND_TO_TERMINAL,
-  CMD_BIND_TO_TERMINAL_HERE,
-  CMD_OPEN_STATUS_BAR_MENU,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_TERMINAL, CMD_BIND_TO_TERMINAL_HERE, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   extractQuickPickItemsLogged,
   findTerminalItems,
@@ -365,11 +360,7 @@ standardSuite('Terminal Picker', (ss) => {
     );
 
     const termItems = findTerminalItems(items!);
-    assert.strictEqual(
-      termItems.length,
-      MAX_INLINE_DEFAULT,
-      `Expected ${MAX_INLINE_DEFAULT} inline items`,
-    );
+    assert.strictEqual(termItems.length, MAX_INLINE_DEFAULT, `Expected ${MAX_INLINE_DEFAULT} inline items`);
     const activeInline = termItems.find((i) => i.isActive === true);
     assert.ok(activeInline, 'Expected one active terminal in inline items');
     assert.deepStrictEqual(
@@ -401,25 +392,19 @@ standardSuite('Terminal Picker', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-009');
 
-    await waitForHuman(
-      'terminal-picker-009',
-      'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More terminals..."',
-        '3. Escape the secondary picker (parent reopens)',
-        '4. Escape the parent picker',
-      ],
-    );
+    await waitForHuman('terminal-picker-009', 'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More terminals..."',
+      '3. Escape the secondary picker (parent reopens)',
+      '4. Escape the parent picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-tp-009');
     const quickPickEntries = getQuickPickLines(lines);
     assert.ok(quickPickEntries.length >= 2, 'Expected at least 2 showQuickPick entries');
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
-    const secondaryTerminals = secondaryItems.filter(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('rl-tp-009-'),
-    );
+    const secondaryTerminals = secondaryItems.filter((i) => typeof i.label === 'string' && (i.label as string).includes('rl-tp-009-'));
     assert.strictEqual(secondaryTerminals.length, TERMINAL_OVERFLOW_COUNT);
 
     const activeSecondary = secondaryTerminals.find((i) => i.isActive === true);
@@ -465,16 +450,12 @@ standardSuite('Terminal Picker', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-010');
 
-    await waitForHuman(
-      'terminal-picker-010',
-      'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More terminals..."',
-        '3. Escape the secondary picker (parent should reopen)',
-        '4. Escape the parent picker',
-      ],
-    );
+    await waitForHuman('terminal-picker-010', 'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More terminals..."',
+      '3. Escape the secondary picker (parent should reopen)',
+      '4. Escape the parent picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-tp-010');
     const quickPickEntries = getQuickPickLines(lines);
@@ -573,9 +554,7 @@ standardSuite('Terminal Picker', (ss) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
-    const terminalSeparator = items!.find(
-      (i) => i.kind === SEPARATOR_KIND && i.label === 'Terminals',
-    );
+    const terminalSeparator = items!.find((i) => i.kind === SEPARATOR_KIND && i.label === 'Terminals');
     assert.ok(terminalSeparator, 'Expected "Terminals" separator in R-M menu');
 
     const termItems = findTerminalItems(items!);
@@ -734,9 +713,7 @@ standardSuite('Terminal Picker', (ss) => {
       },
     );
 
-    const moreFiles = items!.find(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('More files...'),
-    );
+    const moreFiles = items!.find((i) => typeof i.label === 'string' && (i.label as string).includes('More files...'));
     assert.ok(moreFiles, 'Expected "More files..." overflow item');
     assert.deepStrictEqual(
       {
@@ -786,11 +763,7 @@ standardSuite('Terminal Picker', (ss) => {
     assert.deepStrictEqual(termItems, [], 'Expected no terminal items when only a pty exists');
 
     const moreTerminals = items!.find((i) => i.label === 'More terminals...');
-    assert.strictEqual(
-      moreTerminals,
-      undefined,
-      'Expected no "More terminals..." overflow when there are no bindable terminals',
-    );
+    assert.strictEqual(moreTerminals, undefined, 'Expected no "More terminals..." overflow when there are no bindable terminals');
 
     ss.log('✓ Terminal section absent from R-D picker when only pty terminal is open');
   });
@@ -806,9 +779,7 @@ standardSuite('Terminal Picker', (ss) => {
     const ptyTerminal = await ss.createTerminal('rl-tp-015-pty', { pty });
     await ss.settle();
 
-    ss.expectToastMessages([
-      { level: 'error', message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.' },
-    ]);
+    ss.expectToastMessages([{ level: 'error', message: 'Cannot bind to "rl-tp-015-pty": this terminal is not bindable.' }]);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL, ptyTerminal);
     await ss.settle();
@@ -828,10 +799,7 @@ standardSuite('Terminal Picker', (ss) => {
     t.dispose();
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-aut-001")',
-      'RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-aut-001")', 'RangeLink: Unbound from Terminal ("rl-aut-001") — terminal closed']);
     ss.log('✓ Terminal close triggered status bar auto-unbind message');
   });
 });

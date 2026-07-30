@@ -4,14 +4,7 @@
  * Single source of truth - DestinationKind is derived from this array.
  * Keep in alphabetical order for maintainability.
  */
-export const DESTINATION_KINDS = [
-  'claude-code',
-  'cursor-ai',
-  'gemini-code-assist',
-  'github-copilot-chat',
-  'terminal',
-  'text-editor',
-] as const;
+export const DESTINATION_KINDS = ['claude-code', 'cursor-ai', 'gemini-code-assist', 'github-copilot-chat', 'terminal', 'text-editor'] as const;
 
 /**
  * Built-in paste destination kinds (derived from DESTINATION_KINDS array)
@@ -31,8 +24,7 @@ export type DestinationKind = BuiltInDestinationKind | CustomAiAssistantKind;
 /**
  * Type guard for custom AI assistant kinds.
  */
-export const isCustomAiAssistantKind = (kind: string): kind is CustomAiAssistantKind =>
-  kind.startsWith('custom-ai:');
+export const isCustomAiAssistantKind = (kind: string): kind is CustomAiAssistantKind => kind.startsWith('custom-ai:');
 
 /**
  * Built-in AI assistant destination kind identifiers.
@@ -56,9 +48,7 @@ export type AIAssistantDestinationKind = (typeof AI_ASSISTANT_KINDS)[number];
 /**
  * Check if a destination kind is any AI assistant (built-in or custom).
  */
-export const isAnyAiAssistantKind = (
-  kind: string,
-): kind is AIAssistantDestinationKind | CustomAiAssistantKind =>
+export const isAnyAiAssistantKind = (kind: string): kind is AIAssistantDestinationKind | CustomAiAssistantKind =>
   isCustomAiAssistantKind(kind) || (AI_ASSISTANT_KINDS as readonly string[]).includes(kind);
 
 /**

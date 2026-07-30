@@ -3,13 +3,7 @@ import { DEFAULT_SMART_PADDING_PASTE_LINK, SETTING_SMART_PADDING_PASTE_LINK } fr
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { OperationFeedbackProvider } from '../feedback';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  type BindContext,
-  DirtyBufferWarningResult,
-  MessageCode,
-  PasteContentType,
-  PathFormat,
-} from '../types';
+import { type BindContext, DirtyBufferWarningResult, MessageCode, PasteContentType, PathFormat } from '../types';
 import { applySmartPadding, formatMessage, generateLinkFromSelections } from '../utils';
 
 import { getReferencePath } from './FilePathPaster';
@@ -50,26 +44,15 @@ export class LinkGenerator {
       await this.ideAdapter.writeTextToClipboard(formattedLink.link);
       this.feedbackProvider.provideCopyFeedback(MessageCode.CONTENT_NAME_RANGELINK);
     } else {
-      this.logger.debug(
-        { fn: 'LinkGenerator.createLinkOnly' },
-        'generateLinkFromSelection returned undefined, aborting',
-      );
+      this.logger.debug({ fn: 'LinkGenerator.createLinkOnly' }, 'generateLinkFromSelection returned undefined, aborting');
     }
   }
 
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    await this.createLinkCore(
-      pathFormat,
-      LinkType.Portable,
-      MessageCode.CONTENT_NAME_PORTABLE_RANGELINK,
-    );
+    await this.createLinkCore(pathFormat, LinkType.Portable, MessageCode.CONTENT_NAME_PORTABLE_RANGELINK);
   }
 
-  private async createLinkCore(
-    pathFormat: PathFormat,
-    linkType: LinkType,
-    contentNameCode: MessageCode,
-  ): Promise<void> {
+  private async createLinkCore(pathFormat: PathFormat, linkType: LinkType, contentNameCode: MessageCode): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.createLinkCore', linkType };
     const formattedLink = await this.generateLinkFromSelection(pathFormat, linkType);
     if (formattedLink) {
@@ -81,21 +64,13 @@ export class LinkGenerator {
       const resolveResult = await this.sendRouter.resolveDestination(logCtx);
       if (!resolveResult.canProceed) return;
       const bindContext = toBindContext(resolveResult);
-      await this.copyToClipboardAndDestination(
-        formattedLink,
-        contentNameCode,
-        sourceUri,
-        bindContext,
-      );
+      await this.copyToClipboardAndDestination(formattedLink, contentNameCode, sourceUri, bindContext);
     } else {
       this.logger.debug(logCtx, 'generateLinkFromSelection returned undefined, aborting');
     }
   }
 
-  private async generateLinkFromSelection(
-    pathFormat: PathFormat,
-    linkType: LinkType,
-  ): Promise<FormattedLink | undefined> {
+  private async generateLinkFromSelection(pathFormat: PathFormat, linkType: LinkType): Promise<FormattedLink | undefined> {
     const validated = this.selectionValidator.validateSelectionsAndShowError();
     if (!validated) {
       return undefined;
@@ -104,17 +79,8 @@ export class LinkGenerator {
     let { editor, selections } = validated;
     let document = editor.document;
 
-    const warningResult = await handleDirtyBufferWarning(
-      document,
-      this.configReader,
-      this.ideAdapter,
-      this.logger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
-    if (
-      warningResult === DirtyBufferWarningResult.Dismissed ||
-      warningResult === DirtyBufferWarningResult.SaveFailed
-    ) {
+    const warningResult = await handleDirtyBufferWarning(document, this.configReader, this.ideAdapter, this.logger, LINK_DIRTY_BUFFER_CODES);
+    if (warningResult === DirtyBufferWarningResult.Dismissed || warningResult === DirtyBufferWarningResult.SaveFailed) {
       return undefined;
     }
 
@@ -122,10 +88,7 @@ export class LinkGenerator {
       const preSaveSelections = selections;
       const revalidated = this.selectionValidator.validateSelectionsAndShowError();
       if (!revalidated) {
-        this.logger.debug(
-          { fn: 'generateLinkFromSelection' },
-          'Post-save re-validation returned no selections, aborting',
-        );
+        this.logger.debug({ fn: 'generateLinkFromSelection' }, 'Post-save re-validation returned no selections, aborting');
         return undefined;
       }
       ({ editor, selections } = revalidated);
@@ -152,26 +115,14 @@ export class LinkGenerator {
     });
 
     if (!result.success) {
-      const linkTypeName = formatMessage(
-        linkType === LinkType.Portable
-          ? MessageCode.ERROR_LINK_TYPE_NAME_PORTABLE
-          : MessageCode.ERROR_LINK_TYPE_NAME_REGULAR,
-      );
-      this.logger.error(
-        { fn: 'generateLinkFromSelection', error: result.error, linkType },
-        `Failed to generate ${linkTypeName}`,
-      );
-      this.feedbackProvider.showError(
-        formatMessage(MessageCode.ERROR_LINK_GENERATION_FAILED, { linkTypeName }),
-      );
+      const linkTypeName = formatMessage(linkType === LinkType.Portable ? MessageCode.ERROR_LINK_TYPE_NAME_PORTABLE : MessageCode.ERROR_LINK_TYPE_NAME_REGULAR);
+      this.logger.error({ fn: 'generateLinkFromSelection', error: result.error, linkType }, `Failed to generate ${linkTypeName}`);
+      this.feedbackProvider.showError(formatMessage(MessageCode.ERROR_LINK_GENERATION_FAILED, { linkTypeName }));
       return undefined;
     }
 
     const formattedLink = result.value;
-    this.logger.info(
-      { fn: 'generateLinkFromSelection', formattedLink },
-      `Generated link: ${formattedLink.link}`,
-    );
+    this.logger.info({ fn: 'generateLinkFromSelection', formattedLink }, `Generated link: ${formattedLink.link}`);
 
     return formattedLink;
   }
@@ -183,17 +134,11 @@ export class LinkGenerator {
     bindContext?: BindContext,
   ): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.copyToClipboardAndDestination' };
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_LINK,
-      DEFAULT_SMART_PADDING_PASTE_LINK,
-    );
+    const paddingMode = this.configReader.getPaddingMode(SETTING_SMART_PADDING_PASTE_LINK, DEFAULT_SMART_PADDING_PASTE_LINK);
 
     const paddedLink = applySmartPadding(formattedLink.link, paddingMode);
 
-    this.logger.debug(
-      { ...logCtx, link: formattedLink.link, rawLink: formattedLink.rawLink },
-      'Sending link to destination',
-    );
+    this.logger.debug({ ...logCtx, link: formattedLink.link, rawLink: formattedLink.rawLink }, 'Sending link to destination');
 
     await this.sendRouter.sendToDestination(
       {

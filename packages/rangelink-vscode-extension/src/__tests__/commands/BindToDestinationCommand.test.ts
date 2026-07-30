@@ -16,15 +16,11 @@ import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BindToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
-    expect(messagesEn['INFO_BIND_QUICK_PICK_PLACEHOLDER']).toBe(
-      'RangeLink: Choose a destination to bind to',
-    );
+    expect(messagesEn['INFO_BIND_QUICK_PICK_PLACEHOLDER']).toBe('RangeLink: Choose a destination to bind to');
   });
 
   it('no-destinations message explains how to resolve the situation', () => {
-    expect(messagesEn['INFO_BIND_NO_DESTINATIONS_AVAILABLE']).toBe(
-      'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
-    );
+    expect(messagesEn['INFO_BIND_NO_DESTINATIONS_AVAILABLE']).toBe('No destinations available. Open a terminal, a file, or install an AI assistant extension.');
   });
 });
 
@@ -40,19 +36,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker();
     mockSession = createMockBoundSession();
     mockLogger = createMockLogger();
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
   });
 
   it('logs initialization in constructor', () => {
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.constructor' },
-      'BindToDestinationCommand initialized',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.constructor' }, 'BindToDestinationCommand initialized');
   });
 
   it('shows picker with bind-specific message codes and returns bound on successful selection', async () => {
@@ -65,12 +53,7 @@ describe('BindToDestinationCommand', () => {
       pick: jest.fn().mockResolvedValue({ outcome: 'selected', bindOptions }),
     });
     mockDestinationManager = createMockDestinationManager({ bindResult });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     const result = await command.execute();
 
@@ -83,26 +66,15 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
     });
     expect(mockDestinationManager.bind).toHaveBeenCalledWith(bindOptions);
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Showing destination picker for binding',
-    );
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Binding selected destination',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Showing destination picker for binding');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Binding selected destination');
   });
 
   it('returns no-resource when picker reports no destinations available', async () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'no-resource' }),
     });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     const result = await command.execute();
 
@@ -112,26 +84,15 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
     });
     expect(mockDestinationManager.bind).not.toHaveBeenCalled();
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Showing destination picker for binding',
-    );
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'No destinations available',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Showing destination picker for binding');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'No destinations available');
   });
 
   it('returns cancelled when user cancels picker', async () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     const result = await command.execute();
 
@@ -141,10 +102,7 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
     });
     expect(mockDestinationManager.bind).not.toHaveBeenCalled();
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'User cancelled picker',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'User cancelled picker');
   });
 
   it('returns bind-failed when bind fails after picker selection', async () => {
@@ -160,12 +118,7 @@ describe('BindToDestinationCommand', () => {
     mockDestinationManager = createMockDestinationManager({
       bindResult: ExtensionResult.err<BindSuccessInfo>(bindError),
     });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     const result = await command.execute();
 
@@ -175,10 +128,7 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
     });
     expect(mockDestinationManager.bind).toHaveBeenCalledWith(bindOptions);
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Bind failed',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Bind failed');
   });
 
   it('passes bound editor uri and viewColumn to pick() when an editor is currently bound', async () => {
@@ -193,12 +143,7 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     await command.execute();
 
@@ -208,14 +153,8 @@ describe('BindToDestinationCommand', () => {
       boundFileUriString: 'file:///workspace/src/main.ts',
       boundFileViewColumn: 2,
     });
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Showing destination picker for binding',
-    );
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'User cancelled picker',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Showing destination picker for binding');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'User cancelled picker');
   });
 
   it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
@@ -226,12 +165,7 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(
-      mockDestinationManager,
-      mockDestinationPicker,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockSession, mockLogger);
 
     await command.execute();
 
@@ -240,13 +174,7 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
       boundTerminalProcessId: 99,
     });
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'Showing destination picker for binding',
-    );
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToDestinationCommand.execute' },
-      'User cancelled picker',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'Showing destination picker for binding');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToDestinationCommand.execute' }, 'User cancelled picker');
   });
 });

@@ -53,16 +53,11 @@ describe('createTabCloseGuard', () => {
       'Bound editor tab closed: Text Editor ("test.ts") — auto-unbinding',
     );
     expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
-      'Text Editor ("test.ts")',
-      'editor-closed',
-    );
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'editor-closed');
   });
 
   it('does not unbind when another tab of the same file is still open', () => {
-    (vscode.window.tabGroups as unknown as { all: unknown[] }).all = [
-      { tabs: [{ input: { uri: testUri } }] },
-    ];
+    (vscode.window.tabGroups as unknown as { all: unknown[] }).all = [{ tabs: [{ input: { uri: testUri } }] }];
 
     createGuard();
 

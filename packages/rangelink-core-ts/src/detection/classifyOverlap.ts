@@ -8,9 +8,7 @@ import type { OccupiedRange } from './types';
  * - 'encompassing': Candidate fully wraps one or more occupied ranges — replace them
  */
 export type OverlapClassification =
-  | { readonly type: 'none' }
-  | { readonly type: 'partial' }
-  | { readonly type: 'encompassing'; readonly encompassedIndices: number[] };
+  { readonly type: 'none' } | { readonly type: 'partial' } | { readonly type: 'encompassing'; readonly encompassedIndices: number[] };
 
 /**
  * Classify how a candidate range overlaps with existing occupied ranges.
@@ -28,11 +26,7 @@ export type OverlapClassification =
  * @param occupiedRanges - Array of already-occupied ranges
  * @returns Classification result
  */
-export const classifyOverlap = (
-  candidateStart: number,
-  candidateEnd: number,
-  occupiedRanges: readonly OccupiedRange[],
-): OverlapClassification => {
+export const classifyOverlap = (candidateStart: number, candidateEnd: number, occupiedRanges: readonly OccupiedRange[]): OverlapClassification => {
   const encompassedIndices: number[] = [];
 
   for (let i = 0; i < occupiedRanges.length; i++) {

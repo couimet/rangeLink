@@ -1,8 +1,5 @@
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_SMART_PADDING_PASTE_CONTENT,
-  SETTING_SMART_PADDING_PASTE_CONTENT,
-} from '../constants';
+import { DEFAULT_SMART_PADDING_PASTE_CONTENT, SETTING_SMART_PADDING_PASTE_CONTENT } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { MessageCode, PasteContentType } from '../types';
 import { applySmartPadding } from '../utils';
@@ -44,10 +41,7 @@ export class TextSelectionPaster {
       `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
     );
 
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_CONTENT,
-      DEFAULT_SMART_PADDING_PASTE_CONTENT,
-    );
+    const paddingMode = this.configReader.getPaddingMode(SETTING_SMART_PADDING_PASTE_CONTENT, DEFAULT_SMART_PADDING_PASTE_CONTENT);
 
     const resolveResult = await this.sendRouter.resolveDestination(logCtx);
     if (!resolveResult.canProceed) return;

@@ -265,10 +265,7 @@ When refactoring tests for classes that use facade patterns:
    ```typescript
    // ✅ Import constants directly (facades don't wrap these)
    import * as vscode from 'vscode';
-   expect(mockEditor.revealRange).toHaveBeenCalledWith(
-     range,
-     vscode.TextEditorRevealType.InCenterIfOutsideViewport,
-   );
+   expect(mockEditor.revealRange).toHaveBeenCalledWith(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
    ```
 
 3. **Test enum values appropriately**:

@@ -61,11 +61,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const lines = logCapture.getLinesSince('before-menu-002');
     assertQuickPickFirstItem(lines, MENU_ITEM_UNBOUND);
     assertCommandsAbsent(lines, CMD_JUMP_TO_DESTINATION);
-    assertQuickPickTrailingItems(lines, [
-      MENU_ITEM_SEPARATOR,
-      MENU_ITEM_GO_TO_LINK,
-      MENU_ITEM_VERSION_INFO,
-    ]);
+    assertQuickPickTrailingItems(lines, [MENU_ITEM_SEPARATOR, MENU_ITEM_GO_TO_LINK, MENU_ITEM_VERSION_INFO]);
 
     ss.log('✓ Unbound menu: no Jump item, correct structure');
   });
@@ -84,11 +80,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const lines = logCapture.getLinesSince('before-menu-003');
     assertQuickPickFirstItem(lines, MENU_ITEM_UNBOUND);
     assertCommandsAbsent(lines, CMD_JUMP_TO_DESTINATION);
-    assertQuickPickTrailingItems(lines, [
-      MENU_ITEM_SEPARATOR,
-      MENU_ITEM_GO_TO_LINK,
-      MENU_ITEM_VERSION_INFO,
-    ]);
+    assertQuickPickTrailingItems(lines, [MENU_ITEM_SEPARATOR, MENU_ITEM_GO_TO_LINK, MENU_ITEM_VERSION_INFO]);
 
     ss.log('✓ Direct command menu: no Jump item, correct structure');
   });
@@ -126,11 +118,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const verdict = await waitForHumanVerdict(
       'status-bar-menu-001',
       'Look at the VS Code status bar (bottom right). Does it show "$(link) RangeLink" with tooltip "RangeLink — no destination bound" on hover? (No destination should be bound at this point.)',
-      [
-        '1. Locate the RangeLink item in the bottom-right status bar',
-        '2. Hover over it to reveal the tooltip',
-        'Verdict:',
-      ],
+      ['1. Locate the RangeLink item in the bottom-right status bar', '2. Hover over it to reveal the tooltip', 'Verdict:'],
     );
     assert.strictEqual(verdict, 'pass', 'Human reported status bar text or tooltip was incorrect');
     ss.log('✓ Status bar item shows correct text and tooltip');
@@ -149,10 +137,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   });
 
   test('status-bar-menu-007: R-M menu reflects bound and unbound state', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sbm-007")',
-      '✓ RangeLink: Unbound from Terminal ("rl-sbm-007")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sbm-007")', '✓ RangeLink: Unbound from Terminal ("rl-sbm-007")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-sbm-007');
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -182,11 +167,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     const postLines = logCapture.getLinesSince('after-unbind-007');
     assertQuickPickFirstItem(postLines, MENU_ITEM_UNBOUND);
     assertCommandsAbsent(postLines, CMD_JUMP_TO_DESTINATION);
-    assertQuickPickTrailingItems(postLines, [
-      MENU_ITEM_SEPARATOR,
-      MENU_ITEM_GO_TO_LINK,
-      MENU_ITEM_VERSION_INFO,
-    ]);
+    assertQuickPickTrailingItems(postLines, [MENU_ITEM_SEPARATOR, MENU_ITEM_GO_TO_LINK, MENU_ITEM_VERSION_INFO]);
     ss.log('✓ Bound menu showed Jump + Unbind; unbind removed Jump item');
   });
 
@@ -197,11 +178,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     await waitForHuman(
       'status-bar-menu-008',
       'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", then dismiss the R-G input box (Escape).',
-      [
-        '1. Press Cmd+R Cmd+M to open the R-M menu',
-        '2. Select "$(link-external) Go to Link"',
-        '3. The R-G input box opens — press Escape to dismiss it',
-      ],
+      ['1. Press Cmd+R Cmd+M to open the R-M menu', '2. Select "$(link-external) Go to Link"', '3. The R-G input box opens — press Escape to dismiss it'],
     );
 
     const lines = logCapture.getLinesSince('before-008');
@@ -253,14 +230,8 @@ standardSuite('R-M Status Bar Menu', (ss) => {
     });
     assert.ok(commandDispatchLog, 'Expected command dispatch log for Show Version Info');
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported version info notification was missing fields',
-    );
-    ss.log(
-      '✓ Show Version Info dispatched and notification displayed all required fields (human verified)',
-    );
+    assert.strictEqual(verdict, 'pass', 'Human reported version info notification was missing fields');
+    ss.log('✓ Show Version Info dispatched and notification displayed all required fields (human verified)');
   });
 
   // Status bar appearance tests (bind/unbind → tooltip + color)
@@ -292,10 +263,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   });
 
   test('status-bar-appearance-002: status bar appearance updates to unbound state after unbind', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sba-002")',
-      '✓ RangeLink: Unbound from Terminal ("rl-sba-002")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sba-002")', '✓ RangeLink: Unbound from Terminal ("rl-sba-002")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     await ss.createTerminal('rl-sba-002');
 
@@ -318,10 +286,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
   });
 
   test('[assisted] status-bar-appearance-003: status bar tooltip and color reflect bind state', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sba-003")',
-      '✓ RangeLink: Unbound from Terminal ("rl-sba-003")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sba-003")', '✓ RangeLink: Unbound from Terminal ("rl-sba-003")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
     const terminalName = 'rl-sba-003';
     await ss.createTerminal(terminalName);
@@ -336,11 +301,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
         'Verdict:',
       ],
     );
-    assert.strictEqual(
-      verdictUnbound,
-      'pass',
-      'Human reported unbound tooltip or color was incorrect',
-    );
+    assert.strictEqual(verdictUnbound, 'pass', 'Human reported unbound tooltip or color was incorrect');
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
@@ -370,11 +331,7 @@ standardSuite('R-M Status Bar Menu', (ss) => {
         'Verdict:',
       ],
     );
-    assert.strictEqual(
-      verdictAfterUnbind,
-      'pass',
-      'Human reported tooltip or color was incorrect after unbind',
-    );
+    assert.strictEqual(verdictAfterUnbind, 'pass', 'Human reported tooltip or color was incorrect after unbind');
 
     ss.log('✓ Status bar tooltip and color correctly reflect bind/unbind state (human verified)');
   });

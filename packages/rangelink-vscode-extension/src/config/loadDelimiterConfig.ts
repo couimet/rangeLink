@@ -1,9 +1,4 @@
-import {
-  SETTING_DELIMITER_HASH,
-  SETTING_DELIMITER_LINE,
-  SETTING_DELIMITER_POSITION,
-  SETTING_DELIMITER_RANGE,
-} from '../constants';
+import { SETTING_DELIMITER_HASH, SETTING_DELIMITER_LINE, SETTING_DELIMITER_POSITION, SETTING_DELIMITER_RANGE } from '../constants';
 
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
@@ -36,10 +31,7 @@ const createDefaultResult = (errors: RangeLinkError[]): LoadDelimiterConfigResul
  * @param logger - Logger for output
  * @returns Result with delimiters, sources, and errors (empty array if success)
  */
-export const loadDelimiterConfig = (
-  config: ConfigGetter,
-  logger: Logger,
-): LoadDelimiterConfigResult => {
+export const loadDelimiterConfig = (config: ConfigGetter, logger: Logger): LoadDelimiterConfigResult => {
   // Get raw config values (undefined = not set, '' = explicitly set to invalid)
   const userLine = config.get<string>(SETTING_DELIMITER_LINE);
   const userPosition = config.get<string>(SETTING_DELIMITER_POSITION);
@@ -47,11 +39,7 @@ export const loadDelimiterConfig = (
   const userRange = config.get<string>(SETTING_DELIMITER_RANGE);
 
   // If no config provided at all (all undefined), use defaults silently (no errors)
-  const hasNoConfig =
-    userLine === undefined &&
-    userPosition === undefined &&
-    userHash === undefined &&
-    userRange === undefined;
+  const hasNoConfig = userLine === undefined && userPosition === undefined && userHash === undefined && userRange === undefined;
   if (hasNoConfig) {
     logger.debug({ fn: 'loadDelimiterConfig' }, 'No delimiter config provided, using defaults');
     return createDefaultResult([]);
@@ -64,12 +52,7 @@ export const loadDelimiterConfig = (
   const rangeToValidate = userRange ?? '';
 
   // Validate individual fields (accumulate errors)
-  const fieldErrors = validateDelimiterFields(
-    lineToValidate,
-    positionToValidate,
-    hashToValidate,
-    rangeToValidate,
-  );
+  const fieldErrors = validateDelimiterFields(lineToValidate, positionToValidate, hashToValidate, rangeToValidate);
 
   // If field validation failed, log and return defaults
   if (fieldErrors.length > 0) {

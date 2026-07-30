@@ -78,15 +78,11 @@ describe('formatClampingSummary', () => {
 
   describe('no clamping (unexpected switch value)', () => {
     it('should throw UNEXPECTED_SWITCH_VALUE when no clamping flags are set', () => {
-      expect(() => formatClampingSummary(NO_CLAMPING, NO_CLAMPING)).toThrowDetailedError(
-        'UNEXPECTED_SWITCH_VALUE',
-        {
-          message:
-            'Unexpected clamping summary state: {"lineClamped":false,"characterClamped":false}',
-          functionName: 'formatClampingSummary',
-          details: { unexpectedValue: { lineClamped: false, characterClamped: false } },
-        },
-      );
+      expect(() => formatClampingSummary(NO_CLAMPING, NO_CLAMPING)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: 'Unexpected clamping summary state: {"lineClamped":false,"characterClamped":false}',
+        functionName: 'formatClampingSummary',
+        details: { unexpectedValue: { lineClamped: false, characterClamped: false } },
+      });
     });
   });
 });

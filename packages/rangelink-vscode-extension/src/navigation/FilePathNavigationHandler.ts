@@ -24,10 +24,7 @@ export class FilePathNavigationHandler {
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'FilePathNavigationHandler.constructor' },
-      'FilePathNavigationHandler initialized',
-    );
+    this.logger.debug({ fn: 'FilePathNavigationHandler.constructor' }, 'FilePathNavigationHandler initialized');
   }
 
   /**
@@ -51,24 +48,17 @@ export class FilePathNavigationHandler {
 
     if (resolved === FILENAME_AMBIGUOUS) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Multiple files match bare filename');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }));
       return;
     }
 
     if (resolved) {
-      this.logger.debug(
-        { ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia },
-        'Path resolved',
-      );
+      this.logger.debug({ ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia }, 'Path resolved');
     }
 
     if (!resolved) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST, { path: rawPath }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST, { path: rawPath }));
       return;
     }
 

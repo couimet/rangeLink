@@ -19,9 +19,6 @@ describe('ManualPasteInsertFactory', () => {
     const result = await insertFn(LINK_TEXT);
 
     expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'ManualPasteInsertFactory.insert', textLength: LINK_TEXT_LENGTH },
-      'Link ready for manual paste',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'ManualPasteInsertFactory.insert', textLength: LINK_TEXT_LENGTH }, 'Link ready for manual paste');
   });
 });

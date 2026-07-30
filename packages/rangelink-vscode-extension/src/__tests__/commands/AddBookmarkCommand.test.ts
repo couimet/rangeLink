@@ -27,10 +27,7 @@ describe('AddBookmarkCommand', () => {
 
       new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'AddBookmarkCommand.constructor' },
-        'AddBookmarkCommand initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.constructor' }, 'AddBookmarkCommand initialized');
     });
   });
 
@@ -44,21 +41,13 @@ describe('AddBookmarkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Cannot add bookmark - no active editor');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute' },
-          'No active editor',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute' }, 'No active editor');
       });
     });
 
@@ -75,12 +64,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('My Bookmark'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -89,10 +73,7 @@ describe('AddBookmarkCommand', () => {
           link: TEST_LINK,
           scope: 'global',
         });
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute', source: 'existing-link', link: TEST_LINK },
-          'Using existing link',
-        );
+        expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute', source: 'existing-link', link: TEST_LINK }, 'Using existing link');
       });
 
       it('uses existing link even when selection is in untitled file', async () => {
@@ -108,12 +89,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Bookmark from Scratchpad'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -138,12 +114,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Multi-line Bookmark'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -169,12 +140,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Generated Bookmark'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -239,12 +205,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Rectangular Selection'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -277,23 +238,13 @@ describe('AddBookmarkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute', reason: 'untitled-file' },
-          'Cannot bookmark unsaved file',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute', reason: 'untitled-file' }, 'Cannot bookmark unsaved file');
       });
     });
 
@@ -313,18 +264,11 @@ describe('AddBookmarkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'Cannot add bookmark - failed to generate link from selection',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('Cannot add bookmark - failed to generate link from selection');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
       });
     });
@@ -338,20 +282,12 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue(undefined),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute', link: TEST_LINK },
-          'User cancelled bookmark creation',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute', link: TEST_LINK }, 'User cancelled bookmark creation');
       });
     });
 
@@ -366,21 +302,13 @@ describe('AddBookmarkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Bookmark label cannot be empty');
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute' },
-          'Empty label provided',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute' }, 'Empty label provided');
       });
     });
 
@@ -401,20 +329,12 @@ describe('AddBookmarkCommand', () => {
           },
         });
         mockBookmarkService.addBookmark.mockResolvedValue(ExtensionResult.err(storageError));
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Failed to save bookmark');
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute', error: storageError },
-          'Failed to save bookmark',
-        );
+        expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute', error: storageError }, 'Failed to save bookmark');
       });
     });
 
@@ -429,23 +349,12 @@ describe('AddBookmarkCommand', () => {
             setStatusBarMessage: mockSetStatusBarMessage,
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink: Bookmark saved: Success Bookmark',
-          2000,
-        );
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          { fn: 'AddBookmarkCommand.execute', label: 'Success Bookmark', link: TEST_LINK },
-          'Bookmark saved',
-        );
+        expect(mockSetStatusBarMessage).toHaveBeenCalledWith('✓ RangeLink: Bookmark saved: Success Bookmark', 2000);
+        expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'AddBookmarkCommand.execute', label: 'Success Bookmark', link: TEST_LINK }, 'Bookmark saved');
       });
 
       it('trims whitespace from label', async () => {
@@ -456,12 +365,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('  Trimmed Label  '),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -479,20 +383,13 @@ describe('AddBookmarkCommand', () => {
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
-            showInputBox: jest.fn(
-              (opts: { value?: string; prompt?: string; placeHolder?: string }) => {
-                capturedOptions.push(opts);
-                return Promise.resolve('Final Label');
-              },
-            ),
+            showInputBox: jest.fn((opts: { value?: string; prompt?: string; placeHolder?: string }) => {
+              capturedOptions.push(opts);
+              return Promise.resolve('Final Label');
+            }),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 
@@ -511,12 +408,7 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Label'),
           },
         });
-        command = new AddBookmarkCommand(
-          GET_DELIMITERS,
-          mockAdapter,
-          mockBookmarkService,
-          mockLogger,
-        );
+        command = new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
 

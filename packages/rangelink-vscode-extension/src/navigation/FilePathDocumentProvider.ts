@@ -40,10 +40,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'FilePathDocumentProvider.constructor' },
-      'FilePathDocumentProvider initialized',
-    );
+    this.logger.debug({ fn: 'FilePathDocumentProvider.constructor' }, 'FilePathDocumentProvider initialized');
   }
 
   /**
@@ -55,9 +52,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
    * @param document - The document to scan for file paths
    * @returns Array of detected document links
    */
-  provideDocumentLinks(
-    document: vscode.TextDocument,
-  ): vscode.ProviderResult<vscode.DocumentLink[]> {
+  provideDocumentLinks(document: vscode.TextDocument): vscode.ProviderResult<vscode.DocumentLink[]> {
     const text = document.getText();
     const pattern = buildFilePathPattern(this.getDelimiters());
     const links: vscode.DocumentLink[] = [];
@@ -72,9 +67,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
       const displayPath = expandPathForDisplay(rawPath, document.uri.fsPath);
       const docLink = new vscode.DocumentLink(range);
       docLink.tooltip = formatMessage(MessageCode.TOOLTIP_FILE_PATH, { path: displayPath });
-      docLink.target = this.ideAdapter.parseUri(
-        `command:${CMD_HANDLE_FILE_PATH_CLICK}?${encodeURIComponent(JSON.stringify([{ filePath: rawPath }]))}`,
-      );
+      docLink.target = this.ideAdapter.parseUri(`command:${CMD_HANDLE_FILE_PATH_CLICK}?${encodeURIComponent(JSON.stringify([{ filePath: rawPath }]))}`);
 
       links.push(docLink);
     }
@@ -108,10 +101,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
     try {
       await this.handler.navigateToFile(args.filePath);
     } catch (error) {
-      this.logger.debug(
-        { ...logCtx, error },
-        'Document link handling completed with error (already handled by navigation handler)',
-      );
+      this.logger.debug({ ...logCtx, error }, 'Document link handling completed with error (already handled by navigation handler)');
     }
   }
 }

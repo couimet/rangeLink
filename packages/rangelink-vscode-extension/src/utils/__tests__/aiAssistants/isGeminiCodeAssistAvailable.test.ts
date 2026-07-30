@@ -1,7 +1,4 @@
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../../../__tests__/helpers';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
 import { GEMINI_CODE_ASSIST_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { EXTENSION_ID_GEMINI_CODE_ASSIST } from '../../aiAssistants/builtInAiAssistants';
 import { isGeminiCodeAssistAvailable } from '../../aiAssistants/isGeminiCodeAssistAvailable';

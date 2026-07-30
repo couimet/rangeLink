@@ -1,7 +1,4 @@
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../../../__tests__/helpers';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
 import { CLAUDE_CODE_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { EXTENSION_ID_CLAUDE_CODE } from '../../aiAssistants/builtInAiAssistants';
 import { isClaudeCodeAvailable } from '../../aiAssistants/isClaudeCodeAvailable';
@@ -117,10 +114,6 @@ describe('isClaudeCodeAvailable', () => {
 
 describe('CLAUDE_CODE_FOCUS_COMMANDS', () => {
   it('should export focus commands array with primary and fallback commands', () => {
-    expect(CLAUDE_CODE_FOCUS_COMMANDS).toStrictEqual([
-      'claude-vscode.focus',
-      'claude-vscode.sidebar.open',
-      'claude-vscode.editor.open',
-    ]);
+    expect(CLAUDE_CODE_FOCUS_COMMANDS).toStrictEqual(['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open']);
   });
 });

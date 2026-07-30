@@ -49,10 +49,7 @@ describe('LogCapture', () => {
       capture.appendLine('after marker 1');
       capture.appendLine('after marker 2');
 
-      expect(capture.getLinesSince('test-start')).toStrictEqual([
-        'after marker 1',
-        'after marker 2',
-      ]);
+      expect(capture.getLinesSince('test-start')).toStrictEqual(['after marker 1', 'after marker 2']);
     });
 
     it('returns all lines when marker does not exist', () => {
@@ -130,8 +127,7 @@ describe('LogCapture', () => {
       const capture = new LogCapture(mockChannel as any);
 
       expect(() => capture.mark('test')).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
-        message:
-          'LogCapture.mark() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        message: 'LogCapture.mark() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.mark',
       });
     });
@@ -141,8 +137,7 @@ describe('LogCapture', () => {
       const capture = new LogCapture(mockChannel as any);
 
       expect(() => capture.getLinesSince('test')).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
-        message:
-          'LogCapture.getLinesSince() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        message: 'LogCapture.getLinesSince() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.getLinesSince',
       });
     });
@@ -152,8 +147,7 @@ describe('LogCapture', () => {
       const capture = new LogCapture(mockChannel as any);
 
       expect(() => capture.getAllLines()).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
-        message:
-          'LogCapture.getAllLines() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        message: 'LogCapture.getAllLines() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.getAllLines',
       });
     });
@@ -163,8 +157,7 @@ describe('LogCapture', () => {
       const capture = new LogCapture(mockChannel as any);
 
       expect(() => capture.clear()).toThrowDetailedError('LOG_CAPTURE_DISABLED', {
-        message:
-          'LogCapture.clear() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        message: 'LogCapture.clear() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
         functionName: 'LogCapture.clear',
       });
     });

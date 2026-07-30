@@ -21,10 +21,7 @@ export class BindToDestinationCommand {
     private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'BindToDestinationCommand.constructor' },
-      'BindToDestinationCommand initialized',
-    );
+    this.logger.debug({ fn: 'BindToDestinationCommand.constructor' }, 'BindToDestinationCommand initialized');
   }
 
   async execute(): Promise<QuickPickBindResult> {

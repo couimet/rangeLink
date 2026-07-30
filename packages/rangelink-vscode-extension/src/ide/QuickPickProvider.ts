@@ -6,8 +6,5 @@ import type * as vscode from 'vscode';
  * Avoids coupling showTerminalPicker and DestinationPicker to the full VscodeAdapter.
  */
 export interface QuickPickProvider {
-  showQuickPick<T extends vscode.QuickPickItem>(
-    items: T[],
-    options?: vscode.QuickPickOptions,
-  ): Promise<T | undefined>;
+  showQuickPick<T extends vscode.QuickPickItem>(items: T[], options?: vscode.QuickPickOptions): Promise<T | undefined>;
 }

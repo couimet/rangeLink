@@ -1,10 +1,5 @@
 import assert from 'node:assert';
-import {
-  buildFilePathPattern,
-  DEFAULT_DELIMITERS,
-  DelimiterConfig,
-  extractFilePath,
-} from 'rangelink-core-ts';
+import { buildFilePathPattern, DEFAULT_DELIMITERS, DelimiterConfig, extractFilePath } from 'rangelink-core-ts';
 
 const matchPaths = (text: string, delimiters: DelimiterConfig = DEFAULT_DELIMITERS): string[] => {
   const pattern = buildFilePathPattern(delimiters);
@@ -30,21 +25,15 @@ suite('File Path Detection', () => {
   });
 
   test('clickable-file-paths-004: detects tilde home path (~/projects/app.ts)', () => {
-    assert.deepStrictEqual(matchPaths('Open ~/projects/app.ts in the editor'), [
-      '~/projects/app.ts',
-    ]);
+    assert.deepStrictEqual(matchPaths('Open ~/projects/app.ts in the editor'), ['~/projects/app.ts']);
   });
 
   test('clickable-file-paths-005: detects double-quoted path with spaces and strips quotes', () => {
-    assert.deepStrictEqual(matchPaths('Open "/path/with spaces/file.ts" now'), [
-      '/path/with spaces/file.ts',
-    ]);
+    assert.deepStrictEqual(matchPaths('Open "/path/with spaces/file.ts" now'), ['/path/with spaces/file.ts']);
   });
 
   test('clickable-file-paths-006: detects single-quoted path and strips quotes', () => {
-    assert.deepStrictEqual(matchPaths("Check '/path/to/file.ts' for details"), [
-      '/path/to/file.ts',
-    ]);
+    assert.deepStrictEqual(matchPaths("Check '/path/to/file.ts' for details"), ['/path/to/file.ts']);
   });
 
   test('clickable-file-paths-007: does NOT detect HTTP URL as a file path', () => {

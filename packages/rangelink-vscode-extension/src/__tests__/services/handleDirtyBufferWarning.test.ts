@@ -1,12 +1,6 @@
 import { handleDirtyBufferWarning } from '../../services/handleDirtyBufferWarning';
 import { FILE_PATH_DIRTY_BUFFER_CODES, LINK_DIRTY_BUFFER_CODES } from '../../services/types';
-import {
-  createMockConfigReader,
-  createMockDocument,
-  createMockUri,
-  createMockVscodeAdapter,
-  spyOnFormatMessage,
-} from '../helpers';
+import { createMockConfigReader, createMockDocument, createMockUri, createMockVscodeAdapter, spyOnFormatMessage } from '../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -33,13 +27,7 @@ describe('handleDirtyBufferWarning', () => {
     const configReader = createConfigReader();
     const cleanDoc = createMockDocument({ uri: MOCK_URI, isDirty: false });
 
-    const result = await handleDirtyBufferWarning(
-      cleanDoc,
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(cleanDoc, configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('Clean');
   });
@@ -49,13 +37,7 @@ describe('handleDirtyBufferWarning', () => {
     const showWarnSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
     const configReader = createConfigReader(false);
 
-    const result = await handleDirtyBufferWarning(
-      createDirtyDoc(),
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(createDirtyDoc(), configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('ContinueAnyway');
     expect(showWarnSpy).not.toHaveBeenCalled();
@@ -77,20 +59,11 @@ describe('handleDirtyBufferWarning', () => {
       return `mock:${code}`;
     });
 
-    const result = await handleDirtyBufferWarning(
-      mockDoc,
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(mockDoc, configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('SaveAndContinue');
     expect(mockDoc.save).toHaveBeenCalledTimes(1);
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'handleDirtyBufferWarning' },
-      'Document saved successfully',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'handleDirtyBufferWarning' }, 'Document saved successfully');
   });
 
   it('returns SaveFailed and shows warning when save fails', async () => {
@@ -106,20 +79,11 @@ describe('handleDirtyBufferWarning', () => {
       return `mock:${code}`;
     });
 
-    const result = await handleDirtyBufferWarning(
-      mockDoc,
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(mockDoc, configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('SaveFailed');
     expect(mockAdapter.showWarningMessage).toHaveBeenNthCalledWith(2, 'Save failed');
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'handleDirtyBufferWarning' },
-      'Save operation failed or was cancelled',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'handleDirtyBufferWarning' }, 'Save operation failed or was cancelled');
   });
 
   it('returns ContinueAnyway when user chooses to generate without saving', async () => {
@@ -133,19 +97,10 @@ describe('handleDirtyBufferWarning', () => {
       return `mock:${code}`;
     });
 
-    const result = await handleDirtyBufferWarning(
-      createDirtyDoc(),
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(createDirtyDoc(), configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('ContinueAnyway');
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'handleDirtyBufferWarning' },
-      'User chose to continue without saving',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'handleDirtyBufferWarning' }, 'User chose to continue without saving');
   });
 
   it('returns Dismissed when user dismisses the dialog', async () => {
@@ -160,20 +115,11 @@ describe('handleDirtyBufferWarning', () => {
       return `mock:${code}`;
     });
 
-    const result = await handleDirtyBufferWarning(
-      createDirtyDoc(),
-      configReader,
-      mockAdapter,
-      mockLogger,
-      LINK_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(createDirtyDoc(), configReader, mockAdapter, mockLogger, LINK_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('Dismissed');
     expect(showInfoSpy).toHaveBeenCalledWith('mock:INFO_OPERATION_ABORTED_DIRTY_BUFFER');
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'handleDirtyBufferWarning' },
-      'User dismissed warning, aborting',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'handleDirtyBufferWarning' }, 'User dismissed warning, aborting');
   });
 
   it('uses custom message codes when provided', async () => {
@@ -188,13 +134,7 @@ describe('handleDirtyBufferWarning', () => {
       return `mock:${code}`;
     });
 
-    const result = await handleDirtyBufferWarning(
-      mockDoc,
-      configReader,
-      mockAdapter,
-      mockLogger,
-      FILE_PATH_DIRTY_BUFFER_CODES,
-    );
+    const result = await handleDirtyBufferWarning(mockDoc, configReader, mockAdapter, mockLogger, FILE_PATH_DIRTY_BUFFER_CODES);
 
     expect(result).toBe('SaveAndContinue');
     expect(formatMessageSpy).toHaveBeenCalledWith('WARN_FILE_PATH_DIRTY_BUFFER');

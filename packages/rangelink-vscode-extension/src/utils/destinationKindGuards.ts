@@ -20,10 +20,7 @@ import type * as vscode from 'vscode';
  * @param kind - The expected destination kind
  * @returns True if destination exists and matches the kind
  */
-export const isPasteDestinationKind = (
-  destination: PasteDestination | undefined,
-  kind: DestinationKind,
-): destination is PasteDestination => {
+export const isPasteDestinationKind = (destination: PasteDestination | undefined, kind: DestinationKind): destination is PasteDestination => {
   return destination?.id === kind;
 };
 
@@ -43,9 +40,7 @@ export const isTerminalDestination = (
 ): destination is ComposablePasteDestination & {
   resource: { kind: 'terminal'; terminal: vscode.Terminal };
 } => {
-  return (
-    destination instanceof ComposablePasteDestination && destination.resource.kind === 'terminal'
-  );
+  return destination instanceof ComposablePasteDestination && destination.resource.kind === 'terminal';
 };
 
 /**
@@ -65,9 +60,7 @@ export const isEditorDestination = (
 ): destination is ComposablePasteDestination & {
   resource: { kind: 'editor'; uri: vscode.Uri; viewColumn: number };
 } => {
-  return (
-    destination instanceof ComposablePasteDestination && destination.resource.kind === 'editor'
-  );
+  return destination instanceof ComposablePasteDestination && destination.resource.kind === 'editor';
 };
 
 /**
@@ -85,7 +78,5 @@ export const isSingletonDestination = (
 ): destination is ComposablePasteDestination & {
   resource: { kind: 'singleton' };
 } => {
-  return (
-    destination instanceof ComposablePasteDestination && destination.resource.kind === 'singleton'
-  );
+  return destination instanceof ComposablePasteDestination && destination.resource.kind === 'singleton';
 };

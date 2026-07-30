@@ -14,9 +14,7 @@ import {
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance configured as Cursor AI
  */
-export const createMockCursorAIComposableDestination = (
-  overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>,
-) =>
+export const createMockCursorAIComposableDestination = (overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>) =>
   createMockSingletonComposablePasteDestination({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',

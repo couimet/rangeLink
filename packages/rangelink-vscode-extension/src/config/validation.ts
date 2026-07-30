@@ -1,10 +1,4 @@
-import {
-  type DelimiterConfig,
-  type RangeLinkError,
-  validateDelimiter,
-  validateSubstringConflicts,
-  validateUniqueness,
-} from 'rangelink-core-ts';
+import { type DelimiterConfig, type RangeLinkError, validateDelimiter, validateSubstringConflicts, validateUniqueness } from 'rangelink-core-ts';
 
 // ============================================================================
 // Validation Functions
@@ -25,12 +19,7 @@ import {
  * @param userRange - Range delimiter value from config
  * @returns Array of RangeLinkError (empty if all valid)
  */
-export const validateDelimiterFields = (
-  userLine: string,
-  userPosition: string,
-  userHash: string,
-  userRange: string,
-): RangeLinkError[] => {
+export const validateDelimiterFields = (userLine: string, userPosition: string, userHash: string, userRange: string): RangeLinkError[] => {
   const errors: RangeLinkError[] = [];
 
   const lineResult = validateDelimiter(userLine, false);

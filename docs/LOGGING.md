@@ -234,16 +234,10 @@ interface Logger {
 import { RangeLinkMessageCode } from './types/RangeLinkMessageCode';
 
 // Configuration loaded
-logger.info(
-  RangeLinkMessageCode.CONFIG_LOADED,
-  `Configuration loaded: line="${config.delimiterLine}", column="${config.delimiterPosition}"`,
-);
+logger.info(RangeLinkMessageCode.CONFIG_LOADED, `Configuration loaded: line="${config.delimiterLine}", column="${config.delimiterPosition}"`);
 
 // Validation error
-logger.error(
-  RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY,
-  `Invalid delimiterLine value "" (empty string not allowed)`,
-);
+logger.error(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY, `Invalid delimiterLine value "" (empty string not allowed)`);
 
 // BYOD warning
 logger.warn(
@@ -371,10 +365,7 @@ The structured logging approach with message codes enables future internationali
 **Current approach:**
 
 ```typescript
-logger.error(
-  RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY,
-  `Invalid delimiterLine value "" (empty string not allowed)`,
-);
+logger.error(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY, `Invalid delimiterLine value "" (empty string not allowed)`);
 ```
 
 **Future approach (with i18n):**

@@ -1,14 +1,5 @@
-import type {
-  BindSuccessInfo,
-  BoundSession,
-  DestinationAvailabilityService,
-  DestinationBinder,
-} from '../destinations';
-import {
-  classifyTerminalForBinding,
-  resolveBoundTerminalProcessId,
-  showTerminalPicker,
-} from '../destinations/utils';
+import type { BindSuccessInfo, BoundSession, DestinationAvailabilityService, DestinationBinder } from '../destinations';
+import { classifyTerminalForBinding, resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
@@ -37,10 +28,7 @@ export class BindToTerminalCommand {
     private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'BindToTerminalCommand.constructor' },
-      'BindToTerminalCommand initialized',
-    );
+    this.logger.debug({ fn: 'BindToTerminalCommand.constructor' }, 'BindToTerminalCommand initialized');
   }
 
   async execute(preferredTerminal?: vscode.Terminal): Promise<QuickPickBindResult> {
@@ -48,8 +36,7 @@ export class BindToTerminalCommand {
 
     if (preferredTerminal) {
       const classification = classifyTerminalForBinding(preferredTerminal);
-      const nonBindableReason =
-        classification.visible === true ? classification.nonBindableReason : undefined;
+      const nonBindableReason = classification.visible === true ? classification.nonBindableReason : undefined;
       if (!classification.visible || nonBindableReason !== undefined) {
         this.logger.debug(
           {
@@ -71,21 +58,13 @@ export class BindToTerminalCommand {
         { ...logCtx, terminalName: preferredTerminal.name, source: 'context-menu' },
         `Direct bind to terminal "${preferredTerminal.name}" from context menu`,
       );
-      return this.mapBindResult(
-        await this.binder.bind({ kind: 'terminal', terminal: preferredTerminal }),
-      );
+      return this.mapBindResult(await this.binder.bind({ kind: 'terminal', terminal: preferredTerminal }));
     }
 
     const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
-    const terminalItems = await this.availabilityService.getTerminalItems(
-      Infinity,
-      boundTerminalProcessId,
-    );
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity, boundTerminalProcessId);
 
-    this.logger.debug(
-      { ...logCtx, terminalCount: terminalItems.length },
-      'Starting bind to terminal command',
-    );
+    this.logger.debug({ ...logCtx, terminalCount: terminalItems.length }, 'Starting bind to terminal command');
 
     if (terminalItems.length === 0) {
       this.logger.debug(logCtx, 'No terminals available');
@@ -95,10 +74,7 @@ export class BindToTerminalCommand {
 
     if (terminalItems.length === 1) {
       const { terminalInfo } = terminalItems[0];
-      this.logger.debug(
-        { ...logCtx, terminalName: terminalInfo.name },
-        'Single terminal, auto-binding',
-      );
+      this.logger.debug({ ...logCtx, terminalName: terminalInfo.name }, 'Single terminal, auto-binding');
       return this.mapBindResult(await this.binder.bind(terminalInfo.bindOptions));
     }
 
@@ -108,10 +84,7 @@ export class BindToTerminalCommand {
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: (eligible) => {
-          this.logger.debug(
-            { ...logCtx, terminalName: eligible.name },
-            `Binding to terminal "${eligible.name}"`,
-          );
+          this.logger.debug({ ...logCtx, terminalName: eligible.name }, `Binding to terminal "${eligible.name}"`);
           return this.binder.bind(eligible.bindOptions);
         },
       },

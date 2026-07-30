@@ -75,20 +75,11 @@ export class LazyResolvedFocusCapability implements FocusCapability {
 
   private async resolve(context: LoggingContext): Promise<void> {
     const registeredCommands = await this.ideAdapter.getCommands();
-    const result = resolveFocusTier(
-      this.tiers,
-      registeredCommands,
-      this.logger,
-      this.logPrefix,
-      this.fallbackTierIndex,
-    );
+    const result = resolveFocusTier(this.tiers, registeredCommands, this.logger, this.logPrefix, this.fallbackTierIndex);
 
     if (!result) {
       this.resolutionFailed = true;
-      this.logger.warn(
-        { ...context, logPrefix: this.logPrefix },
-        `${this.logPrefix}: tier resolution failed — no commands registered`,
-      );
+      this.logger.warn({ ...context, logPrefix: this.logPrefix }, `${this.logPrefix}: tier resolution failed — no commands registered`);
       return;
     }
 

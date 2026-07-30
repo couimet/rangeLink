@@ -10,10 +10,7 @@ import { RangeFormat } from '../types/RangeFormat';
  * @param rangeFormat Whether to include the position delimiter in metadata
  * @returns Metadata string (e.g., "~#~L~-~C~" or "~#~L~-~")
  */
-export const composePortableMetadata = (
-  delimiters: DelimiterConfig,
-  rangeFormat: RangeFormat,
-): string => {
+export const composePortableMetadata = (delimiters: DelimiterConfig, rangeFormat: RangeFormat): string => {
   const { hash, line, range, position } = delimiters;
   const parts = [hash, line, range];
   if (rangeFormat === RangeFormat.WithPositions) {

@@ -14,19 +14,13 @@ describe('logBasedUiAssertions', () => {
     });
 
     it('throws when fn does not match', () => {
-      const lines = [
-        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"msg"} Suppressed',
-      ];
+      const lines = ['[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"msg"} Suppressed'];
 
-      expect(() =>
-        assertSuppressionLogged(lines, { fn: 'WrongHandler.method', suppressedMessage: 'msg' }),
-      ).toThrow('but it was not found');
+      expect(() => assertSuppressionLogged(lines, { fn: 'WrongHandler.method', suppressedMessage: 'msg' })).toThrow('but it was not found');
     });
 
     it('throws when suppressedMessage does not match', () => {
-      const lines = [
-        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"actual msg"} Suppressed',
-      ];
+      const lines = ['[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"actual msg"} Suppressed'];
 
       expect(() =>
         assertSuppressionLogged(lines, {

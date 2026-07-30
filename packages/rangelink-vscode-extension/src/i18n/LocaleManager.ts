@@ -1,9 +1,4 @@
-import {
-  DEFAULT_LOCALE,
-  type LocaleCode,
-  type MessageMap,
-  supportedLocales,
-} from './supportedLocales';
+import { DEFAULT_LOCALE, type LocaleCode, type MessageMap, supportedLocales } from './supportedLocales';
 
 import { getLogger } from '@couimet/logger-contract';
 

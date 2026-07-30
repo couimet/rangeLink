@@ -66,10 +66,7 @@ export const detectUnquotedLinks = (
     const parseResult = parseLink(trimmedMatch, delimiters);
     if (!parseResult.success) {
       parseFailures++;
-      logger.debug(
-        { fn: 'detectUnquotedLinks', link: trimmedMatch, error: parseResult.error },
-        'Skipping link that failed to parse',
-      );
+      logger.debug({ fn: 'detectUnquotedLinks', link: trimmedMatch, error: parseResult.error }, 'Skipping link that failed to parse');
       continue;
     }
 

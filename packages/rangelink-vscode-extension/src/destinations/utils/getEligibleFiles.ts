@@ -37,8 +37,7 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
         displayPath: ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly),
         viewColumn: group.viewColumn,
         isCurrentInGroup: tab === group.activeTab,
-        isActiveEditor:
-          activeEditorUriString !== undefined && uri.toString() === activeEditorUriString,
+        isActiveEditor: activeEditorUriString !== undefined && uri.toString() === activeEditorUriString,
       });
     }
   }

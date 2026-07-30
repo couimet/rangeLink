@@ -13,10 +13,7 @@ export const disposeAllTerminals = (): void => {
   }
 };
 
-export const createTerminal = async (
-  name: string,
-  trackingArray?: vscode.Terminal[],
-): Promise<vscode.Terminal> => {
+export const createTerminal = async (name: string, trackingArray?: vscode.Terminal[]): Promise<vscode.Terminal> => {
   const t = vscode.window.createTerminal({ name });
   trackingArray?.push(t);
   t.show(true);
@@ -25,12 +22,7 @@ export const createTerminal = async (
 };
 
 export const findTerminalItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-  items.filter(
-    (item) =>
-      item.itemKind === 'bindable' &&
-      typeof item.label === 'string' &&
-      (item.label as string).includes('Terminal ('),
-  );
+  items.filter((item) => item.itemKind === 'bindable' && typeof item.label === 'string' && (item.label as string).includes('Terminal ('));
 
 export const createAndBindTerminal = async (name: string): Promise<vscode.Terminal> => {
   const terminal = vscode.window.createTerminal({ name });

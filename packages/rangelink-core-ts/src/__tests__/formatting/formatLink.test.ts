@@ -787,46 +787,43 @@ describe('formatLink', () => {
     it.each([
       { linkType: LinkType.Regular, suffix: '' },
       { linkType: LinkType.Portable, suffix: byodSuffix(DEFAULT_DELIMITERS, true) },
-    ])(
-      'should handle end-to-end link generation with linkType=$linkType',
-      ({ linkType, suffix }) => {
-        const expectedStartLine = startLine + 1;
-        const expectedEndLine = endLine + 1;
-        const expectedStartPosition = startPosition + 1;
-        const expectedEndPosition = endPosition + 1;
+    ])('should handle end-to-end link generation with linkType=$linkType', ({ linkType, suffix }) => {
+      const expectedStartLine = startLine + 1;
+      const expectedEndLine = endLine + 1;
+      const expectedStartPosition = startPosition + 1;
+      const expectedEndPosition = endPosition + 1;
 
-        const inputSelection: InputSelection = {
-          selections: [
-            {
-              start: { line: startLine, character: startPosition },
-              end: { line: endLine, character: endPosition },
-              coverage: SelectionCoverage.PartialLine,
-            },
-          ],
-          selectionType: SelectionType.Normal,
-        };
-
-        const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
-          linkType,
-        });
-
-        expect(result).toBeSuccess({
-          link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
-          rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
-          linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
-          rangeFormat: 'WithPositions',
-          selectionType: 'Normal',
-          delimiters: DEFAULT_DELIMITERS,
-          computedSelection: {
-            startLine: expectedStartLine,
-            endLine: expectedEndLine,
-            startPosition: expectedStartPosition,
-            endPosition: expectedEndPosition,
-            rangeFormat: 'WithPositions',
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: startLine, character: startPosition },
+            end: { line: endLine, character: endPosition },
+            coverage: SelectionCoverage.PartialLine,
           },
-        });
-      },
-    );
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+        linkType,
+      });
+
+      expect(result).toBeSuccess({
+        link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
+        rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
+        linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
+        rangeFormat: 'WithPositions',
+        selectionType: 'Normal',
+        delimiters: DEFAULT_DELIMITERS,
+        computedSelection: {
+          startLine: expectedStartLine,
+          endLine: expectedEndLine,
+          startPosition: expectedStartPosition,
+          endPosition: expectedEndPosition,
+          rangeFormat: 'WithPositions',
+        },
+      });
+    });
 
     it.each([
       { linkType: LinkType.Regular, suffix: '' },
@@ -873,25 +870,22 @@ describe('formatLink', () => {
       });
     });
 
-    it.each([{ linkType: LinkType.Regular }, { linkType: LinkType.Portable }])(
-      'should propagate errors correctly with linkType=$linkType',
-      ({ linkType }) => {
-        const inputSelection: InputSelection = {
-          selections: [],
-          selectionType: SelectionType.Normal,
-        };
+    it.each([{ linkType: LinkType.Regular }, { linkType: LinkType.Portable }])('should propagate errors correctly with linkType=$linkType', ({ linkType }) => {
+      const inputSelection: InputSelection = {
+        selections: [],
+        selectionType: SelectionType.Normal,
+      };
 
-        const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
-          linkType,
-        });
+      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+        linkType,
+      });
 
-        expect(result).toHaveDetailedError('SELECTION_EMPTY', {
-          message: 'Selections array must not be empty',
-          functionName: 'validateInputSelection',
-          details: { selectionsLength: 0 },
-        });
-      },
-    );
+      expect(result).toHaveDetailedError('SELECTION_EMPTY', {
+        message: 'Selections array must not be empty',
+        functionName: 'validateInputSelection',
+        details: { selectionsLength: 0 },
+      });
+    });
   });
 
   describe('quoting', () => {

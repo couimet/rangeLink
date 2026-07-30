@@ -1,8 +1,5 @@
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-  SETTING_FEATURES_BOOKMARKS_ENABLED,
-} from '../constants';
+import { DEFAULT_FEATURES_BOOKMARKS_ENABLED, SETTING_FEATURES_BOOKMARKS_ENABLED } from '../constants';
 import type { BoundSession, PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
@@ -38,10 +35,7 @@ export class BookmarkService {
    */
   isVisible(): boolean {
     // TODO [2026-12-31]: #366 remove when bookmarks graduates from beta
-    return this.configReader.getBoolean(
-      SETTING_FEATURES_BOOKMARKS_ENABLED,
-      DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-    );
+    return this.configReader.getBoolean(SETTING_FEATURES_BOOKMARKS_ENABLED, DEFAULT_FEATURES_BOOKMARKS_ENABLED);
   }
 
   /**

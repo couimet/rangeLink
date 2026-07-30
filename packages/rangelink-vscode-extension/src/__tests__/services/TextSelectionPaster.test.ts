@@ -35,13 +35,7 @@ describe('TextSelectionPaster', () => {
     mockSelectionValidator = {
       validateSelectionsAndShowError: jest.fn(),
     };
-    paster = new TextSelectionPaster(
-      mockDestinationManager,
-      mockConfigReader,
-      mockSendRouter as any,
-      mockSelectionValidator as any,
-      mockLogger,
-    );
+    paster = new TextSelectionPaster(mockDestinationManager, mockConfigReader, mockSendRouter as any, mockSelectionValidator as any, mockLogger);
   });
 
   it('returns early when validation fails', async () => {

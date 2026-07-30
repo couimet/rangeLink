@@ -34,10 +34,7 @@ describe('ClipboardService', () => {
         { fn: 'ClipboardService::stage::read', priorLength: PRIOR.length },
         'Clipboard current value read and saved',
       );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::stage::write', textLength: NEW_TEXT.length },
-        'Clipboard write succeeded',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ClipboardService::stage::write', textLength: NEW_TEXT.length }, 'Clipboard write succeeded');
     });
 
     it('bails out on clipboard read failure', async () => {
@@ -55,10 +52,7 @@ describe('ClipboardService', () => {
         cause: readError,
       });
       expect(fn).not.toHaveBeenCalled();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::stage::read', error: readError },
-        'Clipboard read failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::stage::read', error: readError }, 'Clipboard read failed');
     });
 
     it('bails out on clipboard write failure', async () => {
@@ -77,10 +71,7 @@ describe('ClipboardService', () => {
         cause: writeError,
       });
       expect(fn).not.toHaveBeenCalled();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::stage::write', error: writeError },
-        'Clipboard write failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::stage::write', error: writeError }, 'Clipboard write failed');
     });
 
     it('restores clipboard and returns error when fn throws', async () => {
@@ -99,10 +90,7 @@ describe('ClipboardService', () => {
         cause: fnError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::stage', error: fnError },
-        'Callback threw',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::stage', error: fnError }, 'Callback threw');
     });
 
     it('returns fn result even when restore fails', async () => {
@@ -142,10 +130,7 @@ describe('ClipboardService', () => {
       const result = await service.route(fn);
 
       expect(result).toBeSuccess(TEST_RESULT);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::route', mode: 'never' },
-        'Clipboard preservation disabled; executing directly',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ClipboardService::route', mode: 'never' }, 'Clipboard preservation disabled; executing directly');
     });
 
     it("returns error when fn throws in 'never' mode", async () => {
@@ -164,10 +149,7 @@ describe('ClipboardService', () => {
         functionName: 'ClipboardService::route',
         cause: fnError,
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::route', mode: 'never', error: fnError },
-        'Callback threw',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::route', mode: 'never', error: fnError }, 'Callback threw');
     });
 
     it('saves clipboard, runs fn, then restores on success', async () => {
@@ -210,10 +192,7 @@ describe('ClipboardService', () => {
       expect(result).toBeSuccess(TEST_RESULT);
       expect(shouldRestore).toHaveBeenCalled();
       expect(writeSpy).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::route', mode: 'always' },
-        'Clipboard restoration skipped',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ClipboardService::route', mode: 'always' }, 'Clipboard restoration skipped');
     });
 
     it('bails out on clipboard read failure', async () => {
@@ -234,10 +213,7 @@ describe('ClipboardService', () => {
         cause: readError,
       });
       expect(fn).not.toHaveBeenCalled();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::route::read', mode: 'always', error: readError },
-        'Clipboard read failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::route::read', mode: 'always', error: readError }, 'Clipboard read failed');
     });
 
     it('restores clipboard and returns error when fn throws', async () => {
@@ -259,10 +235,7 @@ describe('ClipboardService', () => {
         cause: fnError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'ClipboardService::route', mode: 'always', error: fnError },
-        'Callback threw',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ClipboardService::route', mode: 'always', error: fnError }, 'Callback threw');
     });
 
     it('returns fn result even when restore fails', async () => {
@@ -304,10 +277,7 @@ describe('ClipboardService', () => {
       expect(result).toBeSuccess({ clipboard: CAPTURED_TEXT, produced: undefined });
       expect(producer).toHaveBeenCalledTimes(1);
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'test::capture::read', priorLength: PRIOR.length },
-        'Clipboard current value read and saved',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test::capture::read', priorLength: PRIOR.length }, 'Clipboard current value read and saved');
     });
 
     it('returns error when initial clipboard read fails', async () => {
@@ -325,10 +295,7 @@ describe('ClipboardService', () => {
         cause: readError,
       });
       expect(producer).not.toHaveBeenCalled();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'test::capture::read', error: readError },
-        'Clipboard read failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test::capture::read', error: readError }, 'Clipboard read failed');
     });
 
     it('restores clipboard and returns error when producer throws', async () => {
@@ -347,10 +314,7 @@ describe('ClipboardService', () => {
         cause: producerError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'test::capture', error: producerError },
-        'Producer callback threw during capture',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test::capture', error: producerError }, 'Producer callback threw during capture');
     });
 
     it('restores clipboard and returns error when read after producer fails', async () => {
@@ -370,10 +334,7 @@ describe('ClipboardService', () => {
         cause: readError,
       });
       expect(writeSpy).toHaveBeenCalledWith(PRIOR);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'test::capture::read', error: readError },
-        'Clipboard read failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test::capture::read', error: readError }, 'Clipboard read failed');
     });
 
     it('returns captured text even when restore fails', async () => {

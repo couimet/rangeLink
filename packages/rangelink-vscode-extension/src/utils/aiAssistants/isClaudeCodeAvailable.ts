@@ -16,9 +16,7 @@ export const isClaudeCodeAvailable = (ideAdapter: VscodeAdapter, logger: Logger)
       extensionActive: extension?.isActive ?? false,
       isAvailable,
     },
-    isAvailable
-      ? 'Claude Code extension detected and active'
-      : 'Claude Code extension not available (not installed or not active)',
+    isAvailable ? 'Claude Code extension detected and active' : 'Claude Code extension not available (not installed or not active)',
   );
 
   return isAvailable;

@@ -1,9 +1,4 @@
-import {
-  CMD_BIND_TO_CUSTOM_AI_BY_ID,
-  CMD_BIND_TO_DESTINATION,
-  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
-  CMD_COPY_LINK_RELATIVE,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_CUSTOM_AI_BY_ID, CMD_BIND_TO_DESTINATION, CMD_BIND_TO_GITHUB_COPILOT_CHAT, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
   extractQuickPickItemsLogged,
@@ -22,9 +17,7 @@ const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
 const getExpectedCustomAssistantsCount = (): number => {
   const raw = process.env.RANGELINK_CUSTOM_AI_COUNT;
   if (raw === undefined) {
-    throw new Error(
-      'RANGELINK_CUSTOM_AI_COUNT env var is not set — the test runner must export this via setup-integration-test-settings.js',
-    );
+    throw new Error('RANGELINK_CUSTOM_AI_COUNT env var is not set — the test runner must export this via setup-integration-test-settings.js');
   }
   const count = parseInt(raw, 10);
   if (isNaN(count)) {
@@ -52,11 +45,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const rawCtx = parseLogContext(parseLogLine!);
     const count = rawCtx?.count as number;
     const ids = rawCtx?.ids as string[];
-    assert.strictEqual(
-      count,
-      expectedCount,
-      `Expected ${expectedCount} custom AI assistants loaded but got count: ${count}`,
-    );
+    assert.strictEqual(count, expectedCount, `Expected ${expectedCount} custom AI assistants loaded but got count: ${count}`);
     assert.ok(
       ids.includes('rangelink.dummy-ai-extension'),
       `Expected log to mention 'rangelink.dummy-ai-extension' extensionId but got ids: ${JSON.stringify(ids)}`,
@@ -69,9 +58,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
 
     const registrationLogs = allLines.filter((line) => {
       const ctx = parseLogContext(line);
-      return (
-        ctx?.fn === 'DestinationRegistry.register' && String(ctx?.kind).startsWith('custom-ai:')
-      );
+      return ctx?.fn === 'DestinationRegistry.register' && String(ctx?.kind).startsWith('custom-ai:');
     });
 
     assert.strictEqual(
@@ -82,60 +69,42 @@ standardSuite('Custom AI Assistants', (_ss) => {
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension';
       }),
       'Expected registration for Tier 1 (rangelink.dummy-ai-extension)',
     );
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier2'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier2';
       }),
       'Expected registration for Tier 2 (rangelink.dummy-ai-extension-tier2)',
     );
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier3'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-tier3';
       }),
       'Expected registration for Tier 3 (rangelink.dummy-ai-extension-tier3)',
     );
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template';
       }),
       'Expected registration for Template (rangelink.dummy-ai-extension-template)',
     );
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-fallback'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-fallback';
       }),
       'Expected registration for Fallback (rangelink.dummy-ai-extension-fallback)',
     );
     assert.ok(
       registrationLogs.some((l) => {
         const ctx = parseLogContext(l);
-        return (
-          ctx?.fn === 'DestinationRegistry.register' &&
-          ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-focus-fail'
-        );
+        return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-focus-fail';
       }),
       'Expected registration for Focus-Fail (rangelink.dummy-ai-extension-focus-fail)',
     );
@@ -143,10 +112,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
 
   test('custom-ai-assistant-004: dummy extension insertText command is detectable', async () => {
     const commands = await vscode.commands.getCommands(true);
-    assert.ok(
-      commands.includes('dummyAi.insertText'),
-      'Expected dummyAi.insertText to be registered — dummy-ai-extension should be loaded',
-    );
+    assert.ok(commands.includes('dummyAi.insertText'), 'Expected dummyAi.insertText to be registered — dummy-ai-extension should be loaded');
   });
 
   test('custom-ai-assistant-005: tier 1 entry has its insertCommand registered', async () => {
@@ -160,25 +126,16 @@ standardSuite('Custom AI Assistants', (_ss) => {
     const allLines = logCapture.getAllLines();
     const registrationLog = allLines.find((line) => {
       const ctx = parseLogContext(line);
-      return (
-        ctx?.fn === 'DestinationRegistry.register' &&
-        ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension'
-      );
+      return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension';
     });
-    assert.ok(
-      registrationLog,
-      'Expected Tier 1 entry (rangelink.dummy-ai-extension) to be registered as a destination kind',
-    );
+    assert.ok(registrationLog, 'Expected Tier 1 entry (rangelink.dummy-ai-extension) to be registered as a destination kind');
   });
 
   test('custom-ai-assistant-006: dummy extension commands are all registered', async () => {
     const commands = await vscode.commands.getCommands(true);
 
     assert.ok(commands.includes('dummyAi.insertText'), 'Expected dummyAi.insertText command');
-    assert.ok(
-      commands.includes('dummyAi.insertWithArgs'),
-      'Expected dummyAi.insertWithArgs command',
-    );
+    assert.ok(commands.includes('dummyAi.insertWithArgs'), 'Expected dummyAi.insertWithArgs command');
     assert.ok(commands.includes('dummyAi.focusForPaste'), 'Expected dummyAi.focusForPaste command');
     assert.ok(commands.includes('dummyAi.focusFail'), 'Expected dummyAi.focusFail command');
     assert.ok(commands.includes('dummyAi.focusPanel'), 'Expected dummyAi.focusPanel command');
@@ -192,16 +149,10 @@ standardSuite('Custom AI Assistants', (_ss) => {
 
     const registrationLog = allLines.find((line) => {
       const ctx = parseLogContext(line);
-      return (
-        ctx?.fn === 'DestinationRegistry.register' &&
-        ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template'
-      );
+      return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:rangelink.dummy-ai-extension-template';
     });
 
-    assert.ok(
-      registrationLog,
-      'Expected registration for template entry (rangelink.dummy-ai-extension-template)',
-    );
+    assert.ok(registrationLog, 'Expected registration for template entry (rangelink.dummy-ai-extension-template)');
   });
 
   const EXPECTED_GITHUB_COPILOT_CHAT_REGISTRATION_COUNT = 1;
@@ -234,9 +185,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
 
     const noSeparateCustomRegistration = allLines.filter((line) => {
       const ctx = parseLogContext(line);
-      return (
-        ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:github.copilot-chat'
-      );
+      return ctx?.fn === 'DestinationRegistry.register' && ctx?.kind === 'custom-ai:github.copilot-chat';
     });
     assert.strictEqual(
       noSeparateCustomRegistration.length,
@@ -254,10 +203,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
       return ctx?.fn === 'parseCustomAiAssistants';
     });
 
-    assert.ok(
-      parseLog,
-      'Expected parseCustomAiAssistants to load assistants with insertCommands configured as plain strings',
-    );
+    assert.ok(parseLog, 'Expected parseCustomAiAssistants to load assistants with insertCommands configured as plain strings');
     const rawCtx2 = parseLogContext(parseLog!);
     const ids = rawCtx2?.ids as string[];
     assert.ok(
@@ -295,17 +241,9 @@ standardSuite('Custom AI Assistants — Destination Picker', (ss) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry — was the picker opened?');
 
-    const EXPECTED_ORDER = [
-      'Dummy AI (Tier 1)',
-      'Dummy AI (Tier 2)',
-      'Dummy AI (Tier 3)',
-      'Dummy AI (Template)',
-      'Dummy AI (Fallback)',
-    ];
+    const EXPECTED_ORDER = ['Dummy AI (Tier 1)', 'Dummy AI (Tier 2)', 'Dummy AI (Tier 3)', 'Dummy AI (Template)', 'Dummy AI (Fallback)'];
 
-    const indices = EXPECTED_ORDER.map((name) =>
-      items!.findIndex((item) => item.displayName === name),
-    );
+    const indices = EXPECTED_ORDER.map((name) => items!.findIndex((item) => item.displayName === name));
 
     for (const [i, name] of EXPECTED_ORDER.entries()) {
       assert.notStrictEqual(indices[i], -1, `Expected "${name}" in the destination picker items`);
@@ -318,9 +256,7 @@ standardSuite('Custom AI Assistants — Destination Picker', (ss) => {
       );
     }
 
-    ss.log(
-      '✓ custom-ai-assistant-007 — log confirms custom AI assistants appear in settings.json order',
-    );
+    ss.log('✓ custom-ai-assistant-007 — log confirms custom AI assistants appear in settings.json order');
   });
 });
 
@@ -329,10 +265,7 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     await ss.createAndOpenFile('__rl-test-cold-start', 'cold start test');
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
@@ -345,18 +278,10 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier1.length > 0,
-      'Expected tier1 textarea to contain the link even though panel was not pre-opened',
-    );
-    assert.strictEqual(
-      textResult!.tier2,
-      '',
-      'Expected tier2 textarea to be empty (no cross-contamination)',
-    );
+    assert.ok(textResult!.tier1.length > 0, 'Expected tier1 textarea to contain the link even though panel was not pre-opened');
+    assert.strictEqual(textResult!.tier2, '', 'Expected tier2 textarea to be empty (no cross-contamination)');
 
     ss.log('✓ Tier 1 cold start — panel auto-initialized, text delivered');
   });
@@ -373,10 +298,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await ss.createAndOpenFile('__rl-test-tier1', 'hello world\nline two\nline three');
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension',
@@ -389,27 +311,16 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier1.length > 0,
-      `Expected tier1 textarea to contain the link but got empty string`,
-    );
-    assert.strictEqual(
-      textResult!.tier2,
-      '',
-      'Expected tier2 textarea to be empty (no cross-contamination)',
-    );
+    assert.ok(textResult!.tier1.length > 0, `Expected tier1 textarea to contain the link but got empty string`);
+    assert.strictEqual(textResult!.tier2, '', 'Expected tier2 textarea to be empty (no cross-contamination)');
 
     ss.log('✓ Tier 1 direct insert delivered text to dummy textarea');
   });
 
   test('custom-ai-assistant-011: Tier 1 clipboard isolation — sentinel preserved', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-tier1-clip', 'clipboard test');
     await ss.settle();
@@ -428,14 +339,9 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
   });
 
   test('custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 3)',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 3)', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
-    ss.expectToastMessages([
-      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use.' },
-    ]);
+    ss.expectToastMessages([{ level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use.' }]);
     await ss.createAndOpenFile('__rl-test-tier3', 'tier three test');
     await ss.settle();
 
@@ -453,27 +359,17 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       'before-tier3-paste',
     );
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.strictEqual(
-      textResult!.tier1,
-      '',
-      'Expected tier1 textarea to be empty (Tier 3 uses manual paste, not direct insert)',
-    );
+    assert.strictEqual(textResult!.tier1, '', 'Expected tier1 textarea to be empty (Tier 3 uses manual paste, not direct insert)');
 
     ss.log('✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays)');
   });
 
   test('custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Fallback)',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Fallback)', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
-    ss.expectToastMessages([
-      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Fallback) to use.' },
-    ]);
+    ss.expectToastMessages([{ level: 'info', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Fallback) to use.' }]);
     await ss.createAndOpenFile('__rl-test-fallback', 'fallback test');
     await ss.settle();
 
@@ -491,23 +387,15 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
       'before-fallback-paste',
     );
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.strictEqual(
-      textResult!.tier1,
-      '',
-      'Expected tier1 textarea to be empty (fallback resolved to focusCommands, not direct insert)',
-    );
+    assert.strictEqual(textResult!.tier1, '', 'Expected tier1 textarea to be empty (fallback resolved to focusCommands, not direct insert)');
 
     ss.log('✓ Tier 2→3 fallback: clipboard not restored, manual paste verified');
   });
 
   test('custom-ai-assistant-014: ${content} template delivers text via insertWithArgs', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Template)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Template)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Template)', '✓ RangeLink: RangeLink sent to Dummy AI (Template)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await ss.createAndOpenFile('__rl-test-template', 'template test content');
     await ss.settle();
@@ -523,17 +411,11 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier1.length > 0,
-      'Expected tier1 textarea to contain the link via template interpolation',
-    );
+    assert.ok(textResult!.tier1.length > 0, 'Expected tier1 textarea to contain the link via template interpolation');
 
-    ss.log(
-      '✓ ${content} template interpolation delivered text to dummy textarea via insertWithArgs',
-    );
+    ss.log('✓ ${content} template interpolation delivered text to dummy textarea via insertWithArgs');
   });
 });
 
@@ -542,10 +424,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     await ss.createAndOpenFile('__rl-test-copilot-override', 'copilot override test');
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat', '✓ RangeLink: RangeLink sent to GitHub Copilot Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
     await ss.settle();
@@ -554,31 +433,18 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier1.length > 0,
-      'Expected tier1 textarea to contain the link (Copilot override should route to Dummy AI)',
-    );
-    assert.strictEqual(
-      textResult!.tier2,
-      '',
-      'Expected tier2 textarea to be empty (no cross-contamination)',
-    );
+    assert.ok(textResult!.tier1.length > 0, 'Expected tier1 textarea to contain the link (Copilot override should route to Dummy AI)');
+    assert.strictEqual(textResult!.tier2, '', 'Expected tier2 textarea to be empty (no cross-contamination)');
 
     ss.log('✓ Copilot override routes content to Dummy AI Tier 1');
   });
 
   test('custom-ai-assistant-019: misconfigured override (focusCommands-only) leaves link in clipboard with manual-paste toast', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Gemini Code Assist',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Gemini Code Assist', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
-    ss.expectToastMessages([
-      { level: 'info', message: 'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.' },
-    ]);
+    ss.expectToastMessages([{ level: 'info', message: 'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.' }]);
     await ss.createAndOpenFile('__rl-test-gemini-override', 'gemini override test');
     await ss.settle();
 
@@ -596,17 +462,10 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
       'before-gemini-override',
     );
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.strictEqual(
-      textResult!.tier1,
-      '',
-      'Expected tier1 to be empty (focusCommands-only, no direct insert)',
-    );
+    assert.strictEqual(textResult!.tier1, '', 'Expected tier1 to be empty (focusCommands-only, no direct insert)');
 
-    ss.log(
-      '✓ Misconfigured override (focusCommands-only) leaves link in clipboard, human confirmed',
-    );
+    ss.log('✓ Misconfigured override (focusCommands-only) leaves link in clipboard, human confirmed');
   });
 });

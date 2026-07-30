@@ -2,12 +2,7 @@ import type { Bookmark, BookmarkService } from '../bookmarks';
 import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  BookmarkQuickPickItem,
-  CommandQuickPickItem,
-  InfoQuickPickItem,
-  MessageCode,
-} from '../types';
+import { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem, MessageCode } from '../types';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 import type { Logger } from '@couimet/logger-contract';
@@ -28,10 +23,7 @@ export class ListBookmarksCommand {
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'ListBookmarksCommand.constructor' },
-      'ListBookmarksCommand initialized',
-    );
+    this.logger.debug({ fn: 'ListBookmarksCommand.constructor' }, 'ListBookmarksCommand initialized');
   }
 
   async execute(): Promise<void> {
@@ -58,10 +50,7 @@ export class ListBookmarksCommand {
     switch (selected.itemKind) {
       case 'bookmark':
         await this.bookmarkService.sendBookmark(selected.bookmarkId);
-        this.logger.debug(
-          { ...logCtx, bookmarkId: selected.bookmarkId },
-          'Bookmark selected and sent',
-        );
+        this.logger.debug({ ...logCtx, bookmarkId: selected.bookmarkId }, 'Bookmark selected and sent');
         break;
       case 'command':
         await this.ideAdapter.executeCommand(selected.command);

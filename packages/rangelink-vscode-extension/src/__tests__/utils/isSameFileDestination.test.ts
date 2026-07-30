@@ -8,10 +8,7 @@ const createMockUri = (path: string): vscode.Uri =>
     toString: () => `file://${path}`,
   }) as vscode.Uri;
 
-const createMockDestination = (
-  uri: vscode.Uri | undefined,
-  viewColumn?: vscode.ViewColumn,
-): PasteDestination =>
+const createMockDestination = (uri: vscode.Uri | undefined, viewColumn?: vscode.ViewColumn): PasteDestination =>
   ({
     getDestinationUri: () => uri,
     getDestinationViewColumn: () => viewColumn,

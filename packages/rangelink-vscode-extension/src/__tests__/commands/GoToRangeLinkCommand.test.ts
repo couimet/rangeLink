@@ -3,13 +3,7 @@ import { createMockNavigationHandler, createMockVscodeAdapter } from '../helpers
 
 import { DetailedResult } from '@couimet/detailed-result';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import {
-  LinkType,
-  ParsedLink,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { LinkType, ParsedLink, RangeLinkError, RangeLinkErrorCodes, SelectionType } from 'rangelink-core-ts';
 
 describe('GoToRangeLinkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -26,10 +20,7 @@ describe('GoToRangeLinkCommand', () => {
 
       new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'GoToRangeLinkCommand.constructor' },
-        'GoToRangeLinkCommand initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.constructor' }, 'GoToRangeLinkCommand initialized');
     });
   });
 
@@ -52,10 +43,7 @@ describe('GoToRangeLinkCommand', () => {
         });
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute' },
-          'User cancelled input',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'User cancelled input');
       });
     });
 
@@ -76,10 +64,7 @@ describe('GoToRangeLinkCommand', () => {
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute' },
-          'Empty input provided',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Empty input provided');
       });
 
       it('shows error message when input is whitespace only', async () => {
@@ -98,10 +83,7 @@ describe('GoToRangeLinkCommand', () => {
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute' },
-          'Empty input provided',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Empty input provided');
       });
     });
 
@@ -128,9 +110,7 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(invalidInput);
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          "Invalid link format: 'not-a-valid-link'",
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith("Invalid link format: 'not-a-valid-link'");
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -197,22 +177,10 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(validLink);
-        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(
-          mockParsedLink,
-          validLink,
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute' },
-          'Showing input box for RangeLink',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute', input: validLink },
-          'Parsing RangeLink',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink },
-          'Navigating to link',
-        );
+        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, validLink);
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Showing input box for RangeLink');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', input: validLink }, 'Parsing RangeLink');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink }, 'Navigating to link');
       });
 
       it('trims whitespace from input before parsing', async () => {
@@ -230,18 +198,9 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(trimmedLink);
-        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(
-          mockParsedLink,
-          trimmedLink,
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute', input: trimmedLink },
-          'Parsing RangeLink',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink },
-          'Navigating to link',
-        );
+        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, trimmedLink);
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', input: trimmedLink }, 'Parsing RangeLink');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink }, 'Navigating to link');
       });
     });
   });

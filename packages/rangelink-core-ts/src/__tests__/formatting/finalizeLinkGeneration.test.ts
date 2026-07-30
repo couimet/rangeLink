@@ -1,7 +1,4 @@
-import {
-  finalizeLinkGeneration,
-  LinkGenerationResult,
-} from '../../formatting/finalizeLinkGeneration';
+import { finalizeLinkGeneration, LinkGenerationResult } from '../../formatting/finalizeLinkGeneration';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { LinkType } from '../../types/LinkType';
 import { RangeFormat } from '../../types/RangeFormat';
@@ -43,14 +40,7 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/file.ts');
 
     expect(result).toBeSuccess({
       link: 'src/file.ts#L10-L20',
@@ -86,14 +76,7 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Portable,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Portable, defaultDelimiters, 'src/file.ts');
 
     expect(result).toBeSuccess({
       link: 'src/file.ts#L10-L20~#~L~-~',
@@ -141,14 +124,7 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      maliciousGenerator,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/test.ts',
-    );
+    const result = finalizeLinkGeneration(maliciousGenerator, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/test.ts');
 
     expect(result).toBeSuccess({
       link: 'src/test.ts#L10',
@@ -200,14 +176,7 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Rectangular,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/file.ts');
 
     expect(result).toBeSuccess({
       link: 'src/file.ts#L5C10-L15C20',

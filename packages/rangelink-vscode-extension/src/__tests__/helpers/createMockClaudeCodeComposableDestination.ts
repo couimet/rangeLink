@@ -14,9 +14,7 @@ import {
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance configured as Claude Code
  */
-export const createMockClaudeCodeComposableDestination = (
-  overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>,
-) =>
+export const createMockClaudeCodeComposableDestination = (overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>) =>
   createMockSingletonComposablePasteDestination({
     id: 'claude-code',
     displayName: 'Claude Code Chat',

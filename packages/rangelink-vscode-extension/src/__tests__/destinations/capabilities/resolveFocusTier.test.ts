@@ -31,12 +31,7 @@ describe('resolveFocusTier', () => {
       probeMode: 'execute',
     };
 
-    const result = resolveFocusTier(
-      [tier1, tier2],
-      ['sparkAi.insertText', 'sparkAi.focus'],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const result = resolveFocusTier([tier1, tier2], ['sparkAi.insertText', 'sparkAi.focus'], mockLogger, LOG_PREFIX);
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('insertCommands');
@@ -146,13 +141,7 @@ describe('resolveFocusTier', () => {
 
     const FALLBACK_INDEX = 1;
 
-    const result = resolveFocusTier(
-      [userTier, fallbackTier],
-      ['builtin.focus'],
-      mockLogger,
-      LOG_PREFIX,
-      FALLBACK_INDEX,
-    );
+    const result = resolveFocusTier([userTier, fallbackTier], ['builtin.focus'], mockLogger, LOG_PREFIX, FALLBACK_INDEX);
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('builtinFallback');
@@ -175,13 +164,7 @@ describe('resolveFocusTier', () => {
 
     const FALLBACK_INDEX = 1;
 
-    const result = resolveFocusTier(
-      [userTier, fallbackTier],
-      ['custom.insert', 'builtin.focus'],
-      mockLogger,
-      LOG_PREFIX,
-      FALLBACK_INDEX,
-    );
+    const result = resolveFocusTier([userTier, fallbackTier], ['custom.insert', 'builtin.focus'], mockLogger, LOG_PREFIX, FALLBACK_INDEX);
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('insertCommands');

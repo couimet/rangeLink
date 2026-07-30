@@ -7,10 +7,7 @@
  *
  * Purpose: Ensure mocks used in unit tests accurately represent real rangelink-core-ts behavior.
  */
-import {
-  generateLinkFromSelections,
-  type GenerateLinkFromSelectionsOptions,
-} from '../../utils/generateLinkFromSelections';
+import { generateLinkFromSelections, type GenerateLinkFromSelectionsOptions } from '../../utils/generateLinkFromSelections';
 import { createMockDocument, createMockPosition, createMockSelection } from '../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
@@ -26,12 +23,7 @@ const DELIMITERS: DelimiterConfig = {
 
 let mockLogger: ReturnType<typeof createMockLogger>;
 
-const mockSelection = (
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number,
-): vscode.Selection => {
+const mockSelection = (startLine: number, startCharacter: number, endLine: number, endCharacter: number): vscode.Selection => {
   const start = createMockPosition({ line: startLine, character: startCharacter });
   const end = createMockPosition({ line: endLine, character: endCharacter });
   return createMockSelection({
@@ -95,10 +87,7 @@ describe('trailing newline normalization integration', () => {
       selectionType: 'Normal',
     };
     expect(result).toBeSuccess(expectedFormattedLink);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
-      'Generated link: src/file.ts#L5',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink }, 'Generated link: src/file.ts#L5');
   });
 
   it('multi-line full selection (Ctrl+L x3) produces #L5-L7 without character positions', () => {

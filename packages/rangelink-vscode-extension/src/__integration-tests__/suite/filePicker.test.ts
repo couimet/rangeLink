@@ -1,8 +1,4 @@
-import {
-  CMD_BIND_TO_DESTINATION,
-  CMD_BIND_TO_TEXT_EDITOR_HERE,
-  CMD_OPEN_STATUS_BAR_MENU,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_DESTINATION, CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_OPEN_STATUS_BAR_MENU } from '../../constants/commandIds';
 import {
   createFileAt,
   extractQuickPickItemsLogged,
@@ -23,8 +19,7 @@ const SEPARATOR_KIND = -1;
 const FILE_OVERFLOW_THRESHOLD = 5;
 
 standardSuite('File Picker', (ss) => {
-  const findTestFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-    findTestItemsByPrefix(items, '__rl-test-fp-');
+  const findTestFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] => findTestItemsByPrefix(items, '__rl-test-fp-');
 
   test('file-picker-001: bound file appears first with bound badge', async () => {
     const uriA = await ss.createAndOpenFile('fp-001-a', 'line 1\nline 2\n', vscode.ViewColumn.One);
@@ -144,19 +139,12 @@ standardSuite('File Picker', (ss) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
-    const sharedNameItems = findTestFileItems(items!).filter((i) =>
-      (i.label as string).includes('fp-003-shared'),
-    );
+    const sharedNameItems = findTestFileItems(items!).filter((i) => (i.label as string).includes('fp-003-shared'));
 
     const descriptions = sharedNameItems.map(({ description }) => description as string);
-    assert.strictEqual(
-      sharedNameItems.length,
-      2,
-      `Expected exactly 2 disambiguated items but got ${sharedNameItems.length}`,
-    );
+    assert.strictEqual(sharedNameItems.length, 2, `Expected exactly 2 disambiguated items but got ${sharedNameItems.length}`);
     assert.ok(
-      descriptions.some((d) => d && d.includes('dirA')) &&
-        descriptions.some((d) => d && d.includes('dirB')),
+      descriptions.some((d) => d && d.includes('dirA')) && descriptions.some((d) => d && d.includes('dirB')),
       `Expected disambiguator paths containing "dirA" and "dirB" but got: ${JSON.stringify(descriptions)}`,
     );
 
@@ -237,9 +225,7 @@ standardSuite('File Picker', (ss) => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const EXPECTED_FILE_OVERFLOW = FILE_OVERFLOW_THRESHOLD - 1;
-    const moreItem = items!.find(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('More files...'),
-    );
+    const moreItem = items!.find((i) => typeof i.label === 'string' && (i.label as string).includes('More files...'));
     assert.ok(moreItem, 'Expected "More files..." overflow item');
     assert.deepStrictEqual(
       {
@@ -281,25 +267,14 @@ standardSuite('File Picker', (ss) => {
 
     const lines = logCapture.getLinesSince('before-fp-006');
     const quickPickEntries = getQuickPickLines(lines);
-    assert.ok(
-      quickPickEntries.length >= 2,
-      `Expected at least 2 showQuickPick entries (primary + secondary) but got ${quickPickEntries.length}`,
-    );
+    assert.ok(quickPickEntries.length >= 2, `Expected at least 2 showQuickPick entries (primary + secondary) but got ${quickPickEntries.length}`);
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
-    const activeFilesSeparator = secondaryItems.find(
-      (i) => i.kind === SEPARATOR_KIND && i.label === 'Active Files',
-    );
+    const activeFilesSeparator = secondaryItems.find((i) => i.kind === SEPARATOR_KIND && i.label === 'Active Files');
     assert.ok(activeFilesSeparator, 'Expected "Active Files" separator in secondary picker');
 
-    const testFiles = secondaryItems.filter(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-006'),
-    );
-    assert.strictEqual(
-      testFiles.length,
-      FILE_OVERFLOW_THRESHOLD,
-      `Expected ${FILE_OVERFLOW_THRESHOLD} test files in secondary picker`,
-    );
+    const testFiles = secondaryItems.filter((i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-006'));
+    assert.strictEqual(testFiles.length, FILE_OVERFLOW_THRESHOLD, `Expected ${FILE_OVERFLOW_THRESHOLD} test files in secondary picker`);
 
     const activeFile = testFiles.find((i) => i.label === lastFileName);
     assert.ok(activeFile, `Expected active file "${lastFileName}" in secondary picker`);
@@ -322,11 +297,7 @@ standardSuite('File Picker', (ss) => {
 
     const nonActiveFile = testFiles.find((i) => i.label !== lastFileName);
     assert.ok(nonActiveFile, 'Expected at least one non-active file');
-    assert.strictEqual(
-      nonActiveFile!.description,
-      undefined,
-      'Non-active file should have no description badge',
-    );
+    assert.strictEqual(nonActiveFile!.description, undefined, 'Non-active file should have no description badge');
 
     ss.log('✓ Secondary picker: active file has "active" badge, non-active has none');
   });
@@ -337,11 +308,7 @@ standardSuite('File Picker', (ss) => {
 
     const extraNames: string[] = [];
     for (let i = 1; i <= 3; i++) {
-      const uri = await ss.createAndOpenFile(
-        `fp-007-extra-${i}`,
-        `extra ${i}\n`,
-        vscode.ViewColumn.One,
-      );
+      const uri = await ss.createAndOpenFile(`fp-007-extra-${i}`, `extra ${i}\n`, vscode.ViewColumn.One);
       extraNames.push(path.basename(uri.fsPath));
     }
     await ss.createAndOpenFile('fp-007-g2b', 'group 2 extra\n', vscode.ViewColumn.Two);
@@ -358,29 +325,17 @@ standardSuite('File Picker', (ss) => {
 
     const lines = logCapture.getLinesSince('before-fp-007');
     const quickPickEntries = getQuickPickLines(lines);
-    assert.ok(
-      quickPickEntries.length >= 2,
-      `Expected at least 2 showQuickPick entries but got ${quickPickEntries.length}`,
-    );
+    assert.ok(quickPickEntries.length >= 2, `Expected at least 2 showQuickPick entries but got ${quickPickEntries.length}`);
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
 
-    const tabGroup1 = secondaryItems.find(
-      (i) => i.kind === SEPARATOR_KIND && i.label === 'Tab Group 1',
-    );
-    const tabGroup2 = secondaryItems.find(
-      (i) => i.kind === SEPARATOR_KIND && i.label === 'Tab Group 2',
-    );
+    const tabGroup1 = secondaryItems.find((i) => i.kind === SEPARATOR_KIND && i.label === 'Tab Group 1');
+    const tabGroup2 = secondaryItems.find((i) => i.kind === SEPARATOR_KIND && i.label === 'Tab Group 2');
     assert.ok(tabGroup1, 'Expected "Tab Group 1" separator in secondary picker');
     assert.ok(tabGroup2, 'Expected "Tab Group 2" separator in secondary picker');
 
-    const testFiles = secondaryItems.filter(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-007'),
-    );
-    assert.ok(
-      testFiles.length >= 5,
-      `Expected at least 5 test files in secondary picker but got ${testFiles.length}`,
-    );
+    const testFiles = secondaryItems.filter((i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-007'));
+    assert.ok(testFiles.length >= 5, `Expected at least 5 test files in secondary picker but got ${testFiles.length}`);
     assert.ok(
       testFiles.every((f) => f.itemKind === 'bindable' && f.boundState === 'not-bound'),
       'Expected all test files to be bindable and not-bound',
@@ -459,19 +414,12 @@ standardSuite('File Picker', (ss) => {
     assert.ok(quickPickEntries.length >= 2, 'Expected at least 2 showQuickPick entries');
 
     const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
-    const sharedItems = secondaryItems.filter(
-      (i) => typeof i.label === 'string' && (i.label as string).includes('fp-010-shared'),
-    );
-    assert.strictEqual(
-      sharedItems.length,
-      2,
-      `Expected 2 same-name items in secondary picker but got ${sharedItems.length}`,
-    );
+    const sharedItems = secondaryItems.filter((i) => typeof i.label === 'string' && (i.label as string).includes('fp-010-shared'));
+    assert.strictEqual(sharedItems.length, 2, `Expected 2 same-name items in secondary picker but got ${sharedItems.length}`);
 
     const descriptions = sharedItems.map((i) => i.description as string);
     assert.ok(
-      descriptions.some((d) => d && d.includes('fp010A')) &&
-        descriptions.some((d) => d && d.includes('fp010B')),
+      descriptions.some((d) => d && d.includes('fp010A')) && descriptions.some((d) => d && d.includes('fp010B')),
       `Expected disambiguator paths in secondary picker descriptions but got: ${JSON.stringify(descriptions)}`,
     );
 
@@ -510,14 +458,8 @@ standardSuite('File Picker', (ss) => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
-    const sharedItems = findTestFileItems(items!).filter((i) =>
-      (i.label as string).includes('fp-011-shared'),
-    );
-    assert.strictEqual(
-      sharedItems.length,
-      3,
-      `Expected 3 same-name items but got ${sharedItems.length}`,
-    );
+    const sharedItems = findTestFileItems(items!).filter((i) => (i.label as string).includes('fp-011-shared'));
+    assert.strictEqual(sharedItems.length, 3, `Expected 3 same-name items but got ${sharedItems.length}`);
 
     assert.deepStrictEqual(
       sharedItems.map(({ label, displayName, boundState, itemKind }) => ({

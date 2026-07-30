@@ -270,16 +270,12 @@ Do not tell the tester to click Cancel or press Escape to dismiss menus and pick
 
 ```typescript
 // BAD: required action hidden in steps[3]
-await waitForHuman(
-  'context-menus-terminal-001',
-  `Right-click terminal TAB "${name}" → "RangeLink: Send Selection"`,
-  [
-    `The terminal "${name}" has selected text.`,
-    '1. Right-click the terminal TAB',
-    '2. Verify the entry is present',
-    '3. Select it to open the destination picker and pick any destination',
-  ],
-);
+await waitForHuman('context-menus-terminal-001', `Right-click terminal TAB "${name}" → "RangeLink: Send Selection"`, [
+  `The terminal "${name}" has selected text.`,
+  '1. Right-click the terminal TAB',
+  '2. Verify the entry is present',
+  '3. Select it to open the destination picker and pick any destination',
+]);
 
 // GOOD: instruction is self-contained
 await waitForHuman(

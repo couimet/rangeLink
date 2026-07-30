@@ -43,9 +43,7 @@ const settings = {
     {
       extensionId: 'rangelink.dummy-ai-extension-template',
       extensionName: 'Dummy AI (Template)',
-      insertCommands: [
-        { command: 'dummyAi.insertWithArgs', args: [{ text: '${content}', source: 'rangelink' }] },
-      ],
+      insertCommands: [{ command: 'dummyAi.insertWithArgs', args: [{ text: '${content}', source: 'rangelink' }] }],
     },
     {
       extensionId: 'rangelink.dummy-ai-extension-fallback',
@@ -89,7 +87,5 @@ const merged = { ...existing, ...settings };
 fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2));
 
 const assistantCount = settings['rangelink.customAiAssistants'].length;
-console.log(
-  `[setup-integration-test-settings] Wrote ${SETTINGS_FILE} with ${assistantCount} custom AI assistant(s)`,
-);
+console.log(`[setup-integration-test-settings] Wrote ${SETTINGS_FILE} with ${assistantCount} custom AI assistant(s)`);
 console.log(`CUSTOM_AI_COUNT=${assistantCount}`);

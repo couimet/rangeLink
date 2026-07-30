@@ -23,8 +23,7 @@ const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
  * @param line - The terminal line text
  * @returns Mock TerminalLinkContext
  */
-const createMockTerminalContext = (line: string): vscode.TerminalLinkContext =>
-  ({ line }) as vscode.TerminalLinkContext;
+const createMockTerminalContext = (line: string): vscode.TerminalLinkContext => ({ line }) as vscode.TerminalLinkContext;
 
 describe('RangeLinkTerminalProvider', () => {
   let provider: RangeLinkTerminalProvider;
@@ -65,12 +64,7 @@ describe('RangeLinkTerminalProvider', () => {
         data: 'src/file.ts#L10',
         parsed: detected.parsed,
       });
-      expect(mockFindLinksInText).toHaveBeenCalledWith(
-        'Check src/file.ts#L10',
-        DEFAULT_DELIMITERS,
-        mockLogger,
-        token,
-      );
+      expect(mockFindLinksInText).toHaveBeenCalledWith('Check src/file.ts#L10', DEFAULT_DELIMITERS, mockLogger, token);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
@@ -100,9 +94,7 @@ describe('RangeLinkTerminalProvider', () => {
         }),
       ]);
 
-      const context = createMockTerminalContext(
-        'First: src/file.ts#L10 and second: src/b.ts#L2-L3',
-      );
+      const context = createMockTerminalContext('First: src/file.ts#L10 and second: src/b.ts#L2-L3');
       const token = createMockCancellationToken();
       const links = provider.provideTerminalLinks(context, token) as RangeLinkTerminalLink[];
 
@@ -136,12 +128,7 @@ describe('RangeLinkTerminalProvider', () => {
       const token = createMockCancellationToken(true);
       provider.provideTerminalLinks(context, token);
 
-      expect(mockFindLinksInText).toHaveBeenCalledWith(
-        'src/a.ts#L1',
-        DEFAULT_DELIMITERS,
-        mockLogger,
-        token,
-      );
+      expect(mockFindLinksInText).toHaveBeenCalledWith('src/a.ts#L1', DEFAULT_DELIMITERS, mockLogger, token);
     });
   });
 
@@ -166,9 +153,7 @@ describe('RangeLinkTerminalProvider', () => {
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      expect(mockShowWarningMessage).toHaveBeenCalledWith(
-        'Cannot navigate - invalid link format: file.ts#L0',
-      );
+      expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot navigate - invalid link format: file.ts#L0');
 
       expect(mockLogger.info).not.toHaveBeenCalled();
     });

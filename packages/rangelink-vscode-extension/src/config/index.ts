@@ -1,10 +1,5 @@
 // Public types
-export type {
-  ConfigGetterFactory,
-  ConfigSource,
-  DelimiterConfigSources,
-  LoadDelimiterConfigResult,
-} from './types';
+export type { ConfigGetterFactory, ConfigSource, DelimiterConfigSources, LoadDelimiterConfigResult } from './types';
 
 // Public classes
 export { ConfigReader } from './ConfigReader';

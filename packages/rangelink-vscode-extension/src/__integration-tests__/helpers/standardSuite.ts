@@ -23,10 +23,7 @@ export const standardSuite = (name: string, fn: (ss: SsContext) => void): void =
     });
 
     setup(async () => {
-      assert.ok(
-        getLogCapture().isCapturing,
-        'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
-      );
+      assert.ok(getLogCapture().isCapturing, 'RANGELINK_CAPTURE_LOGS must be true for toast assertions');
       await resetRangelinkSettings(log);
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await closeAllEditors();

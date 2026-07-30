@@ -45,8 +45,7 @@ describe('package.json contributions', () => {
   describe('commands', () => {
     const commands = packageJson.contributes.commands as CommandContribution[];
 
-    const findCommand = (commandId: string): CommandContribution | undefined =>
-      commands.find((cmd) => cmd.command === commandId);
+    const findCommand = (commandId: string): CommandContribution | undefined => commands.find((cmd) => cmd.command === commandId);
 
     describe('link copy commands', () => {
       it('rangelink.copyLinkWithRelativePath', () => {
@@ -519,18 +518,14 @@ describe('package.json contributions', () => {
   });
 
   describe('configuration', () => {
-    const properties = packageJson.contributes.configuration.properties as Record<
-      string,
-      ConfigurationProperty
-    >;
+    const properties = packageJson.contributes.configuration.properties as Record<string, ConfigurationProperty>;
 
     describe('feature flag settings', () => {
       it('rangelink.features.bookmarks.enabled', () => {
         expect(properties['rangelink.features.bookmarks.enabled']).toStrictEqual({
           type: 'boolean',
           default: false,
-          description:
-            'Enable Bookmarks feature (beta). Save code locations for quick access later.',
+          description: 'Enable Bookmarks feature (beta). Save code locations for quick access later.',
           title: 'Feature: Bookmarks',
         });
       });
@@ -546,8 +541,7 @@ describe('package.json contributions', () => {
             'Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)',
             'Never restore clipboard — clipboard always contains last RangeLink output',
           ],
-          description:
-            'Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism',
+          description: 'Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism',
           title: 'Clipboard Preservation',
         });
       });
@@ -569,8 +563,7 @@ describe('package.json contributions', () => {
             properties: {
               extensionId: {
                 type: 'string',
-                description:
-                  'VS Code extension identifier (publisher.name) used to detect availability',
+                description: 'VS Code extension identifier (publisher.name) used to detect availability',
               },
               extensionName: {
                 type: 'string',
@@ -593,8 +586,7 @@ describe('package.json contributions', () => {
                           description: 'VS Code command ID',
                         },
                         args: {
-                          description:
-                            'Argument template — use ${content} as placeholder for the link text',
+                          description: 'Argument template — use ${content} as placeholder for the link text',
                         },
                       },
                       additionalProperties: false,
@@ -687,14 +679,8 @@ describe('package.json contributions', () => {
           type: 'string',
           enum: ['both', 'before', 'after', 'none'],
           default: 'none',
-          enumDescriptions: [
-            'Add space before and after',
-            'Add space before only',
-            'Add space after only',
-            'No padding (paste text exactly as selected)',
-          ],
-          description:
-            'Smart padding for selected text when using Paste Selected Text to Destination (R-V)',
+          enumDescriptions: ['Add space before and after', 'Add space before only', 'Add space after only', 'No padding (paste text exactly as selected)'],
+          description: 'Smart padding for selected text when using Paste Selected Text to Destination (R-V)',
           title: 'Paste: Content Padding',
         });
       });
@@ -737,8 +723,7 @@ describe('package.json contributions', () => {
         expect(properties['rangelink.navigation.showNavigatedToast']).toStrictEqual({
           type: 'boolean',
           default: true,
-          description:
-            "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')",
+          description: "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')",
           title: 'Navigation: Show Confirmation Toast',
         });
       });
@@ -770,8 +755,7 @@ describe('package.json contributions', () => {
           type: 'number',
           default: 5,
           minimum: 1,
-          description:
-            "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')",
+          description: "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')",
           title: 'Terminal Picker: Max Inline Items',
         });
       });
@@ -791,17 +775,14 @@ describe('package.json contributions', () => {
       });
 
       it('rangelink.destinations.claudeCode.coldRefocusIntervalMs', () => {
-        expect(properties['rangelink.destinations.claudeCode.coldRefocusIntervalMs']).toStrictEqual(
-          {
-            type: 'number',
-            default: 300,
-            minimum: 100,
-            maximum: 5000,
-            description:
-              'Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.',
-            title: 'Claude Code Cold Re-focus Interval',
-          },
-        );
+        expect(properties['rangelink.destinations.claudeCode.coldRefocusIntervalMs']).toStrictEqual({
+          type: 'number',
+          default: 300,
+          minimum: 100,
+          maximum: 5000,
+          description: 'Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.',
+          title: 'Claude Code Cold Re-focus Interval',
+        });
       });
 
       it('rangelink.destinations.gemini.coldStartDelayMs', () => {
@@ -822,8 +803,7 @@ describe('package.json contributions', () => {
           default: 300,
           minimum: 100,
           maximum: 5000,
-          description:
-            'Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs.',
+          description: 'Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start period. Must be less than coldStartDelayMs.',
           title: 'Gemini Code Assist Cold Re-focus Interval',
         });
       });
@@ -857,8 +837,7 @@ describe('package.json contributions', () => {
   describe('keybindings', () => {
     const keybindings = packageJson.contributes.keybindings as KeybindingContribution[];
 
-    const findKeybinding = (commandId: string): KeybindingContribution | undefined =>
-      keybindings.find((kb) => kb.command === commandId);
+    const findKeybinding = (commandId: string): KeybindingContribution | undefined => keybindings.find((kb) => kb.command === commandId);
 
     it('rangelink.copyLinkWithRelativePath keybinding', () => {
       expect(findKeybinding('rangelink.copyLinkWithRelativePath')).toStrictEqual({
@@ -1034,9 +1013,7 @@ describe('package.json contributions', () => {
 
   describe('menus', () => {
     describe('editor/context', () => {
-      const editorContextMenu = packageJson.contributes.menus[
-        'editor/context'
-      ] as MenuContribution[];
+      const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
 
       it('has the expected number of editor context menu items', () => {
         expect(editorContextMenu).toHaveLength(10);
@@ -1124,9 +1101,7 @@ describe('package.json contributions', () => {
     });
 
     describe('editor/title/context', () => {
-      const editorTitleContextMenu = packageJson.contributes.menus[
-        'editor/title/context'
-      ] as MenuContribution[];
+      const editorTitleContextMenu = packageJson.contributes.menus['editor/title/context'] as MenuContribution[];
 
       it('has the expected number of editor title context menu items', () => {
         expect(editorTitleContextMenu).toHaveLength(4);
@@ -1166,9 +1141,7 @@ describe('package.json contributions', () => {
     });
 
     describe('explorer/context', () => {
-      const explorerContextMenu = packageJson.contributes.menus[
-        'explorer/context'
-      ] as MenuContribution[];
+      const explorerContextMenu = packageJson.contributes.menus['explorer/context'] as MenuContribution[];
 
       it('has the expected number of explorer context menu items', () => {
         expect(explorerContextMenu).toHaveLength(4);
@@ -1208,8 +1181,7 @@ describe('package.json contributions', () => {
     describe('commandPalette', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
-      const findEntry = (commandId: string): MenuContribution | undefined =>
-        commandPalette.find((entry) => entry.command === commandId);
+      const findEntry = (commandId: string): MenuContribution | undefined => commandPalette.find((entry) => entry.command === commandId);
 
       it('has the expected number of commandPalette entries', () => {
         expect(commandPalette).toHaveLength(29);
@@ -1420,9 +1392,7 @@ describe('package.json contributions', () => {
     });
 
     describe('terminal/title/context', () => {
-      const terminalTitleContextMenu = packageJson.contributes.menus[
-        'terminal/title/context'
-      ] as MenuContribution[];
+      const terminalTitleContextMenu = packageJson.contributes.menus['terminal/title/context'] as MenuContribution[];
 
       it('has the expected number of terminal title context menu items', () => {
         expect(terminalTitleContextMenu).toHaveLength(2);
@@ -1446,9 +1416,7 @@ describe('package.json contributions', () => {
     });
 
     describe('terminal/context', () => {
-      const terminalContextMenu = packageJson.contributes.menus[
-        'terminal/context'
-      ] as MenuContribution[];
+      const terminalContextMenu = packageJson.contributes.menus['terminal/context'] as MenuContribution[];
 
       it('has the expected number of terminal context menu items', () => {
         expect(terminalContextMenu).toHaveLength(3);

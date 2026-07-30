@@ -1,8 +1,4 @@
-import {
-  buildDestinationQuickPickItems,
-  BUILTIN_AI_COUNT,
-  DESTINATION_PICKER_SEQUENCE,
-} from '../../../destinations/utils/buildDestinationQuickPickItems';
+import { buildDestinationQuickPickItems, BUILTIN_AI_COUNT, DESTINATION_PICKER_SEQUENCE } from '../../../destinations/utils/buildDestinationQuickPickItems';
 import { AI_ASSISTANT_KINDS, FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
 import { createMockEligibleFile, createMockTextEditorQuickPickItem } from '../../helpers';
 

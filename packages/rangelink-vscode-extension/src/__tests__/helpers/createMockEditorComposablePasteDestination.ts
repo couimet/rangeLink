@@ -1,7 +1,4 @@
-import {
-  createMockComposablePasteDestination,
-  type MockComposablePasteDestinationConfig,
-} from './createMockComposablePasteDestination';
+import { createMockComposablePasteDestination, type MockComposablePasteDestinationConfig } from './createMockComposablePasteDestination';
 import { createMockUri } from './createMockUri';
 
 import type * as vscode from 'vscode';
@@ -11,10 +8,7 @@ import type * as vscode from 'vscode';
  *
  * Extends base config with editor-specific options.
  */
-export interface MockEditorComposablePasteDestinationConfig extends Omit<
-  MockComposablePasteDestinationConfig,
-  'resource'
-> {
+export interface MockEditorComposablePasteDestinationConfig extends Omit<MockComposablePasteDestinationConfig, 'resource'> {
   /** URI to use. If not provided, creates a mock URI. */
   uri?: vscode.Uri;
   /** View column to use. Defaults to 1. */

@@ -14,9 +14,7 @@ import {
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance configured as GitHub Copilot Chat
  */
-export const createMockGitHubCopilotChatComposableDestination = (
-  overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>,
-) =>
+export const createMockGitHubCopilotChatComposableDestination = (overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>) =>
   createMockSingletonComposablePasteDestination({
     id: 'github-copilot-chat',
     displayName: 'GitHub Copilot Chat',

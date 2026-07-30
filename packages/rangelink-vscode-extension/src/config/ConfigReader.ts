@@ -36,10 +36,7 @@ export class ConfigReader implements ConfigGetter {
     const value = this.get<T>(key);
 
     if (value === undefined) {
-      this.logger.debug(
-        { fn: 'ConfigReader.getSetting', key, defaultValue },
-        `No ${key} configured, using default: ${String(defaultValue)}`,
-      );
+      this.logger.debug({ fn: 'ConfigReader.getSetting', key, defaultValue }, `No ${key} configured, using default: ${String(defaultValue)}`);
       return defaultValue;
     }
 

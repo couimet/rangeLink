@@ -1,9 +1,4 @@
-import type {
-  BindSuccessInfo,
-  BoundSession,
-  DestinationAvailabilityService,
-  DestinationBinder,
-} from '../destinations';
+import type { BindSuccessInfo, BoundSession, DestinationAvailabilityService, DestinationBinder } from '../destinations';
 import { showFilePicker } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
@@ -37,10 +32,7 @@ export class BindToTextEditorCommand {
     private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'BindToTextEditorCommand.constructor' },
-      'BindToTextEditorCommand initialized',
-    );
+    this.logger.debug({ fn: 'BindToTextEditorCommand.constructor' }, 'BindToTextEditorCommand initialized');
   }
 
   execute(explorerUri?: vscode.Uri): Promise<QuickPickBindResult> {
@@ -65,14 +57,10 @@ export class BindToTextEditorCommand {
       }
     }
 
-    this.logger.debug(
-      { ...logCtx, matchCount: matchingViewColumns.length },
-      'Found tab groups containing URI',
-    );
+    this.logger.debug({ ...logCtx, matchCount: matchingViewColumns.length }, 'Found tab groups containing URI');
 
     if (matchingViewColumns.length <= 1) {
-      const showOptions =
-        matchingViewColumns.length === 1 ? { viewColumn: matchingViewColumns[0] } : undefined;
+      const showOptions = matchingViewColumns.length === 1 ? { viewColumn: matchingViewColumns[0] } : undefined;
       const editor = await this.ideAdapter.showTextDocument(uri, showOptions);
       const viewColumn = editor.viewColumn ?? 1;
       return this.mapBindResult(await this.binder.bind({ kind: 'text-editor', uri, viewColumn }));
@@ -105,15 +93,9 @@ export class BindToTextEditorCommand {
 
     const boundDest = this.session.get();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
-    const fileItems = this.availabilityService.getAllFileItems(
-      boundEditorDest?.resource.uri.toString(),
-      boundEditorDest?.resource.viewColumn,
-    );
+    const fileItems = this.availabilityService.getAllFileItems(boundEditorDest?.resource.uri.toString(), boundEditorDest?.resource.viewColumn);
 
-    this.logger.debug(
-      { ...logCtx, fileCount: fileItems.length },
-      'Starting bind to text editor command',
-    );
+    this.logger.debug({ ...logCtx, fileCount: fileItems.length }, 'Starting bind to text editor command');
 
     if (fileItems.length === 0) {
       this.logger.debug(logCtx, 'No files available');

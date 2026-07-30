@@ -1,13 +1,6 @@
-import {
-  DestinationPicker,
-  type DestinationPickerOptions,
-} from '../../destinations/DestinationPicker';
+import { DestinationPicker, type DestinationPickerOptions } from '../../destinations/DestinationPicker';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
-import {
-  type FileBindableQuickPickItem,
-  MessageCode,
-  type TerminalBindableQuickPickItem,
-} from '../../types';
+import { type FileBindableQuickPickItem, MessageCode, type TerminalBindableQuickPickItem } from '../../types';
 import {
   createMockAIAssistantQuickPickItem,
   createMockDestinationAvailabilityService,
@@ -50,10 +43,7 @@ describe('DestinationPicker', () => {
 
   describe('constructor', () => {
     it('logs initialization', () => {
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationPicker.constructor' },
-        'DestinationPicker initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.constructor' }, 'DestinationPicker initialized');
     });
   });
 
@@ -65,11 +55,8 @@ describe('DestinationPicker', () => {
         const result = await picker.pick(defaultOptions);
 
         expect(result).toStrictEqual({ outcome: 'no-resource' });
-        const showInfoMock = mockAdapter.__getVscodeInstance().window
-          .showInformationMessage as jest.Mock;
-        expect(showInfoMock).toHaveBeenCalledWith(
-          'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
-        );
+        const showInfoMock = mockAdapter.__getVscodeInstance().window.showInformationMessage as jest.Mock;
+        expect(showInfoMock).toHaveBeenCalledWith('No destinations available. Open a terminal, a file, or install an AI assistant extension.');
         expect(showQuickPickMock).not.toHaveBeenCalled();
       });
     });
@@ -85,18 +72,9 @@ describe('DestinationPicker', () => {
         const result = await picker.pick(defaultOptions);
 
         expect(result).toStrictEqual({ outcome: 'cancelled' });
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'Showing destination picker',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick', availableCount: 2 },
-          'Showing quick pick with 2 items',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'User cancelled quick pick',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick' }, 'Showing destination picker');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick', availableCount: 2 }, 'Showing quick pick with 2 items');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick' }, 'User cancelled quick pick');
       });
     });
 
@@ -163,18 +141,11 @@ describe('DestinationPicker', () => {
           'file-more': moreItem,
         });
         showQuickPickMock.mockResolvedValue(moreItem);
-        mockAvailabilityService.getAllFileItems.mockReturnValue([
-          createMockTextEditorQuickPickItem(),
-        ]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
 
         let capturedPlaceholder: string | undefined;
         showFilePickerSpy.mockImplementation(
-          <T>(
-            _files: readonly FileBindableQuickPickItem[],
-            _provider: unknown,
-            handlers: FilePickerHandlers<T>,
-            _logger: unknown,
-          ) => {
+          <T>(_files: readonly FileBindableQuickPickItem[], _provider: unknown, handlers: FilePickerHandlers<T>, _logger: unknown) => {
             capturedPlaceholder = handlers.getPlaceholder();
             return handlers.onSelected(fileInfo);
           },
@@ -182,9 +153,7 @@ describe('DestinationPicker', () => {
 
         const result = await picker.pick(defaultOptions);
 
-        expect(capturedPlaceholder).toBe(
-          'RangeLink: No destination bound. Choose destination to jump to',
-        );
+        expect(capturedPlaceholder).toBe('RangeLink: No destination bound. Choose destination to jump to');
         expect(showFilePickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',
@@ -203,9 +172,7 @@ describe('DestinationPicker', () => {
           'text-editor': [editorItem],
           'file-more': moreItem,
         });
-        mockAvailabilityService.getAllFileItems.mockReturnValue([
-          createMockTextEditorQuickPickItem(),
-        ]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
 
         let callCount = 0;
         showQuickPickMock.mockImplementation(() => {
@@ -217,25 +184,14 @@ describe('DestinationPicker', () => {
         });
 
         showFilePickerSpy.mockImplementation(
-          <T>(
-            _files: readonly FileBindableQuickPickItem[],
-            _provider: unknown,
-            handlers: FilePickerHandlers<T>,
-            _logger: unknown,
-          ) => handlers.onDismissed?.(),
+          <T>(_files: readonly FileBindableQuickPickItem[], _provider: unknown, handlers: FilePickerHandlers<T>, _logger: unknown) => handlers.onDismissed?.(),
         );
 
         const result = await picker.pick(defaultOptions);
 
         expect(showQuickPickMock).toHaveBeenCalledTimes(2);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.showSecondaryFilePicker' },
-          'User returned from secondary file picker',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'Returning to main destination picker',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.showSecondaryFilePicker' }, 'User returned from secondary file picker');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick' }, 'Returning to main destination picker');
         expect(result).toStrictEqual({
           outcome: 'selected',
           bindOptions: editorItem.bindOptions,
@@ -257,14 +213,8 @@ describe('DestinationPicker', () => {
 
         expect(showFilePickerSpy).not.toHaveBeenCalled();
         expect(result).toStrictEqual({ outcome: 'cancelled' });
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.showSecondaryFilePicker' },
-          'No files available in secondary picker',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'Returning to main destination picker',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.showSecondaryFilePicker' }, 'No files available in secondary picker');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick' }, 'Returning to main destination picker');
       });
 
       it('passes boundFileUriString and boundFileViewColumn to getAllFileItems', async () => {
@@ -282,18 +232,12 @@ describe('DestinationPicker', () => {
           boundFileViewColumn: 2,
         });
 
-        expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(
-          'file:///workspace/app.ts',
-          2,
-        );
+        expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith('file:///workspace/app.ts', 2);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'DestinationPicker.handleQuickPickSelection' },
           'User selected "More files...", showing secondary picker',
         );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.showSecondaryFilePicker' },
-          'No files available in secondary picker',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.showSecondaryFilePicker' }, 'No files available in secondary picker');
       });
     });
 
@@ -308,19 +252,11 @@ describe('DestinationPicker', () => {
         });
         showQuickPickMock.mockResolvedValue(moreItem);
 
-        mockAvailabilityService.getTerminalItems.mockResolvedValue([
-          createMockTerminalQuickPickItem(terminal1),
-          createMockTerminalQuickPickItem(terminal2),
-        ]);
+        mockAvailabilityService.getTerminalItems.mockResolvedValue([createMockTerminalQuickPickItem(terminal1), createMockTerminalQuickPickItem(terminal2)]);
 
         let capturedPlaceholder: string | undefined;
         showTerminalPickerSpy.mockImplementation(
-          <T>(
-            _terminals: readonly TerminalBindableQuickPickItem[],
-            _provider: unknown,
-            handlers: TerminalPickerHandlers<T>,
-            _logger: unknown,
-          ) => {
+          <T>(_terminals: readonly TerminalBindableQuickPickItem[], _provider: unknown, handlers: TerminalPickerHandlers<T>, _logger: unknown) => {
             capturedPlaceholder = handlers.getPlaceholder();
             return handlers.onSelected({
               bindOptions: { kind: 'terminal', terminal: terminal2 },
@@ -332,9 +268,7 @@ describe('DestinationPicker', () => {
 
         const result = await picker.pick(defaultOptions);
 
-        expect(capturedPlaceholder).toBe(
-          'RangeLink: No destination bound. Choose destination to jump to',
-        );
+        expect(capturedPlaceholder).toBe('RangeLink: No destination bound. Choose destination to jump to');
         expect(showTerminalPickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',
@@ -361,25 +295,15 @@ describe('DestinationPicker', () => {
         });
 
         showTerminalPickerSpy.mockImplementation(
-          <T>(
-            _terminals: readonly TerminalBindableQuickPickItem[],
-            _provider: unknown,
-            handlers: TerminalPickerHandlers<T>,
-            _logger: unknown,
-          ) => handlers.onDismissed?.(),
+          <T>(_terminals: readonly TerminalBindableQuickPickItem[], _provider: unknown, handlers: TerminalPickerHandlers<T>, _logger: unknown) =>
+            handlers.onDismissed?.(),
         );
 
         const result = await picker.pick(defaultOptions);
 
         expect(showQuickPickMock).toHaveBeenCalledTimes(2);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.showSecondaryTerminalPicker' },
-          'User returned from secondary terminal picker',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'Returning to main destination picker',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.showSecondaryTerminalPicker' }, 'User returned from secondary terminal picker');
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationPicker.pick' }, 'Returning to main destination picker');
         expect(result).toStrictEqual({
           outcome: 'selected',
           bindOptions: { kind: 'terminal', terminal },

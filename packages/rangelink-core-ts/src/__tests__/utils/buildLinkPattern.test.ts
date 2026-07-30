@@ -1,14 +1,7 @@
 import { DEFAULT_DELIMITERS } from '../../constants/DEFAULT_DELIMITERS';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { buildLinkPattern } from '../../utils/buildLinkPattern';
-import {
-  BOUNDARY_INPUTS,
-  MULTI_MATCH_INPUTS,
-  PROSE_INPUTS,
-  RANGELINK_COEXISTENCE,
-  SPECIAL_CHAR_PATHS,
-  URL_INPUTS,
-} from '../fixtures/pathPatternInputs';
+import { BOUNDARY_INPUTS, MULTI_MATCH_INPUTS, PROSE_INPUTS, RANGELINK_COEXISTENCE, SPECIAL_CHAR_PATHS, URL_INPUTS } from '../fixtures/pathPatternInputs';
 
 describe('buildLinkPattern', () => {
   describe('default delimiters', () => {
@@ -409,8 +402,7 @@ describe('buildLinkPattern', () => {
       });
 
       it('should NOT match GitHub permalinks with query params', () => {
-        const line =
-          'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9';
+        const line = 'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9';
         const matches = [...line.matchAll(pattern)];
 
         expect(matches).toHaveLength(0);
@@ -757,26 +749,20 @@ describe('buildLinkPattern', () => {
       });
 
       it('should detect the correct path from a backtick-labelled markdown link', () => {
-        const line =
-          '[`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876)';
+        const line = '[`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876)';
         const matches = [...line.matchAll(pattern)];
 
         expect(matches).toHaveLength(1);
-        expect(matches[0][0]).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
+        expect(matches[0][0]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
         expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
       });
 
       it('should detect the correct path from a backtick-labelled markdown link embedded in prose', () => {
-        const line =
-          'See [`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876) in the codebase';
+        const line = 'See [`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876) in the codebase';
         const matches = [...line.matchAll(pattern)];
 
         expect(matches).toHaveLength(1);
-        expect(matches[0][0]).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
+        expect(matches[0][0]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
         expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
       });
 
@@ -989,9 +975,7 @@ describe('buildLinkPattern', () => {
       const customPattern = buildLinkPattern(customDelimiters);
 
       it('should match custom-delimiter path (FilePathProvider with custom delimiters rejects it)', () => {
-        const matches = [
-          ...RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK.matchAll(customPattern),
-        ];
+        const matches = [...RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK.matchAll(customPattern)];
         expect(matches).toHaveLength(1);
         expect(matches[0][1]).toBe('./src/a.ts');
       });

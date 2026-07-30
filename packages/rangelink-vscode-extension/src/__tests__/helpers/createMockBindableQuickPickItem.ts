@@ -50,10 +50,7 @@ export const createMockTerminalQuickPickItem = (
  * @param displayName - The display name for the item
  * @returns A BindableQuickPickItem for the AI assistant
  */
-export const createMockAIAssistantQuickPickItem = (
-  kind: AIAssistantDestinationKind,
-  displayName: string,
-): BindableQuickPickItem => ({
+export const createMockAIAssistantQuickPickItem = (kind: AIAssistantDestinationKind, displayName: string): BindableQuickPickItem => ({
   label: displayName,
   displayName,
   bindOptions: { kind },
@@ -67,10 +64,7 @@ export const createMockAIAssistantQuickPickItem = (
  * @param description - Optional description for the item
  * @returns A FileBindableQuickPickItem for the text editor
  */
-export const createMockTextEditorQuickPickItem = (
-  fileInfo?: EligibleFile,
-  description?: string,
-): FileBindableQuickPickItem => {
+export const createMockTextEditorQuickPickItem = (fileInfo?: EligibleFile, description?: string): FileBindableQuickPickItem => {
   const resolvedFileInfo = fileInfo ?? createMockEligibleFile();
   return {
     label: resolvedFileInfo.filename,
@@ -92,11 +86,7 @@ export const createMockTextEditorQuickPickItem = (
  * @returns Array of FileBindableQuickPickItem for the text editor
  */
 export const createMockTextEditorQuickPickItems = (count: number): FileBindableQuickPickItem[] =>
-  Array.from({ length: count }, (_, i) =>
-    createMockTextEditorQuickPickItem(
-      createMockEligibleFile({ filename: `file-${i + 1}.ts`, isCurrentInGroup: true }),
-    ),
-  );
+  Array.from({ length: count }, (_, i) => createMockTextEditorQuickPickItem(createMockEligibleFile({ filename: `file-${i + 1}.ts`, isCurrentInGroup: true })));
 
 /**
  * Create a mock FileMoreQuickPickItem.
@@ -117,9 +107,7 @@ export const createMockFileMoreQuickPickItem = (remainingCount: number): FileMor
  * @param remainingCount - Number of remaining terminals not shown
  * @returns A TerminalMoreQuickPickItem
  */
-export const createMockTerminalMoreQuickPickItem = (
-  remainingCount: number,
-): TerminalMoreQuickPickItem => ({
+export const createMockTerminalMoreQuickPickItem = (remainingCount: number): TerminalMoreQuickPickItem => ({
   label: 'More terminals...',
   displayName: 'More terminals...',
   itemKind: 'terminal-more',
@@ -132,8 +120,6 @@ export const createMockTerminalMoreQuickPickItem = (
  * @param items - Array of TerminalBindableQuickPickItem for terminals
  * @returns GroupedDestinationItems with terminal group
  */
-export const createMockGroupedTerminals = (
-  items: TerminalBindableQuickPickItem[],
-): GroupedDestinationItems => ({
+export const createMockGroupedTerminals = (items: TerminalBindableQuickPickItem[]): GroupedDestinationItems => ({
   terminal: items,
 });

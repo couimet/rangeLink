@@ -6,10 +6,7 @@
  * use createMockTerminalComposablePasteDestination.
  */
 
-import {
-  createBaseMockPasteDestination,
-  type MockDestinationOptions,
-} from './createBaseMockPasteDestination';
+import { createBaseMockPasteDestination, type MockDestinationOptions } from './createBaseMockPasteDestination';
 
 /**
  * Create a mock terminal PasteDestination for testing.
@@ -26,9 +23,7 @@ import {
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock terminal destination with jest.fn() implementations
  */
-export const createMockTerminalPasteDestination = (
-  overrides?: Omit<MockDestinationOptions, 'id'>,
-) => {
+export const createMockTerminalPasteDestination = (overrides?: Omit<MockDestinationOptions, 'id'>) => {
   return createBaseMockPasteDestination({
     id: 'terminal',
     displayName: 'Terminal',

@@ -37,10 +37,7 @@ export const extractSentLink = (lines: string[]): string | undefined => {
  * smartPadding settings. Clipboard assertions should NOT use this
  * option — the clipboard always contains raw (unpadded) content.
  */
-export const extractGeneratedLink = (
-  lines: string[],
-  options?: SmartPadOptions,
-): string | undefined => {
+export const extractGeneratedLink = (lines: string[], options?: SmartPadOptions): string | undefined => {
   const generatedLog = lines.find((l) => l.includes('Generated link:'));
   if (!generatedLog) return undefined;
   const linkMatch = generatedLog.match(/"link":"([^"]+)"/);

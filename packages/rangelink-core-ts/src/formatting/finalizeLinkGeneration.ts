@@ -43,10 +43,7 @@ export const finalizeLinkGeneration = (
   const { link: baseLink, logContext } = generateLink();
 
   // Append BYOD metadata for portable links (creates new string, doesn't mutate)
-  const rawLink =
-    linkType === LinkType.Portable
-      ? baseLink + composePortableMetadata(delimiters, spec.rangeFormat)
-      : baseLink;
+  const rawLink = linkType === LinkType.Portable ? baseLink + composePortableMetadata(delimiters, spec.rangeFormat) : baseLink;
 
   const link = quoteLink(rawLink, path);
 

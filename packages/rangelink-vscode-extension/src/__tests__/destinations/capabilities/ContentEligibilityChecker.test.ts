@@ -58,10 +58,7 @@ describe('ContentEligibilityChecker', () => {
 
       await checker.isEligible('', testContext);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'test', contentLength: 0 },
-        'Content not eligible for paste',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'test', contentLength: 0 }, 'Content not eligible for paste');
     });
 
     it('should include content length in log', async () => {
@@ -71,10 +68,7 @@ describe('ContentEligibilityChecker', () => {
 
       await checker.isEligible('   ', testContext);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'test', contentLength: 3 },
-        'Content not eligible for paste',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'test', contentLength: 3 }, 'Content not eligible for paste');
     });
   });
 });

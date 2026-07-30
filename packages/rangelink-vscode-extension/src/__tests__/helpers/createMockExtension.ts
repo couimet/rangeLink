@@ -34,9 +34,7 @@ export interface MockExtensionOptions {
  * @param options - Optional configuration for the mock extension
  * @returns Mock vscode.Extension<unknown> object
  */
-export const createMockExtension = (
-  options: MockExtensionOptions = {},
-): vscode.Extension<unknown> => {
+export const createMockExtension = (options: MockExtensionOptions = {}): vscode.Extension<unknown> => {
   const id = options.id ?? 'test.extension';
   const defaultPath = `/mock/path/${id}`;
 

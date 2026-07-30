@@ -1,30 +1,12 @@
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../../types';
-import {
-  generateLinkFromSelections,
-  GenerateLinkFromSelectionsOptions,
-} from '../../utils/generateLinkFromSelections';
-import {
-  createMockDocument,
-  createMockFormattedLink,
-  createMockPosition,
-  createMockSelection,
-  spyOnFormatLink,
-  spyOnToInputSelection,
-} from '../helpers';
+import { generateLinkFromSelections, GenerateLinkFromSelectionsOptions } from '../../utils/generateLinkFromSelections';
+import { createMockDocument, createMockFormattedLink, createMockPosition, createMockSelection, spyOnFormatLink, spyOnToInputSelection } from '../helpers';
 
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import {
-  CoreResult,
-  DelimiterConfig,
-  LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  SelectionCoverage,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { CoreResult, DelimiterConfig, LinkType, RangeLinkError, RangeLinkErrorCodes, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 const DELIMITERS: DelimiterConfig = {
@@ -36,13 +18,7 @@ const DELIMITERS: DelimiterConfig = {
 
 const REFERENCE_PATH = 'src/utils/test.ts';
 
-const mockSelection = (
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number,
-  isEmpty = false,
-): vscode.Selection => {
+const mockSelection = (startLine: number, startCharacter: number, endLine: number, endCharacter: number, isEmpty = false): vscode.Selection => {
   const start = createMockPosition({ line: startLine, character: startCharacter });
   const end = createMockPosition({ line: endLine, character: endCharacter });
   return createMockSelection({
@@ -98,10 +74,7 @@ describe('generateLinkFromSelections', () => {
         message: 'No selections provided',
         functionName: 'generateLinkFromSelections',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections' },
-        'No selections provided',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections' }, 'No selections provided');
     });
 
     it('returns error when all selections are empty', () => {
@@ -122,10 +95,7 @@ describe('generateLinkFromSelections', () => {
         message: 'All selections are empty',
         functionName: 'generateLinkFromSelections',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections' },
-        'All selections are empty',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections' }, 'All selections are empty');
     });
   });
 
@@ -292,10 +262,7 @@ describe('generateLinkFromSelections', () => {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections', error: formatLinkError },
-        'Failed to generate link',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', error: formatLinkError }, 'Failed to generate link');
     });
 
     it('returns error with portable link type name when portable link fails', () => {
@@ -336,10 +303,7 @@ describe('generateLinkFromSelections', () => {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections', error: formatLinkError },
-        'Failed to generate portable link',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', error: formatLinkError }, 'Failed to generate portable link');
     });
   });
 });

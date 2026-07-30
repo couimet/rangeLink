@@ -1,9 +1,4 @@
-import {
-  SETTING_DELIMITER_HASH,
-  SETTING_DELIMITER_LINE,
-  SETTING_DELIMITER_POSITION,
-  SETTING_DELIMITER_RANGE,
-} from '../constants';
+import { SETTING_DELIMITER_HASH, SETTING_DELIMITER_LINE, SETTING_DELIMITER_POSITION, SETTING_DELIMITER_RANGE } from '../constants';
 
 import type { ConfigGetter, ConfigInspection, ConfigSource, DelimiterConfigSources } from './types';
 

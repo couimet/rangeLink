@@ -14,17 +14,11 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
  * Encapsulates the pattern of loading delimiters, validating them,
  * and notifying the user if configuration is invalid.
  */
-export const getDelimitersForExtension = (
-  config: ConfigGetter,
-  errorFeedbackProvider: ErrorFeedbackProvider,
-  logger: Logger,
-): DelimiterConfig => {
+export const getDelimitersForExtension = (config: ConfigGetter, errorFeedbackProvider: ErrorFeedbackProvider, logger: Logger): DelimiterConfig => {
   const result = loadDelimiterConfig(config, logger);
 
   if (result.errors.length > 0) {
-    void errorFeedbackProvider.showErrorMessage(
-      formatMessage(MessageCode.ERROR_INVALID_DELIMITER_CONFIG),
-    );
+    void errorFeedbackProvider.showErrorMessage(formatMessage(MessageCode.ERROR_INVALID_DELIMITER_CONFIG));
   }
 
   return result.delimiters;

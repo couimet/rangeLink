@@ -21,17 +21,11 @@ import * as vscode from 'vscode';
  * @param options - Optional workspace properties to override defaults
  * @returns Mock workspace with file operations and document handling
  */
-export const createMockWorkspace = (
-  options?: Record<string, unknown> | Partial<typeof vscode.workspace>,
-) => {
+export const createMockWorkspace = (options?: Record<string, unknown> | Partial<typeof vscode.workspace>) => {
   const defaultWorkspaceFolders = ['/workspace'];
-  const workspaceFoldersInput =
-    (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??
-    defaultWorkspaceFolders;
+  const workspaceFoldersInput = (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ?? defaultWorkspaceFolders;
 
-  const folders = workspaceFoldersInput?.map((folder) =>
-    typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
-  );
+  const folders = workspaceFoldersInput?.map((folder) => (typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder));
 
   return {
     workspaceFolders: folders,

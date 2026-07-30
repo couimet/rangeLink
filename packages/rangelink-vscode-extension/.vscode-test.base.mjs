@@ -7,10 +7,7 @@ export const ASSISTED_TIMEOUT_MS = 600_000;
 // No human in CI — automated tests resolve in under 5s.
 export const CI_TIMEOUT_MS = 20_000;
 
-export const userDataDir = (suffix = '') => [
-  '--user-data-dir',
-  path.join(os.tmpdir(), `rl-vscode-test${suffix}`),
-];
+export const userDataDir = (suffix = '') => ['--user-data-dir', path.join(os.tmpdir(), `rl-vscode-test${suffix}`)];
 
 // grep and invert are driven by env vars set in test-release-run.sh.
 const envMocha = () => ({

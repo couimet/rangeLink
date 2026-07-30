@@ -29,10 +29,7 @@ describe('BookmarksStore', () => {
       new BookmarksStore(mockMemento, mockLogger);
 
       expect(mockMemento.setKeysForSync).toHaveBeenCalledWith([STORAGE_KEY]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.constructor', syncEnabled: true },
-        'Settings Sync enabled for bookmarks',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BookmarksStore.constructor', syncEnabled: true }, 'Settings Sync enabled for bookmarks');
     });
 
     it('logs warning when setKeysForSync is not available', () => {
@@ -72,13 +69,10 @@ describe('BookmarksStore', () => {
     });
 
     it('throws when globalState is undefined', () => {
-      expect(() => new BookmarksStore(undefined as never, mockLogger)).toThrowDetailedError(
-        'BOOKMARK_STORE_NOT_AVAILABLE',
-        {
-          message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
-          functionName: 'BookmarksStore.constructor',
-        },
-      );
+      expect(() => new BookmarksStore(undefined as never, mockLogger)).toThrowDetailedError('BOOKMARK_STORE_NOT_AVAILABLE', {
+        message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
+        functionName: 'BookmarksStore.constructor',
+      });
     });
   });
 
@@ -308,9 +302,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { label: 'New Label' });
 
-      expect(result).toBeSuccess(
-        expect.objectContaining({ label: 'New Label', link: '/original#L1' }),
-      );
+      expect(result).toBeSuccess(expect.objectContaining({ label: 'New Label', link: '/original#L1' }));
     });
 
     it('updates link field', async () => {
@@ -319,9 +311,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { link: '/new/path#L10' });
 
-      expect(result).toBeSuccess(
-        expect.objectContaining({ link: '/new/path#L10', label: 'Original Label' }),
-      );
+      expect(result).toBeSuccess(expect.objectContaining({ link: '/new/path#L10', label: 'Original Label' }));
     });
 
     it('updates multiple fields', async () => {
@@ -395,10 +385,7 @@ describe('BookmarksStore', () => {
         functionName: 'BookmarksStore.update',
         details: { bookmarkId: 'non-existent' },
       });
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.update', bookmarkId: 'non-existent' },
-        'Cannot update bookmark: not found',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'BookmarksStore.update', bookmarkId: 'non-existent' }, 'Cannot update bookmark: not found');
     });
 
     it('persists changes', async () => {
@@ -457,10 +444,7 @@ describe('BookmarksStore', () => {
         functionName: 'BookmarksStore.remove',
         details: { bookmarkId: 'non-existent' },
       });
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.remove', bookmarkId: 'non-existent' },
-        'Cannot remove bookmark: not found',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'BookmarksStore.remove', bookmarkId: 'non-existent' }, 'Cannot remove bookmark: not found');
     });
 
     it('persists changes', async () => {
@@ -669,10 +653,7 @@ describe('BookmarksStore', () => {
         details: { operation: 'add' },
         cause: saveError,
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.add', error: saveError, syncEnabled: true },
-        'Failed to save bookmarks during add',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'BookmarksStore.add', error: saveError, syncEnabled: true }, 'Failed to save bookmarks during add');
     });
 
     it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in update', async () => {

@@ -45,10 +45,7 @@ export class DirectInsertFactory implements InsertFactory<void> {
           this.logger.info({ fn, command: entry.command }, 'Direct insert succeeded');
           return true;
         } catch (error) {
-          this.logger.debug(
-            { fn, command: entry.command, error },
-            'Direct insert command failed, trying next',
-          );
+          this.logger.debug({ fn, command: entry.command, error }, 'Direct insert command failed, trying next');
         }
       }
 
