@@ -54,10 +54,7 @@ export const toInputSelection = (
     try {
       const endLine = document.lineAt(sel.end.line);
       const startsAtBeginning = sel.start.character === 0;
-      const endsAtEndOfLine =
-        sel.end.character === endLine.range.end.character ||
-        sel.end.character >= endLine.text.length ||
-        includesTrailingNewline;
+      const endsAtEndOfLine = sel.end.character === endLine.range.end.character || sel.end.character >= endLine.text.length || includesTrailingNewline;
 
       if (startsAtBeginning && endsAtEndOfLine) {
         coverage = SelectionCoverage.FullLine;
@@ -86,8 +83,7 @@ export const toInputSelection = (
       return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED,
-          message:
-            'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+          message: 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
           functionName: 'toInputSelection',
         }),
       );
@@ -96,9 +92,7 @@ export const toInputSelection = (
     // Normalize end line when selection includes trailing newline
     // VSCode reports (21, 0) for "line 20 + newline" - adjust to point to actual content line
     const adjustedEndLine = includesTrailingNewline ? sel.end.line - 1 : sel.end.line;
-    const adjustedEndCharacter = includesTrailingNewline
-      ? document.lineAt(adjustedEndLine).text.length
-      : sel.end.character;
+    const adjustedEndCharacter = includesTrailingNewline ? document.lineAt(adjustedEndLine).text.length : sel.end.character;
 
     selections.push({
       start: { line: sel.start.line, character: sel.start.character },

@@ -18,8 +18,6 @@ import { createMockTabGroups } from './createMockTabGroups';
  * @param count - Number of empty tab groups to create (default: 2)
  */
 export const configureEmptyTabGroups = (mockWindow: any, count = 2): void => {
-  const emptyGroups = Array.from({ length: count }, () =>
-    createMockTabGroup([], { activeTab: undefined }),
-  );
+  const emptyGroups = Array.from({ length: count }, () => createMockTabGroup([], { activeTab: undefined }));
   mockWindow.tabGroups = createMockTabGroups({ all: emptyGroups });
 };

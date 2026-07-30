@@ -19,9 +19,7 @@ export const isCursorIDEDetected = (ideAdapter: VscodeAdapter, logger: Logger): 
     return true;
   }
 
-  const cursorExtensions = ideAdapter.extensions.filter((ext: Extension<unknown>) =>
-    ext.id.startsWith('cursor.'),
-  );
+  const cursorExtensions = ideAdapter.extensions.filter((ext: Extension<unknown>) => ext.id.startsWith('cursor.'));
   if (cursorExtensions.length > 0) {
     logger.debug(
       {

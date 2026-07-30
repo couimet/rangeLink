@@ -1,10 +1,4 @@
-import {
-  type AIAssistantDestinationKind,
-  type AutoPasteResult,
-  type CustomAiAssistantKind,
-  type DestinationKind,
-  PasteContentType,
-} from '../types';
+import { type AIAssistantDestinationKind, type AutoPasteResult, type CustomAiAssistantKind, type DestinationKind, PasteContentType } from '../types';
 
 import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
@@ -325,11 +319,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param contentType - Type of content being pasted (for log messages)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  private async performPaste(
-    text: string,
-    context: LoggingContext,
-    contentType: PasteContentType,
-  ): Promise<boolean> {
+  private async performPaste(text: string, context: LoggingContext, contentType: PasteContentType): Promise<boolean> {
     const contentLabel = contentType === PasteContentType.Link ? 'link' : 'content';
 
     // Check availability
@@ -342,10 +332,7 @@ export class ComposablePasteDestination implements PasteDestination {
     const focusResult = await this.focusCapability.focus(context);
 
     if (!focusResult.success) {
-      this.logger.warn(
-        { ...context, reason: focusResult.error.reason },
-        `Focus failed, cannot paste ${contentLabel}`,
-      );
+      this.logger.warn({ ...context, reason: focusResult.error.reason }, `Focus failed, cannot paste ${contentLabel}`);
       return false;
     }
 

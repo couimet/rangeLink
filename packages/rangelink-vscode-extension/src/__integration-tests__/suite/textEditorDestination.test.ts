@@ -1,8 +1,4 @@
-import {
-  CMD_BIND_TO_TEXT_EDITOR_HERE,
-  CMD_COPY_LINK_RELATIVE,
-  CMD_PASTE_TO_DESTINATION,
-} from '../../constants/commandIds';
+import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_COPY_LINK_RELATIVE, CMD_PASTE_TO_DESTINATION } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
   closeAllEditors,
@@ -28,15 +24,11 @@ standardSuite('Text Editor Destination', (ss) => {
     await ss.settle();
 
     const destBasename = path.basename(fileUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectToastMessages([
       {
         level: 'info',
-        message:
-          'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+        message: 'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
       },
     ]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
@@ -64,14 +56,11 @@ standardSuite('Text Editor Destination', (ss) => {
     const sourceUri = ss.createWorkspaceFile('ted-002-source', 'source content\n');
     const destBasename = path.basename(destUri.fsPath);
 
-    const destEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(destUri),
-      { viewColumn: vscode.ViewColumn.Two, preview: false },
-    );
-    destEditor.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      new vscode.Position(1, 0),
-    );
+    const destEditor = await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(destUri), {
+      viewColumn: vscode.ViewColumn.Two,
+      preview: false,
+    });
+    destEditor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 0));
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
@@ -79,10 +68,7 @@ standardSuite('Text Editor Destination', (ss) => {
     await openSourceWithSelection(sourceUri, vscode.ViewColumn.Three);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
@@ -93,10 +79,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const link = getGeneratedLink('before-ted-002', { smartPad: 'both' });
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
-    assert.ok(
-      destDoc.getText().includes(link),
-      `Expected dest to contain generated link "${link}", got: "${destDoc.getText()}"`,
-    );
+    assert.ok(destDoc.getText().includes(link), `Expected dest to contain generated link "${link}", got: "${destDoc.getText()}"`);
     ss.log('✓ R-L different view column: allowed, link pasted in destination column');
   });
 
@@ -107,31 +90,22 @@ standardSuite('Text Editor Destination', (ss) => {
     const destUri = ss.createWorkspaceFile('htl-001-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('htl-001-source', `${SOURCE_CONTENT}\n`);
     const destBasename = path.basename(destUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
-    const destEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(destUri),
-      { viewColumn: vscode.ViewColumn.One, preview: false },
-    );
-    destEditor.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      new vscode.Position(1, 0),
-    );
+    const destEditor = await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(destUri), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    destEditor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 0));
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
-    const sourceEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(sourceUri),
-      { viewColumn: vscode.ViewColumn.One, preview: false },
-    );
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, SOURCE_CONTENT.length),
-    );
+    const sourceEditor = await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(sourceUri), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, SOURCE_CONTENT.length));
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -150,18 +124,12 @@ standardSuite('Text Editor Destination', (ss) => {
         ctx?.editorUri === destUri.toString()
       );
     });
-    assert.ok(
-      hiddenTabLog,
-      'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
-    );
+    assert.ok(hiddenTabLog, 'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path');
 
     const link = getGeneratedLink('before-htl-001', { smartPad: 'both' });
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
-    assert.ok(
-      destContent.includes(link),
-      `Expected dest to include generated link "${link}", got: "${destContent}"`,
-    );
+    assert.ok(destContent.includes(link), `Expected dest to include generated link "${link}", got: "${destContent}"`);
 
     ss.log('✓ Bound editor brought to foreground and received RangeLink');
   });
@@ -173,31 +141,22 @@ standardSuite('Text Editor Destination', (ss) => {
     const destUri = ss.createWorkspaceFile('htl-002-dest', `${ANCHOR_START}\n${ANCHOR_END}\n`);
     const sourceUri = ss.createWorkspaceFile('htl-002-source', `${SELECTED_TEXT}\n`);
     const destBasename = path.basename(destUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
-    const destEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(destUri),
-      { viewColumn: vscode.ViewColumn.One, preview: false },
-    );
-    destEditor.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      new vscode.Position(1, 0),
-    );
+    const destEditor = await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(destUri), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    destEditor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 0));
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
-    const sourceEditor = await vscode.window.showTextDocument(
-      await vscode.workspace.openTextDocument(sourceUri),
-      { viewColumn: vscode.ViewColumn.One, preview: false },
-    );
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, SELECTED_TEXT.length),
-    );
+    const sourceEditor = await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(sourceUri), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, SELECTED_TEXT.length));
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -216,10 +175,7 @@ standardSuite('Text Editor Destination', (ss) => {
         ctx?.editorUri === destUri.toString()
       );
     });
-    assert.ok(
-      hiddenTabLog,
-      'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path',
-    );
+    assert.ok(hiddenTabLog, 'Expected hidden-tab log but none found — paste may not have triggered the hidden-tab path');
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
     assert.ok(
@@ -230,8 +186,7 @@ standardSuite('Text Editor Destination', (ss) => {
     ss.log('✓ Bound editor brought to foreground and received selected text');
   });
 
-  const WARN_DUPLICATE_TAB_GROUPS =
-    'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.';
+  const WARN_DUPLICATE_TAB_GROUPS = 'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.';
 
   test('duplicate-tab-group-001: warning toast fires when bound file is opened in a second editor group', async () => {
     const destUri = ss.createWorkspaceFile('dtg-001-dest', 'destination file\n');
@@ -320,8 +275,7 @@ standardSuite('Text Editor Destination', (ss) => {
       { level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS },
       {
         level: 'error',
-        message:
-          'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+        message: 'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
       },
       {
         level: 'warning',
@@ -451,10 +405,7 @@ standardSuite('Text Editor Destination', (ss) => {
     const sourceUri = ss.createWorkspaceFile('svc-001-source', `${SOURCE_TEXT}\n`);
     const dummyUri = ss.createWorkspaceFile('svc-001-dummy', '');
 
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     ss.expectToastMessages([{ level: 'warning', message: WARN_DUPLICATE_TAB_GROUPS }]);
 
@@ -465,10 +416,7 @@ standardSuite('Text Editor Destination', (ss) => {
       viewColumn: vscode.ViewColumn.Two,
       preview: false,
     });
-    destEditor.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      new vscode.Position(1, 0),
-    );
+    destEditor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 0));
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await ss.settle();
 
@@ -512,10 +460,7 @@ standardSuite('Text Editor Destination', (ss) => {
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
     const relativeSourcePath = vscode.workspace.asRelativePath(sourceUri);
-    assert.ok(
-      destContent.includes(relativeSourcePath),
-      `Expected RangeLink referencing "${relativeSourcePath}" in dest, got: "${destContent}"`,
-    );
+    assert.ok(destContent.includes(relativeSourcePath), `Expected RangeLink referencing "${relativeSourcePath}" in dest, got: "${destContent}"`);
 
     ss.log('✓ Paste followed bound editor to new view column');
   });

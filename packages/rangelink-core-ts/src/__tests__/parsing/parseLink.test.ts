@@ -541,10 +541,7 @@ describe('parseLink', () => {
 
     describe('PARSE_URL_NOT_SUPPORTED', () => {
       it('should reject https:// URLs', () => {
-        const result = parseLink(
-          'https://github.com/org/repo/blob/main/file.ts#L10',
-          DEFAULT_DELIMITERS,
-        );
+        const result = parseLink('https://github.com/org/repo/blob/main/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toHaveDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -587,10 +584,7 @@ describe('parseLink', () => {
       });
 
       it('should reject GitHub permalink with query params', () => {
-        const result = parseLink(
-          'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
-          DEFAULT_DELIMITERS,
-        );
+        const result = parseLink('https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9', DEFAULT_DELIMITERS);
 
         expect(result).toHaveDetailedError('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -941,17 +935,13 @@ describe('parseLink', () => {
     it('should handle path with special characters', () => {
       const result = parseLink('path/with spaces/file-name_2.ts#L10', DEFAULT_DELIMITERS);
 
-      expect(result).toBeSuccess(
-        expect.objectContaining({ path: 'path/with spaces/file-name_2.ts' }),
-      );
+      expect(result).toBeSuccess(expect.objectContaining({ path: 'path/with spaces/file-name_2.ts' }));
     });
 
     it('should handle path with dots', () => {
       const result = parseLink('../../relative/path/file.spec.ts#L10', DEFAULT_DELIMITERS);
 
-      expect(result).toBeSuccess(
-        expect.objectContaining({ path: '../../relative/path/file.spec.ts' }),
-      );
+      expect(result).toBeSuccess(expect.objectContaining({ path: '../../relative/path/file.spec.ts' }));
     });
 
     it('should handle Windows-style path', () => {

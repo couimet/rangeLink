@@ -23,11 +23,7 @@ export class TerminalPasteService {
     private readonly logger: Logger,
   ) {}
 
-  async pasteIntoTerminal(
-    content: string,
-    terminal: vscode.Terminal,
-    options?: SendTextToTerminalOptions,
-  ): Promise<ExtensionResult<void>> {
+  async pasteIntoTerminal(content: string, terminal: vscode.Terminal, options?: SendTextToTerminalOptions): Promise<ExtensionResult<void>> {
     const logCtx: LoggingContext = {
       fn: 'TerminalPasteService.pasteIntoTerminal',
       terminalName: terminal?.name,
@@ -35,10 +31,7 @@ export class TerminalPasteService {
 
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
-      this.logger.error(
-        { ...logCtx, error: validationResult.error },
-        'Terminal paste failed - terminal not defined',
-      );
+      this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal paste failed - terminal not defined');
       return validationResult as unknown as ExtensionResult<void>;
     }
 
@@ -52,10 +45,7 @@ export class TerminalPasteService {
     });
 
     if (!stageResult.success) {
-      this.logger.error(
-        { ...logCtx, error: stageResult.error },
-        'Terminal paste failed - clipboard service problem',
-      );
+      this.logger.error({ ...logCtx, error: stageResult.error }, 'Terminal paste failed - clipboard service problem');
       return stageResult;
     }
 

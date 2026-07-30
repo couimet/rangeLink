@@ -2,12 +2,7 @@ import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalPasteService } from '../../services';
 import { BehaviourAfterPaste, ExtensionResult } from '../../types';
-import {
-  createMockClipboardService,
-  createMockTerminal,
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers';
+import { createMockClipboardService, createMockTerminal, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -33,10 +28,7 @@ describe('TerminalPasteService', () => {
 
       expect(result.success).toBe(true);
       expect(mockClipboardService.stage).toHaveBeenCalledWith('test content', expect.any(Function));
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'TerminalPasteService.pasteIntoTerminal', terminalName: 'my-terminal' },
-        'Terminal paste succeeded',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'TerminalPasteService.pasteIntoTerminal', terminalName: 'my-terminal' }, 'Terminal paste succeeded');
       expect(mockLogger.error).not.toHaveBeenCalled();
     });
 

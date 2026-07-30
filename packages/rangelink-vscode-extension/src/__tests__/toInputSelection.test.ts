@@ -14,12 +14,7 @@ let mockLogger: Logger;
 /**
  * Helper to create a mock vscode.Selection
  */
-const createSelection = (
-  startLine: number,
-  startPosition: number,
-  endLine: number,
-  endPosition: number,
-): vscode.Selection => {
+const createSelection = (startLine: number, startPosition: number, endLine: number, endPosition: number): vscode.Selection => {
   return {
     start: { line: startLine, character: startPosition },
     end: { line: endLine, character: endPosition },
@@ -33,10 +28,7 @@ const createSelection = (
 /**
  * Helper to create a mock TextEditor
  */
-const createMockEditor = (
-  selections: vscode.Selection[],
-  lineTexts: string[],
-): vscode.TextEditor => {
+const createMockEditor = (selections: vscode.Selection[], lineTexts: string[]): vscode.TextEditor => {
   const mockDocument = {
     lineAt: jest.fn((lineNumber: number) => {
       const text = lineTexts[lineNumber] ?? '';
@@ -82,10 +74,7 @@ describe('toInputSelection', () => {
 
       it('should detect FullLine when selection extends beyond actual line end', () => {
         const lineText = 'const x = 5;';
-        const editor = createMockEditor(
-          [createSelection(0, 0, 0, lineText.length + 10)],
-          [lineText],
-        );
+        const editor = createMockEditor([createSelection(0, 0, 0, lineText.length + 10)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -151,10 +140,7 @@ describe('toInputSelection', () => {
       it('should detect PartialLine when selection does not start at column 0', () => {
         const lineText = 'const x = 5;';
         const startPosition = getUniqueInt();
-        const editor = createMockEditor(
-          [createSelection(0, startPosition, 0, lineText.length)],
-          [lineText],
-        );
+        const editor = createMockEditor([createSelection(0, startPosition, 0, lineText.length)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -185,10 +171,7 @@ describe('toInputSelection', () => {
         const lineText = 'const x = 5; more text';
         const startPosition = getUniqueInt();
         const endPosition = startPosition + 5;
-        const editor = createMockEditor(
-          [createSelection(0, startPosition, 0, endPosition)],
-          [lineText],
-        );
+        const editor = createMockEditor([createSelection(0, startPosition, 0, endPosition)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -461,8 +444,7 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
-        message:
-          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        message: 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
       });
     });
@@ -495,8 +477,7 @@ describe('toInputSelection', () => {
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
       expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
-        message:
-          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        message: 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -537,8 +518,7 @@ describe('toInputSelection', () => {
       const result = toInputSelection(mockDocument, selections, mockLogger);
 
       expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
-        message:
-          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        message: 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -636,10 +616,7 @@ describe('toInputSelection', () => {
   describe('Diagnostic logging', () => {
     it('should log DEBUG on entry with input selections and document state', () => {
       const lineTexts = ['const x = 5;', 'const y = 10;'];
-      const editor = createMockEditor(
-        [createSelection(0, 0, 0, 12), createSelection(1, 0, 1, 13)],
-        lineTexts,
-      );
+      const editor = createMockEditor([createSelection(0, 0, 0, 12), createSelection(1, 0, 1, 13)], lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
@@ -707,8 +684,7 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result).toHaveDetailedError('SELECTION_CONVERSION_FAILED', {
-        message:
-          'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+        message: 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
         functionName: 'toInputSelection',
       });
       expect(mockLogger.error).toHaveBeenCalledWith(

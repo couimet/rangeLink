@@ -4,12 +4,7 @@ import {
   createMockEditorComposablePasteDestination,
   createMockTerminalComposablePasteDestination,
 } from '../../__tests__/helpers';
-import {
-  isEditorDestination,
-  isPasteDestinationKind,
-  isSingletonDestination,
-  isTerminalDestination,
-} from '..';
+import { isEditorDestination, isPasteDestinationKind, isSingletonDestination, isTerminalDestination } from '..';
 
 describe('destinationKindGuards', () => {
   describe('isPasteDestinationKind', () => {

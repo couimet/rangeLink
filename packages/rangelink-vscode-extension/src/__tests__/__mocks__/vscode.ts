@@ -20,8 +20,7 @@ function createMockEvent<T>(): vscode.Event<T> & { fire(data: T): void } {
 export class MockExtensionContext implements vscode.ExtensionContext {
   subscriptions: Array<{ dispose(): void }> = [];
   workspaceState = new MockMemento();
-  globalState: MockMemento & { setKeysForSync(keys: readonly string[]): void } =
-    new MockMemento() as any;
+  globalState: MockMemento & { setKeysForSync(keys: readonly string[]): void } = new MockMemento() as any;
   secrets = {} as any;
   extensionUri = vscode.Uri.parse('file:///mock');
   extension = {} as any;
@@ -125,11 +124,7 @@ const mockLanguages = {
 class MockEventEmitter<T> implements vscode.EventEmitter<T> {
   private handlers: Array<(e: T) => void> = [];
 
-  readonly event: vscode.Event<T> = (
-    listener: (e: T) => any,
-    _thisArgs?: any,
-    _disposables?: any,
-  ) => {
+  readonly event: vscode.Event<T> = (listener: (e: T) => any, _thisArgs?: any, _disposables?: any) => {
     this.handlers.push(listener);
     return {
       dispose: () => {

@@ -8,17 +8,8 @@ import {
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
 } from '../constants';
-import {
-  type BoundSession,
-  buildDestinationQuickPickItems,
-  type DestinationAvailabilityService,
-  type DestinationBinder,
-} from '../destinations';
-import {
-  resolveBoundTerminalProcessId,
-  showFilePicker,
-  showTerminalPicker,
-} from '../destinations/utils';
+import { type BoundSession, buildDestinationQuickPickItems, type DestinationAvailabilityService, type DestinationBinder } from '../destinations';
+import { resolveBoundTerminalProcessId, showFilePicker, showTerminalPicker } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -64,10 +55,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
-    this.statusBarItem = this.ideAdapter.createStatusBarItem(
-      vscode.StatusBarAlignment.Right,
-      STATUS_BAR_PRIORITY,
-    );
+    this.statusBarItem = this.ideAdapter.createStatusBarItem(vscode.StatusBarAlignment.Right, STATUS_BAR_PRIORITY);
 
     this.statusBarItem.text = formatMessage(MessageCode.STATUS_BAR_ITEM_TEXT);
     this.statusBarItem.command = CMD_OPEN_STATUS_BAR_MENU;
@@ -107,9 +95,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         isBound,
         ...(isBound && { destinationName: boundDest.displayName }),
       },
-      isBound
-        ? `Status bar appearance updated for bound destination "${boundDest.displayName}"`
-        : 'Status bar appearance updated for unbound state',
+      isBound ? `Status bar appearance updated for bound destination "${boundDest.displayName}"` : 'Status bar appearance updated for unbound state',
     );
   }
 
@@ -160,8 +146,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         } catch (error) {
           this.logger.error({ ...logCtx, error }, 'Bookmark send failed');
           const messageCode =
-            error instanceof RangeLinkExtensionError &&
-            error.code === RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND
+            error instanceof RangeLinkExtensionError && error.code === RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND
               ? MessageCode.ERROR_BOOKMARK_SEND_NO_DESTINATION
               : MessageCode.ERROR_BOOKMARK_SEND_FAILED;
           this.ideAdapter.showErrorMessage(formatMessage(messageCode));
@@ -196,10 +181,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     // Dynamic read — re-evaluates the current bound state at call time
     // rather than using a snapshot, since the binding may have changed.
     const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
-    const terminalItems = await this.availabilityService.getTerminalItems(
-      Infinity,
-      boundTerminalProcessId,
-    );
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity, boundTerminalProcessId);
 
     await showTerminalPicker(
       terminalItems,
@@ -209,10 +191,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         onSelected: async (eligible) => {
           const bindResult = await this.binder.bind(eligible.bindOptions);
           if (!bindResult.success) {
-            this.logger.error(
-              { ...logCtx, error: bindResult.error },
-              'Bind failed from overflow terminal picker',
-            );
+            this.logger.error({ ...logCtx, error: bindResult.error }, 'Bind failed from overflow terminal picker');
             this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
             return;
           }
@@ -234,16 +213,11 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async showSecondaryFilePicker(logCtx: LoggingContext): Promise<void> {
     const boundDest = this.session.get();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
-    const fileItems = this.availabilityService.getAllFileItems(
-      boundEditorDest?.resource.uri.toString(),
-      boundEditorDest?.resource.viewColumn,
-    );
+    const fileItems = this.availabilityService.getAllFileItems(boundEditorDest?.resource.uri.toString(), boundEditorDest?.resource.viewColumn);
 
     if (fileItems.length === 0) {
       this.logger.debug(logCtx, 'No files available in secondary picker');
-      void this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR),
-      );
+      void this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_BINDABLE_TEXT_EDITOR));
       return;
     }
 
@@ -255,10 +229,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         onSelected: async (file) => {
           const bindResult = await this.binder.bind(file.bindOptions);
           if (!bindResult.success) {
-            this.logger.error(
-              { ...logCtx, error: bindResult.error },
-              'Bind failed from overflow file picker',
-            );
+            this.logger.error({ ...logCtx, error: bindResult.error }, 'Bind failed from overflow file picker');
             this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
             return;
           }
@@ -276,9 +247,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items with context-aware enabled/disabled states.
    */
-  private async buildQuickPickItems(): Promise<
-    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
-  > {
+  private async buildQuickPickItems(): Promise<(StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]> {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
       { label: '', kind: vscode.QuickPickItemKind.Separator },
@@ -299,9 +268,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build the jump item (when bound) or inline destinations (when unbound).
    */
-  private buildJumpOrDestinationsSection(): Promise<
-    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
-  > {
+  private buildJumpOrDestinationsSection(): Promise<(StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]> {
     const boundDest = this.session.get();
     if (boundDest) {
       const jumpDescription = isEditorDestination(boundDest)
@@ -327,19 +294,14 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items for available destinations when unbound.
    */
-  private async buildDestinationsQuickPickItems(): Promise<
-    (DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]
-  > {
+  private async buildDestinationsQuickPickItems(): Promise<(DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]> {
     // Dynamic read — re-evaluates the current bound state at call time
     // rather than using a snapshot, since the binding may have changed.
     const boundTerminalProcessId = await resolveBoundTerminalProcessId(() => this.session.get());
     const grouped = await this.availabilityService.getGroupedDestinationItems({
       boundTerminalProcessId,
     });
-    const destinationItems = buildDestinationQuickPickItems(
-      grouped,
-      (displayName) => `${MENU_ITEM_INDENT}$(arrow-right) ${displayName}`,
-    );
+    const destinationItems = buildDestinationQuickPickItems(grouped, (displayName) => `${MENU_ITEM_INDENT}$(arrow-right) ${displayName}`);
 
     if (destinationItems.length === 0) {
       return [
@@ -359,9 +321,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     ];
   }
 
-  private buildBookmarksQuickPickItems(): (
-    BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem
-  )[] {
+  private buildBookmarksQuickPickItems(): (BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[] {
     const bookmarks = this.bookmarkService.getAllBookmarks();
 
     const bookmarkItems: (BookmarkQuickPickItem | InfoQuickPickItem)[] =

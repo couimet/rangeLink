@@ -2,10 +2,7 @@ import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS, settle } from './testEnv';
 
 import * as vscode from 'vscode';
 
-export const waitForActiveEditor = async (
-  expectedUri: string,
-  log: (msg: string) => void,
-): Promise<boolean> => {
+export const waitForActiveEditor = async (expectedUri: string, log: (msg: string) => void): Promise<boolean> => {
   const start = Date.now();
   while (Date.now() - start < POLL_TIMEOUT_MS) {
     const activeUri = vscode.window.activeTextEditor?.document.uri.toString();
@@ -38,16 +35,8 @@ export const clearEditorSelection = async (): Promise<void> => {
   }
 };
 
-export const openUntitledDoc = async (options?: {
-  content?: string;
-  language?: string;
-  viewColumn?: vscode.ViewColumn;
-}): Promise<vscode.TextDocument> => {
-  const {
-    content = '',
-    language = 'plaintext',
-    viewColumn = vscode.ViewColumn.One,
-  } = options ?? {};
+export const openUntitledDoc = async (options?: { content?: string; language?: string; viewColumn?: vscode.ViewColumn }): Promise<vscode.TextDocument> => {
+  const { content = '', language = 'plaintext', viewColumn = vscode.ViewColumn.One } = options ?? {};
   const doc = await vscode.workspace.openTextDocument({ content, language });
   await vscode.window.showTextDocument(doc, viewColumn);
   await settle();
@@ -57,8 +46,5 @@ export const openUntitledDoc = async (options?: {
 export const selectAll = (editor: vscode.TextEditor): void => {
   const lastLine = editor.document.lineCount - 1;
   const lastChar = editor.document.lineAt(lastLine).text.length;
-  editor.selection = new vscode.Selection(
-    new vscode.Position(0, 0),
-    new vscode.Position(lastLine, lastChar),
-  );
+  editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(lastLine, lastChar));
 };

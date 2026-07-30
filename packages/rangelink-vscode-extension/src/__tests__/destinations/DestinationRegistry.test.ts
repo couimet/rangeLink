@@ -1,8 +1,4 @@
-import {
-  type DestinationBuilder,
-  type DestinationBuilderContext,
-  DestinationRegistry,
-} from '../../destinations';
+import { type DestinationBuilder, type DestinationBuilderContext, DestinationRegistry } from '../../destinations';
 import type { BindOptions } from '../../types';
 import {
   createBaseMockPasteDestination,
@@ -26,13 +22,7 @@ describe('DestinationRegistry', () => {
   });
 
   const createRegistry = (factories = createMockFactories()) =>
-    new DestinationRegistry(
-      factories.focusCapability,
-      factories.eligibilityChecker,
-      mockAdapter,
-      mockConfigReader,
-      mockLogger,
-    );
+    new DestinationRegistry(factories.focusCapability, factories.eligibilityChecker, mockAdapter, mockConfigReader, mockLogger);
 
   describe('register()', () => {
     it('should store builder in map when registered', () => {
@@ -57,9 +47,7 @@ describe('DestinationRegistry', () => {
     it('should overwrite previous builder when registering same kind', () => {
       const registry = createRegistry();
       const firstBuilder = jest.fn();
-      const secondBuilder = jest
-        .fn()
-        .mockReturnValue(createBaseMockPasteDestination({ id: 'terminal' }));
+      const secondBuilder = jest.fn().mockReturnValue(createBaseMockPasteDestination({ id: 'terminal' }));
 
       registry.register('terminal', firstBuilder);
       registry.register('terminal', secondBuilder);
@@ -174,9 +162,7 @@ describe('DestinationRegistry', () => {
     it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered kind', () => {
       const registry = createRegistry();
 
-      expect(() =>
-        registry.create({ kind: 'terminal', terminal: {} as never }),
-      ).toThrowDetailedError('DESTINATION_NOT_IMPLEMENTED', {
+      expect(() => registry.create({ kind: 'terminal', terminal: {} as never })).toThrowDetailedError('DESTINATION_NOT_IMPLEMENTED', {
         message: 'No builder registered for destination kind: terminal',
         functionName: 'DestinationRegistry.create',
         details: { kind: 'terminal' },
@@ -186,14 +172,11 @@ describe('DestinationRegistry', () => {
     it('should include destination kind in error message', () => {
       const registry = createRegistry();
 
-      expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowDetailedError(
-        'DESTINATION_NOT_IMPLEMENTED',
-        {
-          message: 'No builder registered for destination kind: github-copilot-chat',
-          functionName: 'DestinationRegistry.create',
-          details: { kind: 'github-copilot-chat' },
-        },
-      );
+      expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowDetailedError('DESTINATION_NOT_IMPLEMENTED', {
+        message: 'No builder registered for destination kind: github-copilot-chat',
+        functionName: 'DestinationRegistry.create',
+        details: { kind: 'github-copilot-chat' },
+      });
     });
   });
 
@@ -225,35 +208,25 @@ describe('DestinationRegistry', () => {
     it('should allow mocking FocusCapabilityFactory methods in builder', () => {
       const factories = createMockFactories();
       const mockCapability = { focus: jest.fn() };
-      factories.focusCapability.createAIAssistantCapability.mockReturnValue(
-        mockCapability as never,
-      );
+      factories.focusCapability.createAIAssistantCapability.mockReturnValue(mockCapability as never);
       const registry = createRegistry(factories);
 
       let capturedCapability: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedCapability = context.factories.focusCapability.createAIAssistantCapability(
-          ['focus'],
-          undefined,
-        );
+        capturedCapability = context.factories.focusCapability.createAIAssistantCapability(['focus'], undefined);
         return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
       registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(capturedCapability).toBe(mockCapability);
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
-        ['focus'],
-        undefined,
-      );
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(['focus'], undefined);
     });
 
     it('should allow mocking EligibilityCheckerFactory methods in builder', () => {
       const factories = createMockFactories();
       const mockChecker = { isEligible: jest.fn() };
-      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(
-        mockChecker as never,
-      );
+      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(mockChecker as never);
       const registry = createRegistry(factories);
 
       let capturedChecker: unknown;
@@ -314,20 +287,13 @@ describe('DestinationRegistry', () => {
       const mockCapability = { focus: jest.fn() };
       const mockChecker = { isEligible: jest.fn() };
 
-      factories.focusCapability.createAIAssistantCapability.mockReturnValue(
-        mockCapability as never,
-      );
-      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(
-        mockChecker as never,
-      );
+      factories.focusCapability.createAIAssistantCapability.mockReturnValue(mockCapability as never);
+      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(mockChecker as never);
 
       const registry = createRegistry(factories);
 
       const builder: DestinationBuilder = (_options, context) => {
-        const capability = context.factories.focusCapability.createAIAssistantCapability(
-          ['focus.cmd'],
-          undefined,
-        );
+        const capability = context.factories.focusCapability.createAIAssistantCapability(['focus.cmd'], undefined);
         const checker = context.factories.eligibilityChecker.createContentEligibilityChecker();
 
         expect(capability).toBe(mockCapability);
@@ -340,10 +306,7 @@ describe('DestinationRegistry', () => {
       const destination = registry.create({ kind: 'cursor-ai' });
 
       expect(destination).toBeDefined();
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
-        ['focus.cmd'],
-        undefined,
-      );
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(['focus.cmd'], undefined);
       expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
     });
   });

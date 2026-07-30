@@ -1,13 +1,7 @@
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  type AIAssistantDestinationKind,
-  type BindContext,
-  type DestinationKind,
-  isAnyAiAssistantKind,
-  MessageCode,
-} from '../types';
+import { type AIAssistantDestinationKind, type BindContext, type DestinationKind, isAnyAiAssistantKind, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { BindingFeedback } from './BindingFeedback';
@@ -37,31 +31,21 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
         messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED;
         break;
       default:
-        throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
-          'auto-unbind reason',
-          reason,
-          'OperationFeedbackProvider.notifyAutoUnbind',
-        );
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('auto-unbind reason', reason, 'OperationFeedbackProvider.notifyAutoUnbind');
     }
     this.vscodeAdapter.setStatusBarMessage(formatMessage(messageCode, { destinationName }));
 
     if (reason === 'file-deleted') {
-      void this.vscodeAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED, { destinationName }),
-      );
+      void this.vscodeAdapter.showWarningMessage(formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED, { destinationName }));
     }
   }
 
   notifyDuplicateTabWarning(): void {
-    void this.vscodeAdapter.showWarningMessage(
-      formatMessage(MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS),
-    );
+    void this.vscodeAdapter.showWarningMessage(formatMessage(MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS));
   }
 
   notifyBound(destinationName: string): void {
-    this.vscodeAdapter.setSuccessfulStatusBarMessage(
-      formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, { destinationName }),
-    );
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, { destinationName }));
   }
 
   notifyRebound(newDestinationName: string, previousDestinationName: string): void {
@@ -74,9 +58,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
   }
 
   notifyAlreadyBound(destinationName: string): void {
-    void this.vscodeAdapter.showInformationMessage(
-      formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, { destinationName }),
-    );
+    void this.vscodeAdapter.showInformationMessage(formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, { destinationName }));
   }
 
   notifyBindFailedEditor(messageCode: MessageCode, params: Record<string, string>): void {
@@ -88,28 +70,20 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
     if (messageCode !== undefined) {
       this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
     } else {
-      this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE, { extensionName: displayName }),
-      );
+      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE, { extensionName: displayName }));
     }
   }
 
   notifyBackgroundTabOpened(fileName: string): void {
-    void this.vscodeAdapter.showInformationMessage(
-      formatMessage(MessageCode.INFO_BACKGROUND_TAB_OPENED, { fileName }),
-    );
+    void this.vscodeAdapter.showInformationMessage(formatMessage(MessageCode.INFO_BACKGROUND_TAB_OPENED, { fileName }));
   }
 
   notifyUnbound(destinationName: string): void {
-    this.vscodeAdapter.setSuccessfulStatusBarMessage(
-      formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName }),
-    );
+    this.vscodeAdapter.setSuccessfulStatusBarMessage(formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName }));
   }
 
   notifyNothingToUnbind(): void {
-    this.vscodeAdapter.setStatusBarMessage(
-      formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
-    );
+    this.vscodeAdapter.setStatusBarMessage(formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND));
   }
 
   notifyJumpFocused(message: string): void {
@@ -117,9 +91,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
   }
 
   notifyJumpFailed(destinationName: string): void {
-    void this.vscodeAdapter.showInformationMessage(
-      formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName }),
-    );
+    void this.vscodeAdapter.showInformationMessage(formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName }));
   }
 
   showError(message: string): void {
@@ -133,11 +105,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
     this.vscodeAdapter.setSuccessfulStatusBarMessage(message);
   }
 
-  provideSendFeedback(
-    context: PasteContext,
-    outcome: PasteSendOutcome,
-    bindContext?: BindContext,
-  ): void {
+  provideSendFeedback(context: PasteContext, outcome: PasteSendOutcome, bindContext?: BindContext): void {
     const linkTypeName = formatMessage(context.contentType);
     switch (outcome.kind) {
       case 'sent-automatic': {
@@ -155,9 +123,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       }
       case 'sent-manual':
       case 'failed-manual': {
-        this.vscodeAdapter.setSuccessfulStatusBarMessage(
-          this.buildClipboardMessage(linkTypeName, bindContext),
-        );
+        this.vscodeAdapter.setSuccessfulStatusBarMessage(this.buildClipboardMessage(linkTypeName, bindContext));
         if (outcome.kind === 'sent-manual') {
           void this.vscodeAdapter.showInformationMessage(outcome.instruction);
         } else {
@@ -167,33 +133,23 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       }
       case 'failed-automatic': {
         const failureMessage = this.buildPasteFailureMessage(outcome.destinationKind);
-        void this.vscodeAdapter.showWarningMessage(
-          bindContext ? `${this.buildBoundPrefix(bindContext)}${failureMessage}` : failureMessage,
-        );
+        void this.vscodeAdapter.showWarningMessage(bindContext ? `${this.buildBoundPrefix(bindContext)}${failureMessage}` : failureMessage);
         break;
       }
       case 'self-paste-blocked': {
         void this.vscodeAdapter.showInformationMessage(outcome.toastMessage);
         if (outcome.clipboardWritten) {
-          this.vscodeAdapter.setSuccessfulStatusBarMessage(
-            this.buildClipboardMessage(linkTypeName, bindContext),
-          );
+          this.vscodeAdapter.setSuccessfulStatusBarMessage(this.buildClipboardMessage(linkTypeName, bindContext));
         }
         break;
       }
       case 'clipboard-preservation-failed': {
         const warningMessage = formatMessage(MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED);
-        void this.vscodeAdapter.showWarningMessage(
-          bindContext ? `${this.buildBoundPrefix(bindContext)}${warningMessage}` : warningMessage,
-        );
+        void this.vscodeAdapter.showWarningMessage(bindContext ? `${this.buildBoundPrefix(bindContext)}${warningMessage}` : warningMessage);
         break;
       }
       default:
-        throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
-          'paste send outcome',
-          outcome,
-          'OperationFeedbackProvider.provideSendFeedback',
-        );
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('paste send outcome', outcome, 'OperationFeedbackProvider.provideSendFeedback');
     }
   }
 

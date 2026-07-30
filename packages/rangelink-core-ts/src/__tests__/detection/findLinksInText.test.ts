@@ -14,8 +14,7 @@ jest.mock('../../parsing/parseLink', () => ({
   ...jest.requireActual('../../parsing/parseLink'),
   parseLink: jest.fn(),
 }));
-const realParseLink =
-  jest.requireActual<typeof import('../../parsing/parseLink')>('../../parsing/parseLink').parseLink;
+const realParseLink = jest.requireActual<typeof import('../../parsing/parseLink')>('../../parsing/parseLink').parseLink;
 const mockParseLink = parseLink as jest.MockedFunction<typeof parseLink>;
 
 describe('findLinksInText', () => {
@@ -28,11 +27,7 @@ describe('findLinksInText', () => {
 
   describe('unquoted links', () => {
     it('should detect a single unquoted link', () => {
-      const results = findLinksInText(
-        'Check src/auth.ts#L10 for details',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('src/auth.ts#L10');
@@ -43,11 +38,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect multiple unquoted links', () => {
-      const results = findLinksInText(
-        'See src/a.ts#L1 and src/b.ts#L2-L5',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('See src/a.ts#L1 and src/b.ts#L2-L5', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -169,11 +160,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect the path from a simple markdown link embedded in prose', () => {
-        const results = findLinksInText(
-          'See [text](src/auth.ts#L10) for details',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('See [text](src/auth.ts#L10) for details', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
         expect(results[0].linkText).toBe('src/auth.ts#L10');
@@ -189,12 +176,8 @@ describe('findLinksInText', () => {
         );
 
         expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
-        expect(results[0].parsed.path).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
+        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
         expect(results[0].parsed.start.line).toBe(876);
       });
 
@@ -204,12 +187,8 @@ describe('findLinksInText', () => {
         const results = findLinksInText(line, DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
-        expect(results[0].parsed.path).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
+        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
         expect(results[0].parsed.start.line).toBe(876);
       });
 
@@ -224,11 +203,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect a range link inside a markdown link embedded in prose', () => {
-        const results = findLinksInText(
-          'Check [text](src/auth.ts#L10-L20) above',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('Check [text](src/auth.ts#L10-L20) above', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
         expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
@@ -238,11 +213,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect both links when multiple markdown links appear in one line', () => {
-        const results = findLinksInText(
-          'Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(2);
         expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -255,11 +226,7 @@ describe('findLinksInText', () => {
 
   describe('quoted links', () => {
     it('should detect single-quoted links with spaces in paths', () => {
-      const results = findLinksInText(
-        "Open 'My Folder/file.ts#L10' to see",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("Open 'My Folder/file.ts#L10' to see", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('My Folder/file.ts#L10');
@@ -278,11 +245,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect quoted links with column positions', () => {
-      const results = findLinksInText(
-        "'Meslo Slashed/LICENSE.txt#L10C24-L11C24'",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("'Meslo Slashed/LICENSE.txt#L10C24-L11C24'", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('Meslo Slashed/LICENSE.txt#L10C24-L11C24');
@@ -303,11 +266,7 @@ describe('findLinksInText', () => {
     });
 
     it('should skip quoted segments that are not valid links', () => {
-      const results = findLinksInText(
-        "Some 'random text' and 'not a link' here",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("Some 'random text' and 'not a link' here", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(0);
     });
@@ -315,11 +274,7 @@ describe('findLinksInText', () => {
 
   describe('mixed unquoted and quoted links', () => {
     it('should detect both unquoted and quoted links in same text', () => {
-      const results = findLinksInText(
-        "See src/a.ts#L1 and 'My Dir/b.ts#L5-L10'",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("See src/a.ts#L1 and 'My Dir/b.ts#L5-L10'", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -327,11 +282,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect both single- and double-quoted links in same text', () => {
-      const results = findLinksInText(
-        `Check 'My Dir/a.ts#L1' and "Other Dir/b.ts#L2"`,
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText(`Check 'My Dir/a.ts#L1' and "Other Dir/b.ts#L2"`, DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('My Dir/a.ts#L1');
@@ -351,12 +302,7 @@ describe('findLinksInText', () => {
   describe('cancellation', () => {
     it('should respect cancellation token during unquoted pass', () => {
       const token = { isCancellationRequested: true };
-      const results = findLinksInText(
-        'src/a.ts#L1 and src/b.ts#L2',
-        DEFAULT_DELIMITERS,
-        logger,
-        token,
-      );
+      const results = findLinksInText('src/a.ts#L1 and src/b.ts#L2', DEFAULT_DELIMITERS, logger, token);
 
       expect(results).toHaveLength(0);
     });
@@ -378,17 +324,10 @@ describe('findLinksInText', () => {
       });
       mockParseLink.mockReturnValueOnce(CoreResult.err(mockError));
 
-      const results = findLinksInText(
-        'Check src/auth.ts#L10 for details',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(0);
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'detectUnquotedLinks', link: 'src/auth.ts#L10', error: mockError },
-        'Skipping link that failed to parse',
-      );
+      expect(logger.debug).toHaveBeenCalledWith({ fn: 'detectUnquotedLinks', link: 'src/auth.ts#L10', error: mockError }, 'Skipping link that failed to parse');
     });
 
     it('should count parse failures in summary log', () => {

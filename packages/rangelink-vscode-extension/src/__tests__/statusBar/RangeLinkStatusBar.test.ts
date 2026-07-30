@@ -11,11 +11,7 @@ import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
-import {
-  ExtensionResult,
-  FileBindableQuickPickItem,
-  TerminalBindableQuickPickItem,
-} from '../../types';
+import { ExtensionResult, FileBindableQuickPickItem, TerminalBindableQuickPickItem } from '../../types';
 import {
   createMockBookmarkService,
   createMockBoundSession,
@@ -104,14 +100,7 @@ describe('RangeLinkStatusBar', () => {
 
   describe('constructor', () => {
     it('creates and configures status bar item', () => {
-      new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       expect(createStatusBarItemMock).toHaveBeenCalledTimes(1);
       expect(createStatusBarItemMock).toHaveBeenCalledWith(vscode.StatusBarAlignment.Right, 100);
@@ -123,10 +112,7 @@ describe('RangeLinkStatusBar', () => {
         { fn: 'RangeLinkStatusBar.updateStatusBarAppearance', isBound: false },
         'Status bar appearance updated for unbound state',
       );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.constructor' },
-        'Status bar item created',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.constructor' }, 'Status bar item created');
     });
 
     it('uses bound destination tooltip and color when destination is bound at construction', () => {
@@ -137,19 +123,10 @@ describe('RangeLinkStatusBar', () => {
       mockSession.isSet.mockReturnValue(true);
       mockSession.get.mockReturnValue(mockBoundDest);
 
-      new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       expect(mockStatusBarItem.tooltip).toBe('RangeLink — Terminal ("bash")');
-      expect(mockStatusBarItem.color).toStrictEqual(
-        new vscode.ThemeColor('statusBarItem.prominentForeground'),
-      );
+      expect(mockStatusBarItem.color).toStrictEqual(new vscode.ThemeColor('statusBarItem.prominentForeground'));
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.updateStatusBarAppearance',
@@ -163,14 +140,7 @@ describe('RangeLinkStatusBar', () => {
 
   describe('updateStatusBarAppearance', () => {
     it('updates tooltip and color when bound event fires', () => {
-      new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       (mockSession as any)._emitter.fire({
         id: 'terminal',
@@ -178,20 +148,11 @@ describe('RangeLinkStatusBar', () => {
       });
 
       expect(mockStatusBarItem.tooltip).toBe('RangeLink — Terminal ("zsh")');
-      expect(mockStatusBarItem.color).toStrictEqual(
-        new vscode.ThemeColor('statusBarItem.prominentForeground'),
-      );
+      expect(mockStatusBarItem.color).toStrictEqual(new vscode.ThemeColor('statusBarItem.prominentForeground'));
     });
 
     it('resets tooltip and color when unbound event fires', () => {
-      new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       (mockSession as any)._emitter.fire(undefined);
 
@@ -230,14 +191,7 @@ describe('RangeLinkStatusBar', () => {
           },
         ],
       });
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -290,14 +244,7 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('shows "no destinations available" when unbound and no destinations exist', async () => {
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -334,14 +281,7 @@ describe('RangeLinkStatusBar', () => {
       const boundDestinationManager = createMockDestinationManager();
       mockSession.isSet.mockReturnValue(true);
       mockSession.get.mockReturnValue(mockBoundDestination);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        boundDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, boundDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -380,14 +320,7 @@ describe('RangeLinkStatusBar', () => {
       const boundDestinationManager = createMockDestinationManager();
       mockSession.isSet.mockReturnValue(true);
       mockSession.get.mockReturnValue(mockBoundDestination);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        boundDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, boundDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -436,14 +369,7 @@ describe('RangeLinkStatusBar', () => {
         ],
       });
       mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -508,14 +434,7 @@ describe('RangeLinkStatusBar', () => {
         itemKind: 'command',
         command: 'synthetic.testCommand',
       });
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -537,23 +456,14 @@ describe('RangeLinkStatusBar', () => {
     it('binds without focusing when bindable item is selected', async () => {
       const mockTerminal = createMockTerminal();
       const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }));
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
         itemKind: 'bindable',
         bindOptions,
         displayName: 'Terminal',
       });
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -589,14 +499,7 @@ describe('RangeLinkStatusBar', () => {
         displayName: 'Terminal',
       };
       showQuickPickMock.mockResolvedValue(selectedItem);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -616,44 +519,24 @@ describe('RangeLinkStatusBar', () => {
     it('logs when info item is selected', async () => {
       const infoItem = { label: 'Synthetic Info Item', itemKind: 'info' as const };
       showQuickPickMock.mockResolvedValue(infoItem);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: infoItem },
-        'Non-actionable item selected',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.openMenu', selectedItem: infoItem }, 'Non-actionable item selected');
     });
 
     it('logs dismissal and takes no action when user dismisses QuickPick', async () => {
       showQuickPickMock.mockResolvedValue(QUICK_PICK_DISMISSED);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu' },
-        'User dismissed menu',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.openMenu' }, 'User dismissed menu');
     });
   });
 
@@ -669,12 +552,8 @@ describe('RangeLinkStatusBar', () => {
       const mockTerminal = createMockTerminal({ name: 'bash' });
       const eligibleTerminal = createMockEligibleTerminal({ terminal: mockTerminal });
 
-      mockAvailabilityService.getTerminalItems.mockResolvedValue([
-        createMockTerminalQuickPickItem(mockTerminal),
-      ]);
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'bash', destinationKind: 'terminal' }),
-      );
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([createMockTerminalQuickPickItem(mockTerminal)]);
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'bash', destinationKind: 'terminal' }));
 
       showQuickPickMock.mockResolvedValueOnce(terminalMoreItem);
 
@@ -691,14 +570,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -727,9 +599,7 @@ describe('RangeLinkStatusBar', () => {
         functionName: 'PasteDestinationManager.bind',
       });
 
-      mockAvailabilityService.getTerminalItems.mockResolvedValue([
-        createMockTerminalQuickPickItem(mockTerminal),
-      ]);
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([createMockTerminalQuickPickItem(mockTerminal)]);
       mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
 
       showQuickPickMock.mockResolvedValueOnce(terminalMoreItem);
@@ -745,14 +615,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -772,13 +635,9 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('re-opens status bar menu when user cancels secondary terminal picker', async () => {
-      mockAvailabilityService.getTerminalItems.mockResolvedValue([
-        createMockTerminalQuickPickItem(createMockTerminal()),
-      ]);
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([createMockTerminalQuickPickItem(createMockTerminal())]);
 
-      showQuickPickMock
-        .mockResolvedValueOnce(terminalMoreItem)
-        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
+      showQuickPickMock.mockResolvedValueOnce(terminalMoreItem).mockResolvedValueOnce(QUICK_PICK_DISMISSED);
 
       showTerminalPickerSpy.mockImplementation(
         async (
@@ -791,14 +650,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -819,9 +671,7 @@ describe('RangeLinkStatusBar', () => {
       const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
 
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }));
 
       showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
 
@@ -838,14 +688,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -887,14 +730,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -915,14 +751,7 @@ describe('RangeLinkStatusBar', () => {
 
       showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -931,9 +760,7 @@ describe('RangeLinkStatusBar', () => {
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: fileMoreItem },
         'No files available in secondary picker',
       );
-      expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'No bindable text editor. Open a file and try again.',
-      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith('No bindable text editor. Open a file and try again.');
     });
 
     it('re-opens status bar menu when user cancels secondary file picker', async () => {
@@ -942,9 +769,7 @@ describe('RangeLinkStatusBar', () => {
 
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
 
-      showQuickPickMock
-        .mockResolvedValueOnce(fileMoreItem)
-        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
+      showQuickPickMock.mockResolvedValueOnce(fileMoreItem).mockResolvedValueOnce(QUICK_PICK_DISMISSED);
 
       showFilePickerSpy.mockImplementation(
         async (
@@ -957,14 +782,7 @@ describe('RangeLinkStatusBar', () => {
         },
       );
 
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -984,14 +802,7 @@ describe('RangeLinkStatusBar', () => {
         itemKind: 'bookmark',
         bookmarkId: 'bookmark-1',
       });
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -1023,14 +834,7 @@ describe('RangeLinkStatusBar', () => {
         bookmarkId: 'bookmark-1',
       });
       mockBookmarkService.sendBookmark.mockRejectedValue(sendError);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -1039,21 +843,13 @@ describe('RangeLinkStatusBar', () => {
         itemKind: 'bookmark',
         bookmarkId: 'bookmark-1',
       };
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
-        'Bookmark send failed',
-      );
-      expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'Cannot send bookmark — no destination is currently bound',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError }, 'Bookmark send failed');
+      expect(showErrorMessageMock).toHaveBeenCalledWith('Cannot send bookmark — no destination is currently bound');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.updateStatusBarAppearance', isBound: false },
         'Status bar appearance updated for unbound state',
       );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.constructor' },
-        'Status bar item created',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.constructor' }, 'Status bar item created');
     });
 
     it('shows generic error message when sendBookmark throws a non-destination error', async () => {
@@ -1064,14 +860,7 @@ describe('RangeLinkStatusBar', () => {
         bookmarkId: 'bookmark-1',
       });
       mockBookmarkService.sendBookmark.mockRejectedValue(sendError);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       await statusBar.openMenu();
 
@@ -1080,49 +869,27 @@ describe('RangeLinkStatusBar', () => {
         itemKind: 'bookmark',
         bookmarkId: 'bookmark-1',
       };
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
-        'Bookmark send failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError }, 'Bookmark send failed');
       expect(showErrorMessageMock).toHaveBeenCalledWith('Failed to send bookmark');
     });
   });
 
   describe('dispose', () => {
     it('disposes status bar item and logs', () => {
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
       statusBar.dispose();
 
       expect(mockStatusBarItem.dispose).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.dispose' },
-        'Status bar disposed',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'RangeLinkStatusBar.dispose' }, 'Status bar disposed');
     });
   });
 
   describe('buildBookmarksQuickPickItems', () => {
     it('returns empty bookmarks message when no bookmarks', () => {
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
-      const items = (
-        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
-      ).buildBookmarksQuickPickItems();
+      const items = (statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         MENU_ITEM_SEPARATOR,
@@ -1145,18 +912,9 @@ describe('RangeLinkStatusBar', () => {
 
     it('returns bookmark items when bookmarks exist', () => {
       mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
 
-      const items = (
-        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
-      ).buildBookmarksQuickPickItems();
+      const items = (statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         MENU_ITEM_SEPARATOR,
@@ -1187,18 +945,8 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('is called by buildQuickPickItems', async () => {
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockSession,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
-      const spy = jest.spyOn(
-        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] },
-        'buildBookmarksQuickPickItems',
-      );
+      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockSession, mockAvailabilityService, mockBookmarkService, mockLogger);
+      const spy = jest.spyOn(statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }, 'buildBookmarksQuickPickItems');
 
       await statusBar.openMenu();
 

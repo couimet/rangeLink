@@ -17,8 +17,7 @@
 export const URL_INPUTS = {
   HTTPS_NO_HASH: 'See https://example.com/path/file.ts for info',
   HTTPS_WITH_RANGELINK: 'Check https://github.com/org/repo/file.ts#L10',
-  HTTPS_WITH_QUERY_PARAM_AND_RANGELINK:
-    'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
+  HTTPS_WITH_QUERY_PARAM_AND_RANGELINK: 'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
   HTTPS_UPPERCASE_WITH_RANGELINK: 'Check HTTPS://GITHUB.COM/FILE.TS#L10',
   HTTP_NO_HASH: 'See http://example.com/file.ts for details',
   HTTP_WITH_RANGELINK: 'See http://example.com/file.ts#L5 for details',

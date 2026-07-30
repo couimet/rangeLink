@@ -14,10 +14,7 @@ export class ManualPasteInsertFactory implements InsertFactory<void> {
 
   forTarget(): (text: string) => Promise<boolean> {
     return async (text: string): Promise<boolean> => {
-      this.logger.info(
-        { fn: 'ManualPasteInsertFactory.insert', textLength: text.length },
-        'Link ready for manual paste',
-      );
+      this.logger.info({ fn: 'ManualPasteInsertFactory.insert', textLength: text.length }, 'Link ready for manual paste');
       return await true;
     };
   }

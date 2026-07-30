@@ -20,8 +20,7 @@ export class SelectionValidator {
    *
    * @returns Object with editor and selections if valid, undefined if validation failed
    */
-  validateSelectionsAndShowError():
-    { editor: vscode.TextEditor; selections: readonly vscode.Selection[] } | undefined {
+  validateSelectionsAndShowError(): { editor: vscode.TextEditor; selections: readonly vscode.Selection[] } | undefined {
     const logCtx = { fn: 'SelectionValidator.validateSelectionsAndShowError' };
     const activeSelections = ActiveSelections.create(this.ideAdapter.activeTextEditor);
 
@@ -42,15 +41,11 @@ export class SelectionValidator {
     const nonEmptySelections = activeSelections.getNonEmptySelections();
 
     if (!nonEmptySelections) {
-      const errorCode = activeSelections.editor
-        ? MessageCode.ERROR_NO_TEXT_SELECTED
-        : MessageCode.ERROR_NO_ACTIVE_EDITOR;
+      const errorCode = activeSelections.editor ? MessageCode.ERROR_NO_TEXT_SELECTED : MessageCode.ERROR_NO_ACTIVE_EDITOR;
       const errorMsg = formatMessage(errorCode);
 
       const editor = activeSelections.editor;
-      const lineContentAtBoundaries = editor
-        ? this.getLineContentAtSelectionBoundaries(editor.document, activeSelections.selections)
-        : undefined;
+      const lineContentAtBoundaries = editor ? this.getLineContentAtSelectionBoundaries(editor.document, activeSelections.selections) : undefined;
 
       this.logger.warn(
         {

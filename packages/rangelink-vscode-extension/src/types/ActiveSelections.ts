@@ -39,10 +39,7 @@ export class ActiveSelections {
    * @param editor - The active text editor
    * @param selections - The editor's selections
    */
-  private constructor(
-    editor: vscode.TextEditor | undefined,
-    selections: readonly vscode.Selection[],
-  ) {
+  private constructor(editor: vscode.TextEditor | undefined, selections: readonly vscode.Selection[]) {
     this.editor = editor;
     this.selections = selections;
   }

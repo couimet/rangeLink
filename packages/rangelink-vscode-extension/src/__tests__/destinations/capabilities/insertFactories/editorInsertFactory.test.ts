@@ -1,10 +1,5 @@
 import { EditorInsertFactory } from '../../../../destinations/capabilities/insertFactories/editorInsertFactory';
-import {
-  createMockDocument,
-  createMockEditor,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../../helpers';
+import { createMockDocument, createMockEditor, createMockUri, createMockVscodeAdapter } from '../../../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -31,10 +26,7 @@ describe('EditorInsertFactory', () => {
     expect(result).toBe(true);
     expect(insertSpy).toHaveBeenCalledTimes(1);
     expect(insertSpy).toHaveBeenCalledWith(mockEditor, 'test content');
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' },
-      'Editor insert succeeded',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' }, 'Editor insert succeeded');
   });
 
   it('returns false when insertTextAtCursor returns false', async () => {
@@ -48,10 +40,7 @@ describe('EditorInsertFactory', () => {
     const result = await insertFn('content');
 
     expect(result).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' },
-      'Editor insert failed',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' }, 'Editor insert failed');
   });
 
   it('returns false when insertTextAtCursor throws an error', async () => {

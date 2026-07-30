@@ -14,9 +14,7 @@ import { classifyTerminalForBinding } from './classifyTerminalForBinding';
  * @param ideAdapter - IDE adapter for reading terminal state
  * @returns Array of bindable terminals (empty if none qualify)
  */
-export const getEligibleTerminals = async (
-  ideAdapter: VscodeAdapter,
-): Promise<EligibleTerminal[]> => {
+export const getEligibleTerminals = async (ideAdapter: VscodeAdapter): Promise<EligibleTerminal[]> => {
   const allTerminals = ideAdapter.terminals;
 
   const bindableTerminals: Array<(typeof allTerminals)[number]> = [];

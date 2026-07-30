@@ -4,13 +4,7 @@
  * Each literal must appear in exactly one TerminalPasteResult variant.
  */
 export type TerminalPasteOutcome =
-  | 'success'
-  | 'no-active-terminal'
-  | 'copy-command-failed'
-  | 'clipboard-read-failed'
-  | 'no-text-selected'
-  | 'picker-cancelled'
-  | 'self-paste';
+  'success' | 'no-active-terminal' | 'copy-command-failed' | 'clipboard-read-failed' | 'no-text-selected' | 'picker-cancelled' | 'self-paste';
 
 /**
  * Result of a terminal paste operation.

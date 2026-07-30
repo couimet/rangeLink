@@ -26,37 +26,17 @@ describe('buildAnchor', () => {
 
   describe('with positions', () => {
     it('should build anchor with positions', () => {
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        startPosition,
-        endPosition,
-        DEFAULT_DELIMITERS,
-        RangeFormat.WithPositions,
-      );
+      const result = buildAnchor(startLine, endLine, startPosition, endPosition, DEFAULT_DELIMITERS, RangeFormat.WithPositions);
       expect(result).toBe(`L${startLine}C${startPosition}-L${endLine}C${endPosition}`);
     });
 
     it('should default to WithPositions format when not specified', () => {
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        startPosition,
-        endPosition,
-        DEFAULT_DELIMITERS,
-      );
+      const result = buildAnchor(startLine, endLine, startPosition, endPosition, DEFAULT_DELIMITERS);
       expect(result).toBe(`L${startLine}C${startPosition}-L${endLine}C${endPosition}`);
     });
 
     it('should default to position 1 when positions are undefined', () => {
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        undefined,
-        undefined,
-        DEFAULT_DELIMITERS,
-        RangeFormat.WithPositions,
-      );
+      const result = buildAnchor(startLine, endLine, undefined, undefined, DEFAULT_DELIMITERS, RangeFormat.WithPositions);
       expect(result).toBe(`L${startLine}C1-L${endLine}C1`);
     });
 
@@ -67,40 +47,19 @@ describe('buildAnchor', () => {
         hash: '#',
         range: 'TO',
       };
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        startPosition,
-        endPosition,
-        customDelimiters,
-        RangeFormat.WithPositions,
-      );
+      const result = buildAnchor(startLine, endLine, startPosition, endPosition, customDelimiters, RangeFormat.WithPositions);
       expect(result).toBe(`LINE${startLine}COL${startPosition}TOLINE${endLine}COL${endPosition}`);
     });
   });
 
   describe('line only', () => {
     it('should build anchor without positions', () => {
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        startPosition,
-        endPosition,
-        DEFAULT_DELIMITERS,
-        RangeFormat.LineOnly,
-      );
+      const result = buildAnchor(startLine, endLine, startPosition, endPosition, DEFAULT_DELIMITERS, RangeFormat.LineOnly);
       expect(result).toBe(`L${startLine}-L${endLine}`);
     });
 
     it('should ignore position values when format is LineOnly', () => {
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        undefined,
-        undefined,
-        DEFAULT_DELIMITERS,
-        RangeFormat.LineOnly,
-      );
+      const result = buildAnchor(startLine, endLine, undefined, undefined, DEFAULT_DELIMITERS, RangeFormat.LineOnly);
       expect(result).toBe(`L${startLine}-L${endLine}`);
     });
 
@@ -111,40 +70,19 @@ describe('buildAnchor', () => {
         hash: '>',
         range: 'thru',
       };
-      const result = buildAnchor(
-        startLine,
-        endLine,
-        undefined,
-        undefined,
-        customDelimiters,
-        RangeFormat.LineOnly,
-      );
+      const result = buildAnchor(startLine, endLine, undefined, undefined, customDelimiters, RangeFormat.LineOnly);
       expect(result).toBe(`LINE${startLine}thruLINE${endLine}`);
     });
   });
 
   describe('single line', () => {
     it('should handle single-line selection with positions', () => {
-      const result = buildAnchor(
-        startLine,
-        startLine,
-        startPosition,
-        endPosition,
-        DEFAULT_DELIMITERS,
-        RangeFormat.WithPositions,
-      );
+      const result = buildAnchor(startLine, startLine, startPosition, endPosition, DEFAULT_DELIMITERS, RangeFormat.WithPositions);
       expect(result).toBe(`L${startLine}C${startPosition}-L${startLine}C${endPosition}`);
     });
 
     it('should handle single-line selection without positions', () => {
-      const result = buildAnchor(
-        startLine,
-        startLine,
-        undefined,
-        undefined,
-        DEFAULT_DELIMITERS,
-        RangeFormat.LineOnly,
-      );
+      const result = buildAnchor(startLine, startLine, undefined, undefined, DEFAULT_DELIMITERS, RangeFormat.LineOnly);
       expect(result).toBe(`L${startLine}-L${startLine}`);
     });
   });

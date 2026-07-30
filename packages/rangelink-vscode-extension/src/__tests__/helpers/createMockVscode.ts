@@ -19,11 +19,7 @@
  * ============================================================================
  */
 
-import {
-  createMockCommands,
-  type MockCommands,
-  type MockCommandsOverrides,
-} from './createMockCommands';
+import { createMockCommands, type MockCommands, type MockCommandsOverrides } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv, type MockEnvOptions } from './createMockEnv';
 import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';
@@ -79,10 +75,7 @@ export interface MockVscodeOptions {
  * @param overrides - Optional VSCode API property overrides (spread last for flexibility)
  * @returns Mock vscode module compatible with VscodeAdapter constructor
  */
-export const createMockVscode = (
-  options?: MockVscodeOptions,
-  overrides?: Partial<typeof vscode>,
-): any => {
+export const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeof vscode>): any => {
   return {
     window: createMockWindow(options?.windowOptions),
     workspace: createMockWorkspace(options?.workspaceOptions),

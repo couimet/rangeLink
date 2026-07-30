@@ -11,22 +11,12 @@ describe('joinWithHash', () => {
   };
 
   it('should use single hash for normal selection', () => {
-    const result = joinWithHash(
-      'src/file.ts',
-      'L10C5-L20C10',
-      defaultDelimiters,
-      SelectionType.Normal,
-    );
+    const result = joinWithHash('src/file.ts', 'L10C5-L20C10', defaultDelimiters, SelectionType.Normal);
     expect(result).toBe('src/file.ts#L10C5-L20C10');
   });
 
   it('should use double hash for rectangular selection', () => {
-    const result = joinWithHash(
-      'src/file.ts',
-      'L10C5-L20C10',
-      defaultDelimiters,
-      SelectionType.Rectangular,
-    );
+    const result = joinWithHash('src/file.ts', 'L10C5-L20C10', defaultDelimiters, SelectionType.Rectangular);
     expect(result).toBe('src/file.ts##L10C5-L20C10');
   });
 
@@ -53,12 +43,7 @@ describe('joinWithHash', () => {
       hash: '>>',
       range: '-',
     };
-    const result = joinWithHash(
-      'path/file.ts',
-      'L10C5-L20C10',
-      customDelimiters,
-      SelectionType.Rectangular,
-    );
+    const result = joinWithHash('path/file.ts', 'L10C5-L20C10', customDelimiters, SelectionType.Rectangular);
     expect(result).toBe('path/file.ts>>>>L10C5-L20C10');
   });
 });

@@ -4,9 +4,7 @@ import { ExtensionResult } from '../types/ExtensionResult';
 
 import type * as vscode from 'vscode';
 
-export const validateTerminalDefined = (
-  terminal: vscode.Terminal | undefined,
-): ExtensionResult<vscode.Terminal> => {
+export const validateTerminalDefined = (terminal: vscode.Terminal | undefined): ExtensionResult<vscode.Terminal> => {
   if (!terminal) {
     return ExtensionResult.err(
       new RangeLinkExtensionError({

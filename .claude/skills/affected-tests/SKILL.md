@@ -89,10 +89,7 @@ const compressSet = (numSet) => {
     let i = 0;
     while (i < ones.length) {
       let j = i;
-      while (
-        j + 1 < ones.length &&
-        ones[j + 1] === String.fromCharCode(ones[j].charCodeAt(0) + 1)
-      ) {
+      while (j + 1 < ones.length && ones[j + 1] === String.fromCharCode(ones[j].charCodeAt(0) + 1)) {
         j++;
       }
       if (j > i) {

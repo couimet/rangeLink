@@ -56,12 +56,7 @@ import {
 } from './constants';
 import type { WiringServices } from './createWiringServices';
 import type { SubscriptionRegistrar } from './SubscriptionRegistrar';
-import {
-  type AIAssistantDestinationKind,
-  type FilePathClickArgs,
-  PathFormat,
-  type RangeLinkClickArgs,
-} from './types';
+import { type AIAssistantDestinationKind, type FilePathClickArgs, PathFormat, type RangeLinkClickArgs } from './types';
 
 import type * as vscode from 'vscode';
 
@@ -69,10 +64,7 @@ import type * as vscode from 'vscode';
  * Wire all commands and providers into subscriptions.
  * Pure wiring — receives pre-built services and a registrar abstraction.
  */
-export const wireSubscriptions = (
-  registrar: SubscriptionRegistrar,
-  services: WiringServices,
-): void => {
+export const wireSubscriptions = (registrar: SubscriptionRegistrar, services: WiringServices): void => {
   const {
     ideAdapter,
     logger,
@@ -116,45 +108,20 @@ export const wireSubscriptions = (
   registrar.pushDisposable(contextKeyService);
 
   // Link providers
-  registrar.registerTerminalLinkProvider(
-    filePathTerminalProvider,
-    'File path terminal link provider registered',
-  );
-  registrar.registerDocumentLinkProvider(
-    [{ scheme: 'file' }, { scheme: 'untitled' }],
-    filePathDocumentProvider,
-    'File path document link provider registered',
-  );
+  registrar.registerTerminalLinkProvider(filePathTerminalProvider, 'File path terminal link provider registered');
+  registrar.registerDocumentLinkProvider([{ scheme: 'file' }, { scheme: 'untitled' }], filePathDocumentProvider, 'File path document link provider registered');
   registrar.registerTerminalLinkProvider(terminalLinkProvider, 'Terminal link provider registered');
-  registrar.registerDocumentLinkProvider(
-    [{ scheme: 'file' }, { scheme: 'untitled' }],
-    documentLinkProvider,
-    'Document link provider registered',
-  );
+  registrar.registerDocumentLinkProvider([{ scheme: 'file' }, { scheme: 'untitled' }], documentLinkProvider, 'Document link provider registered');
 
   // Commands
   registrar.registerCommand(CMD_OPEN_STATUS_BAR_MENU, () => statusBar.openMenu());
-  registrar.registerCommand(CMD_COPY_LINK_RELATIVE, () =>
-    linkGenerator.createLink(PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_COPY_LINK_ABSOLUTE, () =>
-    linkGenerator.createLink(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_COPY_PORTABLE_LINK_RELATIVE, () =>
-    linkGenerator.createPortableLink(PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_COPY_PORTABLE_LINK_ABSOLUTE, () =>
-    linkGenerator.createPortableLink(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () =>
-    linkGenerator.createLinkOnly(PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () =>
-    linkGenerator.createLinkOnly(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_PASTE_TO_DESTINATION, () =>
-    textSelectionPaster.pasteSelectedTextToDestination(),
-  );
+  registrar.registerCommand(CMD_COPY_LINK_RELATIVE, () => linkGenerator.createLink(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_COPY_LINK_ABSOLUTE, () => linkGenerator.createLink(PathFormat.Absolute));
+  registrar.registerCommand(CMD_COPY_PORTABLE_LINK_RELATIVE, () => linkGenerator.createPortableLink(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_COPY_PORTABLE_LINK_ABSOLUTE, () => linkGenerator.createPortableLink(PathFormat.Absolute));
+  registrar.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () => linkGenerator.createLinkOnly(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () => linkGenerator.createLinkOnly(PathFormat.Absolute));
+  registrar.registerCommand(CMD_PASTE_TO_DESTINATION, () => textSelectionPaster.pasteSelectedTextToDestination());
   registrar.registerCommand(CMD_SHOW_VERSION, () => showVersionCommand.execute());
   registrar.registerCommand(CMD_BIND_TO_TERMINAL, bindToTerminalHandler);
   registrar.registerCommand(CMD_BIND_TO_TERMINAL_HERE, bindToTerminalHandler);
@@ -167,22 +134,10 @@ export const wireSubscriptions = (
     [CMD_BIND_TO_GEMINI_CODE_ASSIST, 'gemini-code-assist'],
     [CMD_BIND_TO_GITHUB_COPILOT_CHAT, 'github-copilot-chat'],
   ] satisfies [string, AIAssistantDestinationKind][]) {
-    registrar.registerCommand(
-      cmd,
-      createBindAIAssistantCommand(
-        kind,
-        availabilityService,
-        destinationManager,
-        ideAdapter,
-        logger,
-      ),
-    );
+    registrar.registerCommand(cmd, createBindAIAssistantCommand(kind, availabilityService, destinationManager, ideAdapter, logger));
   }
 
-  registrar.registerCommand(
-    CMD_BIND_TO_CUSTOM_AI_BY_ID,
-    createBindToCustomAiByIdCommand(customAssistants, destinationManager, logger),
-  );
+  registrar.registerCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, createBindToCustomAiByIdCommand(customAssistants, destinationManager, logger));
 
   registrar.registerCommand(CMD_UNBIND_DESTINATION, () => {
     destinationManager.unbind();
@@ -193,33 +148,19 @@ export const wireSubscriptions = (
   registrar.registerCommand(CMD_JUMP_TO_DESTINATION, async () => {
     await jumpToDestinationCommand.execute();
   });
-  registrar.registerCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, (args) =>
-    documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs),
-  );
-  registrar.registerCommand(CMD_HANDLE_FILE_PATH_CLICK, (args) =>
-    filePathDocumentProvider.handleLinkClick(args as FilePathClickArgs),
-  );
+  registrar.registerCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, (args) => documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs));
+  registrar.registerCommand(CMD_HANDLE_FILE_PATH_CLICK, (args) => filePathDocumentProvider.handleLinkClick(args as FilePathClickArgs));
   registrar.registerCommand(CMD_GO_TO_RANGELINK, () => goToRangeLinkCommand.execute());
   registrar.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute());
   registrar.registerCommand(CMD_BOOKMARK_LIST, () => listBookmarksCommand.execute());
   registrar.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute());
 
-  registrar.registerCommand(CMD_PASTE_FILE_PATH_ABSOLUTE, (uri) =>
-    filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_PASTE_FILE_PATH_RELATIVE, (uri) =>
-    filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE, () =>
-    filePathPaster.pasteCurrentFilePathToDestination(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE, () =>
-    filePathPaster.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
-  );
+  registrar.registerCommand(CMD_PASTE_FILE_PATH_ABSOLUTE, (uri) => filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute));
+  registrar.registerCommand(CMD_PASTE_FILE_PATH_RELATIVE, (uri) => filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE, () => filePathPaster.pasteCurrentFilePathToDestination(PathFormat.Absolute));
+  registrar.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE, () => filePathPaster.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative));
 
-  registrar.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH, (uri) =>
-    filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
-  );
+  registrar.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH, (uri) => filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute));
   registrar.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH, (uri) =>
     filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
   );
@@ -228,9 +169,7 @@ export const wireSubscriptions = (
     destinationManager.unbind();
   });
 
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH, (uri) =>
-    filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
-  );
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH, (uri) => filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute));
   registrar.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH, (uri) =>
     filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
   );
@@ -255,30 +194,14 @@ export const wireSubscriptions = (
     destinationManager.unbind();
   });
 
-  registrar.registerCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT, () =>
-    terminalSelectionService.pasteTerminalSelectionToDestination(),
-  );
-  registrar.registerCommand(CMD_TERMINAL_LINK_BRIDGE, () =>
-    terminalSelectionService.terminalLinkBridge(),
-  );
-  registrar.registerCommand(CMD_TERMINAL_COPY_LINK_GUARD, () =>
-    terminalSelectionService.terminalCopyLinkGuard(),
-  );
+  registrar.registerCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT, () => terminalSelectionService.pasteTerminalSelectionToDestination());
+  registrar.registerCommand(CMD_TERMINAL_LINK_BRIDGE, () => terminalSelectionService.terminalLinkBridge());
+  registrar.registerCommand(CMD_TERMINAL_COPY_LINK_GUARD, () => terminalSelectionService.terminalCopyLinkGuard());
 
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK, () =>
-    linkGenerator.createLink(PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE, () =>
-    linkGenerator.createLink(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK, () =>
-    linkGenerator.createPortableLink(PathFormat.WorkspaceRelative),
-  );
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE, () =>
-    linkGenerator.createPortableLink(PathFormat.Absolute),
-  );
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () =>
-    textSelectionPaster.pasteSelectedTextToDestination(),
-  );
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK, () => linkGenerator.createLink(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE, () => linkGenerator.createLink(PathFormat.Absolute));
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK, () => linkGenerator.createPortableLink(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE, () => linkGenerator.createPortableLink(PathFormat.Absolute));
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () => textSelectionPaster.pasteSelectedTextToDestination());
   registrar.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () => addBookmarkCommand.execute());
 };

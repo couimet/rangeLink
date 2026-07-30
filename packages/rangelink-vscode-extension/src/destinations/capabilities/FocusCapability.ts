@@ -34,11 +34,7 @@ export interface FocusError {
 }
 
 export class FocusResult extends DetailedResult<FocusedDestination, FocusError> {
-  private constructor(
-    success: boolean,
-    value: FocusedDestination | undefined,
-    error: FocusError | undefined,
-  ) {
+  private constructor(success: boolean, value: FocusedDestination | undefined, error: FocusError | undefined) {
     super(success, value, error);
   }
 

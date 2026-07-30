@@ -28,9 +28,7 @@ import * as vscode from 'vscode';
  * @param options - Optional property overrides
  * @returns Mock window object
  */
-export const createMockWindow = (
-  options?: Record<string, unknown> | Partial<typeof vscode.window>,
-) => {
+export const createMockWindow = (options?: Record<string, unknown> | Partial<typeof vscode.window>) => {
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,

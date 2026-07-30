@@ -15,9 +15,7 @@ export interface MockBookmarkServiceOptions {
   bookmarks?: Bookmark[];
 }
 
-export const createMockBookmarkService = (
-  options: MockBookmarkServiceOptions = {},
-): jest.Mocked<BookmarkService> => {
+export const createMockBookmarkService = (options: MockBookmarkServiceOptions = {}): jest.Mocked<BookmarkService> => {
   const { bookmarks = [] } = options;
 
   return {

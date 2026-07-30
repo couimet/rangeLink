@@ -48,10 +48,7 @@ export class ClipboardService {
   route<T>(fn: () => Promise<T>, shouldRestore?: () => boolean): Promise<ExtensionResult<T>> {
     const logCtx: LoggingContext = { fn: 'ClipboardService::route' };
 
-    const mode = this.configReader.getWithDefault(
-      SETTING_CLIPBOARD_PRESERVE,
-      DEFAULT_CLIPBOARD_PRESERVE,
-    );
+    const mode = this.configReader.getWithDefault(SETTING_CLIPBOARD_PRESERVE, DEFAULT_CLIPBOARD_PRESERVE);
 
     logCtx.mode = mode;
 
@@ -75,25 +72,18 @@ export class ClipboardService {
    * Restoration always happens in a finally block regardless of producer
    * or read outcome.
    */
-  async capture<T>(
-    producer: () => Promise<T>,
-    logCtxInput: LoggingContext,
-  ): Promise<ExtensionResult<{ clipboard: string; produced: T }>> {
+  async capture<T>(producer: () => Promise<T>, logCtxInput: LoggingContext): Promise<ExtensionResult<{ clipboard: string; produced: T }>> {
     const logCtx: LoggingContext = { ...logCtxInput, fn: `${logCtxInput.fn}::capture` };
 
     const priorResult = await this.read(logCtx);
-    if (!priorResult.success)
-      return priorResult as unknown as ExtensionResult<{ clipboard: string; produced: T }>;
+    if (!priorResult.success) return priorResult as unknown as ExtensionResult<{ clipboard: string; produced: T }>;
 
     try {
       let produced: T;
       try {
         produced = await producer();
       } catch (producerError) {
-        this.logger.error(
-          { ...logCtx, error: producerError },
-          'Producer callback threw during capture',
-        );
+        this.logger.error({ ...logCtx, error: producerError }, 'Producer callback threw during capture');
         return ExtensionResult.err(
           new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED,
@@ -105,8 +95,7 @@ export class ClipboardService {
       }
 
       const readResult = await this.read(logCtx);
-      if (!readResult.success)
-        return readResult as unknown as ExtensionResult<{ clipboard: string; produced: T }>;
+      if (!readResult.success) return readResult as unknown as ExtensionResult<{ clipboard: string; produced: T }>;
 
       return ExtensionResult.ok({ clipboard: readResult.value, produced });
     } finally {
@@ -157,10 +146,7 @@ export class ClipboardService {
 
     try {
       const text = await this.clipboard.readTextFromClipboard();
-      this.logger.debug(
-        { ...logCtx, priorLength: text.length },
-        'Clipboard current value read and saved',
-      );
+      this.logger.debug({ ...logCtx, priorLength: text.length }, 'Clipboard current value read and saved');
       return ExtensionResult.ok(text);
     } catch (err) {
       this.logger.error({ ...logCtx, error: err }, 'Clipboard read failed');
@@ -202,10 +188,7 @@ export class ClipboardService {
     }
   }
 
-  private async executeFn<T>(
-    fn: () => Promise<T>,
-    logCtx: LoggingContext,
-  ): Promise<ExtensionResult<T>> {
+  private async executeFn<T>(fn: () => Promise<T>, logCtx: LoggingContext): Promise<ExtensionResult<T>> {
     try {
       return ExtensionResult.ok(await fn());
     } catch (fnError) {

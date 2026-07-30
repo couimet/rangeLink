@@ -13,11 +13,7 @@ import * as vscode from 'vscode';
  * by untitled URI scheme instead of filename suffix, since untitled documents
  * don't have filesystem paths.
  */
-const navigateToUntitledLink = (
-  linkText: string,
-  parsed: ParsedLink,
-  targetUri: vscode.Uri,
-): Promise<{ sel: vscode.Selection; doc: vscode.TextDocument }> => {
+const navigateToUntitledLink = (linkText: string, parsed: ParsedLink, targetUri: vscode.Uri): Promise<{ sel: vscode.Selection; doc: vscode.TextDocument }> => {
   const STABLE_MS = 300;
   const TIMEOUT_MS = 10000;
 
@@ -31,11 +27,7 @@ const navigateToUntitledLink = (
       if (lastResult) {
         resolve(lastResult);
       } else {
-        reject(
-          new Error(
-            `No selection change event received within ${TIMEOUT_MS}ms for ${targetUri.toString()}`,
-          ),
-        );
+        reject(new Error(`No selection change event received within ${TIMEOUT_MS}ms for ${targetUri.toString()}`));
       }
     }, TIMEOUT_MS);
 
@@ -51,9 +43,7 @@ const navigateToUntitledLink = (
       }
     });
 
-    Promise.resolve(
-      vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed }),
-    ).catch((error: unknown) => {
+    Promise.resolve(vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed })).catch((error: unknown) => {
       clearTimeout(overallTimeout);
       if (stableTimer) clearTimeout(stableTimer);
       disposable.dispose();
@@ -62,10 +52,7 @@ const navigateToUntitledLink = (
   });
 };
 
-const UNTITLED_CONTENT = Array.from(
-  { length: 15 },
-  (_, i) => `untitled line ${i + 1} content here`,
-).join('\n');
+const UNTITLED_CONTENT = Array.from({ length: 15 }, (_, i) => `untitled line ${i + 1} content here`).join('\n');
 
 standardSuite('Untitled File Navigation', (ss) => {
   let untitledDoc: vscode.TextDocument;
@@ -109,9 +96,7 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    ss.expectToastMessages([
-      { level: 'info', message: `Navigated to ${untitledDisplayName} @ 3-7` },
-    ]);
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${untitledDisplayName} @ 3-7` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
@@ -154,9 +139,7 @@ standardSuite('Untitled File Navigation', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    ss.expectToastMessages([
-      { level: 'info', message: `Navigated to ${untitledDisplayName} @ 5:10-5:20` },
-    ]);
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${untitledDisplayName} @ 5:10-5:20` }]);
 
     await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);

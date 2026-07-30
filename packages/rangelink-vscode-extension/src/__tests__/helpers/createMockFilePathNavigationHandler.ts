@@ -9,9 +9,7 @@ import type { FilePathNavigationHandler } from '../../navigation/FilePathNavigat
  * @param options - Optional method overrides
  * @returns Mock navigation handler
  */
-export const createMockFilePathNavigationHandler = (
-  options?: Partial<jest.Mocked<FilePathNavigationHandler>>,
-): jest.Mocked<FilePathNavigationHandler> =>
+export const createMockFilePathNavigationHandler = (options?: Partial<jest.Mocked<FilePathNavigationHandler>>): jest.Mocked<FilePathNavigationHandler> =>
   ({
     navigateToFile: jest.fn().mockResolvedValue(undefined),
     ...options,

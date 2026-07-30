@@ -28,9 +28,5 @@ export const formatClampingSummary = (start: ConvertedPosition, end: ConvertedPo
     return formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER);
   }
 
-  throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
-    'clamping summary state',
-    { lineClamped, characterClamped },
-    'formatClampingSummary',
-  );
+  throw RangeLinkExtensionError.forUnexpectedSwitchDefault('clamping summary state', { lineClamped, characterClamped }, 'formatClampingSummary');
 };

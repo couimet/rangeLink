@@ -40,10 +40,7 @@ describe('ListBookmarksCommand', () => {
 
       new ListBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ListBookmarksCommand.constructor' },
-        'ListBookmarksCommand initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ListBookmarksCommand.constructor' }, 'ListBookmarksCommand initialized');
     });
   });
 
@@ -52,9 +49,7 @@ describe('ListBookmarksCommand', () => {
       it('shows empty state when no bookmarks exist', async () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([]);
         mockAdapter = createMockVscodeAdapter();
-        const showQuickPickSpy = jest
-          .spyOn(mockAdapter, 'showQuickPick')
-          .mockResolvedValue(undefined);
+        const showQuickPickSpy = jest.spyOn(mockAdapter, 'showQuickPick').mockResolvedValue(undefined);
         command = new ListBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -102,9 +97,7 @@ describe('ListBookmarksCommand', () => {
       it('displays bookmarks with label and detail (full link)', async () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK, TEST_BOOKMARK_2]);
         mockAdapter = createMockVscodeAdapter();
-        const showQuickPickSpy = jest
-          .spyOn(mockAdapter, 'showQuickPick')
-          .mockResolvedValue(undefined);
+        const showQuickPickSpy = jest.spyOn(mockAdapter, 'showQuickPick').mockResolvedValue(undefined);
         command = new ListBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -153,10 +146,7 @@ describe('ListBookmarksCommand', () => {
 
         await command.execute();
 
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute' },
-          'User dismissed bookmark list',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ListBookmarksCommand.execute' }, 'User dismissed bookmark list');
         expect(mockBookmarkService.sendBookmark).not.toHaveBeenCalled();
       });
     });
@@ -177,10 +167,7 @@ describe('ListBookmarksCommand', () => {
         await command.execute();
 
         expect(mockBookmarkService.sendBookmark).toHaveBeenCalledWith('bookmark-1');
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.handleSelection', bookmarkId: 'bookmark-1' },
-          'Bookmark selected and sent',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ListBookmarksCommand.handleSelection', bookmarkId: 'bookmark-1' }, 'Bookmark selected and sent');
       });
     });
 
@@ -191,9 +178,7 @@ describe('ListBookmarksCommand', () => {
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(emptyStateItem) },
         });
-        const executeCommandSpy = jest
-          .spyOn(mockAdapter, 'executeCommand')
-          .mockResolvedValue(undefined);
+        const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
         command = new ListBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();

@@ -4,12 +4,7 @@ import { isRectangularSelection } from '../isRectangularSelection';
  * Helper to create a mock vscode.Selection
  * We create plain objects that match the vscode.Selection interface
  */
-function createSelection(
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number,
-): any {
+function createSelection(startLine: number, startCharacter: number, endLine: number, endCharacter: number): any {
   return {
     start: { line: startLine, character: startCharacter },
     end: { line: endLine, character: endCharacter },
@@ -106,11 +101,7 @@ describe('isRectangularSelection', () => {
     });
 
     it('should return true for 3 consecutive lines with same character range', () => {
-      const selections = [
-        createSelection(10, 5, 10, 15),
-        createSelection(11, 5, 11, 15),
-        createSelection(12, 5, 12, 15),
-      ];
+      const selections = [createSelection(10, 5, 10, 15), createSelection(11, 5, 11, 15), createSelection(12, 5, 12, 15)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -121,21 +112,12 @@ describe('isRectangularSelection', () => {
 
     it('should return true when selections are provided in reverse order', () => {
       // The function sorts lines, so order shouldn't matter
-      const selections = [
-        createSelection(12, 5, 12, 15),
-        createSelection(11, 5, 11, 15),
-        createSelection(10, 5, 10, 15),
-      ];
+      const selections = [createSelection(12, 5, 12, 15), createSelection(11, 5, 11, 15), createSelection(10, 5, 10, 15)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
     it('should return true when selections are in random order', () => {
-      const selections = [
-        createSelection(7, 10, 7, 20),
-        createSelection(5, 10, 5, 20),
-        createSelection(6, 10, 6, 20),
-        createSelection(8, 10, 8, 20),
-      ];
+      const selections = [createSelection(7, 10, 7, 20), createSelection(5, 10, 5, 20), createSelection(6, 10, 6, 20), createSelection(8, 10, 8, 20)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -145,11 +127,7 @@ describe('isRectangularSelection', () => {
     });
 
     it('should return true for zero-width rectangular selection (same start/end column)', () => {
-      const selections = [
-        createSelection(5, 10, 5, 10),
-        createSelection(6, 10, 6, 10),
-        createSelection(7, 10, 7, 10),
-      ];
+      const selections = [createSelection(5, 10, 5, 10), createSelection(6, 10, 6, 10), createSelection(7, 10, 7, 10)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -161,11 +139,7 @@ describe('isRectangularSelection', () => {
 
   describe('Edge cases', () => {
     it('should handle selections starting at line 0', () => {
-      const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(1, 5, 1, 10),
-        createSelection(2, 5, 2, 10),
-      ];
+      const selections = [createSelection(0, 5, 0, 10), createSelection(1, 5, 1, 10), createSelection(2, 5, 2, 10)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 

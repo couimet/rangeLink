@@ -44,6 +44,7 @@
     "verify:qa-scripts:vscode-extension": "pnpm --filter rangelink-vscode-extension verify:qa-scripts",
     "watch": "pnpm -r --parallel watch"
   },
+  "prettier": "@couimet/eslint-config/prettier",
   "devDependencies": {
     "@couimet/eslint-config": "^1.1.0",
     "baseline-browser-mapping": "^2.10.10",

@@ -21,9 +21,7 @@ const makeSeparator = (label: string): vscode.QuickPickItem => ({
  * @param items - Pre-built file picker items (from getAllFileItems())
  * @returns Interleaved array of separator items and file items
  */
-export const buildFilePickerItems = (
-  items: readonly FileBindableQuickPickItem[],
-): (FileBindableQuickPickItem | vscode.QuickPickItem)[] => {
+export const buildFilePickerItems = (items: readonly FileBindableQuickPickItem[]): (FileBindableQuickPickItem | vscode.QuickPickItem)[] => {
   const result: (FileBindableQuickPickItem | vscode.QuickPickItem)[] = [];
 
   const activeFiles = items.filter((item) => item.fileInfo.isCurrentInGroup);

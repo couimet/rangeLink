@@ -1,9 +1,4 @@
-import {
-  CMD_GO_TO_RANGELINK,
-  CMD_JUMP_TO_DESTINATION,
-  CMD_SHOW_VERSION,
-  CMD_UNBIND_DESTINATION,
-} from '../../constants/commandIds';
+import { CMD_GO_TO_RANGELINK, CMD_JUMP_TO_DESTINATION, CMD_SHOW_VERSION, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 
 import * as vscode from 'vscode';
 

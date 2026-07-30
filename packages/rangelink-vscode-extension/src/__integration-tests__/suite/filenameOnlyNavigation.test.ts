@@ -1,10 +1,5 @@
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
-import {
-  clearEditorSelection,
-  getWorkspaceRoot,
-  navigateViaHandleLinkClick,
-  standardSuite,
-} from '../helpers';
+import { clearEditorSelection, getWorkspaceRoot, navigateViaHandleLinkClick, standardSuite } from '../helpers';
 
 import assert from 'node:assert';
 import * as fs from 'node:fs';
@@ -72,11 +67,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     ss.expectToastMessages([{ level: 'info', message: `Navigated to ${uniqueFilename} @ 5` }]);
 
     await clearEditorSelection();
-    const { sel, doc } = await navigateViaHandleLinkClick(
-      linkText,
-      parseResult.value,
-      uniqueFilename,
-    );
+    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, uniqueFilename);
 
     const lineLength = doc.lineAt(4).text.length;
     assert.deepStrictEqual(
@@ -95,9 +86,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    ss.expectToastMessages([
-      { level: 'warning', message: `Multiple files match: ${duplicateFilename}` },
-    ]);
+    ss.expectToastMessages([{ level: 'warning', message: `Multiple files match: ${duplicateFilename}` }]);
 
     // VscodeAdapter logs the message before awaiting showWarningMessage. The notification
     // itself never auto-dismisses in the test host, so we fire-and-forget the command and
@@ -134,11 +123,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     ss.expectToastMessages([{ level: 'info', message: `Navigated to ${relativeFilePath} @ 10` }]);
 
     await clearEditorSelection();
-    const { sel, doc } = await navigateViaHandleLinkClick(
-      linkText,
-      parseResult.value,
-      uniqueFilename,
-    );
+    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, uniqueFilename);
 
     const lineLength = doc.lineAt(9).text.length;
     assert.deepStrictEqual(

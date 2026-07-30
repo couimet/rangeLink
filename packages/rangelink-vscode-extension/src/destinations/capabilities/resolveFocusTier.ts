@@ -59,9 +59,6 @@ export const resolveFocusTier = (
     );
   }
 
-  logger.warn(
-    { fn, logPrefix, tierCount: tiers.length },
-    `${logPrefix}: no tiers have registered commands — resolution failed`,
-  );
+  logger.warn({ fn, logPrefix, tierCount: tiers.length }, `${logPrefix}: no tiers have registered commands — resolution failed`);
   return undefined;
 };

@@ -9,11 +9,7 @@ import { DelimiterConfig } from '../types/DelimiterConfig';
  * @param delimiters Delimiter configuration
  * @returns Formatted link (e.g., "src/file.ts#L10")
  */
-export function formatSimpleLineReference(
-  path: string,
-  line: number,
-  delimiters: DelimiterConfig,
-): string {
+export function formatSimpleLineReference(path: string, line: number, delimiters: DelimiterConfig): string {
   const { hash: delimHash, line: delimLine } = delimiters;
   return `${path}${delimHash}${delimLine}${line}`;
 }

@@ -49,9 +49,7 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * @param options - Optional configuration for environment and VSCode API overrides
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
-export const createMockVscodeAdapter = (
-  options?: MockVscodeAdapterOptions,
-): VscodeAdapterWithTestHooks => {
+export const createMockVscodeAdapter = (options?: MockVscodeAdapterOptions): VscodeAdapterWithTestHooks => {
   const vscodeInstance = createMockVscode(options);
   const logger = options?.logger ?? createMockLogger();
   const adapter = new VscodeAdapter(vscodeInstance, logger) as VscodeAdapterWithTestHooks;

@@ -11,16 +11,8 @@ import type { EligibleTerminal } from '../../types';
  * @param boundTerminalProcessId - processId of the currently bound terminal, or undefined
  * @returns New array with boundState set on every item
  */
-export const markBoundTerminal = (
-  terminals: readonly EligibleTerminal[],
-  boundTerminalProcessId: number | undefined,
-): EligibleTerminal[] =>
+export const markBoundTerminal = (terminals: readonly EligibleTerminal[], boundTerminalProcessId: number | undefined): EligibleTerminal[] =>
   terminals.map((t) => ({
     ...t,
-    boundState:
-      boundTerminalProcessId !== undefined &&
-      t.processId !== undefined &&
-      t.processId === boundTerminalProcessId
-        ? 'bound'
-        : 'not-bound',
+    boundState: boundTerminalProcessId !== undefined && t.processId !== undefined && t.processId === boundTerminalProcessId ? 'bound' : 'not-bound',
   }));

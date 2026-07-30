@@ -111,10 +111,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setStatusBarMessage(message);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink: test message',
-        2000,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('RangeLink: test message', 2000);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
       expect(result).toBe(rawDisposable);
@@ -134,10 +131,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setStatusBarMessage(message, customTimeout);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink: test message',
-        customTimeout,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('RangeLink: test message', customTimeout);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
       expect(result).toBe(rawDisposable);
@@ -156,10 +150,7 @@ describe('VscodeAdapter', () => {
 
       adapter.setStatusBarMessage(message, 0);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink: test message',
-        0,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('RangeLink: test message', 0);
     });
 
     it('should return disposable that can be disposed', () => {
@@ -179,10 +170,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setSuccessfulStatusBarMessage(message);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink: success message',
-        2000,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('✓ RangeLink: success message', 2000);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
       expect(result).toBe(rawDisposable);
@@ -202,10 +190,7 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.setSuccessfulStatusBarMessage(message, customTimeout);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink: success message',
-        customTimeout,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('✓ RangeLink: success message', customTimeout);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       const rawDisposable = mockVSCode.window.setStatusBarMessage.mock.results[0].value;
       expect(result).toBe(rawDisposable);
@@ -224,10 +209,7 @@ describe('VscodeAdapter', () => {
 
       adapter.setSuccessfulStatusBarMessage(message, 0);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink: success message',
-        0,
-      );
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('✓ RangeLink: success message', 0);
     });
 
     it('should return disposable that can be disposed', () => {
@@ -249,10 +231,7 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showWarningMessage', message, items: [] },
-        'Showing warning message',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.showWarningMessage', message, items: [] }, 'Showing warning message');
     });
 
     it('should return undefined when no button is selected', async () => {
@@ -283,11 +262,7 @@ describe('VscodeAdapter', () => {
 
       const result = await adapter.showWarningMessage('Delete this?', 'Yes', 'No');
 
-      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(
-        'Delete this?',
-        'Yes',
-        'No',
-      );
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('Delete this?', 'Yes', 'No');
       expect(result).toBe('Yes');
     });
   });
@@ -300,10 +275,7 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showErrorMessage', message },
-        'Showing error message',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.showErrorMessage', message }, 'Showing error message');
     });
 
     it('should return undefined when no button is selected', async () => {
@@ -324,8 +296,7 @@ describe('VscodeAdapter', () => {
     });
 
     it('should handle error message with details', async () => {
-      const detailedError =
-        'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
+      const detailedError = 'Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
 
       await adapter.showErrorMessage(detailedError);
 
@@ -354,10 +325,7 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(options);
       expect(mockVSCode.window.showInputBox).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showInputBox', options },
-        'Showing input box',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.showInputBox', options }, 'Showing input box');
       expect(result).toBe('user input');
     });
 
@@ -567,8 +535,7 @@ describe('VscodeAdapter', () => {
       process.env.RANGELINK_CAPTURE_LOGS = 'true';
       try {
         jest.resetModules();
-        const { VscodeAdapter: CapturingAdapter } =
-          await import('../../../ide/vscode/VscodeAdapter');
+        const { VscodeAdapter: CapturingAdapter } = await import('../../../ide/vscode/VscodeAdapter');
         const capturingAdapter = new CapturingAdapter(mockVSCode, mockLogger);
 
         const items = [
@@ -643,11 +610,7 @@ describe('VscodeAdapter', () => {
           fn: 'VscodeAdapter.showQuickPick',
           itemCount: 3,
           options: undefined,
-          items: [
-            { label: 'Plain item' },
-            { label: 'With displayName only', displayName: 'raw name' },
-            { label: 'With itemKind only', itemKind: 'info' },
-          ],
+          items: [{ label: 'Plain item' }, { label: 'With displayName only', displayName: 'raw name' }, { label: 'With itemKind only', itemKind: 'info' }],
         },
         'Showing quick pick',
       );
@@ -956,11 +919,7 @@ describe('VscodeAdapter', () => {
       const result = await adapter.pasteClipboardToAiAssistant();
 
       expect(result).toBe(true);
-      expect(callOrder).toStrictEqual([
-        'delay-200',
-        'cmd-editor.action.clipboardPasteAction',
-        'delay-200',
-      ]);
+      expect(callOrder).toStrictEqual(['delay-200', 'cmd-editor.action.clipboardPasteAction', 'delay-200']);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'VscodeAdapter.pasteClipboardToAiAssistant',
@@ -982,18 +941,13 @@ describe('VscodeAdapter', () => {
 
     it('should fall back to the next command when the first dispatch throws', async () => {
       const firstError = new Error('editor command not available');
-      mockVSCode.commands.executeCommand
-        .mockRejectedValueOnce(firstError)
-        .mockResolvedValueOnce(undefined);
+      mockVSCode.commands.executeCommand.mockRejectedValueOnce(firstError).mockResolvedValueOnce(undefined);
       jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
 
       const result = await adapter.pasteClipboardToAiAssistant();
 
       expect(result).toBe(true);
-      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(
-        1,
-        'editor.action.clipboardPasteAction',
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(1, 'editor.action.clipboardPasteAction');
       expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -1020,19 +974,13 @@ describe('VscodeAdapter', () => {
       const errorEditor = new Error('editor command not available');
       const errorExec = new Error('execPaste not available');
       const errorPaste = new Error('paste not available');
-      mockVSCode.commands.executeCommand
-        .mockRejectedValueOnce(errorEditor)
-        .mockRejectedValueOnce(errorExec)
-        .mockRejectedValueOnce(errorPaste);
+      mockVSCode.commands.executeCommand.mockRejectedValueOnce(errorEditor).mockRejectedValueOnce(errorExec).mockRejectedValueOnce(errorPaste);
       const delaySpy = jest.spyOn(adapter as any, 'delay').mockResolvedValue(undefined);
 
       const result = await adapter.pasteClipboardToAiAssistant();
 
       expect(result).toBe(false);
-      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(
-        1,
-        'editor.action.clipboardPasteAction',
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(1, 'editor.action.clipboardPasteAction');
       expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
       expect(mockVSCode.commands.executeCommand).toHaveBeenNthCalledWith(3, 'paste');
       expect(delaySpy).toHaveBeenCalledTimes(1);
@@ -1336,9 +1284,7 @@ describe('VscodeAdapter', () => {
       it('should handle different channel names', () => {
         const mockChannel1 = { appendLine: jest.fn() };
         const mockChannel2 = { appendLine: jest.fn() };
-        mockVSCode.window.createOutputChannel
-          .mockReturnValueOnce(mockChannel1)
-          .mockReturnValueOnce(mockChannel2);
+        mockVSCode.window.createOutputChannel.mockReturnValueOnce(mockChannel1).mockReturnValueOnce(mockChannel2);
 
         const result1 = adapter.createOutputChannel('Channel1');
         const result2 = adapter.createOutputChannel('Channel2');
@@ -1415,9 +1361,7 @@ describe('VscodeAdapter', () => {
       it('should handle different configuration sections', () => {
         const mockConfig1 = { get: jest.fn() };
         const mockConfig2 = { get: jest.fn() };
-        mockVSCode.workspace.getConfiguration
-          .mockReturnValueOnce(mockConfig1)
-          .mockReturnValueOnce(mockConfig2);
+        mockVSCode.workspace.getConfiguration.mockReturnValueOnce(mockConfig1).mockReturnValueOnce(mockConfig2);
 
         const result1 = adapter.getConfiguration('editor');
         const result2 = adapter.getConfiguration('workbench');
@@ -1470,9 +1414,7 @@ describe('VscodeAdapter', () => {
         const mockProvider2 = { provideTerminalLinks: jest.fn() };
         const mockDisposable1 = { dispose: jest.fn() };
         const mockDisposable2 = { dispose: jest.fn() };
-        mockVSCode.window.registerTerminalLinkProvider
-          .mockReturnValueOnce(mockDisposable1)
-          .mockReturnValueOnce(mockDisposable2);
+        mockVSCode.window.registerTerminalLinkProvider.mockReturnValueOnce(mockDisposable1).mockReturnValueOnce(mockDisposable2);
 
         const result1 = adapter.registerTerminalLinkProvider(mockProvider1 as any);
         const result2 = adapter.registerTerminalLinkProvider(mockProvider2 as any);
@@ -1490,15 +1432,9 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(
-          mockSelector as any,
-          mockProvider as any,
-        );
+        const result = adapter.registerDocumentLinkProvider(mockSelector as any, mockProvider as any);
 
-        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
-          mockSelector,
-          mockProvider,
-        );
+        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(mockSelector, mockProvider);
         expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledTimes(1);
         expect(result).toBe(mockDisposable);
       });
@@ -1509,15 +1445,9 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(
-          mockSelectors as any,
-          mockProvider as any,
-        );
+        const result = adapter.registerDocumentLinkProvider(mockSelectors as any, mockProvider as any);
 
-        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
-          mockSelectors,
-          mockProvider,
-        );
+        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(mockSelectors, mockProvider);
         expect(result).toBe(mockDisposable);
       });
 
@@ -1527,10 +1457,7 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(
-          mockSelector as any,
-          mockProvider as any,
-        );
+        const result = adapter.registerDocumentLinkProvider(mockSelector as any, mockProvider as any);
 
         result.dispose();
         expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
@@ -1556,23 +1483,15 @@ describe('VscodeAdapter', () => {
         const callback2 = jest.fn();
         const mockDisposable1 = { dispose: jest.fn() };
         const mockDisposable2 = { dispose: jest.fn() };
-        mockVSCode.commands.registerCommand
-          .mockReturnValueOnce(mockDisposable1)
-          .mockReturnValueOnce(mockDisposable2);
+        mockVSCode.commands.registerCommand.mockReturnValueOnce(mockDisposable1).mockReturnValueOnce(mockDisposable2);
 
         const result1 = adapter.registerCommand('rangelink.command1', callback1);
         const result2 = adapter.registerCommand('rangelink.command2', callback2);
 
         expect(result1).toBe(mockDisposable1);
         expect(result2).toBe(mockDisposable2);
-        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
-          'rangelink.command1',
-          callback1,
-        );
-        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
-          'rangelink.command2',
-          callback2,
-        );
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith('rangelink.command1', callback1);
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith('rangelink.command2', callback2);
       });
 
       it('should return disposable that can be disposed', () => {
@@ -1608,10 +1527,7 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showInformationMessage', message, items: [] },
-        'Showing info message',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.showInformationMessage', message, items: [] }, 'Showing info message');
     });
 
     it('should show information message with single button', async () => {
@@ -1630,11 +1546,7 @@ describe('VscodeAdapter', () => {
 
       await adapter.showInformationMessage(message, button1, button2);
 
-      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(
-        message,
-        button1,
-        button2,
-      );
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message, button1, button2);
     });
 
     it('should return button text when button is clicked', async () => {
@@ -2006,12 +1918,8 @@ describe('VscodeAdapter', () => {
       const mockDocument = createMockDocument({ uri: mockUri });
       const mockEditor = createMockEditor({ document: mockDocument });
 
-      const openDocSpy = jest
-        .spyOn(mockVSCode.workspace, 'openTextDocument')
-        .mockResolvedValue(mockDocument);
-      const showDocSpy = jest
-        .spyOn(mockVSCode.window, 'showTextDocument')
-        .mockResolvedValue(mockEditor);
+      const openDocSpy = jest.spyOn(mockVSCode.workspace, 'openTextDocument').mockResolvedValue(mockDocument);
+      const showDocSpy = jest.spyOn(mockVSCode.window, 'showTextDocument').mockResolvedValue(mockEditor);
 
       await adapter.showTextDocument(mockUri);
 
@@ -2049,10 +1957,7 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
       expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
       expect(result).toBeUndefined();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.executeCommand', command: commandId, args: [] },
-        'Executing command',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.executeCommand', command: commandId, args: [] }, 'Executing command');
     });
 
     it('should execute command with single argument', async () => {
@@ -2177,11 +2082,7 @@ describe('VscodeAdapter', () => {
     it('should set context key to true via executeCommand', () => {
       adapter.setContext('myExt.someFlag', true);
 
-      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'myExt.someFlag',
-        true,
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith('setContext', 'myExt.someFlag', true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: true },
         'Setting context key: myExt.someFlag = true',
@@ -2191,11 +2092,7 @@ describe('VscodeAdapter', () => {
     it('should set context key to false via executeCommand', () => {
       adapter.setContext('myExt.someFlag', false);
 
-      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'myExt.someFlag',
-        false,
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith('setContext', 'myExt.someFlag', false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: false },
         'Setting context key: myExt.someFlag = false',
@@ -2205,11 +2102,7 @@ describe('VscodeAdapter', () => {
     it('should set context key to string value', () => {
       adapter.setContext('myExt.otherFlag', 'someValue');
 
-      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'myExt.otherFlag',
-        'someValue',
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith('setContext', 'myExt.otherFlag', 'someValue');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'VscodeAdapter.setContext',
@@ -2223,11 +2116,7 @@ describe('VscodeAdapter', () => {
     it('should set context key to undefined', () => {
       adapter.setContext('myExt.someFlag', undefined);
 
-      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'myExt.someFlag',
-        undefined,
-      );
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith('setContext', 'myExt.someFlag', undefined);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.setContext', key: 'myExt.someFlag', value: undefined },
         'Setting context key: myExt.someFlag = undefined',
@@ -2277,10 +2166,7 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.Uri.parse).toHaveBeenCalledWith('https://example.com', true);
       expect(mockOpenExternal).toHaveBeenCalledWith(mockUri);
       expect(result).toBe(true);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.openExternal', uri: 'https://example.com' },
-        'Opening external URI',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.openExternal', uri: 'https://example.com' }, 'Opening external URI');
     });
 
     it('returns false when env.openExternal returns false', async () => {
@@ -2294,10 +2180,7 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.Uri.parse).toHaveBeenCalledWith('https://example.com', true);
       expect(mockOpenExternal).toHaveBeenCalledWith(mockUri);
       expect(result).toBe(false);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.openExternal', uri: 'https://example.com' },
-        'Opening external URI',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.openExternal', uri: 'https://example.com' }, 'Opening external URI');
     });
   });
 
@@ -2668,10 +2551,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTextEditorUri();
 
         expect(result).toBe(mockUri);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTextEditorUri' },
-          'Getting active text editor URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTextEditorUri' }, 'Getting active text editor URI');
       });
 
       it('should return undefined when no editor is active', () => {
@@ -2680,10 +2560,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTextEditorUri();
 
         expect(result).toBeUndefined();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTextEditorUri' },
-          'Getting active text editor URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTextEditorUri' }, 'Getting active text editor URI');
       });
     });
 
@@ -2726,10 +2603,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBe(mockUri);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'MockTabInputText' },
-          'Resolving active tab URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'MockTabInputText' }, 'Resolving active tab URI');
       });
 
       it('returns .modified when the tab input has no .uri but has .modified', () => {
@@ -2742,10 +2616,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBe(modifiedUri);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'Object' },
-          'Resolving active tab URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'Object' }, 'Resolving active tab URI');
       });
 
       it('falls back to unknown when the tab input has no constructor name', () => {
@@ -2757,10 +2628,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBe(mockUri);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unknown' },
-          'Resolving active tab URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unknown' }, 'Resolving active tab URI');
       });
 
       it('returns undefined and logs unsupported when the tab input has no file URI', () => {
@@ -2770,10 +2638,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBeUndefined();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' },
-          'No file URI on active tab input',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' }, 'No file URI on active tab input');
       });
 
       it('returns undefined and logs none when there is no active tab group', () => {
@@ -2785,10 +2650,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBeUndefined();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
-          'Resolving active tab URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' }, 'Resolving active tab URI');
       });
 
       it('returns undefined when the active tab group has no active tab', () => {
@@ -2801,10 +2663,7 @@ describe('VscodeAdapter', () => {
         const result = adapter.getActiveTabUri();
 
         expect(result).toBeUndefined();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
-          'Resolving active tab URI',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' }, 'Resolving active tab URI');
       });
     });
 
@@ -3324,12 +3183,10 @@ describe('VscodeAdapter', () => {
         const mockDocument = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
         let registeredListener: ((document: any) => void) | undefined;
 
-        mockVSCode.workspace.onDidCloseTextDocument.mockImplementation(
-          (cb: (document: any) => void) => {
-            registeredListener = cb;
-            return { dispose: jest.fn() };
-          },
-        );
+        mockVSCode.workspace.onDidCloseTextDocument.mockImplementation((cb: (document: any) => void) => {
+          registeredListener = cb;
+          return { dispose: jest.fn() };
+        });
 
         adapter.onDidCloseTextDocument(listener);
 
@@ -3371,12 +3228,10 @@ describe('VscodeAdapter', () => {
         const mockEvent = { opened: [], closed: [], changed: [] };
         let registeredListener: ((event: any) => void) | undefined;
 
-        (mockVSCode.window.tabGroups.onDidChangeTabs as jest.Mock).mockImplementation(
-          (cb: (event: any) => void) => {
-            registeredListener = cb;
-            return { dispose: jest.fn() };
-          },
-        );
+        (mockVSCode.window.tabGroups.onDidChangeTabs as jest.Mock).mockImplementation((cb: (event: any) => void) => {
+          registeredListener = cb;
+          return { dispose: jest.fn() };
+        });
 
         adapter.onDidChangeTabs(listener);
         registeredListener!(mockEvent);
@@ -3401,9 +3256,7 @@ describe('VscodeAdapter', () => {
       it('should register listener and return Disposable', () => {
         const listener = jest.fn();
         const mockDisposable = { dispose: jest.fn() };
-        (mockVSCode.workspace.onDidChangeConfiguration as jest.Mock).mockReturnValue(
-          mockDisposable,
-        );
+        (mockVSCode.workspace.onDidChangeConfiguration as jest.Mock).mockReturnValue(mockDisposable);
 
         const result = adapter.onDidChangeConfiguration(listener);
 
@@ -3429,12 +3282,7 @@ describe('VscodeAdapter', () => {
 
         const result = adapter.createFileSystemWatcherForFile(fileUri, true, true, false);
 
-        expect(mockVSCode.workspace.createFileSystemWatcher).toHaveBeenCalledWith(
-          { base: fileUri, pattern: '*' },
-          true,
-          true,
-          false,
-        );
+        expect(mockVSCode.workspace.createFileSystemWatcher).toHaveBeenCalledWith({ base: fileUri, pattern: '*' }, true, true, false);
         expect(result).toBe(mockWatcher);
       });
     });
@@ -3483,14 +3331,11 @@ describe('VscodeAdapter', () => {
     const TEST_URI = { toString: () => 'file:///test.ts' };
     const OTHER_URI = { toString: () => 'file:///other.ts' };
 
-    const editorWithSelection = (viewColumn: number) =>
-      ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: false } }) as any;
+    const editorWithSelection = (viewColumn: number) => ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: false } }) as any;
 
-    const editorWithoutSelection = (viewColumn: number) =>
-      ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: true } }) as any;
+    const editorWithoutSelection = (viewColumn: number) => ({ document: { uri: TEST_URI }, viewColumn, selection: { isEmpty: true } }) as any;
 
-    const editorWithOtherUri = (viewColumn: number) =>
-      ({ document: { uri: OTHER_URI }, viewColumn, selection: { isEmpty: false } }) as any;
+    const editorWithOtherUri = (viewColumn: number) => ({ document: { uri: OTHER_URI }, viewColumn, selection: { isEmpty: false } }) as any;
 
     it('returns true when matching editor has non-empty selection', () => {
       Object.defineProperty(adapter, 'visibleTextEditors', {

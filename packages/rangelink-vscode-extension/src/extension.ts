@@ -33,10 +33,7 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     versionInfo = require('./version.json') as VersionInfo;
   } catch (error) {
-    logger.warn(
-      { fn: 'activate', error },
-      'RangeLink extension activated (version info unavailable)',
-    );
+    logger.warn({ fn: 'activate', error }, 'RangeLink extension activated (version info unavailable)');
   }
 
   try {

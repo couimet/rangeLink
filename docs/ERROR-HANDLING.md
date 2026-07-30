@@ -164,9 +164,7 @@ function validateInputSelection(input: InputSelection): void {
 }
 
 // Public API - catches and converts to Result
-export function computeRangeSpec(
-  inputSelection: InputSelection,
-): Result<ComputedSelection, RangeLinkError> {
+export function computeRangeSpec(inputSelection: InputSelection): Result<ComputedSelection, RangeLinkError> {
   try {
     validateInputSelection(inputSelection);
     // ... compute logic

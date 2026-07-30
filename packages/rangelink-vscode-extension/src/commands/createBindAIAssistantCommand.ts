@@ -24,9 +24,7 @@ export const createBindAIAssistantCommand = (
 
     if (!(await availabilityService.isAIAssistantAvailable(kind))) {
       logger.info({ fn, kind }, `${kind} not available`);
-      void ideAdapter.showInformationMessage(
-        formatMessage(availabilityService.getUnavailableMessageCode(kind)),
-      );
+      void ideAdapter.showInformationMessage(formatMessage(availabilityService.getUnavailableMessageCode(kind)));
       return;
     }
 

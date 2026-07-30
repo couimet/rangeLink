@@ -51,10 +51,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     private readonly logger: Logger,
   ) {}
 
-  bind(
-    options: BindOptions,
-    statusBarOptions?: StatusBarOptions,
-  ): Promise<ExtensionResult<BindSuccessInfo>> {
+  bind(options: BindOptions, statusBarOptions?: StatusBarOptions): Promise<ExtensionResult<BindSuccessInfo>> {
     switch (options.kind) {
       case 'terminal': {
         const newDestination = this.registry.create({
@@ -114,10 +111,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
 
     this.session.clear();
 
-    this.logger.info(
-      { fn: 'PasteDestinationManager.unbind', displayName },
-      `Successfully unbound from ${displayName}`,
-    );
+    this.logger.info({ fn: 'PasteDestinationManager.unbind', displayName }, `Successfully unbound from ${displayName}`);
 
     this.feedback.notifyUnbound(displayName);
   }
@@ -131,9 +125,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    *   Used by bindAndFocus() where the binding toast is already shown.
    * @returns ExtensionResult with FocusSuccessInfo on success, error on failure
    */
-  async focusBoundDestination(
-    options?: StatusBarOptions,
-  ): Promise<ExtensionResult<FocusSuccessInfo>> {
+  async focusBoundDestination(options?: StatusBarOptions): Promise<ExtensionResult<FocusSuccessInfo>> {
     const bound = this.session.get();
     if (!bound) {
       return ExtensionResult.err(
@@ -212,10 +204,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    *
    * @returns ExtensionResult with bind success info or error
    */
-  private async bindTextEditor(
-    options: TextEditorBindOptions,
-    statusBarOptions?: StatusBarOptions,
-  ): Promise<ExtensionResult<BindSuccessInfo>> {
+  private async bindTextEditor(options: TextEditorBindOptions, statusBarOptions?: StatusBarOptions): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindTextEditor';
 
     const fileName = this.vscodeAdapter.getFilenameFromUri(options.uri);
@@ -247,11 +236,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
         this.feedback.notifyBindFailedEditor(MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN, {
           fileName,
         });
-        return this.bindFailedResult(
-          fnName,
-          `Editor opened but not visible at expected viewColumn ${options.viewColumn}`,
-          BindFailureReason.NO_ACTIVE_EDITOR,
-        );
+        return this.bindFailedResult(fnName, `Editor opened but not visible at expected viewColumn ${options.viewColumn}`, BindFailureReason.NO_ACTIVE_EDITOR);
       }
       this.feedback.notifyBackgroundTabOpened(fileName);
       wasBackgroundTab = true;
@@ -264,21 +249,13 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     if (!isWritableScheme(scheme)) {
       this.logger.warn(logCtx, `Cannot bind: Editor is read-only (scheme: ${scheme})`);
       this.feedback.notifyBindFailedEditor(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme });
-      return this.bindFailedResult(
-        fnName,
-        `Editor is read-only (scheme: ${scheme})`,
-        BindFailureReason.EDITOR_READ_ONLY,
-      );
+      return this.bindFailedResult(fnName, `Editor is read-only (scheme: ${scheme})`, BindFailureReason.EDITOR_READ_ONLY);
     }
 
     if (isBinaryFile(scheme, fsPath)) {
       this.logger.warn(logCtx, 'Cannot bind: Editor is a binary file');
       this.feedback.notifyBindFailedEditor(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName });
-      return this.bindFailedResult(
-        fnName,
-        'Editor is a binary file',
-        BindFailureReason.EDITOR_BINARY_FILE,
-      );
+      return this.bindFailedResult(fnName, 'Editor is a binary file', BindFailureReason.EDITOR_BINARY_FILE);
     }
 
     const newDestination = this.registry.create(options);
@@ -293,27 +270,17 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    * @param kind - The destination kind (AI assistants only)
    * @returns ExtensionResult with bind success info or error
    */
-  private async bindGenericDestination(
-    kind: DestinationKind,
-    statusBarOptions?: StatusBarOptions,
-  ): Promise<ExtensionResult<BindSuccessInfo>> {
+  private async bindGenericDestination(kind: DestinationKind, statusBarOptions?: StatusBarOptions): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindGenericDestination';
 
     const newDestination = this.registry.create({ kind } as BindOptions);
 
     if (!(await newDestination.isAvailable())) {
-      this.logger.warn(
-        { fn: 'PasteDestinationManager.bindGenericDestination', kind },
-        `Cannot bind: ${newDestination.displayName} not available`,
-      );
+      this.logger.warn({ fn: 'PasteDestinationManager.bindGenericDestination', kind }, `Cannot bind: ${newDestination.displayName} not available`);
 
       this.feedback.notifyBindFailedNotAvailable(newDestination.displayName, kind);
 
-      return this.bindFailedResult(
-        fnName,
-        `${newDestination.displayName} not available`,
-        BindFailureReason.DESTINATION_NOT_AVAILABLE,
-      );
+      return this.bindFailedResult(fnName, `${newDestination.displayName} not available`, BindFailureReason.DESTINATION_NOT_AVAILABLE);
     }
 
     return this.commitBind(newDestination, statusBarOptions ? { statusBarOptions } : undefined);
@@ -337,42 +304,24 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
 
     const currentBound = this.session.get();
     if (currentBound && (await currentBound.equals(newDestination))) {
-      this.logger.debug(
-        { ...logCtx, displayName: newDestination.displayName },
-        `Already bound to ${newDestination.displayName}, no action taken`,
-      );
+      this.logger.debug({ ...logCtx, displayName: newDestination.displayName }, `Already bound to ${newDestination.displayName}, no action taken`);
       this.feedback.notifyAlreadyBound(newDestination.displayName);
 
-      return this.bindFailedResult(
-        'commitBind',
-        'Already bound to same destination',
-        BindFailureReason.ALREADY_BOUND_TO_SAME,
-      );
+      return this.bindFailedResult('commitBind', 'Already bound to same destination', BindFailureReason.ALREADY_BOUND_TO_SAME);
     }
 
     let replacedName: string | undefined;
 
     if (currentBound) {
-      const confirmed = await this.confirmReplaceBinding(
-        currentBound,
-        kind,
-        newDestination.displayName,
-      );
+      const confirmed = await this.confirmReplaceBinding(currentBound, kind, newDestination.displayName);
 
       if (!confirmed) {
         this.logger.debug(logCtx, 'User cancelled binding replacement');
-        return this.bindFailedResult(
-          'commitBind',
-          'User cancelled binding replacement',
-          BindFailureReason.USER_CANCELLED_REPLACEMENT,
-        );
+        return this.bindFailedResult('commitBind', 'User cancelled binding replacement', BindFailureReason.USER_CANCELLED_REPLACEMENT);
       }
 
       replacedName = currentBound.displayName;
-      this.logger.info(
-        { ...logCtx, displayName: replacedName },
-        `Unbinding "${replacedName}" for replacement`,
-      );
+      this.logger.info({ ...logCtx, displayName: replacedName }, `Unbinding "${replacedName}" for replacement`);
       this.session.clear();
     }
 
@@ -443,11 +392,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     return pasteSucceeded;
   }
 
-  private bindFailedResult(
-    functionName: string,
-    message: string,
-    failedBindDetails: BindFailureReason,
-  ): ExtensionResult<BindSuccessInfo> {
+  private bindFailedResult(functionName: string, message: string, failedBindDetails: BindFailureReason): ExtensionResult<BindSuccessInfo> {
     return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
@@ -469,11 +414,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    * @param newDisplayName - Display name of new destination
    * @returns true if user confirms replacement, false if cancelled
    */
-  private async confirmReplaceBinding(
-    currentDestination: PasteDestination,
-    newKind: DestinationKind,
-    newDisplayName: string,
-  ): Promise<boolean> {
+  private async confirmReplaceBinding(currentDestination: PasteDestination, newKind: DestinationKind, newDisplayName: string): Promise<boolean> {
     const params = {
       currentDestination: currentDestination.displayName,
       newDestination: newDisplayName,

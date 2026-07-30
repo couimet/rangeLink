@@ -1,11 +1,5 @@
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import {
-  getCurrentLocale,
-  type LocaleCode,
-  messagesEn,
-  setLocale,
-  supportedLocales,
-} from '../../i18n';
+import { getCurrentLocale, type LocaleCode, messagesEn, setLocale, supportedLocales } from '../../i18n';
 import { MessageCode } from '../../types';
 import { formatMessage } from '..';
 
@@ -87,13 +81,10 @@ describe('formatMessage', () => {
     });
 
     it('should substitute multiple parameters', () => {
-      const result = formatMessage(
-        TestMessageCode.MESSAGE_WITH_MULTIPLE_PARAMS as unknown as MessageCode,
-        {
-          name: 'Bob',
-          count: 5,
-        },
-      );
+      const result = formatMessage(TestMessageCode.MESSAGE_WITH_MULTIPLE_PARAMS as unknown as MessageCode, {
+        name: 'Bob',
+        count: 5,
+      });
 
       expect(result).toBe('User Bob has 5 items');
     });
@@ -206,9 +197,7 @@ describe('formatMessage', () => {
         formatMessage(invalidCode);
       } catch (error) {
         expect(error).toBeInstanceOf(RangeLinkExtensionError);
-        expect((error as RangeLinkExtensionError).code).toBe(
-          RangeLinkExtensionErrorCodes.MISSING_MESSAGE_CODE,
-        );
+        expect((error as RangeLinkExtensionError).code).toBe(RangeLinkExtensionErrorCodes.MISSING_MESSAGE_CODE);
       }
     });
 
@@ -260,11 +249,7 @@ describe('formatMessage', () => {
       setLocale('en'); // Set current locale to English
 
       // Override to English explicitly (same as current, but tests override mechanism)
-      const result = formatMessage(
-        TestMessageCode.SIMPLE_MESSAGE as unknown as MessageCode,
-        undefined,
-        'en',
-      );
+      const result = formatMessage(TestMessageCode.SIMPLE_MESSAGE as unknown as MessageCode, undefined, 'en');
 
       expect(result).toBe('This is a simple message');
     });
@@ -302,10 +287,7 @@ describe('formatMessage', () => {
 
   describe('Edge Cases', () => {
     it('should handle undefined params (no substitution needed)', () => {
-      const result = formatMessage(
-        TestMessageCode.SIMPLE_MESSAGE as unknown as MessageCode,
-        undefined,
-      );
+      const result = formatMessage(TestMessageCode.SIMPLE_MESSAGE as unknown as MessageCode, undefined);
 
       expect(result).toBe('This is a simple message');
     });
@@ -416,11 +398,7 @@ describe('formatMessage', () => {
       (supportedLocales as any)['fr'] = {};
       const enResult = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND);
 
-      const result = formatMessage(
-        MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND,
-        undefined,
-        'fr' as LocaleCode,
-      );
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND, undefined, 'fr' as LocaleCode);
 
       expect(result).toBe(enResult);
       expect(loggerWarnSpy).toHaveBeenCalledWith(

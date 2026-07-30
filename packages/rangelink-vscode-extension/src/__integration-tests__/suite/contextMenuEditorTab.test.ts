@@ -1,12 +1,5 @@
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
-import {
-  assertClipboardWriteLogged,
-  assertFilePathLogged,
-  assertTerminalBufferEquals,
-  getLogCapture,
-  standardSuite,
-  waitForHuman,
-} from '../helpers';
+import { assertClipboardWriteLogged, assertFilePathLogged, assertTerminalBufferEquals, getLogCapture, standardSuite, waitForHuman } from '../helpers';
 
 import * as path from 'node:path';
 import * as vscode from 'vscode';
@@ -23,10 +16,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-001")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-001")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-001")', '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-001")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -37,15 +27,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     logCapture.mark('before-ctxmenu-tab-001');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'context-menus-editor-tab-001',
-      `Right-click tab "${fn}" → "RangeLink: Send File Path"`,
-      [
-        `1. Locate the "${fn}" tab in the editor tab bar`,
-        '2. Right-click the tab',
-        '3. Select "RangeLink: Send File Path"',
-      ],
-    );
+    await waitForHuman('context-menus-editor-tab-001', `Right-click tab "${fn}" → "RangeLink: Send File Path"`, [
+      `1. Locate the "${fn}" tab in the editor tab bar`,
+      '2. Right-click the tab',
+      '3. Select "RangeLink: Send File Path"',
+    ]);
 
     const lines = logCapture.getLinesSince('before-ctxmenu-tab-001');
 
@@ -58,9 +44,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)',
-    );
+    ss.log('✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)');
   });
 
   test('[assisted] context-menus-editor-tab-002: Editor tab "Send Relative File Path" sends relative path to bound terminal', async () => {
@@ -73,10 +57,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-002")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-002")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-002")', '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-tab-002")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -87,15 +68,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     logCapture.mark('before-ctxmenu-tab-002');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'context-menus-editor-tab-002',
-      `Right-click tab "${fn}" → "RangeLink: Send Relative File Path"`,
-      [
-        `1. Locate the "${fn}" tab in the editor tab bar`,
-        '2. Right-click the tab',
-        '3. Select "RangeLink: Send Relative File Path"',
-      ],
-    );
+    await waitForHuman('context-menus-editor-tab-002', `Right-click tab "${fn}" → "RangeLink: Send Relative File Path"`, [
+      `1. Locate the "${fn}" tab in the editor tab bar`,
+      '2. Right-click the tab',
+      '3. Select "RangeLink: Send Relative File Path"',
+    ]);
 
     const lines = logCapture.getLinesSince('before-ctxmenu-tab-002');
 
@@ -108,9 +85,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)',
-    );
+    ss.log('✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)');
   });
 
   test('[assisted] context-menus-editor-tab-003: Editor tab "Bind Here" binds that editor as text editor destination', async () => {
@@ -123,15 +98,11 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-003');
 
-    await waitForHuman(
-      'context-menus-editor-tab-003',
-      `Right-click tab "${fn}" → "RangeLink: Bind Here"`,
-      [
-        `1. Locate the "${fn}" tab in the editor tab bar`,
-        '2. Right-click the tab',
-        '3. Select "RangeLink: Bind Here"',
-      ],
-    );
+    await waitForHuman('context-menus-editor-tab-003', `Right-click tab "${fn}" → "RangeLink: Bind Here"`, [
+      `1. Locate the "${fn}" tab in the editor tab bar`,
+      '2. Right-click the tab',
+      '3. Select "RangeLink: Bind Here"',
+    ]);
 
     ss.log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
   });
@@ -145,25 +116,18 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-004")',
-      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-tab-004")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-004")', '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-tab-004")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-004');
 
-    await waitForHuman(
-      'context-menus-editor-tab-004',
-      `Right-click tab "${fn}" → "RangeLink: Unbind"`,
-      [
-        `1. Locate the "${fn}" tab in the editor tab bar`,
-        '2. Right-click the tab',
-        '3. Verify "RangeLink: Unbind" IS present in the menu',
-        '4. Select "RangeLink: Unbind"',
-      ],
-    );
+    await waitForHuman('context-menus-editor-tab-004', `Right-click tab "${fn}" → "RangeLink: Unbind"`, [
+      `1. Locate the "${fn}" tab in the editor tab bar`,
+      '2. Right-click the tab',
+      '3. Verify "RangeLink: Unbind" IS present in the menu',
+      '4. Select "RangeLink: Unbind"',
+    ]);
 
     ss.log('✓ Editor-tab "Unbind" fired the unbind path; context key flipped to false');
   });
@@ -175,9 +139,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     const terminalName = 'rl-ctxmenu-tab-005';
     const capturing = await ss.createCapturingTerminal(terminalName);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-005") — File path sent',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-005") — File path sent']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -210,9 +172,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Unbound editor-tab absolute path → picker → bind+send (merged message, pty capture verified content)',
-    );
+    ss.log('✓ Unbound editor-tab absolute path → picker → bind+send (merged message, pty capture verified content)');
   });
 
   test('[assisted] context-menus-editor-tab-006: Editor tab "Send Relative File Path" (unbound) opens picker and sends relative path to selected terminal', async () => {
@@ -223,9 +183,7 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     const terminalName = 'rl-ctxmenu-tab-006';
     const capturing = await ss.createCapturingTerminal(terminalName);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-006") — File path sent',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-tab-006") — File path sent']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -258,8 +216,6 @@ standardSuite('Context Menus — Editor Tab', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Unbound editor-tab relative path → picker → bind+send (merged message, pty capture verified content)',
-    );
+    ss.log('✓ Unbound editor-tab relative path → picker → bind+send (merged message, pty capture verified content)');
   });
 });

@@ -1,29 +1,12 @@
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
-  DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST,
-} from '../constants/settingDefaults';
-import {
-  SETTING_NAVIGATION_SHOW_CLAMPING_WARNING,
-  SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
-} from '../constants/settingKeys';
+import { DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST } from '../constants/settingDefaults';
+import { SETTING_NAVIGATION_SHOW_CLAMPING_WARNING, SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST } from '../constants/settingKeys';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
-import {
-  convertRangeLinkPosition,
-  formatClampingSummary,
-  formatLinkPosition,
-  formatMessage,
-} from '../utils';
+import { convertRangeLinkPosition, formatClampingSummary, formatLinkPosition, formatMessage } from '../utils';
 
 import type { Logger } from '@couimet/logger-contract';
-import {
-  CoreResult,
-  DelimiterConfigGetter,
-  ParsedLink,
-  parseLink,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { CoreResult, DelimiterConfigGetter, ParsedLink, parseLink, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 /**
@@ -49,10 +32,7 @@ export class RangeLinkNavigationHandler {
     private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'RangeLinkNavigationHandler.constructor' },
-      'RangeLinkNavigationHandler initialized',
-    );
+    this.logger.debug({ fn: 'RangeLinkNavigationHandler.constructor' }, 'RangeLinkNavigationHandler initialized');
   }
 
   /**
@@ -86,9 +66,7 @@ export class RangeLinkNavigationHandler {
 
     if (resolved === FILENAME_AMBIGUOUS) {
       this.logger.warn({ ...logCtx, path }, 'Multiple files match bare filename');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path }));
       return;
     }
 
@@ -106,15 +84,10 @@ export class RangeLinkNavigationHandler {
       const untitledUri = this.ideAdapter.findOpenUntitledFile(path);
 
       if (untitledUri) {
-        this.logger.info(
-          { ...logCtx, path, uri: untitledUri.toString() },
-          'Found open untitled file, navigating',
-        );
+        this.logger.info({ ...logCtx, path, uri: untitledUri.toString() }, 'Found open untitled file, navigating');
         fileUri = untitledUri;
       } else {
-        await this.ideAdapter.showWarningMessage(
-          formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
-        );
+        await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }));
         return;
       }
     }
@@ -133,11 +106,7 @@ export class RangeLinkNavigationHandler {
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = convertRangeLinkPosition(end, document);
 
-      const anyClamping =
-        convertedStart.lineClamped ||
-        convertedStart.characterClamped ||
-        convertedEnd.lineClamped ||
-        convertedEnd.characterClamped;
+      const anyClamping = convertedStart.lineClamped || convertedStart.characterClamped || convertedEnd.lineClamped || convertedEnd.characterClamped;
 
       if (anyClamping) {
         this.logger.warn(
@@ -227,10 +196,7 @@ export class RangeLinkNavigationHandler {
         }
         editor.selections = selections;
 
-        this.logger.info(
-          { ...logCtx, lineCount: selections.length },
-          'Set rectangular selection (multi-cursor)',
-        );
+        this.logger.info({ ...logCtx, lineCount: selections.length }, 'Set rectangular selection (multi-cursor)');
       } else {
         // Single or range selection
         const selection = this.ideAdapter.createSelection(vsStart, vsEnd);
@@ -240,10 +206,7 @@ export class RangeLinkNavigationHandler {
       }
 
       // Reveal the selection
-      editor.revealRange(
-        this.ideAdapter.createRange(vsStart, vsEnd),
-        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
-      );
+      editor.revealRange(this.ideAdapter.createRange(vsStart, vsEnd), vscode.TextEditorRevealType.InCenterIfOutsideViewport);
 
       this.logger.info(
         {
@@ -267,41 +230,23 @@ export class RangeLinkNavigationHandler {
           position,
           clampingSummary,
         });
-        if (
-          this.configReader.getBoolean(
-            SETTING_NAVIGATION_SHOW_CLAMPING_WARNING,
-            DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
-          )
-        ) {
+        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_CLAMPING_WARNING, DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING)) {
           await this.ideAdapter.showWarningMessage(clampingMessage);
         } else {
-          this.logger.debug(
-            { ...logCtx, suppressedMessage: clampingMessage },
-            'Clamping warning suppressed by setting',
-          );
+          this.logger.debug({ ...logCtx, suppressedMessage: clampingMessage }, 'Clamping warning suppressed by setting');
         }
       } else {
         const toastMessage = formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position });
-        if (
-          this.configReader.getBoolean(
-            SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
-            DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST,
-          )
-        ) {
+        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST)) {
           await this.ideAdapter.showInformationMessage(toastMessage);
         } else {
-          this.logger.debug(
-            { ...logCtx, suppressedMessage: toastMessage },
-            'Navigated toast suppressed by setting',
-          );
+          this.logger.debug({ ...logCtx, suppressedMessage: toastMessage }, 'Navigated toast suppressed by setting');
         }
       }
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
       const errorMessage = error instanceof Error ? error.message : String(error);
-      await this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_NAVIGATION_FAILED, { path, error: errorMessage }),
-      );
+      await this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NAVIGATION_FAILED, { path, error: errorMessage }));
       throw error; // Re-throw for caller to handle if needed
     }
   }

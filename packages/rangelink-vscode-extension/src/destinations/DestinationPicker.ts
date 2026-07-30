@@ -14,8 +14,7 @@ import type { Logger } from '@couimet/logger-contract';
  * Internal result type that includes 'returned-to-main-picker' for loop control.
  * Not exposed publicly - pick() converts this to DestinationPickerResult.
  */
-type InternalPickerResult =
-  DestinationPickerResult | { readonly outcome: 'returned-to-main-picker' };
+type InternalPickerResult = DestinationPickerResult | { readonly outcome: 'returned-to-main-picker' };
 
 /**
  * Context-specific options for the destination picker.
@@ -46,13 +45,7 @@ export class DestinationPicker {
   }
 
   async pick(options: DestinationPickerOptions): Promise<DestinationPickerResult> {
-    const {
-      noDestinationsMessageCode,
-      placeholderMessageCode,
-      boundTerminalProcessId,
-      boundFileUriString,
-      boundFileViewColumn,
-    } = options;
+    const { noDestinationsMessageCode, placeholderMessageCode, boundTerminalProcessId, boundFileUriString, boundFileViewColumn } = options;
     const logCtx = { fn: 'DestinationPicker.pick' };
 
     this.logger.debug(logCtx, 'Showing destination picker');
@@ -72,10 +65,7 @@ export class DestinationPicker {
     }
 
     while (true) {
-      this.logger.debug(
-        { ...logCtx, availableCount: quickPickItems.length },
-        `Showing quick pick with ${quickPickItems.length} items`,
-      );
+      this.logger.debug({ ...logCtx, availableCount: quickPickItems.length }, `Showing quick pick with ${quickPickItems.length} items`);
 
       const selected = await this.uiProvider.showQuickPick(quickPickItems, {
         placeHolder: formatMessage(placeholderMessageCode),
@@ -86,13 +76,7 @@ export class DestinationPicker {
         return { outcome: 'cancelled' };
       }
 
-      const result = await this.handleQuickPickSelection(
-        selected,
-        placeholderMessageCode,
-        boundTerminalProcessId,
-        boundFileUriString,
-        boundFileViewColumn,
-      );
+      const result = await this.handleQuickPickSelection(selected, placeholderMessageCode, boundTerminalProcessId, boundFileUriString, boundFileViewColumn);
 
       if (result.outcome !== 'returned-to-main-picker') {
         return result;
@@ -113,10 +97,7 @@ export class DestinationPicker {
 
     switch (selected.itemKind) {
       case 'bindable': {
-        this.logger.debug(
-          { ...logCtx, bindOptions: selected.bindOptions },
-          `User selected destination with bind options`,
-        );
+        this.logger.debug({ ...logCtx, bindOptions: selected.bindOptions }, `User selected destination with bind options`);
         return {
           outcome: 'selected',
           bindOptions: selected.bindOptions,
@@ -125,18 +106,11 @@ export class DestinationPicker {
 
       case 'file-more':
         this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');
-        return await this.showSecondaryFilePicker(
-          placeholderMessageCode,
-          boundFileUriString,
-          boundFileViewColumn,
-        );
+        return await this.showSecondaryFilePicker(placeholderMessageCode, boundFileUriString, boundFileViewColumn);
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
-        return await this.showSecondaryTerminalPicker(
-          placeholderMessageCode,
-          boundTerminalProcessId,
-        );
+        return await this.showSecondaryTerminalPicker(placeholderMessageCode, boundTerminalProcessId);
 
       default: {
         const _exhaustiveCheck: never = selected;
@@ -156,10 +130,7 @@ export class DestinationPicker {
     boundFileViewColumn?: number,
   ): Promise<InternalPickerResult> {
     const logCtx = { fn: 'DestinationPicker.showSecondaryFilePicker' };
-    const fileItems = this.availabilityService.getAllFileItems(
-      boundFileUriString,
-      boundFileViewColumn,
-    );
+    const fileItems = this.availabilityService.getAllFileItems(boundFileUriString, boundFileViewColumn);
 
     if (fileItems.length === 0) {
       this.logger.debug(logCtx, 'No files available in secondary picker');
@@ -186,15 +157,9 @@ export class DestinationPicker {
     return result ?? { outcome: 'returned-to-main-picker' };
   }
 
-  private async showSecondaryTerminalPicker(
-    placeholderMessageCode: MessageCode,
-    boundTerminalProcessId?: number,
-  ): Promise<InternalPickerResult> {
+  private async showSecondaryTerminalPicker(placeholderMessageCode: MessageCode, boundTerminalProcessId?: number): Promise<InternalPickerResult> {
     const logCtx = { fn: 'DestinationPicker.showSecondaryTerminalPicker' };
-    const terminalItems = await this.availabilityService.getTerminalItems(
-      Infinity,
-      boundTerminalProcessId,
-    );
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity, boundTerminalProcessId);
 
     const result = await showTerminalPicker<InternalPickerResult>(
       terminalItems,

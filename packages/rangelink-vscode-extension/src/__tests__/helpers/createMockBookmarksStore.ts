@@ -30,9 +30,7 @@ export interface MockBookmarksStoreOptions {
  * @param options - Optional configuration for the mock
  * @returns Mock BookmarksStore with jest functions
  */
-export const createMockBookmarksStore = (
-  options: MockBookmarksStoreOptions = {},
-): jest.Mocked<BookmarksStore> => {
+export const createMockBookmarksStore = (options: MockBookmarksStoreOptions = {}): jest.Mocked<BookmarksStore> => {
   const bookmarks = options.bookmarks ?? [];
 
   return {

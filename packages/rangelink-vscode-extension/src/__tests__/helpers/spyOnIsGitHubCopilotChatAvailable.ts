@@ -3,7 +3,5 @@ import * as isGitHubCopilotChatAvailableModule from '../../utils/aiAssistants/is
 
 import type { Logger } from '@couimet/logger-contract';
 
-export const spyOnIsGitHubCopilotChatAvailable = (): jest.SpyInstance<
-  Promise<boolean>,
-  [VscodeAdapter, Logger]
-> => jest.spyOn(isGitHubCopilotChatAvailableModule, 'isGitHubCopilotChatAvailable');
+export const spyOnIsGitHubCopilotChatAvailable = (): jest.SpyInstance<Promise<boolean>, [VscodeAdapter, Logger]> =>
+  jest.spyOn(isGitHubCopilotChatAvailableModule, 'isGitHubCopilotChatAvailable');

@@ -1,9 +1,5 @@
 import { compareEditorsByUri } from '../../../destinations/equality/compareEditorsByUri';
-import {
-  createMockCursorAIComposableDestination,
-  createMockEditorComposablePasteDestination,
-  createMockUri,
-} from '../../helpers';
+import { createMockCursorAIComposableDestination, createMockEditorComposablePasteDestination, createMockUri } from '../../helpers';
 
 describe('compareEditorsByUri', () => {
   describe('when editors have matching URIs', () => {

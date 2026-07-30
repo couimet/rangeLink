@@ -24,12 +24,7 @@ export const interpolateArgs = (template: unknown, content: string): unknown => 
   }
 
   if (template !== null && template !== undefined && typeof template === 'object') {
-    return Object.fromEntries(
-      Object.entries(template as Record<string, unknown>).map(([key, value]) => [
-        key,
-        interpolateArgs(value, content),
-      ]),
-    );
+    return Object.fromEntries(Object.entries(template as Record<string, unknown>).map(([key, value]) => [key, interpolateArgs(value, content)]));
   }
 
   return template;

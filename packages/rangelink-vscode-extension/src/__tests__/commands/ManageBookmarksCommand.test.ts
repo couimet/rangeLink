@@ -2,11 +2,7 @@ import type { Bookmark } from '../../bookmarks';
 import { ManageBookmarksCommand } from '../../commands/ManageBookmarksCommand';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { ExtensionResult } from '../../types';
-import {
-  createMockBookmarkService,
-  createMockQuickPick,
-  createMockVscodeAdapter,
-} from '../helpers';
+import { createMockBookmarkService, createMockQuickPick, createMockVscodeAdapter } from '../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import * as vscode from 'vscode';
@@ -45,10 +41,7 @@ describe('ManageBookmarksCommand', () => {
     it('logs initialization', () => {
       new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ManageBookmarksCommand.constructor' },
-        'ManageBookmarksCommand initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.constructor' }, 'ManageBookmarksCommand initialized');
     });
   });
 
@@ -61,10 +54,7 @@ describe('ManageBookmarksCommand', () => {
         await command.execute();
 
         expect(showInfoSpy).toHaveBeenCalledWith('No bookmarks to manage');
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.execute' },
-          'No bookmarks to manage',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.execute' }, 'No bookmarks to manage');
       });
     });
 
@@ -98,10 +88,7 @@ describe('ManageBookmarksCommand', () => {
           },
         ]);
         expect(mockQuickPick.show).toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.execute', bookmarkCount: 2 },
-          'Showing manage QuickPick',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.execute', bookmarkCount: 2 }, 'Showing manage QuickPick');
       });
 
       it('disposes QuickPick on hide', async () => {
@@ -116,10 +103,7 @@ describe('ManageBookmarksCommand', () => {
         mockQuickPick.__triggerHide();
 
         expect(mockQuickPick.dispose).toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.showManageQuickPick' },
-          'QuickPick disposed',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.showManageQuickPick' }, 'QuickPick disposed');
       });
 
       it('hides QuickPick on accept without action', async () => {
@@ -134,10 +118,7 @@ describe('ManageBookmarksCommand', () => {
         mockQuickPick.__triggerAccept();
 
         expect(mockQuickPick.hide).toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.showManageQuickPick' },
-          'User selected item without action',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.showManageQuickPick' }, 'User selected item without action');
       });
     });
 
@@ -161,11 +142,7 @@ describe('ManageBookmarksCommand', () => {
           button: deleteButton,
         });
 
-        expect(mockShowWarningMessage).toHaveBeenCalledWith(
-          'Delete bookmark "Test Bookmark"?',
-          'Delete',
-          'Cancel',
-        );
+        expect(mockShowWarningMessage).toHaveBeenCalledWith('Delete bookmark "Test Bookmark"?', 'Delete', 'Cancel');
       });
 
       it('cancels deletion when user selects Cancel', async () => {
@@ -187,10 +164,7 @@ describe('ManageBookmarksCommand', () => {
         });
 
         expect(mockBookmarkService.removeBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
-          'Delete cancelled by user',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK }, 'Delete cancelled by user');
       });
 
       it('cancels deletion when user dismisses dialog', async () => {
@@ -212,16 +186,11 @@ describe('ManageBookmarksCommand', () => {
         });
 
         expect(mockBookmarkService.removeBookmark).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
-          'Delete cancelled by user',
-        );
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK }, 'Delete cancelled by user');
       });
 
       it('deletes bookmark when user confirms', async () => {
-        mockBookmarkService.getAllBookmarks
-          .mockReturnValueOnce([TEST_BOOKMARK])
-          .mockReturnValueOnce([]);
+        mockBookmarkService.getAllBookmarks.mockReturnValueOnce([TEST_BOOKMARK]).mockReturnValueOnce([]);
         const mockQuickPick = createMockQuickPick();
         const mockShowInformationMessage = jest.fn();
         mockAdapter = createMockVscodeAdapter({
@@ -241,9 +210,7 @@ describe('ManageBookmarksCommand', () => {
         });
 
         expect(mockBookmarkService.removeBookmark).toHaveBeenCalledWith('bookmark-1');
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          '✓ Bookmark deleted: Test Bookmark',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('✓ Bookmark deleted: Test Bookmark');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
           'Bookmark deleted successfully',
@@ -251,9 +218,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('hides QuickPick when last bookmark deleted', async () => {
-        mockBookmarkService.getAllBookmarks
-          .mockReturnValueOnce([TEST_BOOKMARK])
-          .mockReturnValueOnce([]);
+        mockBookmarkService.getAllBookmarks.mockReturnValueOnce([TEST_BOOKMARK]).mockReturnValueOnce([]);
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
@@ -274,9 +239,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('refreshes items when deleting one of multiple bookmarks', async () => {
-        mockBookmarkService.getAllBookmarks
-          .mockReturnValueOnce([TEST_BOOKMARK, TEST_BOOKMARK_2])
-          .mockReturnValueOnce([TEST_BOOKMARK_2]);
+        mockBookmarkService.getAllBookmarks.mockReturnValueOnce([TEST_BOOKMARK, TEST_BOOKMARK_2]).mockReturnValueOnce([TEST_BOOKMARK_2]);
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {

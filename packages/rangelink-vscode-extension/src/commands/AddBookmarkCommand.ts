@@ -5,12 +5,7 @@ import { formatMessage, generateLinkFromSelections } from '../utils';
 
 import type { Logger } from '@couimet/logger-contract';
 import * as path from 'node:path';
-import {
-  type DelimiterConfigGetter,
-  LinkType,
-  type ParsedLink,
-  parseLink,
-} from 'rangelink-core-ts';
+import { type DelimiterConfigGetter, LinkType, type ParsedLink, parseLink } from 'rangelink-core-ts';
 
 /**
  * Command handler for adding a bookmark from the current editor selection.
@@ -58,10 +53,7 @@ export class AddBookmarkCommand {
       // Source 1: Selection IS a valid RangeLink
       linkToBookmark = trimmedSelectedText;
       defaultLabel = path.basename(parsedExistingLink.path);
-      this.logger.info(
-        { ...logCtx, source: 'existing-link', link: linkToBookmark },
-        'Using existing link',
-      );
+      this.logger.info({ ...logCtx, source: 'existing-link', link: linkToBookmark }, 'Using existing link');
     } else {
       // Source 2: Generate link from selection (supports rectangular selections)
       // Check if file is untitled (cannot generate link to unsaved file)
@@ -82,9 +74,7 @@ export class AddBookmarkCommand {
 
       if (!result.success) {
         this.logger.error({ ...logCtx, error: result.error }, 'Failed to generate link');
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED),
-        );
+        this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED));
         return;
       }
 
@@ -101,10 +91,7 @@ export class AddBookmarkCommand {
         'Generated link from selection',
       );
     }
-    this.logger.debug(
-      { ...logCtx, link: linkToBookmark, defaultLabel },
-      'Showing bookmark label input',
-    );
+    this.logger.debug({ ...logCtx, link: linkToBookmark, defaultLabel }, 'Showing bookmark label input');
 
     const label = await this.ideAdapter.showInputBox({
       prompt: formatMessage(MessageCode.BOOKMARK_ADD_INPUT_PROMPT, { link: linkToBookmark }),
@@ -139,9 +126,7 @@ export class AddBookmarkCommand {
 
     this.logger.info({ ...logCtx, label: trimmedLabel, link: linkToBookmark }, 'Bookmark saved');
 
-    this.ideAdapter.setSuccessfulStatusBarMessage(
-      formatMessage(MessageCode.STATUS_BAR_BOOKMARK_SAVED, { label: trimmedLabel }),
-    );
+    this.ideAdapter.setSuccessfulStatusBarMessage(formatMessage(MessageCode.STATUS_BAR_BOOKMARK_SAVED, { label: trimmedLabel }));
   }
 
   /**

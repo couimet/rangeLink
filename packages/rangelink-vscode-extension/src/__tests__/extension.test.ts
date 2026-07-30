@@ -1,14 +1,7 @@
 import * as extension from '../extension';
 import { VSCodeLogger } from '../VSCodeLogger';
 
-import {
-  createMockCommands,
-  createMockMemento,
-  createMockOutputChannel,
-  createMockStatusBarItem,
-  createMockWindow,
-  createMockWorkspace,
-} from './helpers';
+import { createMockCommands, createMockMemento, createMockOutputChannel, createMockStatusBarItem, createMockWindow, createMockWorkspace } from './helpers';
 
 import { pingLog, setLogger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
@@ -168,9 +161,7 @@ describe('Configuration loading and validation', () => {
     (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
-    (vscode.workspace.getConfiguration as jest.Mock).mockImplementation((...args) =>
-      mockWorkspace.getConfiguration(...args),
-    );
+    (vscode.workspace.getConfiguration as jest.Mock).mockImplementation((...args) => mockWorkspace.getConfiguration(...args));
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
   });
 
@@ -286,9 +277,7 @@ describe('Configuration loading and validation', () => {
       extension.activate(context as any);
 
       // Verify error was logged about non-unique delimiters
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Delimiters must be unique'),
-      );
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('Delimiters must be unique'));
     });
 
     it('should use defaults when two delimiters are the same', () => {
@@ -321,9 +310,7 @@ describe('Configuration loading and validation', () => {
       extension.activate(context as any);
 
       // Verify error was logged
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Delimiters must be unique'),
-      );
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('Delimiters must be unique'));
     });
   });
 
@@ -365,9 +352,7 @@ describe('Configuration loading and validation', () => {
       extension.activate(context as any);
 
       // Should not log any errors
-      expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]'),
-      );
+      expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(expect.stringContaining('[ERROR]'));
     });
   });
 
@@ -473,9 +458,7 @@ describe('Extension lifecycle', () => {
     (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
-    (vscode.workspace.getConfiguration as jest.Mock).mockImplementation(
-      mockWorkspace.getConfiguration,
-    );
+    (vscode.workspace.getConfiguration as jest.Mock).mockImplementation(mockWorkspace.getConfiguration);
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
   });
 
@@ -573,8 +556,7 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 4;
     const PROVIDER_COUNT = 4;
-    const EXPECTED_SUBSCRIPTION_COUNT =
-      INFRASTRUCTURE_COUNT + PROVIDER_COUNT + expectedCommands.length;
+    const EXPECTED_SUBSCRIPTION_COUNT = INFRASTRUCTURE_COUNT + PROVIDER_COUNT + expectedCommands.length;
 
     expect(mockContext.subscriptions.length).toBe(EXPECTED_SUBSCRIPTION_COUNT);
   });
@@ -590,14 +572,12 @@ describe('Extension lifecycle', () => {
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     let capturedBindHandler: ((...args: unknown[]) => Promise<void>) | undefined;
-    (vscode.commands.registerCommand as jest.Mock).mockImplementation(
-      (id: string, handler: (...args: unknown[]) => Promise<void>) => {
-        if (id === 'rangelink.explorer.bind') {
-          capturedBindHandler = handler;
-        }
-        return { dispose: jest.fn() };
-      },
-    );
+    (vscode.commands.registerCommand as jest.Mock).mockImplementation((id: string, handler: (...args: unknown[]) => Promise<void>) => {
+      if (id === 'rangelink.explorer.bind') {
+        capturedBindHandler = handler;
+      }
+      return { dispose: jest.fn() };
+    });
 
     const mockEditor = { viewColumn: 1 } as vscode.TextEditor;
     (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
@@ -658,9 +638,7 @@ describe('Logger verification and communication channel', () => {
     extension.activate(context as any);
 
     // Verify debug() was called during setLogger with initialization message
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[DEBUG\].*setLogger.*Logger initialized/),
-    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[DEBUG\].*setLogger.*Logger initialized/));
   });
 
   it('should support pingLog() to exercise all logger levels', () => {
@@ -676,18 +654,10 @@ describe('Logger verification and communication channel', () => {
     pingLog();
 
     // Verify all 4 ping messages were logged
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[DEBUG\].*pingLog.*Ping for DEBUG/),
-    );
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[INFO\].*pingLog.*Ping for INFO/),
-    );
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[WARNING\].*pingLog.*Ping for WARN/),
-    );
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[ERROR\].*pingLog.*Ping for ERROR/),
-    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[DEBUG\].*pingLog.*Ping for DEBUG/));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[INFO\].*pingLog.*Ping for INFO/));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[WARNING\].*pingLog.*Ping for WARN/));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[ERROR\].*pingLog.*Ping for ERROR/));
   });
 
   it('should verify VSCodeLogger properly formats debug messages', () => {
@@ -697,12 +667,8 @@ describe('Logger verification and communication channel', () => {
     // Manually call debug to test formatting
     logger.debug({ fn: 'testFunction', extraContext: 'value' }, 'Test debug message');
 
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[DEBUG\].*testFunction/),
-    );
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringMatching(/\[DEBUG\].*Test debug message/),
-    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[DEBUG\].*testFunction/));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[DEBUG\].*Test debug message/));
   });
 });
 
@@ -722,10 +688,7 @@ describe('Activation logging', () => {
   const getActivationInfoLine = (): string | undefined => {
     return (mockOutputChannel.appendLine as jest.Mock).mock.calls
       .map((call: string[]) => call[0])
-      .find(
-        (line: string) =>
-          line.startsWith('[INFO]') && line.includes('RangeLink extension activated'),
-      );
+      .find((line: string) => line.startsWith('[INFO]') && line.includes('RangeLink extension activated'));
   };
 
   it('logs version info and logger contract version on successful activation', () => {
@@ -777,9 +740,7 @@ describe('Activation logging', () => {
 
       isolatedExtension.activate(mockContext as any);
 
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/\[WARNING\].*version info unavailable/),
-      );
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringMatching(/\[WARNING\].*version info unavailable/));
       expect(getActivationInfoLine()).toBeUndefined();
     });
   });

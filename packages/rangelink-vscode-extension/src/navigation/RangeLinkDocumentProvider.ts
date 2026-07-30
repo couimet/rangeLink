@@ -40,10 +40,7 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'RangeLinkDocumentProvider.constructor' },
-      'RangeLinkDocumentProvider initialized',
-    );
+    this.logger.debug({ fn: 'RangeLinkDocumentProvider.constructor' }, 'RangeLinkDocumentProvider initialized');
   }
 
   /**
@@ -56,10 +53,7 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
    * @param token - Cancellation token
    * @returns Array of detected document links
    */
-  provideDocumentLinks(
-    document: vscode.TextDocument,
-    token: vscode.CancellationToken,
-  ): vscode.ProviderResult<vscode.DocumentLink[]> {
+  provideDocumentLinks(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.DocumentLink[]> {
     const text = document.getText();
     const detectedLinks = findLinksInText(text, this.getDelimiters(), this.logger, token);
 
@@ -79,9 +73,7 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
 
       const docLink = new vscode.DocumentLink(range);
       docLink.tooltip = formatLinkTooltip(parsed);
-      docLink.target = this.ideAdapter.parseUri(
-        `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`,
-      );
+      docLink.target = this.ideAdapter.parseUri(`command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`);
 
       return docLink;
     });
@@ -104,10 +96,7 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     try {
       await this.handler.navigateToLink(parsed, linkText);
     } catch (error) {
-      this.logger.debug(
-        { ...logCtx, error },
-        'Document link handling completed with error (already handled by navigation handler)',
-      );
+      this.logger.debug({ ...logCtx, error }, 'Document link handling completed with error (already handled by navigation handler)');
     }
   }
 }

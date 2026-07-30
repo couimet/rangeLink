@@ -21,9 +21,7 @@ describe('LazyResolvedFocusCapability', () => {
 
   it('resolves on first focus() call via getCommands and caches the result', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const getCommandsSpy = jest
-      .spyOn(mockAdapter, 'getCommands')
-      .mockResolvedValue(['sparkAi.insertText']);
+    const getCommandsSpy = jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue(['sparkAi.insertText']);
 
     const tier: FocusTier = {
       commands: ['sparkAi.insertText'],
@@ -88,13 +86,7 @@ describe('LazyResolvedFocusCapability', () => {
     };
 
     const FALLBACK_INDEX = 1;
-    const capability = new LazyResolvedFocusCapability(
-      mockAdapter,
-      [userTier, fallbackTier],
-      mockLogger,
-      LOG_PREFIX,
-      FALLBACK_INDEX,
-    );
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [userTier, fallbackTier], mockLogger, LOG_PREFIX, FALLBACK_INDEX);
 
     expect(capability.isFallbackResolution).toBe(false);
 
@@ -129,18 +121,13 @@ describe('LazyResolvedFocusCapability', () => {
     await capability.focus(CONTEXT);
 
     expect(capability.isFallbackResolution).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { ...CONTEXT, tier: 'insertCommands', logPrefix: LOG_PREFIX },
-      'TestAssistant: resolved to insertCommands',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ ...CONTEXT, tier: 'insertCommands', logPrefix: LOG_PREFIX }, 'TestAssistant: resolved to insertCommands');
   });
 
   it('delegates to ResolvedFocusCapability for execute probeMode after resolution', async () => {
     const mockAdapter = createMockVscodeAdapter();
     jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue(['sparkAi.focus']);
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValue(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
     const tier: FocusTier = {
       commands: ['sparkAi.focus'],

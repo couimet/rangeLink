@@ -1,8 +1,4 @@
-import {
-  CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
-  CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
-  CONTEXT_IS_BOUND,
-} from '../constants/contextKeys';
+import { CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE, CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION, CONTEXT_IS_BOUND } from '../constants/contextKeys';
 import type { BoundSession } from '../destinations';
 import { classifyTerminalForBinding } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -71,27 +67,17 @@ export class ContextKeyService implements vscode.Disposable {
   private updateBindability(): void {
     const activeTerminal = this.ideAdapter.activeTerminal;
     const classification = classifyTerminalForBinding(activeTerminal);
-    const bindable =
-      classification.visible === true && classification.nonBindableReason === undefined;
+    const bindable = classification.visible === true && classification.nonBindableReason === undefined;
     this.lastSetValues[CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE] = bindable;
-    this.logger.debug(
-      { fn: `${FN}.updateBindability`, bindable, terminalName: activeTerminal?.name },
-      'Evaluating isActiveTerminalBindable context key',
-    );
+    this.logger.debug({ fn: `${FN}.updateBindability`, bindable, terminalName: activeTerminal?.name }, 'Evaluating isActiveTerminalBindable context key');
     this.ideAdapter.setContext(CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE, bindable);
   }
 
   private updateActiveTerminalPasteDestination(): void {
     const bound = this.session.get();
-    const active =
-      bound !== undefined &&
-      isTerminalDestination(bound) &&
-      bound.resource.terminal === this.ideAdapter.activeTerminal;
+    const active = bound !== undefined && isTerminalDestination(bound) && bound.resource.terminal === this.ideAdapter.activeTerminal;
     this.lastSetValues[CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION] = active;
-    this.logger.debug(
-      { fn: `${FN}.updateActiveTerminalPasteDestination`, active },
-      'Evaluating isActiveTerminalPasteDestination context key',
-    );
+    this.logger.debug({ fn: `${FN}.updateActiveTerminalPasteDestination`, active }, 'Evaluating isActiveTerminalPasteDestination context key');
     this.ideAdapter.setContext(CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION, active);
   }
 }

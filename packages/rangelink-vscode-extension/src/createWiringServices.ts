@@ -30,15 +30,7 @@ import { ConfigReader, DelimiterCache } from './config';
 import { ContextKeyService } from './contextKeys';
 import { BoundSession } from './destinations';
 import { OperationFeedbackProvider } from './feedback';
-import {
-  FilePathPaster,
-  LinkGenerator,
-  SelectionValidator,
-  SendRouter,
-  TerminalPasteService,
-  TerminalSelectionService,
-  TextSelectionPaster,
-} from './services';
+import { FilePathPaster, LinkGenerator, SelectionValidator, SendRouter, TerminalPasteService, TerminalSelectionService, TextSelectionPaster } from './services';
 import { RangeLinkStatusBar } from './statusBar';
 import type { VersionInfo } from './types';
 
@@ -85,10 +77,7 @@ export interface ExtensionDependencies {
  * Build the full object graph from foundational dependencies.
  * Returns all services needed by wireSubscriptions.
  */
-export const createWiringServices = (
-  deps: ExtensionDependencies,
-  context: vscode.ExtensionContext,
-): WiringServices => {
+export const createWiringServices = (deps: ExtensionDependencies, context: vscode.ExtensionContext): WiringServices => {
   const { ideAdapter, logger, versionInfo } = deps;
 
   const configReader = ConfigReader.create(ideAdapter, logger);
@@ -100,116 +89,34 @@ export const createWiringServices = (
 
   const clipboardService = new ClipboardService(ideAdapter, configReader, logger);
   const terminalPasteService = new TerminalPasteService(ideAdapter, clipboardService, logger);
-  const focusCapabilityFactory = new FocusCapabilityFactory(
-    ideAdapter,
-    terminalPasteService,
-    logger,
-  );
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, terminalPasteService, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
-  const registry = new DestinationRegistry(
-    focusCapabilityFactory,
-    eligibilityCheckerFactory,
-    ideAdapter,
-    configReader,
-    logger,
-  );
+  const registry = new DestinationRegistry(focusCapabilityFactory, eligibilityCheckerFactory, ideAdapter, configReader, logger);
   const customAssistants = parseCustomAiAssistants(configReader, logger);
   registerAllDestinationBuilders(registry, customAssistants);
 
-  const availabilityService = new DestinationAvailabilityService(
-    registry,
-    ideAdapter,
-    configReader,
-    logger,
-  );
+  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, configReader, logger);
   const destinationPicker = new DestinationPicker(ideAdapter, availabilityService, logger);
   const feedbackProvider = new OperationFeedbackProvider(ideAdapter);
-  const boundSession = new BoundSession(
-    ideAdapter,
-    ideAdapter,
-    feedbackProvider,
-    ideAdapter,
-    logger,
-  );
-  const destinationManager = new PasteDestinationManager(
-    registry,
-    ideAdapter,
-    boundSession,
-    feedbackProvider,
-    logger,
-  );
+  const boundSession = new BoundSession(ideAdapter, ideAdapter, feedbackProvider, ideAdapter, logger);
+  const destinationManager = new PasteDestinationManager(registry, ideAdapter, boundSession, feedbackProvider, logger);
   const contextKeyService = new ContextKeyService(ideAdapter, boundSession, logger);
 
-  const bindToTerminalCommand = new BindToTerminalCommand(
-    ideAdapter,
-    availabilityService,
-    destinationManager,
-    boundSession,
-    logger,
-  );
-  const bindToTextEditorCommand = new BindToTextEditorCommand(
-    ideAdapter,
-    availabilityService,
-    destinationManager,
-    boundSession,
-    logger,
-  );
+  const bindToTerminalCommand = new BindToTerminalCommand(ideAdapter, availabilityService, destinationManager, boundSession, logger);
+  const bindToTextEditorCommand = new BindToTextEditorCommand(ideAdapter, availabilityService, destinationManager, boundSession, logger);
 
-  const bookmarkService = new BookmarkService(
-    bookmarksStore,
-    ideAdapter,
-    configReader,
-    destinationManager,
-    boundSession,
-    logger,
-  );
-  const addBookmarkCommand = new AddBookmarkCommand(
-    getDelimiters,
-    ideAdapter,
-    bookmarkService,
-    logger,
-  );
+  const bookmarkService = new BookmarkService(bookmarksStore, ideAdapter, configReader, destinationManager, boundSession, logger);
+  const addBookmarkCommand = new AddBookmarkCommand(getDelimiters, ideAdapter, bookmarkService, logger);
   const showVersionCommand = new ShowVersionCommand(ideAdapter, logger, versionInfo);
-  const bindToDestinationCommand = new BindToDestinationCommand(
-    destinationManager,
-    destinationPicker,
-    boundSession,
-    logger,
-  );
-  const jumpToDestinationCommand = new JumpToDestinationCommand(
-    destinationManager,
-    boundSession,
-    destinationPicker,
-    logger,
-  );
+  const bindToDestinationCommand = new BindToDestinationCommand(destinationManager, destinationPicker, boundSession, logger);
+  const jumpToDestinationCommand = new JumpToDestinationCommand(destinationManager, boundSession, destinationPicker, logger);
   const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, logger);
   const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   const selectionValidator = new SelectionValidator(ideAdapter, logger);
-  const sendRouter = new SendRouter(
-    ideAdapter,
-    destinationManager,
-    boundSession,
-    destinationPicker,
-    clipboardService,
-    feedbackProvider,
-    logger,
-  );
-  const terminalSelectionService = new TerminalSelectionService(
-    ideAdapter,
-    destinationManager,
-    configReader,
-    clipboardService,
-    sendRouter,
-    logger,
-  );
-  const filePathPaster = new FilePathPaster(
-    ideAdapter,
-    destinationManager,
-    configReader,
-    sendRouter,
-    logger,
-  );
+  const sendRouter = new SendRouter(ideAdapter, destinationManager, boundSession, destinationPicker, clipboardService, feedbackProvider, logger);
+  const terminalSelectionService = new TerminalSelectionService(ideAdapter, destinationManager, configReader, clipboardService, sendRouter, logger);
+  const filePathPaster = new FilePathPaster(ideAdapter, destinationManager, configReader, sendRouter, logger);
   const linkGenerator = new LinkGenerator(
     getDelimiters,
     ideAdapter,
@@ -220,55 +127,18 @@ export const createWiringServices = (
     feedbackProvider,
     logger,
   );
-  const textSelectionPaster = new TextSelectionPaster(
-    destinationManager,
-    configReader,
-    sendRouter,
-    selectionValidator,
-    logger,
-  );
-  const statusBar = new RangeLinkStatusBar(
-    ideAdapter,
-    destinationManager,
-    boundSession,
-    availabilityService,
-    bookmarkService,
-    logger,
-  );
+  const textSelectionPaster = new TextSelectionPaster(destinationManager, configReader, sendRouter, selectionValidator, logger);
+  const statusBar = new RangeLinkStatusBar(ideAdapter, destinationManager, boundSession, availabilityService, bookmarkService, logger);
 
-  const navigationHandler = new RangeLinkNavigationHandler(
-    getDelimiters,
-    ideAdapter,
-    configReader,
-    logger,
-  );
+  const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, configReader, logger);
   logger.debug({ fn: 'createWiringServices' }, 'Navigation handler created');
   const filePathNavigationHandler = new FilePathNavigationHandler(ideAdapter, logger);
   const goToRangeLinkCommand = new GoToRangeLinkCommand(ideAdapter, navigationHandler, logger);
 
-  const filePathTerminalProvider = new FilePathTerminalProvider(
-    getDelimiters,
-    filePathNavigationHandler,
-    logger,
-  );
-  const filePathDocumentProvider = new FilePathDocumentProvider(
-    getDelimiters,
-    filePathNavigationHandler,
-    ideAdapter,
-    logger,
-  );
-  const terminalLinkProvider = new RangeLinkTerminalProvider(
-    navigationHandler,
-    getDelimiters,
-    ideAdapter,
-    logger,
-  );
-  const documentLinkProvider = new RangeLinkDocumentProvider(
-    navigationHandler,
-    getDelimiters,
-    ideAdapter,
-    logger,
-  );
+  const filePathTerminalProvider = new FilePathTerminalProvider(getDelimiters, filePathNavigationHandler, logger);
+  const filePathDocumentProvider = new FilePathDocumentProvider(getDelimiters, filePathNavigationHandler, ideAdapter, logger);
+  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getDelimiters, ideAdapter, logger);
+  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getDelimiters, ideAdapter, logger);
 
   return {
     ideAdapter,

@@ -196,10 +196,7 @@ export class ClaudeCodeDestination implements PasteDestination {
       } catch (pasteError) {
         // 5. Fallback: Show notification for manual paste
         this.logger.warn('Automatic paste failed, prompting user');
-        vscode.window.showInformationMessage(
-          'RangeLink focused in Claude Code - press Cmd+V to paste',
-          { modal: false },
-        );
+        vscode.window.showInformationMessage('RangeLink focused in Claude Code - press Cmd+V to paste', { modal: false });
         return true; // Still count as success (focused)
       }
     } catch (error) {

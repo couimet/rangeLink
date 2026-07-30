@@ -118,9 +118,7 @@ describe('ComposablePasteDestination', () => {
 
     it('should return false when focus fails', async () => {
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(
-        DetailedResult.failure({ reason: FocusErrorReason.SHOW_DOCUMENT_FAILED }),
-      );
+      focusCapability.focus.mockResolvedValue(DetailedResult.failure({ reason: FocusErrorReason.SHOW_DOCUMENT_FAILED }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -143,10 +141,7 @@ describe('ComposablePasteDestination', () => {
 
       await destination['performPaste']('text', context, PasteContentType.Link);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        context,
-        'Cannot paste link: Mock Destination not available',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith(context, 'Cannot paste link: Mock Destination not available');
     });
 
     it('should use "content" label for PasteContentType.Text in log messages', async () => {
@@ -159,10 +154,7 @@ describe('ComposablePasteDestination', () => {
 
       await destination['performPaste']('text', context, PasteContentType.Text);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        context,
-        'Cannot paste content: Mock Destination not available',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith(context, 'Cannot paste content: Mock Destination not available');
     });
   });
 
@@ -286,9 +278,7 @@ describe('ComposablePasteDestination', () => {
 
     it('should return false when focus fails', async () => {
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(
-        DetailedResult.failure({ reason: FocusErrorReason.TERMINAL_FOCUS_FAILED }),
-      );
+      focusCapability.focus.mockResolvedValue(DetailedResult.failure({ reason: FocusErrorReason.TERMINAL_FOCUS_FAILED }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -349,9 +339,7 @@ describe('ComposablePasteDestination', () => {
     });
 
     describe('AI assistant kind-based equality (createAiAssistant factory)', () => {
-      const createAiAssistantDestination = (
-        id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat',
-      ) =>
+      const createAiAssistantDestination = (id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat') =>
         ComposablePasteDestination.createAiAssistant({
           id,
           displayName: `Mock ${id}`,

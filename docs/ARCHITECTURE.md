@@ -612,11 +612,7 @@ describe('Contract: Rectangular Mode', () => {
 
   contract.testCases.forEach((testCase) => {
     it(testCase.name, () => {
-      const result = formatLink(
-        testCase.input.path,
-        testCase.input.selections,
-        testCase.input.config,
-      );
+      const result = formatLink(testCase.input.path, testCase.input.selections, testCase.input.config);
 
       expect(result).toBe(testCase.expected.link);
     });

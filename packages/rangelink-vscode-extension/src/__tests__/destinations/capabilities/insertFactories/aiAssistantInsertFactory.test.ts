@@ -37,10 +37,7 @@ describe('AIAssistantInsertFactory', () => {
     const result = await insertFn('content');
 
     expect(result).toBe(false);
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true },
-      'Clipboard paste command failed',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true }, 'Clipboard paste command failed');
     expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 });

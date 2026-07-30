@@ -29,9 +29,7 @@ export interface MockComposablePasteDestinationConfig extends Partial<Composable
  * @param insertReturns - What inserter() should return (default: true)
  * @returns Mocked FocusCapability with focus() returning DetailedResult.success({ inserter: ... })
  */
-export const createMockFocusCapability = (
-  insertReturns: boolean = true,
-): jest.Mocked<FocusCapability> => {
+export const createMockFocusCapability = (insertReturns: boolean = true): jest.Mocked<FocusCapability> => {
   const mockInsert = jest.fn().mockResolvedValue(insertReturns);
   const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
@@ -64,9 +62,7 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance with mocked capabilities
  */
-export const createMockComposablePasteDestination = (
-  overrides: MockComposablePasteDestinationConfig = {},
-): ComposablePasteDestination => {
+export const createMockComposablePasteDestination = (overrides: MockComposablePasteDestinationConfig = {}): ComposablePasteDestination => {
   const config: ComposablePasteDestinationConfig = {
     id: 'text-editor',
     displayName: 'Mock Destination',

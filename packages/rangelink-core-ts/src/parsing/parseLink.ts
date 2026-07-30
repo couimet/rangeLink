@@ -33,16 +33,11 @@ import { quotePath } from '../utils/quotePath';
  * @param link - The RangeLink string to parse (e.g., "src/auth.ts#L42C10-L58C25")
  * @param delimiters - Delimiter configuration to use for parsing
  */
-export const parseLink = (
-  linkInput: string,
-  delimiters: DelimiterConfig,
-): CoreResult<ParsedLink> => {
+export const parseLink = (linkInput: string, delimiters: DelimiterConfig): CoreResult<ParsedLink> => {
   // Strip surrounding quotes (single or double) so quoted links round-trip correctly
   const firstChar = linkInput[0];
   const lastChar = linkInput[linkInput.length - 1];
-  const isQuoted =
-    linkInput.length > 2 &&
-    ((firstChar === "'" && lastChar === "'") || (firstChar === '"' && lastChar === '"'));
+  const isQuoted = linkInput.length > 2 && ((firstChar === "'" && lastChar === "'") || (firstChar === '"' && lastChar === '"'));
   const link = isQuoted ? linkInput.slice(1, -1) : linkInput;
 
   // Check link length for safety
@@ -165,9 +160,7 @@ export const parseLink = (
   // Single hash (e.g., "#") → Normal mode
   // Double hash (e.g., "##") → Rectangular mode
   const isRectangular = capturedHash.length === delimiters.hash.length * 2;
-  const selectionType: SelectionType = isRectangular
-    ? SelectionType.Rectangular
-    : SelectionType.Normal;
+  const selectionType: SelectionType = isRectangular ? SelectionType.Rectangular : SelectionType.Normal;
 
   // Link type is always 'Regular' for now (BYOD parsing deferred to Phase 1C)
   const linkType: LinkType = LinkType.Regular;

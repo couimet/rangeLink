@@ -4,12 +4,7 @@ import { EditorFocusCapability } from '../../../destinations/capabilities/Editor
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
-import {
-  createMockTerminal,
-  createMockTerminalPasteService,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -38,10 +33,7 @@ describe('FocusCapabilityFactory', () => {
   });
 
   it('creates AIAssistantFocusCapability', () => {
-    const capability = factory.createAIAssistantCapability(
-      ['workbench.action.chat.open'],
-      undefined,
-    );
+    const capability = factory.createAIAssistantCapability(['workbench.action.chat.open'], undefined);
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });

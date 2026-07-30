@@ -24,10 +24,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-001")', '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-001")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -38,15 +35,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
     logCapture.mark('before-ctxmenu-exp-001');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'context-menus-explorer-001',
-      `Right-click "${fn}" in Explorer → "RangeLink: Send File Path"`,
-      [
-        `1. Locate "${fn}" in the Explorer panel`,
-        '2. Right-click it',
-        '3. Select "RangeLink: Send File Path"',
-      ],
-    );
+    await waitForHuman('context-menus-explorer-001', `Right-click "${fn}" in Explorer → "RangeLink: Send File Path"`, [
+      `1. Locate "${fn}" in the Explorer panel`,
+      '2. Right-click it',
+      '3. Select "RangeLink: Send File Path"',
+    ]);
 
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-001');
 
@@ -71,10 +64,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const capturing = await ss.createCapturingTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")',
-      '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-002")', '✓ RangeLink: File path sent to Terminal ("rl-ctxmenu-exp-002")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -85,15 +75,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
     logCapture.mark('before-ctxmenu-exp-002');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'context-menus-explorer-002',
-      `Right-click "${fn}" in Explorer → "RangeLink: Send Relative File Path"`,
-      [
-        `1. Locate "${fn}" in the Explorer panel`,
-        '2. Right-click it',
-        '3. Select "RangeLink: Send Relative File Path"',
-      ],
-    );
+    await waitForHuman('context-menus-explorer-002', `Right-click "${fn}" in Explorer → "RangeLink: Send Relative File Path"`, [
+      `1. Locate "${fn}" in the Explorer panel`,
+      '2. Right-click it',
+      '3. Select "RangeLink: Send Relative File Path"',
+    ]);
 
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-002');
 
@@ -106,9 +92,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Workspace-relative path landed in bound terminal buffer (pty capture verified content)',
-    );
+    ss.log('✓ Workspace-relative path landed in bound terminal buffer (pty capture verified content)');
   });
 
   test('[assisted] context-menus-explorer-003: Explorer "Bind Here" opens the file and binds it as text editor destination', async () => {
@@ -120,15 +104,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-003');
 
-    await waitForHuman(
-      'context-menus-explorer-003',
-      `Right-click "${fn}" in Explorer → "RangeLink: Bind Here"`,
-      [
-        `1. Locate "${fn}" in the Explorer panel`,
-        '2. Right-click it',
-        '3. Select "RangeLink: Bind Here"',
-      ],
-    );
+    await waitForHuman('context-menus-explorer-003', `Right-click "${fn}" in Explorer → "RangeLink: Bind Here"`, [
+      `1. Locate "${fn}" in the Explorer panel`,
+      '2. Right-click it',
+      '3. Select "RangeLink: Bind Here"',
+    ]);
 
     ss.log('✓ Explorer "Bind Here" committed a text-editor binding with correct displayName');
   });
@@ -141,25 +121,18 @@ standardSuite('Context Menus — Explorer', (ss) => {
     await ss.createTerminal(terminalName);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-004")',
-      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-exp-004")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-004")', '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-exp-004")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-004');
 
-    await waitForHuman(
-      'context-menus-explorer-004',
-      `Right-click "${fn}" in Explorer → "RangeLink: Unbind"`,
-      [
-        `1. Locate "${fn}" in the Explorer panel`,
-        '2. Right-click it',
-        '3. Verify "RangeLink: Unbind" IS present in the menu',
-        '4. Select "RangeLink: Unbind"',
-      ],
-    );
+    await waitForHuman('context-menus-explorer-004', `Right-click "${fn}" in Explorer → "RangeLink: Unbind"`, [
+      `1. Locate "${fn}" in the Explorer panel`,
+      '2. Right-click it',
+      '3. Verify "RangeLink: Unbind" IS present in the menu',
+      '4. Select "RangeLink: Unbind"',
+    ]);
 
     ss.log('✓ Explorer "Unbind" fired the unbind path; context key flipped to false');
   });
@@ -173,11 +146,11 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-005');
 
-    const verdict = await waitForHumanVerdict(
-      'context-menus-explorer-005',
-      `Right-click "${fn}" in Explorer — is "RangeLink: Unbind" ABSENT from the menu?`,
-      [`1. Locate "${fn}" in the Explorer panel`, '2. Right-click it', 'Verdict:'],
-    );
+    const verdict = await waitForHumanVerdict('context-menus-explorer-005', `Right-click "${fn}" in Explorer — is "RangeLink: Unbind" ABSENT from the menu?`, [
+      `1. Locate "${fn}" in the Explorer panel`,
+      '2. Right-click it',
+      'Verdict:',
+    ]);
 
     assert.strictEqual(
       verdict,
@@ -185,9 +158,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
       'Human reported "RangeLink: Unbind" WAS visible in Explorer when unbound — the `when: rangelink.isBound` clause is not working',
     );
 
-    ss.log(
-      '✓ Unbound state: "Unbind" absent from Explorer context menu (human verdict + state invariant)',
-    );
+    ss.log('✓ Unbound state: "Unbind" absent from Explorer context menu (human verdict + state invariant)');
   });
 
   test('[assisted] context-menus-explorer-006: Explorer "Send File Path" (unbound) opens picker and sends absolute path to selected terminal', async () => {
@@ -197,9 +168,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const terminalName = 'rl-ctxmenu-exp-006';
     const capturing = await ss.createCapturingTerminal(terminalName);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-006") — File path sent',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-006") — File path sent']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -232,9 +201,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Unbound explorer absolute path → picker → bind+send (merged message, pty capture verified content)',
-    );
+    ss.log('✓ Unbound explorer absolute path → picker → bind+send (merged message, pty capture verified content)');
   });
 
   test('[assisted] context-menus-explorer-007: Explorer "Send Relative File Path" (unbound) opens picker and sends relative path to selected terminal', async () => {
@@ -245,9 +212,7 @@ standardSuite('Context Menus — Explorer', (ss) => {
     const terminalName = 'rl-ctxmenu-exp-007';
     const capturing = await ss.createCapturingTerminal(terminalName);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-007") — File path sent',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-exp-007") — File path sent']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -280,8 +245,6 @@ standardSuite('Context Menus — Explorer', (ss) => {
     assertClipboardWriteLogged(lines, { textLength: expectedPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), expectedPath);
 
-    ss.log(
-      '✓ Unbound explorer relative path → picker → bind+send (merged message, pty capture verified content)',
-    );
+    ss.log('✓ Unbound explorer relative path → picker → bind+send (merged message, pty capture verified content)');
   });
 });

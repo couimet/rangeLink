@@ -69,12 +69,7 @@ const delimiters: DelimiterConfig = {
   range: '-',
 };
 
-const result = formatLink(
-  'recipes/baking/chickenpie.ts',
-  selection,
-  delimiters,
-  PathFormat.WorkspaceRelative,
-);
+const result = formatLink('recipes/baking/chickenpie.ts', selection, delimiters, PathFormat.WorkspaceRelative);
 
 if (result.success) {
   console.log(result.value); // "recipes/baking/chickenpie.ts#L3C14-L15C9"

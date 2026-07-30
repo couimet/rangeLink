@@ -69,10 +69,7 @@ standardSuite('Command Registration', (_ss) => {
 
   for (const commandId of EXPECTED_COMMAND_IDS) {
     test(`${commandId} is registered`, () => {
-      assert.ok(
-        registeredCommands.includes(commandId),
-        `Expected command '${commandId}' to be registered but it was not found`,
-      );
+      assert.ok(registeredCommands.includes(commandId), `Expected command '${commandId}' to be registered but it was not found`);
     });
   }
 });

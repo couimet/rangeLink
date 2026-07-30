@@ -26,21 +26,14 @@ const ensureParentDir = (filePath: string): void => {
 
 export const createWorkspaceFile = (descriptor: string, content: string): vscode.Uri => {
   fileCounter++;
-  const filePath = path.join(
-    getWorkspaceRoot(),
-    `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.txt`,
-  );
+  const filePath = path.join(getWorkspaceRoot(), `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.txt`);
   fs.writeFileSync(filePath, content, 'utf8');
   const uri = vscode.Uri.file(filePath);
   registerFileForCleanup(uri);
   return uri;
 };
 
-export const createAndOpenFile = async (
-  descriptor: string,
-  content: string,
-  viewColumn?: vscode.ViewColumn,
-): Promise<vscode.Uri> => {
+export const createAndOpenFile = async (descriptor: string, content: string, viewColumn?: vscode.ViewColumn): Promise<vscode.Uri> => {
   const uri = createWorkspaceFile(descriptor, content);
   const doc = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(doc, {
@@ -51,16 +44,8 @@ export const createAndOpenFile = async (
   return uri;
 };
 
-export const findTestItemsByPrefix = (
-  items: Record<string, unknown>[],
-  prefix: string,
-): Record<string, unknown>[] =>
-  items.filter(
-    (item) =>
-      item.itemKind === 'bindable' &&
-      typeof item.label === 'string' &&
-      (item.label as string).includes(prefix),
-  );
+export const findTestItemsByPrefix = (items: Record<string, unknown>[], prefix: string): Record<string, unknown>[] =>
+  items.filter((item) => item.itemKind === 'bindable' && typeof item.label === 'string' && (item.label as string).includes(prefix));
 
 export const createFileAt = (filename: string, content: string): vscode.Uri => {
   const filePath = path.join(getWorkspaceRoot(), filename);
@@ -75,21 +60,13 @@ const PNG_MAGIC_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a
 
 export type PngFixtureMode = 'real-image' | 'magic-only';
 
-export const createPngFixture = (
-  descriptor: string,
-  mode: PngFixtureMode = 'real-image',
-): vscode.Uri => {
+export const createPngFixture = (descriptor: string, mode: PngFixtureMode = 'real-image'): vscode.Uri => {
   fileCounter++;
-  const pngPath = path.join(
-    getWorkspaceRoot(),
-    `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.png`,
-  );
+  const pngPath = path.join(getWorkspaceRoot(), `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.png`);
   if (mode === 'real-image') {
     const extension = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
     if (!extension) {
-      throw new Error(
-        'createPngFixture(real-image) requires the RangeLink extension to be registered',
-      );
+      throw new Error('createPngFixture(real-image) requires the RangeLink extension to be registered');
     }
     fs.copyFileSync(path.join(extension.extensionPath, 'icon.png'), pngPath);
   } else {
@@ -100,10 +77,7 @@ export const createPngFixture = (
   return uri;
 };
 
-export const openEditor = async (
-  uri: vscode.Uri,
-  viewColumn?: vscode.ViewColumn,
-): Promise<vscode.TextEditor> => {
+export const openEditor = async (uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> => {
   const doc = await vscode.workspace.openTextDocument(uri);
   return vscode.window.showTextDocument(doc, viewColumn);
 };
@@ -132,10 +106,7 @@ export const closeAllEditors = async (): Promise<void> => {
  *
  * Returns the editor so callers can dispatch paste/navigate commands.
  */
-export const openSourceWithSelection = async (
-  uri: vscode.Uri,
-  viewColumn: vscode.ViewColumn,
-): Promise<vscode.TextEditor> => {
+export const openSourceWithSelection = async (uri: vscode.Uri, viewColumn: vscode.ViewColumn): Promise<vscode.TextEditor> => {
   const doc = await vscode.workspace.openTextDocument(uri);
   const editor = await vscode.window.showTextDocument(doc, viewColumn);
   const lastLine = doc.lineAt(doc.lineCount - 1);

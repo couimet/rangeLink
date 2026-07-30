@@ -46,13 +46,11 @@ describe('SendRouter', () => {
     mockDestinationManager = createMockDestinationManager();
     mockDestinationPicker = createMockDestinationPicker();
     mockClipboardService = createMockClipboardService();
-    mockClipboardService.route.mockImplementation(
-      async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
-        const result = await fn();
-        shouldRestore?.();
-        return ExtensionResult.ok(result);
-      },
-    );
+    mockClipboardService.route.mockImplementation(async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
+      const result = await fn();
+      shouldRestore?.();
+      return ExtensionResult.ok(result);
+    });
     mockFeedbackProvider = createMockOperationFeedbackProvider();
     mockLogger = createMockLogger();
 
@@ -99,10 +97,7 @@ describe('SendRouter', () => {
         bindPerformed: true,
         destinationName: 'Terminal',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'test' },
-        'No destination bound, showing quick pick',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test' }, 'No destination bound, showing quick pick');
     });
 
     it('returns false when picker returns no-resource', async () => {
@@ -112,10 +107,7 @@ describe('SendRouter', () => {
       const result = await router.resolveDestination({ fn: 'test' });
 
       expect(result).toStrictEqual({ canProceed: false });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'test', outcome: 'no-resource' },
-        'Picker did not bind, aborting',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', outcome: 'no-resource' }, 'Picker did not bind, aborting');
     });
 
     it('returns false when user cancels picker', async () => {
@@ -156,10 +148,7 @@ describe('SendRouter', () => {
       await router.sendToDestination(createMockSendOptions() as any);
 
       expect(mockClipboardWriter.writeTextToClipboard).toHaveBeenCalledWith(' src/file.ts#L1 ');
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'testFn' },
-        'No destination bound - copied to clipboard only',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'testFn' }, 'No destination bound - copied to clipboard only');
       expect(mockFeedbackProvider.provideSendFeedback).not.toHaveBeenCalled();
     });
 
@@ -186,10 +175,7 @@ describe('SendRouter', () => {
 
       await router.sendToDestination(createMockSendOptions() as any);
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'SendRouter.sendToDestination', error: routeError },
-        'Clipboard routing failed',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'SendRouter.sendToDestination', error: routeError }, 'Clipboard routing failed');
       expect(mockFeedbackProvider.provideSendFeedback).toHaveBeenCalledWith(
         {
           contentType: 'CONTENT_NAME_RANGELINK',
@@ -313,8 +299,7 @@ describe('SendRouter', () => {
           kind: 'self-paste-blocked',
           destinationKind: 'text-editor',
           clipboardWritten: true,
-          toastMessage:
-            'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+          toastMessage: 'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
         },
         undefined,
       );
@@ -412,9 +397,7 @@ describe('SendRouter', () => {
       const dest = createMockPasteDestinationForSendRouter({
         getUserInstruction: jest
           .fn()
-          .mockImplementation((result: AutoPasteResult) =>
-            result === AutoPasteResult.Failure ? 'Manual paste required' : undefined,
-          ),
+          .mockImplementation((result: AutoPasteResult) => (result === AutoPasteResult.Failure ? 'Manual paste required' : undefined)),
       });
       mockDestinationManager = createMockDestinationManager();
       mockSession.isSet.mockReturnValue(true);
@@ -601,8 +584,7 @@ describe('SendRouter', () => {
           kind: 'self-paste-blocked',
           destinationKind: 'text-editor',
           clipboardWritten: true,
-          toastMessage:
-            'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+          toastMessage: 'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
         },
         undefined,
       );
@@ -691,16 +673,11 @@ describe('SendRouter', () => {
           kind: 'self-paste-blocked',
           destinationKind: 'text-editor',
           clipboardWritten: true,
-          toastMessage:
-            'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
+          toastMessage: 'Cannot paste when bound editor has an active selection. File path copied to clipboard.',
         },
         undefined,
       );
-      expect(
-        jest
-          .mocked(mockLogger.debug)
-          .mock.calls.filter((c) => c[1] === 'Self-paste policy resolution'),
-      ).toStrictEqual([]);
+      expect(jest.mocked(mockLogger.debug).mock.calls.filter((c) => c[1] === 'Self-paste policy resolution')).toStrictEqual([]);
     });
 
     it('blocks with block-on-editor-selection when selection is active and does NOT write clipboard', async () => {
@@ -750,11 +727,7 @@ describe('SendRouter', () => {
         },
         undefined,
       );
-      expect(
-        jest
-          .mocked(mockLogger.debug)
-          .mock.calls.filter((c) => c[1] === 'Self-paste policy resolution'),
-      ).toStrictEqual([]);
+      expect(jest.mocked(mockLogger.debug).mock.calls.filter((c) => c[1] === 'Self-paste policy resolution')).toStrictEqual([]);
     });
 
     it('allows paste with block-on-editor-selection when destination has no active selection', async () => {
@@ -812,8 +785,7 @@ describe('SendRouter', () => {
   // ── shouldRestoreClipboard ───────────────────────────────────
 
   describe('shouldRestoreClipboard', () => {
-    const createDest = (overrides: Partial<PasteDestination> = {}) =>
-      createMockPasteDestinationForSendRouter(overrides);
+    const createDest = (overrides: Partial<PasteDestination> = {}) => createMockPasteDestinationForSendRouter(overrides);
 
     it('returns false for self-paste-blocked with clipboardWritten: true (regardless of destination)', () => {
       const dest = createDest({ shouldPreserveClipboard: jest.fn().mockReturnValue(true) });
@@ -833,10 +805,7 @@ describe('SendRouter', () => {
     });
 
     it('returns true when no destination is bound', () => {
-      const result = (router as any).shouldRestoreClipboard(
-        { kind: 'failed-automatic', destinationKind: 'terminal' },
-        undefined,
-      );
+      const result = (router as any).shouldRestoreClipboard({ kind: 'failed-automatic', destinationKind: 'terminal' }, undefined);
 
       expect(result).toBe(true);
     });
@@ -860,27 +829,17 @@ describe('SendRouter', () => {
     it('returns true when paste succeeded (sent-manual) and shouldPreserveClipboard returns true', () => {
       const dest = createDest();
 
-      const result = (router as any).shouldRestoreClipboard(
-        { kind: 'sent-manual', instruction: 'Press Cmd+V' },
-        dest,
-      );
+      const result = (router as any).shouldRestoreClipboard({ kind: 'sent-manual', instruction: 'Press Cmd+V' }, dest);
 
       expect(result).toBe(true);
     });
 
     it('returns true when paste failed and destination has no failure instruction', () => {
       const dest = createDest({
-        getUserInstruction: jest
-          .fn()
-          .mockImplementation((result: AutoPasteResult) =>
-            result === AutoPasteResult.Failure ? undefined : 'Press Cmd+V',
-          ),
+        getUserInstruction: jest.fn().mockImplementation((result: AutoPasteResult) => (result === AutoPasteResult.Failure ? undefined : 'Press Cmd+V')),
       });
 
-      const result = (router as any).shouldRestoreClipboard(
-        { kind: 'failed-automatic', destinationKind: 'terminal' },
-        dest,
-      );
+      const result = (router as any).shouldRestoreClipboard({ kind: 'failed-automatic', destinationKind: 'terminal' }, dest);
 
       expect(result).toBe(true);
     });
@@ -890,10 +849,7 @@ describe('SendRouter', () => {
         getUserInstruction: jest.fn().mockReturnValue('Manual paste required'),
       });
 
-      const result = (router as any).shouldRestoreClipboard(
-        { kind: 'failed-manual', instruction: 'Manual paste required' },
-        dest,
-      );
+      const result = (router as any).shouldRestoreClipboard({ kind: 'failed-manual', instruction: 'Manual paste required' }, dest);
 
       expect(result).toBe(false);
     });
@@ -917,10 +873,7 @@ describe('SendRouter', () => {
       const result = await router.resolveDestination({ fn: 'test' });
 
       expect(result).toStrictEqual({ canProceed: false });
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'SendRouter.showPickerAndBind' },
-        'No destinations available - no action taken',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'SendRouter.showPickerAndBind' }, 'No destinations available - no action taken');
     });
 
     it('returns cancelled when user dismisses picker', async () => {
@@ -930,10 +883,7 @@ describe('SendRouter', () => {
       const result = await router.resolveDestination({ fn: 'test' });
 
       expect(result).toStrictEqual({ canProceed: false });
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'SendRouter.showPickerAndBind' },
-        'User cancelled quick pick - no action taken',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'SendRouter.showPickerAndBind' }, 'User cancelled quick pick - no action taken');
     });
 
     it('returns bound when bind succeeds', async () => {
@@ -956,10 +906,7 @@ describe('SendRouter', () => {
         bindPerformed: true,
         destinationName: 'Terminal',
       });
-      expect(mockDestinationManager.bind).toHaveBeenCalledWith(
-        { kind: 'terminal', terminal: { name: 'bash' } },
-        { skipMessage: true },
-      );
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith({ kind: 'terminal', terminal: { name: 'bash' } }, { skipMessage: true });
     });
 
     it('returns bind-failed when bind returns error', async () => {
@@ -988,9 +935,7 @@ describe('SendRouter', () => {
         outcome: 'unexpected-value',
       } as any);
 
-      await expect(router.resolveDestination({ fn: 'test' })).rejects.toThrow(
-        RangeLinkExtensionError,
-      );
+      await expect(router.resolveDestination({ fn: 'test' })).rejects.toThrow(RangeLinkExtensionError);
     });
 
     it('passes editor destination boundFileUriString and boundFileViewColumn to picker when bound destination is an editor', async () => {

@@ -15,9 +15,7 @@ export const isGeminiCodeAssistAvailable = (ideAdapter: VscodeAdapter, logger: L
       extensionFound: extension !== undefined,
       extensionActive: extension?.isActive ?? false,
     },
-    isAvailable
-      ? 'Gemini Code Assist detected and active'
-      : 'Gemini Code Assist not available (not installed or not active)',
+    isAvailable ? 'Gemini Code Assist detected and active' : 'Gemini Code Assist not available (not installed or not active)',
   );
 
   return isAvailable;

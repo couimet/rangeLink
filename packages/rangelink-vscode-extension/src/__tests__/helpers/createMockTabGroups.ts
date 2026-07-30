@@ -13,9 +13,7 @@ import * as vscode from 'vscode';
  * @param overrides - Optional overrides for TabGroups structure
  * @returns Mock TabGroups object
  */
-export const createMockTabGroups = (
-  overrides: Partial<vscode.TabGroups> = {},
-): vscode.TabGroups => {
+export const createMockTabGroups = (overrides: Partial<vscode.TabGroups> = {}): vscode.TabGroups => {
   return {
     all: [],
     activeTabGroup: undefined,
@@ -35,5 +33,4 @@ export const createMockTabGroups = (
  * @param count - Number of tab groups to create
  * @returns Mock TabGroups with the specified count of empty groups
  */
-export const createMockTabGroupsWithCount = (count: number): vscode.TabGroups =>
-  createMockTabGroups({ all: Array(count).fill({ tabs: [] }) });
+export const createMockTabGroupsWithCount = (count: number): vscode.TabGroups => createMockTabGroups({ all: Array(count).fill({ tabs: [] }) });

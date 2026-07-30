@@ -163,18 +163,13 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(
-        DetailedResult.success(createMockFormattedLink('src/file.ts#L1')),
-      );
+      mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L1')));
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
 
       await generator.createLink();
 
       expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
-        'Active editor URI unavailable, aborting',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'LinkGenerator.createLinkCore', linkType: 'regular' }, 'Active editor URI unavailable, aborting');
     });
 
     it('aborts when picker is cancelled', async () => {
@@ -182,9 +177,7 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(
-        DetailedResult.success(createMockFormattedLink('src/file.ts#L1')),
-      );
+      mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L1')));
       mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
@@ -206,27 +199,19 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      const clipboardSpy = jest
-        .spyOn(mockAdapter, 'writeTextToClipboard')
-        .mockResolvedValue(undefined);
-      mockGenLink.mockReturnValue(
-        DetailedResult.success(createMockFormattedLink('src/file.ts#L1')),
-      );
+      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L1')));
 
       await generator.createLinkOnly();
 
       expect(clipboardSpy).toHaveBeenCalledWith('src/file.ts#L1');
-      expect(mockFeedbackProvider.provideCopyFeedback).toHaveBeenCalledWith(
-        'CONTENT_NAME_RANGELINK',
-      );
+      expect(mockFeedbackProvider.provideCopyFeedback).toHaveBeenCalledWith('CONTENT_NAME_RANGELINK');
       expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
       expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
     });
 
     it('does nothing when no link generated', async () => {
-      const clipboardSpy = jest
-        .spyOn(mockAdapter, 'writeTextToClipboard')
-        .mockResolvedValue(undefined);
+      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(undefined);
 
       await generator.createLinkOnly();
@@ -234,10 +219,7 @@ describe('LinkGenerator', () => {
       expect(clipboardSpy).not.toHaveBeenCalled();
       expect(mockFeedbackProvider.provideCopyFeedback).not.toHaveBeenCalled();
       expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'LinkGenerator.createLinkOnly' },
-        'generateLinkFromSelection returned undefined, aborting',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'LinkGenerator.createLinkOnly' }, 'generateLinkFromSelection returned undefined, aborting');
     });
   });
 
@@ -301,9 +283,7 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      const warningSpy = jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.Dismissed);
+      const warningSpy = jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.Dismissed);
 
       await generator.createLink();
 
@@ -320,9 +300,7 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      const warningSpy = jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.SaveFailed);
+      const warningSpy = jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.SaveFailed);
 
       await generator.createLink();
 
@@ -373,10 +351,7 @@ describe('LinkGenerator', () => {
 
       await generator.createLink();
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelection', formattedLink: link },
-        `Generated link: ${link.link}`,
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'generateLinkFromSelection', formattedLink: link }, `Generated link: ${link.link}`);
     });
 
     it('re-validates selections and uses post-save selections when warning returns SaveAndContinue', async () => {
@@ -398,14 +373,10 @@ describe('LinkGenerator', () => {
       mockSelectionValidator.validateSelectionsAndShowError
         .mockReturnValueOnce({ editor: mockEditor, selections: [preSaveSel] })
         .mockReturnValueOnce({ editor: mockEditor, selections: [postSaveSel] });
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(
-        DetailedResult.success(createMockFormattedLink('src/file.ts#L4C1-L4C11')),
-      );
+      mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L4C1-L4C11')));
       mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();
@@ -422,12 +393,8 @@ describe('LinkGenerator', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'generateLinkFromSelection',
-          preSaveSelections: [
-            { index: 0, start: { line: 4, char: 0 }, end: { line: 4, char: 10 }, isEmpty: false },
-          ],
-          postSaveSelections: [
-            { index: 0, start: { line: 3, char: 0 }, end: { line: 3, char: 10 }, isEmpty: false },
-          ],
+          preSaveSelections: [{ index: 0, start: { line: 4, char: 0 }, end: { line: 4, char: 10 }, isEmpty: false }],
+          postSaveSelections: [{ index: 0, start: { line: 3, char: 0 }, end: { line: 3, char: 10 }, isEmpty: false }],
         },
         'Re-read selections after Save & Continue to account for possible format-on-save shifts',
       );
@@ -448,18 +415,13 @@ describe('LinkGenerator', () => {
           selections: [createMockSelection({ isEmpty: false })],
         })
         .mockReturnValueOnce(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
 
       await generator.createLink();
 
       expect(mockSelectionValidator.validateSelectionsAndShowError).toHaveBeenCalledTimes(2);
       expect(mockGenLink).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelection' },
-        'Post-save re-validation returned no selections, aborting',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'generateLinkFromSelection' }, 'Post-save re-validation returned no selections, aborting');
     });
 
     it('does NOT re-validate selections when warning returns ContinueAnyway', async () => {
@@ -473,14 +435,10 @@ describe('LinkGenerator', () => {
         editor: mockEditor,
         selections: [sel],
       });
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockGenLink.mockReturnValue(
-        DetailedResult.success(createMockFormattedLink('src/file.ts#L1')),
-      );
+      mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L1')));
       mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await generator.createLink();

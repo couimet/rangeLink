@@ -42,25 +42,16 @@ export class ReleaseNotifier {
 
     if (storedVersion === undefined) {
       await this.setLastNotifiedVersion(currentVersion);
-      this.logger.debug(
-        { ...logCtx, version: currentVersion },
-        'First install — stored version, skipping notification',
-      );
+      this.logger.debug({ ...logCtx, version: currentVersion }, 'First install — stored version, skipping notification');
       return;
     }
 
     if (storedVersion === currentVersion) {
-      this.logger.debug(
-        { ...logCtx, version: currentVersion },
-        'Same version — skipping release notification',
-      );
+      this.logger.debug({ ...logCtx, version: currentVersion }, 'Same version — skipping release notification');
       return;
     }
 
-    this.logger.info(
-      { ...logCtx, previousVersion: storedVersion, currentVersion },
-      'Version upgrade detected — showing release notification',
-    );
+    this.logger.info({ ...logCtx, previousVersion: storedVersion, currentVersion }, 'Version upgrade detected — showing release notification');
 
     const whatsNewButton = formatMessage(MessageCode.INFO_NEW_VERSION_WHATS_NEW_BUTTON);
     const skipButton = formatMessage(MessageCode.INFO_NEW_VERSION_SKIP_BUTTON);
@@ -76,15 +67,9 @@ export class ReleaseNotifier {
       this.logger.debug({ ...logCtx, version: currentVersion }, 'Opened release notes in browser');
     } else if (selection === skipButton) {
       await this.setLastNotifiedVersion(currentVersion);
-      this.logger.debug(
-        { ...logCtx, version: currentVersion },
-        'Release notification skipped for this version',
-      );
+      this.logger.debug({ ...logCtx, version: currentVersion }, 'Release notification skipped for this version');
     } else {
-      this.logger.debug(
-        { ...logCtx, version: currentVersion },
-        'Release notification dismissed — will reappear on next activation',
-      );
+      this.logger.debug({ ...logCtx, version: currentVersion }, 'Release notification dismissed — will reappear on next activation');
     }
   }
 

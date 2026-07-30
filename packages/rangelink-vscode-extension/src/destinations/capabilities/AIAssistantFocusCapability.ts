@@ -60,10 +60,7 @@ export class AIAssistantFocusCapability implements FocusCapability {
 
   private async refocusDuring(context: LoggingContext, refocus: ColdRefocusConfig): Promise<void> {
     if (refocus.totalMs <= 0 || refocus.intervalMs <= 0 || refocus.totalMs <= refocus.intervalMs) {
-      this.logger.warn(
-        { ...context, totalMs: refocus.totalMs, intervalMs: refocus.intervalMs },
-        'Invalid cold refocus config, falling back to warm delay',
-      );
+      this.logger.warn({ ...context, totalMs: refocus.totalMs, intervalMs: refocus.intervalMs }, 'Invalid cold refocus config, falling back to warm delay');
       await new Promise<void>((resolve) => setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
       return;
     }
@@ -90,9 +87,6 @@ export class AIAssistantFocusCapability implements FocusCapability {
       }
     }
 
-    this.logger.debug(
-      { ...context, totalMs: Date.now() - start, intervalMs: refocus.intervalMs },
-      'Cold refocus loop completed',
-    );
+    this.logger.debug({ ...context, totalMs: Date.now() - start, intervalMs: refocus.intervalMs }, 'Cold refocus loop completed');
   }
 }

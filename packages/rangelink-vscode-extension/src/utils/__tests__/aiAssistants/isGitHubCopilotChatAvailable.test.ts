@@ -1,13 +1,7 @@
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../../../__tests__/helpers';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
 import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../../aiAssistants/builtInAiAssistants';
-import {
-  GITHUB_COPILOT_CHAT_COMMAND,
-  isGitHubCopilotChatAvailable,
-} from '../../aiAssistants/isGitHubCopilotChatAvailable';
+import { GITHUB_COPILOT_CHAT_COMMAND, isGitHubCopilotChatAvailable } from '../../aiAssistants/isGitHubCopilotChatAvailable';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -41,11 +35,7 @@ describe('isGitHubCopilotChatAvailable', () => {
     it('should return true when chat command is among many commands', async () => {
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: {
-          availableCommands: [
-            'other.command.one',
-            GITHUB_COPILOT_CHAT_COMMAND,
-            'another.command.two',
-          ],
+          availableCommands: ['other.command.one', GITHUB_COPILOT_CHAT_COMMAND, 'another.command.two'],
         },
       });
 
@@ -220,9 +210,6 @@ describe('isGitHubCopilotChatAvailable', () => {
 
 describe('GITHUB_COPILOT_CHAT_FOCUS_COMMANDS', () => {
   it('should export focus commands array with primary and fallback commands', () => {
-    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS).toStrictEqual([
-      'workbench.action.chat.open',
-      'workbench.panel.chat.view.copilot.focus',
-    ]);
+    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS).toStrictEqual(['workbench.action.chat.open', 'workbench.panel.chat.view.copilot.focus']);
   });
 });

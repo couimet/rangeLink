@@ -41,12 +41,7 @@ describe('DestinationAvailabilityService', () => {
         tabGroups: createMockTabGroupsWithCount(1),
       },
     });
-    service = new DestinationAvailabilityService(
-      mockRegistry,
-      ideAdapter,
-      mockConfigReader,
-      mockLogger,
-    );
+    service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
   });
 
   describe('isAIAssistantAvailable()', () => {
@@ -115,12 +110,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: createMockTabGroupsWithCount(1),
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = await service.getTerminalItems(Infinity);
 
@@ -180,12 +170,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -225,12 +210,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -270,12 +250,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -308,12 +283,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -346,12 +316,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -386,12 +351,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems();
 
@@ -452,12 +412,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [group] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -503,12 +458,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -540,12 +490,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [group] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -599,12 +544,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [group] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -661,12 +601,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [group1, group2] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -736,12 +671,7 @@ describe('DestinationAvailabilityService', () => {
             tabGroups: { all: [group1, group2] },
           },
         });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+        service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
         const result = await service.getGroupedDestinationItems({
           destinationKinds: ['text-editor'],
@@ -807,12 +737,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems();
 
@@ -830,12 +755,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [group] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems();
 
@@ -873,10 +793,7 @@ describe('DestinationAvailabilityService', () => {
           },
         },
       ]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
-        'Built all file items',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 }, 'Built all file items');
     });
 
     it('marks bound file with bound state', () => {
@@ -888,12 +805,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [group] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems(uri.toString());
 
@@ -915,10 +827,7 @@ describe('DestinationAvailabilityService', () => {
           },
         },
       ]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 1 },
-        'Built all file items',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 1 }, 'Built all file items');
     });
 
     it('marks only the file in the matching viewColumn as bound when same URI appears in two tab groups', () => {
@@ -932,12 +841,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [group1, group2] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems(uri.toString(), 1);
 
@@ -975,10 +879,7 @@ describe('DestinationAvailabilityService', () => {
           },
         },
       ]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
-        'Built all file items',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 }, 'Built all file items');
     });
 
     it('marks both entries as bound when same URI appears in two tab groups and no viewColumn is given', () => {
@@ -992,12 +893,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [group1, group2] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems(uri.toString());
 
@@ -1035,10 +931,7 @@ describe('DestinationAvailabilityService', () => {
           },
         },
       ]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
-        'Built all file items',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 }, 'Built all file items');
     });
 
     it('applies disambiguators for duplicate filenames', () => {
@@ -1052,12 +945,7 @@ describe('DestinationAvailabilityService', () => {
           tabGroups: { all: [group] },
         },
       });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      service = new DestinationAvailabilityService(mockRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = service.getAllFileItems();
 
@@ -1095,10 +983,7 @@ describe('DestinationAvailabilityService', () => {
           },
         },
       ]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
-        'Built all file items',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 }, 'Built all file items');
     });
   });
 
@@ -1116,12 +1001,7 @@ describe('DestinationAvailabilityService', () => {
       });
       customRegistry.getSupportedKinds.mockReturnValue([customKind]);
 
-      const customService = new DestinationAvailabilityService(
-        customRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      const customService = new DestinationAvailabilityService(customRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = await customService.getGroupedDestinationItems();
 
@@ -1149,12 +1029,7 @@ describe('DestinationAvailabilityService', () => {
       });
       customRegistry.getSupportedKinds.mockReturnValue([customKind]);
 
-      const customService = new DestinationAvailabilityService(
-        customRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
+      const customService = new DestinationAvailabilityService(customRegistry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = await customService.getGroupedDestinationItems();
 

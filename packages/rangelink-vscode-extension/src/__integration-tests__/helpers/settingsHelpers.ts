@@ -22,9 +22,7 @@ const getRangelinkKeys = (): string[] => {
     throw new Error(`getRangelinkKeys: Failed to parse package.json: ${err}`);
   }
 
-  cachedRangelinkKeys = Object.keys(pkg.contributes?.configuration?.properties ?? {}).filter((k) =>
-    k.startsWith('rangelink.'),
-  );
+  cachedRangelinkKeys = Object.keys(pkg.contributes?.configuration?.properties ?? {}).filter((k) => k.startsWith('rangelink.'));
 
   return cachedRangelinkKeys;
 };

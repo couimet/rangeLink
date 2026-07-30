@@ -1,10 +1,5 @@
 import { getEligibleFiles } from '../../../destinations/utils';
-import {
-  createMockTab,
-  createMockTabGroup,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockTab, createMockTabGroup, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 import * as vscode from 'vscode';
 

@@ -57,20 +57,14 @@ export class EditorFocusCapability implements FocusCapability {
         viewColumn: resolvedViewColumn,
       });
     } catch (error) {
-      this.logger.warn(
-        { ...context, editorUri, viewColumn: resolvedViewColumn, error },
-        'Failed to focus editor',
-      );
+      this.logger.warn({ ...context, editorUri, viewColumn: resolvedViewColumn, error }, 'Failed to focus editor');
       return FocusResult.err({
         reason: FocusErrorReason.SHOW_DOCUMENT_FAILED,
         cause: error,
       });
     }
 
-    this.logger.debug(
-      { ...context, editorUri, viewColumn: resolvedViewColumn },
-      'Editor focused via showTextDocument()',
-    );
+    this.logger.debug({ ...context, editorUri, viewColumn: resolvedViewColumn }, 'Editor focused via showTextDocument()');
 
     return FocusResult.ok({ inserter: this.insertFactory.forTarget(freshEditor) });
   }
@@ -99,15 +93,10 @@ export class EditorFocusCapability implements FocusCapability {
           },
           'Bound editor at expected viewColumn but also found in other tab groups — ambiguous target',
         );
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS),
-        );
+        this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS));
         return 'ambiguous';
       }
-      this.logger.debug(
-        { fn, editorUri, viewColumn: this.boundViewColumn },
-        'Editor at bound viewColumn',
-      );
+      this.logger.debug({ fn, editorUri, viewColumn: this.boundViewColumn }, 'Editor at bound viewColumn');
       return this.boundViewColumn;
     }
 
@@ -117,29 +106,18 @@ export class EditorFocusCapability implements FocusCapability {
       const hiddenGroups = this.ideAdapter.findAllTabGroupsForDocument(this.documentUri);
       const matchingHiddenGroup = hiddenGroups.find((g) => g.viewColumn === this.boundViewColumn);
       if (matchingHiddenGroup) {
-        this.logger.debug(
-          { fn, editorUri, viewColumn: this.boundViewColumn },
-          'Editor hidden behind other tabs at bound viewColumn',
-        );
+        this.logger.debug({ fn, editorUri, viewColumn: this.boundViewColumn }, 'Editor hidden behind other tabs at bound viewColumn');
         return this.boundViewColumn;
       }
 
-      this.logger.warn(
-        { fn, editorUri },
-        'Bound editor not visible (defensive: auto-unbind should prevent this)',
-      );
+      this.logger.warn({ fn, editorUri }, 'Bound editor not visible (defensive: auto-unbind should prevent this)');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE));
       return undefined;
     }
 
     if (matchingEditors.length > 1) {
-      this.logger.warn(
-        { fn, editorUri, matchCount: matchingEditors.length },
-        'Bound editor moved but found in multiple tab groups — ambiguous target',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS),
-      );
+      this.logger.warn({ fn, editorUri, matchCount: matchingEditors.length }, 'Bound editor moved but found in multiple tab groups — ambiguous target');
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS));
       return 'ambiguous';
     }
 

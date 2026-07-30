@@ -16,10 +16,7 @@ import * as vscode from 'vscode';
  * @param overrides - Optional property overrides (name, index, etc.)
  * @returns Mock workspace folder
  */
-export const createMockWorkspaceFolder = (
-  fsPath: string,
-  overrides?: Partial<vscode.WorkspaceFolder>,
-): vscode.WorkspaceFolder => {
+export const createMockWorkspaceFolder = (fsPath: string, overrides?: Partial<vscode.WorkspaceFolder>): vscode.WorkspaceFolder => {
   const uri = createMockUri(fsPath);
   return {
     uri,

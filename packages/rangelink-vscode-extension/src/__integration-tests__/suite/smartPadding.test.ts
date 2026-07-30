@@ -56,10 +56,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
-      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Text Editor ("Untitled-1")', '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await ss.settle();
@@ -70,19 +67,13 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: 001-untitled', (ss) => {
 
     const lastLine = sourceEditor.document.lineCount - 1;
     const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(lastLine, lastChar),
-    );
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(lastLine, lastChar));
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
 
     const destContent = destDoc.getText();
-    assert.ok(
-      destContent.length > 0,
-      `Expected untitled dest to have content, but it was empty. isClosed=${destDoc.isClosed}`,
-    );
+    assert.ok(destContent.length > 0, `Expected untitled dest to have content, but it was empty. isClosed=${destDoc.isClosed}`);
   });
 });
 
@@ -113,10 +104,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     const destDoc = await openUntitledDoc({ viewColumn: vscode.ViewColumn.Two });
     const originalLanguage = destDoc.languageId;
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
-      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Text Editor ("Untitled-1")', '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, destDoc.uri);
     await ss.settle();
@@ -128,10 +116,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
     await ss.settle();
 
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, sourceContent.length));
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
@@ -144,10 +129,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
   });
 
   test('langswitch-binding-002: binding survives language change after content insertion', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
-      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Text Editor ("Untitled-1")', '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const sourceContent = 'hello world';
@@ -176,10 +158,7 @@ standardSuite('Smart Padding — Editor-to-Editor R-V: langswitch', (ss) => {
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.Three);
     await ss.settle();
 
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, sourceContent.length),
-    );
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, sourceContent.length));
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
@@ -203,10 +182,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceUri = ss.createWorkspaceFile('pad-001', whitespaceContent);
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-001-dest');
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-001-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("pad-001-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-001-dest")', '✓ RangeLink: Selected text sent to Terminal ("pad-001-dest")']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -217,10 +193,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     const sourceEditor = await openEditor(sourceUri);
     const lastLine = sourceEditor.document.lineCount - 1;
     const lastChar = sourceEditor.document.lineAt(lastLine).text.length;
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(lastLine, lastChar),
-    );
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(lastLine, lastChar));
     await ss.settle();
 
     capturing.clearCaptured();
@@ -228,22 +201,13 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await ss.settle();
 
     const captured = capturing.getCapturedText();
-    assert.ok(
-      captured.length > 0,
-      `Expected whitespace content to be sent, but captured was empty`,
-    );
-    assert.ok(
-      captured.includes('\t'),
-      `Expected captured content to contain tab, got: ${JSON.stringify(captured)}`,
-    );
+    assert.ok(captured.length > 0, `Expected whitespace content to be sent, but captured was empty`);
+    assert.ok(captured.includes('\t'), `Expected captured content to contain tab, got: ${JSON.stringify(captured)}`);
     ss.log('✓ smart-padding-001: whitespace preserved');
   });
 
   test('smart-padding-003: multiline content preserved through destination', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Text Editor ("Untitled-1")',
-      '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Text Editor ("Untitled-1")', '✓ RangeLink: Selected text sent to Text Editor ("Untitled-1")']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const expected = 'line 1\nline 2\nline 3';
@@ -256,37 +220,25 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     await ss.settle();
 
     const sourceEditor = await openEditor(sourceUri, vscode.ViewColumn.Beside);
-    sourceEditor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(2, 6),
-    );
+    sourceEditor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 6));
     await ss.settle();
 
     await vscode.commands.executeCommand(CMD_PASTE_TO_DESTINATION);
     await ss.settle();
 
     const destContent = destDoc.getText();
-    assert.strictEqual(
-      destContent,
-      expected,
-      `Expected multiline content to arrive intact, got: ${JSON.stringify(destContent)}`,
-    );
+    assert.strictEqual(destContent, expected, `Expected multiline content to arrive intact, got: ${JSON.stringify(destContent)}`);
     ss.log('✓ smart-padding-003: multiline content preserved through destination');
   });
 
   test('smart-padding-005: pasteContent=before adds leading space only', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-005-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("pad-005-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-005-dest")', '✓ RangeLink: Selected text sent to Terminal ("pad-005-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
       'rangelink.isBound': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
 
     const sourceUri = ss.createWorkspaceFile('pad-005', 'hello\n');
 
@@ -306,18 +258,13 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-006-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("pad-006-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-006-dest")', '✓ RangeLink: Selected text sent to Terminal ("pad-006-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
       'rangelink.isBound': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
 
     const sourceUri = ss.createWorkspaceFile('pad-006', 'hello\n');
 
@@ -337,14 +284,9 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-007: pasteContent=both — text selection sent to destination has leading and trailing space', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-007-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("pad-007-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-007-dest")', '✓ RangeLink: Selected text sent to Terminal ("pad-007-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -368,17 +310,12 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-008: pasteFilePath=both — file path sent to terminal has leading and trailing space', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteFilePath', 'both', vscode.ConfigurationTarget.Global);
 
     const fileUri = ss.createWorkspaceFile('pad-008', 'content\n');
 
     const capturing = await ss.createAndBindCapturingTerminal('pad-008-dest');
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-008-dest")',
-      '✓ RangeLink: File path sent to Terminal ("pad-008-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-008-dest")', '✓ RangeLink: File path sent to Terminal ("pad-008-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -399,10 +336,7 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('smart-padding-009: pasteLink=both — RangeLink sent to Dummy AI has leading and trailing space', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('pad-009', 'line 1\nline 2\nline 3\n');
@@ -417,24 +351,17 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 1, 6);
     await ss.settle();
     const logCapture = ss.getLogCapture();
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteLink', 'both', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteLink', 'both', vscode.ConfigurationTarget.Global);
     logCapture.mark('before-pad-009');
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
-    const textResult = (await vscode.commands.executeCommand(DUMMY_AI_GET_TEXT_COMMAND)) as
-      { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand(DUMMY_AI_GET_TEXT_COMMAND)) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, `Expected ${DUMMY_AI_GET_TEXT_COMMAND} to return a result`);
     assert.ok(
       textResult!.tier1.startsWith(' ') && textResult!.tier1.endsWith(' '),
       `Expected padded RangeLink (leading + trailing space), got: "${textResult!.tier1}"`,
     );
-    assert.strictEqual(
-      textResult!.tier2,
-      '',
-      'Expected tier2 textarea to be empty (no cross-contamination)',
-    );
+    assert.strictEqual(textResult!.tier2, '', 'Expected tier2 textarea to be empty (no cross-contamination)');
 
     const generatedLink = getGeneratedLink('before-pad-009', { smartPad: 'both' });
     assert.strictEqual(generatedLink, textResult!.tier1);
@@ -443,17 +370,12 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
   });
 
   test('[assisted] smart-padding-010: terminal selection sent to editor with padding=both', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
 
     const destUri = ss.createWorkspaceFile('pad-010-dest', '');
     const destFileName = path.basename(destUri.fsPath);
 
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destFileName}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${destFileName}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destFileName}")`, `✓ RangeLink: Selected text sent to Text Editor ("${destFileName}")`]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isBound': true,
@@ -468,34 +390,22 @@ standardSuite('Smart Padding — Single-Write Architecture', (ss) => {
     echoToTerminal(terminal, 'hello');
     await ss.settle();
 
-    await waitForHuman(
-      'smart-padding-010',
-      'Select "hello" in the terminal and press R-V to paste to the bound editor',
-      [
-        '1. In terminal "pad-010-src", mouse-select the output "hello"',
-        '2. Press R-C to copy the terminal selection, then press R-V to send',
-        '3. The bound editor (pad-010-dest) will receive the padded text',
-        '4. Click the notification Cancel button when done',
-      ],
-    );
+    await waitForHuman('smart-padding-010', 'Select "hello" in the terminal and press R-V to paste to the bound editor', [
+      '1. In terminal "pad-010-src", mouse-select the output "hello"',
+      '2. Press R-C to copy the terminal selection, then press R-V to send',
+      '3. The bound editor (pad-010-dest) will receive the padded text',
+      '4. Click the notification Cancel button when done',
+    ]);
 
     const destContent = (await vscode.workspace.openTextDocument(destUri)).getText();
-    assert.ok(
-      destContent.includes(' hello '),
-      `Expected dest to contain padded text " hello ", got: "${destContent}"`,
-    );
+    assert.ok(destContent.includes(' hello '), `Expected dest to contain padded text " hello ", got: "${destContent}"`);
     ss.log('✓ smart-padding-010: terminal selection sent to editor with padding (code verified)');
   });
 
   test('smart-padding-011: pasteContent=none — no padding applied when setting is off', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('smartPadding.pasteContent', 'none', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('smartPadding.pasteContent', 'none', vscode.ConfigurationTarget.Global);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("pad-011-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("pad-011-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("pad-011-dest")', '✓ RangeLink: Selected text sent to Terminal ("pad-011-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,

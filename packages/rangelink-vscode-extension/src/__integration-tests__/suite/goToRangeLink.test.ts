@@ -1,13 +1,5 @@
 import { CMD_GO_TO_RANGELINK } from '../../constants/commandIds';
-import {
-  assertInputBoxLogged,
-  getLogCapture,
-  openAndAccept,
-  openAndDismiss,
-  pasteIntoQuickInput,
-  standardSuite,
-  waitForHuman,
-} from '../helpers';
+import { assertInputBoxLogged, getLogCapture, openAndAccept, openAndDismiss, pasteIntoQuickInput, standardSuite, waitForHuman } from '../helpers';
 
 import assert from 'node:assert';
 import * as path from 'node:path';
@@ -20,8 +12,7 @@ const INPUT_BOX_OPTS = {
   prompt: 'Enter RangeLink to navigate',
   placeHolder: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
 };
-const buildFileContent = (lineCount: number): string =>
-  Array.from({ length: lineCount }, (_, i) => `${i + 1}: ${LINE_CONTENT}`).join('\n') + '\n';
+const buildFileContent = (lineCount: number): string => Array.from({ length: lineCount }, (_, i) => `${i + 1}: ${LINE_CONTENT}`).join('\n') + '\n';
 
 const submitLink = (text: string): Promise<void> =>
   openAndAccept(CMD_GO_TO_RANGELINK, async () => {
@@ -67,11 +58,7 @@ standardSuite('R-G Go to Link', (ss) => {
 
     const editor = vscode.window.activeTextEditor;
     assert.ok(editor, 'Expected an active text editor after navigation');
-    assert.strictEqual(
-      editor!.document.uri.fsPath,
-      uri.fsPath,
-      'Navigation opened a different document than expected',
-    );
+    assert.strictEqual(editor!.document.uri.fsPath, uri.fsPath, 'Navigation opened a different document than expected');
 
     const sel = editor!.selection;
     const endLineLength = editor!.document.lineAt(6).text.length;
@@ -112,11 +99,7 @@ standardSuite('R-G Go to Link', (ss) => {
 
     const editor = vscode.window.activeTextEditor;
     assert.ok(editor, 'Expected an active text editor after navigation');
-    assert.strictEqual(
-      editor!.document.uri.fsPath,
-      uri.fsPath,
-      'Navigation opened a different document than expected',
-    );
+    assert.strictEqual(editor!.document.uri.fsPath, uri.fsPath, 'Navigation opened a different document than expected');
 
     const sel = editor!.selection;
     assert.deepStrictEqual(

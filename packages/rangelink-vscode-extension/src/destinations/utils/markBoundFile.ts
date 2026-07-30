@@ -17,11 +17,7 @@ import type { EligibleFile } from '../../types';
  * @param boundFileViewColumn - viewColumn of the currently bound editor, or undefined for URI-only match
  * @returns New array with boundState set on every item
  */
-export const markBoundFile = (
-  files: readonly EligibleFile[],
-  boundFileUriString: string | undefined,
-  boundFileViewColumn?: number,
-): EligibleFile[] =>
+export const markBoundFile = (files: readonly EligibleFile[], boundFileUriString: string | undefined, boundFileViewColumn?: number): EligibleFile[] =>
   files.map((f) => ({
     ...f,
     boundState:
