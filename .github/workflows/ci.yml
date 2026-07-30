@@ -1,42 +1,38 @@
 name: CI
 
 on:
-  # Trigger on pull requests to any branch
   pull_request:
 
-  # Trigger on pushes to main branch
   push:
     branches:
       - main
 
 jobs:
-  test:
-    name: Test & Validate
+  ci:
+    name: CI Checks
+    uses: couimet/github-actions/.github/workflows/typescript-ci-checks.yml@main
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      build-command: pnpm compile
+      codecov-upload: true
+      codecov-files: packages/*/coverage/lcov.info
+      coverage-comment: true
+
+  shell-tests:
+    name: Shell Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Fetch more history for TODO comparison in PRs
-          fetch-depth: 0
           persist-credentials: false
-
-      - name: Test & Validate
-        uses: couimet/github-actions/typescript-ci@main
-
-      - name: Check no prerelease deps
-        uses: couimet/github-actions/check-no-prerelease-deps@main
-
-      - name: Check TODOs/FIXMEs
-        uses: ./.github/actions/check-todos
+      - uses: couimet/github-actions/bats-test@main
         with:
-          # For PRs: compare with base branch
-          # For pushes to main: just count current TODOs
-          base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   integration-tests:
     name: Integration Tests (${{ matrix.mode }})
@@ -67,8 +63,7 @@ jobs:
       - name: Record start time
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
