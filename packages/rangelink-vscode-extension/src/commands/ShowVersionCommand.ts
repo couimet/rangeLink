@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, type VersionInfo } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for displaying version information.

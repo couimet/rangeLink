@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { registerWithLogging } from './utils';
+
+import type * as vscode from 'vscode';
 
 /**
  * Abstraction over VS Code's context.subscriptions for testability.

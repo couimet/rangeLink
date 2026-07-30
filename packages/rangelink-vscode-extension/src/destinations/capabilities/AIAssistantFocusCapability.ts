@@ -1,11 +1,11 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../constants/aiAssistantPasteConstants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import type { ColdRefocusConfig } from './ColdRefocusConfig';
-import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * FocusCapability for AI assistant destinations.

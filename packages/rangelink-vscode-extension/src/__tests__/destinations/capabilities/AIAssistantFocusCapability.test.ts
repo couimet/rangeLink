@@ -1,10 +1,10 @@
-import type { LoggingContext } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from '../../../destinations/capabilities/ColdRefocusConfig';
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { createMockVscodeAdapter } from '../../helpers';
+
+import type { LoggingContext } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const FOCUS_COMMANDS = ['ai.focus'];
 const CTX: LoggingContext = { fn: 'test' };

@@ -1,11 +1,11 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
-
 import { computeRangeSpec } from '../../selection/computeRangeSpec';
 import * as validateInputSelectionModule from '../../selection/validateInputSelection';
 import { InputSelection } from '../../types/InputSelection';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+import { getUniqueInt } from '@couimet/dynamic-testing';
 
 describe('computeRangeSpec', () => {
   let startLine: number;

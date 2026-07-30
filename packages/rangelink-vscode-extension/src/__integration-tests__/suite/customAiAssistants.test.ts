@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
@@ -17,6 +13,9 @@ import {
   withClipboardSentinel,
 } from '../helpers';
 import { parseLogContext } from '../helpers/logBasedUiAssertions';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 6;
 
@@ -223,7 +222,7 @@ standardSuite('Custom AI Assistants', (_ss) => {
     );
   });
 
-  test('custom-ai-assistant-016: built-in GitHub Copilot Chat does not register as custom-ai kind', async () => {
+  test('custom-ai-assistant-016: built-in GitHub Copilot Chat does not register as custom-ai kind', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -347,8 +346,7 @@ standardSuite('Custom AI Assistants — Cold Start', (ss) => {
     await ss.settle();
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.ok(
       textResult!.tier1.length > 0,
@@ -392,8 +390,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await ss.settle();
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.ok(
       textResult!.tier1.length > 0,
@@ -457,8 +454,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.strictEqual(
       textResult!.tier1,
@@ -496,8 +492,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.strictEqual(
       textResult!.tier1,
@@ -529,8 +524,7 @@ standardSuite('Custom AI Assistants — Paste Flow', (ss) => {
     await ss.settle();
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.ok(
       textResult!.tier1.length > 0,
@@ -561,8 +555,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     await ss.settle();
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.ok(
       textResult!.tier1.length > 0,
@@ -604,8 +597,7 @@ standardSuite('Custom AI Assistants — Copilot Override', (ss) => {
     );
 
     const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+      { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
     assert.strictEqual(
       textResult!.tier1,

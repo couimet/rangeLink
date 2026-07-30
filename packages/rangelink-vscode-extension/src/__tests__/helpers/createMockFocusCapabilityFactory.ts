@@ -1,5 +1,7 @@
-import type { FocusCapabilityFactory } from '../../destinations/capabilities';
-import type { LazyResolvedFocusCapability } from '../../destinations/capabilities';
+import type {
+  FocusCapabilityFactory,
+  LazyResolvedFocusCapability,
+} from '../../destinations/capabilities';
 
 /**
  * Create a mock LazyResolvedFocusCapability for testing.

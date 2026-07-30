@@ -1,13 +1,12 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import { VSCODE_CMD_TERMINAL_PASTE } from '../constants';
 import type { TerminalPasteAdapter } from '../ide/TerminalPasteAdapter';
-import { BehaviourAfterPaste } from '../types';
-import type { SendTextToTerminalOptions } from '../types';
+import { BehaviourAfterPaste, SendTextToTerminalOptions } from '../types';
 import { ExtensionResult } from '../types/ExtensionResult';
 import { validateTerminalDefined } from '../utils';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Clipboard-aware terminal paste orchestration.

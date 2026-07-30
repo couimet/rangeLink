@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -14,7 +9,6 @@ import {
 } from '../../constants/commandIds';
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
-  TERMINAL_READY_MS,
   assertClipboardEqualsGeneratedLink,
   assertClipboardPreservedAndTerminalLink,
   assertTerminalBufferContains,
@@ -23,11 +17,16 @@ import {
   openAndDismiss,
   parseLogContext,
   standardSuite,
+  TERMINAL_READY_MS,
   withClipboardChanged,
   withClipboardSentinel,
   writeClipboardSentinel,
 } from '../helpers';
 import type { CapturingTerminal } from '../helpers/capturingPtyHelpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Clipboard Preservation', (ss) => {
   let testFileUri: vscode.Uri;

@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -16,22 +11,26 @@ import {
   assertClipboardEqualsGeneratedLink,
   assertFnLogged,
   assertNoClipboardWriteLogged,
+  assertQuickPickContains,
   assertTerminalBufferContains,
   assertTerminalBufferEqualsGeneratedLink,
   type CapturingTerminal,
   clearSelection,
   echoToTerminal,
   getGeneratedLink,
-  assertQuickPickContains,
+  getLogCapture,
   MENU_ITEM_GROUP_AI_ASSISTANTS,
   MENU_ITEM_GROUP_FILES,
   MENU_ITEM_GROUP_TERMINALS,
-  getLogCapture,
   openAndDismiss,
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
 } from '../helpers';
+
+import assert from 'node:assert';
+import path from 'node:path';
+import * as vscode from 'vscode';
 
 const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text and try again.';
 

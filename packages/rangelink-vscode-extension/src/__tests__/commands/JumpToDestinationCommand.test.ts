@@ -1,15 +1,20 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { JumpToDestinationCommand } from '../../commands';
-import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
-import type { BoundSession } from '../../destinations';
-import type { DestinationPicker } from '../../destinations';
+import type {
+  BoundSession,
+  DestinationPicker,
+  FocusSuccessInfo,
+  PasteDestinationManager,
+} from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
-import type { BindOptions, DestinationPickerResult } from '../../types';
-import { ExtensionResult } from '../../types';
-import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+import { BindOptions, DestinationPickerResult, ExtensionResult } from '../../types';
+import {
+  createMockBoundSession,
+  createMockDestinationManager,
+  createMockDestinationPicker,
+} from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('JumpToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {

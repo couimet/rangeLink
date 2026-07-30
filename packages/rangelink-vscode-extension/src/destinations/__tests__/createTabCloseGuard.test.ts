@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import { createMockOperationFeedbackProvider, createMockUri } from '../../__tests__/helpers';
 import { createTabCloseGuard } from '../createTabCloseGuard';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 describe('createTabCloseGuard', () => {
   let mockEvents: {

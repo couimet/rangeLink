@@ -7,15 +7,15 @@
  *
  * Purpose: Ensure mocks used in unit tests accurately represent real rangelink-core-ts behavior.
  */
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { type DelimiterConfig, LinkType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import {
   generateLinkFromSelections,
   type GenerateLinkFromSelectionsOptions,
 } from '../../utils/generateLinkFromSelections';
 import { createMockDocument, createMockPosition, createMockSelection } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { type DelimiterConfig, LinkType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const DELIMITERS: DelimiterConfig = {
   line: 'L',

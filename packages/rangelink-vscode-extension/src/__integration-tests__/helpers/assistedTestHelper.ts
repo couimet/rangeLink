@@ -1,5 +1,4 @@
 import { Console } from 'node:console';
-
 import * as vscode from 'vscode';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
@@ -105,7 +104,7 @@ let activeVerdictReject: ((reason: unknown) => void) | undefined;
  * @param consoleSteps - Optional bulleted steps (shown in the terminal console)
  * @returns `'pass'` if the human clicked the Pass status bar item, `'fail'` otherwise
  */
-export const waitForHumanVerdict = async (
+export const waitForHumanVerdict = (
   tcId: string,
   action: string,
   consoleSteps?: string[],
@@ -135,54 +134,56 @@ export const waitForHumanVerdict = async (
   const passCommand = `${VERDICT_PASS_COMMAND_PREFIX}.${invocationId}`;
   const failCommand = `${VERDICT_FAIL_COMMAND_PREFIX}.${invocationId}`;
 
-  return vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: `🧪 ${tcId}: ${action}`,
-      cancellable: false,
-    },
-    (progress) => {
-      progress.report({ message: 'Verdict — status bar (bottom-left)' });
+  return Promise.resolve(
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `🧪 ${tcId}: ${action}`,
+        cancellable: false,
+      },
+      (progress) => {
+        progress.report({ message: 'Verdict — status bar (bottom-left)' });
 
-      return new Promise<HumanVerdict>((resolve, reject) => {
-        activeVerdictReject = reject;
-        const disposables: vscode.Disposable[] = [];
-        let settled = false;
+        return new Promise<HumanVerdict>((resolve, reject) => {
+          activeVerdictReject = reject;
+          const disposables: vscode.Disposable[] = [];
+          let settled = false;
 
-        const settleWith = (verdict: HumanVerdict): void => {
-          if (settled) return;
-          settled = true;
-          activeVerdictDisposables = undefined;
-          activeVerdictReject = undefined;
-          for (const d of disposables) {
-            d.dispose();
-          }
-          resolve(verdict);
-        };
+          const settleWith = (verdict: HumanVerdict): void => {
+            if (settled) return;
+            settled = true;
+            activeVerdictDisposables = undefined;
+            activeVerdictReject = undefined;
+            for (const d of disposables) {
+              d.dispose();
+            }
+            resolve(verdict);
+          };
 
-        disposables.push(
-          vscode.commands.registerCommand(passCommand, () => settleWith('pass')),
-          vscode.commands.registerCommand(failCommand, () => settleWith('fail')),
-        );
+          disposables.push(
+            vscode.commands.registerCommand(passCommand, () => settleWith('pass')),
+            vscode.commands.registerCommand(failCommand, () => settleWith('fail')),
+          );
 
-        const passItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
-        passItem.text = `$(check) PASS [${tcId}]`;
-        passItem.tooltip = `Click if the expected behavior was observed for ${tcId}`;
-        passItem.command = passCommand;
-        passItem.color = new vscode.ThemeColor('testing.iconPassed');
-        passItem.show();
-        disposables.push(passItem);
+          const passItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
+          passItem.text = `$(check) PASS [${tcId}]`;
+          passItem.tooltip = `Click if the expected behavior was observed for ${tcId}`;
+          passItem.command = passCommand;
+          passItem.color = new vscode.ThemeColor('testing.iconPassed');
+          passItem.show();
+          disposables.push(passItem);
 
-        const failItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 9999);
-        failItem.text = `$(x) FAIL [${tcId}]`;
-        failItem.tooltip = `Click if the expected behavior was NOT observed for ${tcId}`;
-        failItem.command = failCommand;
-        failItem.color = new vscode.ThemeColor('testing.iconFailed');
-        failItem.show();
-        disposables.push(failItem);
+          const failItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 9999);
+          failItem.text = `$(x) FAIL [${tcId}]`;
+          failItem.tooltip = `Click if the expected behavior was NOT observed for ${tcId}`;
+          failItem.command = failCommand;
+          failItem.color = new vscode.ThemeColor('testing.iconFailed');
+          failItem.show();
+          disposables.push(failItem);
 
-        activeVerdictDisposables = disposables;
-      });
-    },
+          activeVerdictDisposables = disposables;
+        });
+      },
+    ),
   );
 };

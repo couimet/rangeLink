@@ -1,6 +1,6 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ManualPasteInsertFactory } from '../../../../destinations/capabilities/insertFactories/manualPasteInsertFactory';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const LINK_TEXT = 'src/app.ts#L10-L20';
 const LINK_TEXT_LENGTH = LINK_TEXT.length;

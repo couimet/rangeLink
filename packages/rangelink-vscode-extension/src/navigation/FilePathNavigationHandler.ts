@@ -1,10 +1,9 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import os from 'node:os';
 
 /**
  * Navigation handler for plain file path navigation.

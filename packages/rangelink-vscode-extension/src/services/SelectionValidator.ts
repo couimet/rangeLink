@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { ActiveSelections, MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Validates active editor selections and provides diagnostic logging.
@@ -21,8 +21,7 @@ export class SelectionValidator {
    * @returns Object with editor and selections if valid, undefined if validation failed
    */
   validateSelectionsAndShowError():
-    | { editor: vscode.TextEditor; selections: readonly vscode.Selection[] }
-    | undefined {
+    { editor: vscode.TextEditor; selections: readonly vscode.Selection[] } | undefined {
     const logCtx = { fn: 'SelectionValidator.validateSelectionsAndShowError' };
     const activeSelections = ActiveSelections.create(this.ideAdapter.activeTextEditor);
 

@@ -1,18 +1,20 @@
-import type * as vscode from 'vscode';
-
 import {
   createMockComposablePasteDestination,
   type MockComposablePasteDestinationConfig,
 } from './createMockComposablePasteDestination';
 import { createMockTerminal } from './createMockTerminal';
 
+import type * as vscode from 'vscode';
+
 /**
  * Configuration overrides for creating a mock terminal ComposablePasteDestination.
  *
  * Extends base config with terminal-specific options.
  */
-export interface MockTerminalComposablePasteDestinationConfig
-  extends Omit<MockComposablePasteDestinationConfig, 'resource'> {
+export interface MockTerminalComposablePasteDestinationConfig extends Omit<
+  MockComposablePasteDestinationConfig,
+  'resource'
+> {
   /** Terminal to use. If not provided, creates a mock terminal. */
   terminal?: vscode.Terminal;
   /** Process ID for the terminal. Defaults to 12345. */

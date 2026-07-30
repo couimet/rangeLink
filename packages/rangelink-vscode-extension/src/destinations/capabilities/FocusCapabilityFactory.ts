@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { TerminalPasteService } from '../../services';
@@ -19,6 +16,9 @@ import {
 } from './insertFactories';
 import { LazyResolvedFocusCapability } from './LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from './TerminalFocusCapability';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Factory for creating FocusCapability instances with InsertFactory injection.

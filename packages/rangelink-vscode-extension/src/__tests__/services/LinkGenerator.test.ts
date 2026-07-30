@@ -1,7 +1,3 @@
-import { DetailedResult } from '@couimet/detailed-result';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { type DelimiterConfig, type DelimiterConfigGetter } from 'rangelink-core-ts';
-
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { LinkGenerator } from '../../services/LinkGenerator';
 import { DirtyBufferWarningResult } from '../../types';
@@ -18,6 +14,10 @@ import {
   spyOnGenerateLinkFromSelections,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { type DelimiterConfig, type DelimiterConfigGetter } from 'rangelink-core-ts';
 
 const DELIMITERS: DelimiterConfig = { line: 'L', position: 'C', hash: '#', range: '-' };
 const getDelimiters: DelimiterConfigGetter = () => DELIMITERS;

@@ -1,9 +1,12 @@
-import * as path from 'node:path';
-
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
-import type { ResolvedPath, ResolveWorkspacePathResult } from '../../types/ResolvedPath';
+import {
+  FILENAME_AMBIGUOUS,
+  ResolvedPath,
+  ResolveWorkspacePathResult,
+} from '../../types/ResolvedPath';
 import { resolveWorkspacePath } from '../../utils';
 import { createMockUri, createMockWorkspaceFolder } from '../helpers';
+
+import * as path from 'node:path';
 
 const expectResolvedPath = (result: ResolveWorkspacePathResult): ResolvedPath => {
   expect(result).toBeDefined();

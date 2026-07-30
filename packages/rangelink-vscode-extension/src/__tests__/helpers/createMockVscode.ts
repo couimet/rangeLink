@@ -19,8 +19,6 @@
  * ============================================================================
  */
 
-import * as vscode from 'vscode';
-
 import {
   createMockCommands,
   type MockCommands,
@@ -34,6 +32,8 @@ import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
 import { MockTabInputText } from './tabTestHelpers';
+
+import * as vscode from 'vscode';
 
 /**
  * Options for creating mock vscode instances.

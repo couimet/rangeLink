@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_COPY_LINK_ONLY_RELATIVE,
@@ -14,6 +10,9 @@ import {
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 standardSuite('Unbind Destination', (ss) => {
   test('unbind-001: unbindDestination unbinds a currently bound terminal destination', async () => {

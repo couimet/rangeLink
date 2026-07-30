@@ -2,14 +2,14 @@
  * Tests for isCursorIDEDetected utility.
  */
 
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
 import { CURSOR_AI_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { isCursorIDEDetected } from '../../aiAssistants/isCursorIDEDetected';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('isCursorIDEDetected', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;

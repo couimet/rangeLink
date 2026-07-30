@@ -2,9 +2,9 @@
  * Create a mock workspace object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
+
+import * as vscode from 'vscode';
 
 /**
  * Create a mock workspace object for navigation tests.

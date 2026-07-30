@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ReleaseNotifier } from '../../notification/ReleaseNotifier';
 import type { VersionInfo } from '../../types';
 import { createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ReleaseNotifier', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

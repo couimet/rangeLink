@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
@@ -12,6 +10,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('FocusCapabilityFactory', () => {
   let factory: FocusCapabilityFactory;

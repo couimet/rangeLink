@@ -5,10 +5,10 @@
  * These guards eliminate the need for `instanceof` checks and direct resource
  * access scattered throughout the codebase.
  */
-import type * as vscode from 'vscode';
-
 import { ComposablePasteDestination, type PasteDestination } from '../destinations';
 import type { DestinationKind } from '../types';
+
+import type * as vscode from 'vscode';
 
 /**
  * Generic null-safe type check for any destination kind.

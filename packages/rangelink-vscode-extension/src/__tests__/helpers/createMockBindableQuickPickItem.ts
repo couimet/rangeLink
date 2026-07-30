@@ -1,5 +1,3 @@
-import type * as vscode from 'vscode';
-
 import type {
   AIAssistantDestinationKind,
   BindableQuickPickItem,
@@ -14,6 +12,8 @@ import type {
 
 import { createMockEligibleFile } from './createMockEligibleFile';
 import { createMockEligibleTerminal } from './createMockEligibleTerminal';
+
+import type * as vscode from 'vscode';
 
 /**
  * Create a mock TerminalBindableQuickPickItem for a terminal.

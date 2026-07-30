@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -11,8 +6,6 @@ import {
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  MENU_ITEM_GROUP_AI_ASSISTANTS,
-  MENU_ITEM_GROUP_TERMINALS,
   assertQuickPickContains,
   assertQuickPickItemsLogged,
   closeAllEditors,
@@ -22,12 +15,18 @@ import {
   findTestItemsByPrefix,
   getLogCapture,
   getQuickPickLines,
+  MENU_ITEM_GROUP_AI_ASSISTANTS,
+  MENU_ITEM_GROUP_TERMINALS,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('R-D Bind to Destination', (ss) => {
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>

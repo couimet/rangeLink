@@ -1,8 +1,7 @@
-import * as vscode from 'vscode';
-
-import type { FileBindableQuickPickItem } from '../../types';
-import { MessageCode } from '../../types';
+import { FileBindableQuickPickItem, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
+
+import * as vscode from 'vscode';
 
 const makeSeparator = (label: string): vscode.QuickPickItem => ({
   label,

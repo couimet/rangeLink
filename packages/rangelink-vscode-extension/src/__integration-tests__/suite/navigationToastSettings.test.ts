@@ -1,14 +1,13 @@
-import assert from 'node:assert';
-
-import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import {
   assertSuppressionLogged,
   getLogCapture,
   navigateViaHandleLinkClick,
   standardSuite,
 } from '../helpers';
+
+import assert from 'node:assert';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 standardSuite('Navigation Toast Settings', (ss) => {
   teardown(async () => {

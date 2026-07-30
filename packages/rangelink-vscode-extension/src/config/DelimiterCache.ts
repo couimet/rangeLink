@@ -1,11 +1,11 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfig } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import { getDelimitersForExtension } from './getDelimitersForExtension';
 import type { ConfigGetter } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import type { DelimiterConfig } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 /**
  * Caches the active delimiter configuration and refreshes it automatically

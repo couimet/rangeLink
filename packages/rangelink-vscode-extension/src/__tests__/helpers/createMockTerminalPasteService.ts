@@ -1,6 +1,6 @@
-import { DetailedResult } from '@couimet/detailed-result';
-
 import type { TerminalPasteService } from '../../services';
+
+import { DetailedResult } from '@couimet/detailed-result';
 
 export const createMockTerminalPasteService = (): jest.Mocked<TerminalPasteService> =>
   ({

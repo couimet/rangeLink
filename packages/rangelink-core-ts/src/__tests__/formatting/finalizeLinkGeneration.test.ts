@@ -1,5 +1,3 @@
-import { getLogger } from '@couimet/logger-contract';
-
 import {
   finalizeLinkGeneration,
   LinkGenerationResult,
@@ -9,6 +7,8 @@ import { LinkType } from '../../types/LinkType';
 import { RangeFormat } from '../../types/RangeFormat';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+import { getLogger } from '@couimet/logger-contract';
 
 describe('finalizeLinkGeneration', () => {
   const defaultDelimiters: DelimiterConfig = {

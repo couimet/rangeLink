@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { AIAssistantInsertFactory } from '../../../../destinations/capabilities/insertFactories/aiAssistantInsertFactory';
 import { createMockVscodeAdapter } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('AIAssistantInsertFactory', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

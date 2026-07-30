@@ -2,9 +2,9 @@
  * Configure workspace mocks for typical file editor tests
  */
 
-import * as vscode from 'vscode';
-
 import { createMockTabGroups } from './createMockTabGroups';
+
+import * as vscode from 'vscode';
 
 /**
  * Configure workspace mocks for typical file editor tests.

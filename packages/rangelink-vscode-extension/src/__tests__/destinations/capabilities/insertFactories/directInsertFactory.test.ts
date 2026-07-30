@@ -1,8 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
-import { DirectInsertFactory } from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
-import type { InsertCommandEntry } from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
+import {
+  DirectInsertFactory,
+  InsertCommandEntry,
+} from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
 import { createMockVscodeAdapter } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const LINK_TEXT = 'src/app.ts#L10-L20';
 

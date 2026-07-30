@@ -1,6 +1,6 @@
-import { defineConfig } from '@vscode/test-cli';
-
 import { ASSISTED_TIMEOUT_MS, BASE_CONFIG, userDataDir } from './.vscode-test.base.mjs';
+
+import { defineConfig } from '@vscode/test-cli';
 
 // Marketplace extensions installed before tests run. With these present,
 // isGeminiCodeAssistAvailable() and isClaudeCodeAvailable() return true,

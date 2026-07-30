@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_BIND_TO_DESTINATION } from '../../constants/commandIds';
 import {
   extractQuickPickItemsLogged,
@@ -12,6 +7,10 @@ import {
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Editor Binding Validation', (ss) => {
   test('[assisted] editor-binding-validation-001: search editor content hides link and bind commands', async () => {

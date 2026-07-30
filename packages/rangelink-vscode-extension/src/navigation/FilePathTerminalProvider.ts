@@ -1,13 +1,11 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
-import type { FilePathTerminalLink } from '../types';
-import { MessageCode } from '../types';
+import { FilePathTerminalLink, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { buildFilePathPattern, DelimiterConfigGetter, extractFilePath } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Terminal link provider for plain file path detection.

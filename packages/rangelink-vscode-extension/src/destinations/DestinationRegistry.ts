@@ -1,15 +1,14 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
-import type { BindOptions, DestinationKind } from '../types';
+import { BindOptions, DestinationKind, MessageCode } from '../types';
 import { formatMessage } from '../utils/formatMessage';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { FocusCapabilityFactory } from './capabilities/FocusCapabilityFactory';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Maps destination kinds to their i18n MessageCode for display names.

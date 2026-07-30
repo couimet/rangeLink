@@ -1,5 +1,3 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
-
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { validateInputSelection } from '../../selection/validateInputSelection';
@@ -8,6 +6,8 @@ import { validateRectangularMode } from '../../selection/validateRectangularMode
 import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+import { getUniqueInt } from '@couimet/dynamic-testing';
 
 jest.mock('../../selection/validateNormalMode');
 jest.mock('../../selection/validateRectangularMode');

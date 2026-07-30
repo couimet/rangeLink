@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createBindAIAssistantCommand } from '../../commands/createBindAIAssistantCommand';
 import { AI_ASSISTANT_KINDS, type AIAssistantDestinationKind } from '../../types';
 import {
@@ -8,6 +6,8 @@ import {
   createMockVscodeAdapter,
   spyOnFormatMessage,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('createBindAIAssistantCommand', () => {
   const mockLogger = createMockLogger();

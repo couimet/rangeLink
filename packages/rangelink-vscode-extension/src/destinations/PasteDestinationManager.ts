@@ -1,6 +1,3 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import type { FormattedLink } from 'rangelink-core-ts';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { BindingFeedback } from '../feedback';
@@ -23,6 +20,9 @@ import type { DestinationBinder } from './DestinationBinder';
 import type { DestinationFocuser } from './DestinationFocuser';
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type { FormattedLink } from 'rangelink-core-ts';
 
 /**
  * Success information returned when binding to a destination.
@@ -51,7 +51,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     private readonly logger: Logger,
   ) {}
 
-  async bind(
+  bind(
     options: BindOptions,
     statusBarOptions?: StatusBarOptions,
   ): Promise<ExtensionResult<BindSuccessInfo>> {
@@ -171,7 +171,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
     return ExtensionResult.ok({ destinationName: displayName, destinationKind });
   }
 
-  async sendLinkToDestination(formattedLink: FormattedLink): Promise<boolean> {
+  sendLinkToDestination(formattedLink: FormattedLink): Promise<boolean> {
     return this.executeSend({
       logContext: {
         fn: 'PasteDestinationManager.sendLinkToDestination',
@@ -189,7 +189,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
    * @param content - The text content to send
    * @returns true if sent successfully, false otherwise
    */
-  async sendTextToDestination(content: string): Promise<boolean> {
+  sendTextToDestination(content: string): Promise<boolean> {
     return this.executeSend({
       logContext: {
         fn: 'PasteDestinationManager.sendTextToDestination',

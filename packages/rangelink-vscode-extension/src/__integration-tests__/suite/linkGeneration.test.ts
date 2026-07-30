@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { CMD_COPY_LINK_ONLY_RELATIVE } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
@@ -9,6 +5,9 @@ import {
   standardSuite,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 standardSuite('Link Generation', (ss) => {
   test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {

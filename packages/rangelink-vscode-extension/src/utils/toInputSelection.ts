@@ -1,11 +1,11 @@
-import type { Logger } from '@couimet/logger-contract';
-import { InputSelection, Selection, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { isRectangularSelection } from '../isRectangularSelection';
 import { ExtensionResult } from '../types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { InputSelection, Selection, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Adapter: Converts VSCode Selections to core InputSelection interface

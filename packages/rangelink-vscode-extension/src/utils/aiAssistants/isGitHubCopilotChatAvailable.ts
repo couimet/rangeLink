@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../destinations/aiAssistantFocusCommands';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { EXTENSION_ID_GITHUB_COPILOT_CHAT } from './builtInAiAssistants';
+
+import type { Logger } from '@couimet/logger-contract';
 
 export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';
 

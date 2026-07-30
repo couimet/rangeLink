@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { TextSelectionPaster } from '../../services/TextSelectionPaster';
 import {
   createMockConfigReader,
@@ -10,6 +8,8 @@ import {
   createMockText,
   createMockUri,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TextSelectionPaster', () => {
   let paster: TextSelectionPaster;

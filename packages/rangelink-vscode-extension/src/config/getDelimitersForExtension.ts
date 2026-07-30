@@ -1,12 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfig } from 'rangelink-core-ts';
-
 import type { ErrorFeedbackProvider } from '../ide/ErrorFeedbackProvider';
 import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import { loadDelimiterConfig } from './loadDelimiterConfig';
 import type { ConfigGetter } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import type { DelimiterConfig } from 'rangelink-core-ts';
 
 /**
  * Load delimiter configuration with user notification on validation errors.

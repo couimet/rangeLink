@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { interpolateArgs } from '../../../utils';
 
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Normalized insert command entry — plain string commands are normalized

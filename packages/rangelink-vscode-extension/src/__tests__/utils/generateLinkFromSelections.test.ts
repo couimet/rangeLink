@@ -1,16 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import {
-  CoreResult,
-  DelimiterConfig,
-  LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  SelectionCoverage,
-  SelectionType,
-} from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../../types';
@@ -26,6 +13,19 @@ import {
   spyOnFormatLink,
   spyOnToInputSelection,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import {
+  CoreResult,
+  DelimiterConfig,
+  LinkType,
+  RangeLinkError,
+  RangeLinkErrorCodes,
+  SelectionCoverage,
+  SelectionType,
+} from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const DELIMITERS: DelimiterConfig = {
   line: 'L',

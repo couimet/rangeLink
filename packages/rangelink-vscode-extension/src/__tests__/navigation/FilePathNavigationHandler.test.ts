@@ -1,9 +1,3 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
-
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import { PathFormat } from '../../types/PathFormat';
 import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
@@ -12,6 +6,11 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import os from 'node:os';
+import { buildFilePathPattern, DEFAULT_DELIMITERS, extractFilePath } from 'rangelink-core-ts';
 
 describe('FilePathNavigationHandler', () => {
   let handler: FilePathNavigationHandler;

@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { FilePathPaster, getReferencePath } from '../../services/FilePathPaster';
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { DirtyBufferWarningResult, PathFormat } from '../../types';
@@ -13,6 +11,8 @@ import {
   spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('getReferencePath', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;

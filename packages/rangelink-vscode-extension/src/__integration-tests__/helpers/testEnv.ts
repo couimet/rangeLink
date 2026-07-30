@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';

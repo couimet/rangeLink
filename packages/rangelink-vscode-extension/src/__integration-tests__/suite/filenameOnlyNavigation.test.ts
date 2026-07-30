@@ -1,10 +1,3 @@
-import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 import {
   clearEditorSelection,
@@ -12,6 +5,12 @@ import {
   navigateViaHandleLinkClick,
   standardSuite,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const DUPLICATE_FILE_CONTENT = 'duplicate file content\n';
 
@@ -24,7 +23,7 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
   let duplicateFilePath1: string;
   let duplicateFilePath2: string;
 
-  suiteSetup(async () => {
+  suiteSetup(() => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
 
     uniqueFilename = `__rl-test-fallback-${Date.now()}.ts`;
@@ -48,9 +47,10 @@ standardSuite('Filename-Only Navigation Fallback', (ss) => {
     fs.writeFileSync(duplicateFilePath2, DUPLICATE_FILE_CONTENT, 'utf8');
   });
 
-  suiteTeardown(async () => {
+  suiteTeardown(() => {
     try {
       fs.unlinkSync(uniqueFilePath);
+      fs.rmdirSync(path.dirname(uniqueFilePath));
     } catch {
       // best-effort — subdirectory file, not managed by cleanupFiles
     }

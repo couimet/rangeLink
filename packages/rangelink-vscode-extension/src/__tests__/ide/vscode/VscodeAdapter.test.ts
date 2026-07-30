@@ -1,7 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import { projectTestStatusFields, VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
@@ -18,6 +14,10 @@ import {
   createMockVscode,
   spyOnResolveWorkspacePath,
 } from '../../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 // ============================================================================
 // Tests
@@ -567,9 +567,8 @@ describe('VscodeAdapter', () => {
       process.env.RANGELINK_CAPTURE_LOGS = 'true';
       try {
         jest.resetModules();
-        const { VscodeAdapter: CapturingAdapter } = await import(
-          '../../../ide/vscode/VscodeAdapter'
-        );
+        const { VscodeAdapter: CapturingAdapter } =
+          await import('../../../ide/vscode/VscodeAdapter');
         const capturingAdapter = new CapturingAdapter(mockVSCode, mockLogger);
 
         const items = [

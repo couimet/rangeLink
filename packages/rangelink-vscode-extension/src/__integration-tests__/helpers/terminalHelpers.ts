@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-
 import { settle, TERMINAL_READY_MS } from './testEnv';
+
+import * as vscode from 'vscode';
 
 export const echoToTerminal = (terminal: vscode.Terminal, text: string): void => {
   const escaped = text.replace(/'/g, "'\\''");

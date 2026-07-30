@@ -1,12 +1,12 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-
 import {
   createMockConfigGetter,
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../__tests__/helpers';
 import { DelimiterCache } from '../DelimiterCache';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 const CUSTOM_DELIMITERS = {
   hash: '$',

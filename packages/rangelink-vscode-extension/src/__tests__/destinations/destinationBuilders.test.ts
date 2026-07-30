@@ -1,13 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import {
   buildTerminalDestination,
   buildTextEditorDestination,
   createCustomAiAssistantBuilder,
-  type DestinationBuilderContext,
   type DestinationBuilder,
+  type DestinationBuilderContext,
   registerAllDestinationBuilders,
   resolveKindByExtensionId,
 } from '../../destinations';
@@ -26,6 +23,9 @@ import {
   spyOnIsGeminiCodeAssistAvailable,
   spyOnIsGitHubCopilotChatAvailable,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 describe('destinationBuilders', () => {
   const mockLogger = createMockLogger();
@@ -318,7 +318,7 @@ describe('destinationBuilders', () => {
     });
 
     it('gemini-code-assist isAvailable delegates to isGeminiCodeAssistAvailable', async () => {
-      const spy = spyOnIsGeminiCodeAssistAvailable().mockResolvedValue(true);
+      const spy = spyOnIsGeminiCodeAssistAvailable().mockReturnValue(true);
       const builder = getBuiltinBuilder('gemini-code-assist');
       const context = createMockContext();
       const destination = builder({ kind: 'gemini-code-assist' }, context);

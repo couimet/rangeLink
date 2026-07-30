@@ -2,11 +2,11 @@
  * Create a mock TextEditor for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockDocument } from './createMockDocument';
 import { createMockText } from './createMockText';
 import { createMockUri } from './createMockUri';
+
+import * as vscode from 'vscode';
 
 /**
  * Structured options for creating mock editors with common test scenarios.

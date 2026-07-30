@@ -1,9 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { CoreResult, DelimiterConfigGetter, ParsedLink } from 'rangelink-core-ts';
-import { SelectionType, parseLink } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-import { TextEditorRevealType } from 'vscode';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import {
   DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
@@ -21,6 +15,16 @@ import {
   formatLinkPosition,
   formatMessage,
 } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import {
+  CoreResult,
+  DelimiterConfigGetter,
+  ParsedLink,
+  parseLink,
+  SelectionType,
+} from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Navigation handler for RangeLink file navigation.
@@ -238,7 +242,7 @@ export class RangeLinkNavigationHandler {
       // Reveal the selection
       editor.revealRange(
         this.ideAdapter.createRange(vsStart, vsEnd),
-        TextEditorRevealType.InCenterIfOutsideViewport,
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
       );
 
       this.logger.info(

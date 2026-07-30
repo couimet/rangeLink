@@ -1,15 +1,15 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockBookmarksStore,
+  createMockBoundSession,
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
   createMockVscodeAdapter,
 } from '../../__tests__/helpers';
-import { createMockBoundSession } from '../../__tests__/helpers';
 import type { Bookmark } from '../../bookmarks';
 import { BookmarkService } from '../BookmarkService';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BookmarkService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -131,7 +131,7 @@ describe('BookmarkService', () => {
         mockLogger,
       );
 
-      await expect(async () => service.sendBookmark('bookmark-1')).toThrowDetailedErrorAsync(
+      await expect(() => service.sendBookmark('bookmark-1')).toThrowDetailedErrorAsync(
         'DESTINATION_NOT_BOUND',
         {
           message: 'Cannot send bookmark: no destination is currently bound',

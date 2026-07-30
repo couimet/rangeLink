@@ -1,8 +1,7 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { standardSuite, waitForHumanVerdict } from '../helpers';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 standardSuite('Platform Keybindings', (ss) => {
   test('[assisted] ubuntu-ctrl-keybindings-001: Ctrl+R chords work on Ubuntu/Linux', async () => {

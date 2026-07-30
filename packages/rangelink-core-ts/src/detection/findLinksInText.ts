@@ -1,5 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 import { buildLinkPattern } from '../utils/buildLinkPattern';
@@ -7,6 +5,8 @@ import { buildLinkPattern } from '../utils/buildLinkPattern';
 import { detectQuotedLinks } from './detectQuotedLinks';
 import { detectUnquotedLinks } from './detectUnquotedLinks';
 import type { Cancellable } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 export type { Cancellable } from './types';
 

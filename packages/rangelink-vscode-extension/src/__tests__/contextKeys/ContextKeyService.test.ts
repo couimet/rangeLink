@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ContextKeyService } from '../../contextKeys/ContextKeyService';
 import {
   createMockBoundSession,
@@ -8,6 +6,8 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const MINIMAL_PTY = {
   onDidWrite: jest.fn(),

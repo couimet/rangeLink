@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockConfigGetter, createMockConfigurationProvider } from '../../__tests__/helpers';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 import { ConfigReader } from '../ConfigReader';
 import type { ConfigGetterFactory } from '../types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 let mockLogger: Logger;
 let reader: ConfigReader;

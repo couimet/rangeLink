@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_GO_TO_RANGELINK } from '../../constants/commandIds';
 import {
   assertInputBoxLogged,
@@ -13,6 +8,10 @@ import {
   standardSuite,
   waitForHuman,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const TEST_FILE_LINE_COUNT = 25;
 const LINE_CONTENT = 'line content for go-to-link assisted tests — column-safe filler text';

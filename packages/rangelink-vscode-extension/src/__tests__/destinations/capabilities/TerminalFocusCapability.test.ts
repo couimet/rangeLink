@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
 import { RangeLinkExtensionError } from '../../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../../errors/RangeLinkExtensionErrorCodes';
@@ -10,6 +7,9 @@ import {
   createMockTerminal,
   createMockVscodeAdapter,
 } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 const LOGGING_CONTEXT = { fn: 'test' };
 

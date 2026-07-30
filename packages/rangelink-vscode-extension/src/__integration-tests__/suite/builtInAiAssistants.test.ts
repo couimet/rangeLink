@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-
-import type { Context as MochaContext } from 'mocha';
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
@@ -32,6 +27,10 @@ import {
   waitForHumanVerdict,
   withClipboardSentinel,
 } from '../helpers';
+
+import type { Context as MochaContext } from 'mocha';
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
@@ -839,7 +838,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     ss.log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
   });
 
-  test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', async function (this: MochaContext) {
+  test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', function (this: MochaContext) {
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
     const totalMs = config.get<number>('coldStartDelayMs', 1500);
     const intervalMs = config.get<number>('coldRefocusIntervalMs', 300);
@@ -934,7 +933,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     ss.log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
   });
 
-  test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', async () => {
+  test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', () => {
     const config = vscode.workspace.getConfiguration('rangelink.destinations.gemini');
     const totalMs = config.get<number>(
       'coldStartDelayMs',

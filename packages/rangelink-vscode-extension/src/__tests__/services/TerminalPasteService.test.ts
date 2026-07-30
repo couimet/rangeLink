@@ -1,16 +1,15 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalPasteService } from '../../services';
-import { ExtensionResult } from '../../types';
-import { BehaviourAfterPaste } from '../../types';
+import { BehaviourAfterPaste, ExtensionResult } from '../../types';
 import {
   createMockClipboardService,
   createMockTerminal,
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalPasteService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

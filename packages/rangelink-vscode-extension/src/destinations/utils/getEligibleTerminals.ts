@@ -32,7 +32,7 @@ export const getEligibleTerminals = async (
   }
   const activeTerminal = ideAdapter.activeTerminal;
 
-  return Promise.all(
+  return await Promise.all(
     bindableTerminals.map(async (terminal) => {
       const processId = await terminal.processId.then(
         (pid) => pid ?? undefined,

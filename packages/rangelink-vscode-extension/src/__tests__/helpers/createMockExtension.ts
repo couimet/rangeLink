@@ -2,9 +2,9 @@
  * Create a mock vscode.Extension object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockUri } from './createMockUri';
+
+import * as vscode from 'vscode';
 
 /**
  * Options for creating a mock extension.

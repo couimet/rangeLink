@@ -1,10 +1,3 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { FilePathDocumentProvider } from '../../navigation/FilePathDocumentProvider';
 import type { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import type { FilePathClickArgs } from '../../types';
@@ -17,6 +10,12 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import os from 'node:os';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 

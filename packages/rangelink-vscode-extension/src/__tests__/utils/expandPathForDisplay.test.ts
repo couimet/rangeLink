@@ -1,6 +1,6 @@
-import os from 'node:os';
-
 import { expandPathForDisplay } from '../../utils/expandPathForDisplay';
+
+import os from 'node:os';
 
 const CONTEXT_FS_PATH = '/workspace/docs/notes.md';
 const CONTEXT_DIR = '/workspace/docs';

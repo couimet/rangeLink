@@ -1,9 +1,8 @@
+import { getWorkspaceRoot } from './testEnv';
+
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
 import * as vscode from 'vscode';
-
-import { getWorkspaceRoot } from './testEnv';
 
 let cachedRangelinkKeys: string[] | undefined;
 

@@ -1,9 +1,9 @@
+import { createMockConfigGetter, createMockErrorFeedbackProvider } from '../../__tests__/helpers';
+import { getDelimitersForExtension } from '../getDelimitersForExtension';
+
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-
-import { createMockConfigGetter, createMockErrorFeedbackProvider } from '../../__tests__/helpers';
-import { getDelimitersForExtension } from '../getDelimitersForExtension';
 
 let logger: Logger;
 

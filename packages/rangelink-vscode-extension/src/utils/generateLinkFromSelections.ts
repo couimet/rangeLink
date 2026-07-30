@@ -1,18 +1,18 @@
-import type { Logger } from '@couimet/logger-contract';
-import {
-  DelimiterConfig,
-  formatLink,
-  type FormattedLink,
-  FormatOptions,
-  LinkType,
-} from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../types';
 
 import { toInputSelection } from './toInputSelection';
+
+import type { Logger } from '@couimet/logger-contract';
+import {
+  DelimiterConfig,
+  formatLink,
+  FormatOptions,
+  type FormattedLink,
+  LinkType,
+} from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Options for generating a link from editor selections.

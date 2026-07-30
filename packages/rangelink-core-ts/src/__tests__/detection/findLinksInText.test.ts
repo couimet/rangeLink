@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { DEFAULT_DELIMITERS } from '../../constants';
 import { detectQuotedLinks } from '../../detection/detectQuotedLinks';
 import { findLinksInText } from '../../detection/findLinksInText';
@@ -9,6 +6,9 @@ import { RangeLinkError, RangeLinkErrorCodes } from '../../errors';
 import { parseLink } from '../../parsing/parseLink';
 import type { DetectedLink } from '../../types';
 import { CoreResult } from '../../types/CoreResult';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 jest.mock('../../parsing/parseLink', () => ({
   ...jest.requireActual('../../parsing/parseLink'),

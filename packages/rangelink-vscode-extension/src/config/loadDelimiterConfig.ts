@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { DEFAULT_DELIMITERS, type RangeLinkError } from 'rangelink-core-ts';
-
 import {
   SETTING_DELIMITER_HASH,
   SETTING_DELIMITER_LINE,
@@ -12,6 +9,9 @@ import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
 import type { ConfigGetter, LoadDelimiterConfigResult } from './types';
 import { validateDelimiterFields, validateDelimiterRelationships } from './validation';
+
+import type { Logger } from '@couimet/logger-contract';
+import { DEFAULT_DELIMITERS, type RangeLinkError } from 'rangelink-core-ts';
 
 /**
  * Creates a LoadDelimiterConfigResult that uses default delimiters.

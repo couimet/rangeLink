@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { EXTENSION_ID_CLAUDE_CODE } from './builtInAiAssistants';
+
+import type { Logger } from '@couimet/logger-contract';
 
 export const isClaudeCodeAvailable = (ideAdapter: VscodeAdapter, logger: Logger): boolean => {
   const extension = ideAdapter.getExtension(EXTENSION_ID_CLAUDE_CODE);

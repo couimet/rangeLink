@@ -1,12 +1,12 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../../types/MessageCode';
 import { formatMessage } from '../../utils';
 
-import { FocusErrorReason, type FocusCapability, FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * FocusCapability for text editor destinations.

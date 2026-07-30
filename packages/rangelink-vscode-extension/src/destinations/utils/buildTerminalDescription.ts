@@ -1,5 +1,4 @@
-import type { EligibleTerminal } from '../../types';
-import { MessageCode } from '../../types';
+import { EligibleTerminal, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
 
 /**

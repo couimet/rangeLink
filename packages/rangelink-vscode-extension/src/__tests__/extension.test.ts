@@ -1,6 +1,3 @@
-import { pingLog, setLogger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import * as extension from '../extension';
 import { VSCodeLogger } from '../VSCodeLogger';
 
@@ -12,6 +9,9 @@ import {
   createMockWindow,
   createMockWorkspace,
 } from './helpers';
+
+import { pingLog, setLogger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 // Create reusable mocks using our utilities
 const mockStatusBarItem = createMockStatusBarItem();
@@ -265,7 +265,7 @@ describe('Configuration loading and validation', () => {
   });
 
   describe('Duplicate delimiter values', () => {
-    it('should use defaults when all delimiters are the same', async () => {
+    it('should use defaults when all delimiters are the same', () => {
       const mockConfig = createMockConfig({
         get: jest.fn(() => 'X'),
         inspect: jest.fn((key: string) => ({
@@ -291,7 +291,7 @@ describe('Configuration loading and validation', () => {
       );
     });
 
-    it('should use defaults when two delimiters are the same', async () => {
+    it('should use defaults when two delimiters are the same', () => {
       const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           // Line and Column both set to 'A'
@@ -328,7 +328,7 @@ describe('Configuration loading and validation', () => {
   });
 
   describe('Valid custom delimiter values', () => {
-    it('should accept and use valid custom delimiters', async () => {
+    it('should accept and use valid custom delimiters', () => {
       const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           const custom: Record<string, string> = {
@@ -372,7 +372,7 @@ describe('Configuration loading and validation', () => {
   });
 
   describe('Configuration source logging', () => {
-    it('should log source of each delimiter on startup (from default)', async () => {
+    it('should log source of each delimiter on startup (from default)', () => {
       const mockConfig = createMockConfig({
         get: jest.fn((key: string) => DEFAULT_DELIMITERS[key]),
         inspect: jest.fn((key: string) => ({
@@ -397,7 +397,7 @@ describe('Configuration loading and validation', () => {
       );
     });
 
-    it('should log source as user when globalValue is set', async () => {
+    it('should log source as user when globalValue is set', () => {
       const mockConfig = createMockConfig({
         get: jest.fn((key: string) => {
           // User override for delimiterLine
@@ -431,7 +431,7 @@ describe('Configuration loading and validation', () => {
       );
     });
 
-    it('should prioritize workspace folder over workspace over user over default', async () => {
+    it('should prioritize workspace folder over workspace over user over default', () => {
       const mockConfig = createMockConfig({
         get: jest.fn((key: string, defaultValue: string) => {
           const values: Record<string, string> = {
@@ -535,7 +535,7 @@ describe('Extension lifecycle', () => {
     'rangelink.unbindDestination',
   ];
 
-  it('should register all commands on activate', async () => {
+  it('should register all commands on activate', () => {
     const mockContext = {
       subscriptions: [] as vscode.Disposable[],
       globalState: createMockMemento(),
@@ -767,7 +767,7 @@ describe('Activation logging', () => {
         throw new Error('version.json not found');
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const isolatedExtension = require('../extension');
 
       const mockContext = {

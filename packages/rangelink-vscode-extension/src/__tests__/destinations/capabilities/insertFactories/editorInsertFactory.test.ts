@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { EditorInsertFactory } from '../../../../destinations/capabilities/insertFactories/editorInsertFactory';
 import {
   createMockDocument,
@@ -7,6 +5,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('EditorInsertFactory', () => {
   const mockLogger = createMockLogger();

@@ -1,6 +1,6 @@
-import { DetailedResult } from '@couimet/detailed-result';
-
 import type { ClipboardService } from '../../clipboard/ClipboardService';
+
+import { DetailedResult } from '@couimet/detailed-result';
 
 export const createMockClipboardService = (): jest.Mocked<ClipboardService> =>
   ({

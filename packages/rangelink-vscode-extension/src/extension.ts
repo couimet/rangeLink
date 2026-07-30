@@ -1,15 +1,15 @@
-import { getLogger, setLogger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
-import { createWiringServices } from './createWiringServices';
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { createWiringServices } from './createWiringServices';
 import { LogCapture } from './LogCapture';
 import { ReleaseNotifier } from './notification';
 import { createSubscriptionRegistrar } from './SubscriptionRegistrar';
 import type { RangeLinkExtensionApi, VersionInfo } from './types';
 import { VSCodeLogger } from './VSCodeLogger';
 import { wireSubscriptions } from './wireSubscriptions';
+
+import { getLogger, setLogger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 // ============================================================================
 // Extension Lifecycle
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   let versionInfo: VersionInfo | undefined;
   let loggerContractVersion: string | undefined;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     versionInfo = require('./version.json') as VersionInfo;
   } catch (error) {
     logger.warn(
@@ -40,13 +40,12 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   }
 
   try {
-    // eslint-disable-next-line no-undef
     const loggerContractEntry = require.resolve('@couimet/logger-contract');
     // Resolve package root from entry point (dist/index.js → package root), then
     // require by absolute path to bypass the package's "exports" field restriction
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const loggerContractPkgDir = require('node:path').resolve(loggerContractEntry, '../..');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     loggerContractVersion = require(`${loggerContractPkgDir}/package.json`).version as string;
   } catch (error) {
     logger.warn({ fn: 'activate', error }, 'Failed to resolve logger-contract version');

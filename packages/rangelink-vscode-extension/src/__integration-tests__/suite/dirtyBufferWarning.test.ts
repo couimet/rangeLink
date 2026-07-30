@@ -1,7 +1,3 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { CMD_COPY_LINK_ONLY_RELATIVE, CMD_COPY_LINK_RELATIVE } from '../../constants/commandIds';
 import {
   assertClipboardEqualsGeneratedLink,
@@ -16,6 +12,9 @@ import {
   withClipboardSentinel,
 } from '../helpers';
 import { parseLogContext } from '../helpers/logBasedUiAssertions';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 standardSuite('Dirty Buffer Warning', (ss) => {
   test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
@@ -1102,11 +1101,9 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
 
       const reReadCtx = parseLogContext(reReadLine!);
       const preSelections = reReadCtx?.preSaveSelections as
-        | Array<{ end: { line: number; char: number } }>
-        | undefined;
+        Array<{ end: { line: number; char: number } }> | undefined;
       const postSelections = reReadCtx?.postSaveSelections as
-        | Array<{ end: { line: number; char: number } }>
-        | undefined;
+        Array<{ end: { line: number; char: number } }> | undefined;
       assert.ok(
         preSelections !== undefined && postSelections !== undefined,
         `Expected pre/post selections in log, got: ${reReadLine}`,

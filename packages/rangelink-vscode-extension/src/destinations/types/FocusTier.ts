@@ -20,10 +20,7 @@ export type FocusTierProbeMode = 'execute' | 'none';
  * preservation checks compare against this union, not raw strings).
  */
 export type FocusTierLabel =
-  | 'insertCommands'
-  | 'focusAndPasteCommands'
-  | 'focusCommands'
-  | 'builtinFallback';
+  'insertCommands' | 'focusAndPasteCommands' | 'focusCommands' | 'builtinFallback';
 
 /**
  * A tier in the tiered focus strategy.

@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkNavigationHandler } from '../navigation/RangeLinkNavigationHandler';
 import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for going to a RangeLink entered via input box.

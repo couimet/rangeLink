@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import type { NonBindableReason } from '../../types';
 
 import { isRangeLinkTestFixture } from './testFixtureRegistry';
+
+import type * as vscode from 'vscode';
 
 /**
  * Result of classifying a terminal for the destination picker.

@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, type VersionInfo } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 const STORAGE_KEY = 'rangelink.lastNotifiedVersion';
 const RELEASES_BASE_URL = 'https://github.com/couimet/rangeLink/releases/tag/vscode-extension-v';

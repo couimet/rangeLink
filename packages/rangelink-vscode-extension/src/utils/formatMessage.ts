@@ -1,14 +1,14 @@
-import { getLogger } from '@couimet/logger-contract';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import {
   getCurrentLocale,
   getMessages,
+  type LocaleCode,
   messagesEn,
   supportedLocales,
-  type LocaleCode,
 } from '../i18n';
 import { MessageCode } from '../types';
+
+import { getLogger } from '@couimet/logger-contract';
 
 const logger = getLogger();
 

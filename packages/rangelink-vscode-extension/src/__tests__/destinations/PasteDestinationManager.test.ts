@@ -1,7 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import {
   type BindSuccessInfo,
   ComposablePasteDestination,
@@ -20,6 +16,7 @@ import {
 import {
   configureEmptyTabGroups,
   createBaseMockPasteDestination,
+  createMockBoundSession,
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
   createMockDestinationRegistry,
@@ -28,10 +25,9 @@ import {
   createMockEditorComposablePasteDestination,
   createMockFocusCapability,
   createMockFormattedLink,
-  createMockOperationFeedbackProvider,
-  createMockBoundSession,
   createMockGeminiCodeAssistDestination,
   createMockGitHubCopilotChatDestination,
+  createMockOperationFeedbackProvider,
   createMockTerminal,
   createMockTerminalComposablePasteDestination,
   createMockTerminalPasteDestination,
@@ -41,6 +37,10 @@ import {
   spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 /**
  * Helper to assert QuickPick was called with confirmation dialog for smart bind.
@@ -131,13 +131,11 @@ describe('PasteDestinationManager', () => {
           if (!destinationCache.has('cursor-ai')) {
             const dest = createMockCursorAIDestination();
             // Override isAvailable to check actual environment
-            (dest.isAvailable as jest.Mock).mockImplementation(async () => {
+            (dest.isAvailable as jest.Mock).mockImplementation(() => {
               return adapter.__getVscodeInstance().env.appName === 'Cursor';
             });
             // Override equals to return true when comparing to same type
-            (dest.equals as jest.Mock).mockImplementation(
-              async (other) => other?.id === 'cursor-ai',
-            );
+            (dest.equals as jest.Mock).mockImplementation((other) => other?.id === 'cursor-ai');
             destinationCache.set('cursor-ai', dest);
           }
           return destinationCache.get('cursor-ai');
@@ -494,7 +492,7 @@ describe('PasteDestinationManager', () => {
     it('should show info message when already bound to github-copilot-chat', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({
         isAvailable: true,
-        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+        equals: jest.fn().mockImplementation((other) => other?.id === 'github-copilot-chat'),
       });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
@@ -667,7 +665,7 @@ describe('PasteDestinationManager', () => {
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
       const backgroundUri = createMockUri('/workspace/src/file.ts');
 
-      mockAdapter.__getVscodeInstance().window.showTextDocument.mockImplementationOnce(async () => {
+      mockAdapter.__getVscodeInstance().window.showTextDocument.mockImplementationOnce(() => {
         mockAdapter.__getVscodeInstance().window.visibleTextEditors = [
           { document: { uri: backgroundUri }, viewColumn: 1 } as unknown as vscode.TextEditor,
         ];
@@ -939,7 +937,7 @@ describe('PasteDestinationManager', () => {
       // Mock GitHub Copilot Chat as available
       const mockCopilotDest = createMockGitHubCopilotChatDestination({
         isAvailable: true,
-        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+        equals: jest.fn().mockImplementation((other) => other?.id === 'github-copilot-chat'),
       });
 
       // Mock terminal destination
@@ -1450,7 +1448,7 @@ describe('PasteDestinationManager', () => {
       // Override equals to compare by instance reference
       dest.equals = jest
         .fn()
-        .mockImplementation(async (other: PasteDestination | undefined) => dest === other);
+        .mockImplementation((other: PasteDestination | undefined) => dest === other);
       return dest as jest.Mocked<PasteDestination>;
     };
 
@@ -1636,7 +1634,7 @@ describe('PasteDestinationManager', () => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
           (newDest.equals as jest.Mock).mockImplementation(
-            async (other: PasteDestination | undefined) => {
+            (other: PasteDestination | undefined) => {
               return other?.id === 'terminal';
             },
           );

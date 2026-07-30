@@ -2,14 +2,14 @@
  * Create a mock FormattedLink for testing
  */
 
-import type {
+import {
   ComputedSelection,
   DelimiterConfig,
   FormattedLink,
+  LinkType,
   RangeFormat,
   SelectionType,
 } from 'rangelink-core-ts';
-import { LinkType } from 'rangelink-core-ts';
 
 /**
  * Create a mock FormattedLink for testing

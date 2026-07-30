@@ -1,9 +1,9 @@
+import { loadDelimiterConfig } from '../loadDelimiterConfig';
+import type { ConfigGetter, ConfigInspection } from '../types';
+
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-
-import { loadDelimiterConfig } from '../loadDelimiterConfig';
-import type { ConfigGetter, ConfigInspection } from '../types';
 
 // ============================================================================
 // Test Utilities

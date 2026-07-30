@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockDocument,
   createMockEditor,
@@ -9,6 +7,8 @@ import {
   createMockVscodeAdapter,
 } from '../../__tests__/helpers';
 import { SelectionValidator } from '../SelectionValidator';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('SelectionValidator', () => {
   const mockLogger = createMockLogger();

@@ -1,7 +1,7 @@
+import { getLogCapture } from './getLogCapture';
+
 import assert from 'node:assert';
 import { Console } from 'node:console';
-
-import { getLogCapture } from './getLogCapture';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
 

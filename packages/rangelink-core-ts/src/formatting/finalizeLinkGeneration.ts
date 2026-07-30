@@ -1,5 +1,3 @@
-import { getLogger } from '@couimet/logger-contract';
-
 import { ComputedSelection } from '../types/ComputedSelection';
 import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
@@ -9,6 +7,8 @@ import { LinkType } from '../types/LinkType';
 import { quoteLink } from '../utils/quoteLink';
 
 import { composePortableMetadata } from './composePortableMetadata';
+
+import { getLogger } from '@couimet/logger-contract';
 
 /**
  * Result of link generation containing the link and its logging context.

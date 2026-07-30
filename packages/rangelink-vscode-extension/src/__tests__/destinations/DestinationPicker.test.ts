@@ -1,13 +1,11 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   DestinationPicker,
   type DestinationPickerOptions,
 } from '../../destinations/DestinationPicker';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import {
-  MessageCode,
   type FileBindableQuickPickItem,
+  MessageCode,
   type TerminalBindableQuickPickItem,
 } from '../../types';
 import {
@@ -23,6 +21,8 @@ import {
   spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('DestinationPicker', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -169,12 +169,12 @@ describe('DestinationPicker', () => {
 
         let capturedPlaceholder: string | undefined;
         showFilePickerSpy.mockImplementation(
-          async <T>(
+          <T>(
             _files: readonly FileBindableQuickPickItem[],
             _provider: unknown,
             handlers: FilePickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> => {
+          ) => {
             capturedPlaceholder = handlers.getPlaceholder();
             return handlers.onSelected(fileInfo);
           },
@@ -208,7 +208,7 @@ describe('DestinationPicker', () => {
         ]);
 
         let callCount = 0;
-        showQuickPickMock.mockImplementation(async () => {
+        showQuickPickMock.mockImplementation(() => {
           callCount++;
           if (callCount === 1) {
             return moreItem;
@@ -217,12 +217,12 @@ describe('DestinationPicker', () => {
         });
 
         showFilePickerSpy.mockImplementation(
-          async <T>(
+          <T>(
             _files: readonly FileBindableQuickPickItem[],
             _provider: unknown,
             handlers: FilePickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> => handlers.onDismissed?.(),
+          ) => handlers.onDismissed?.(),
         );
 
         const result = await picker.pick(defaultOptions);
@@ -315,12 +315,12 @@ describe('DestinationPicker', () => {
 
         let capturedPlaceholder: string | undefined;
         showTerminalPickerSpy.mockImplementation(
-          async <T>(
+          <T>(
             _terminals: readonly TerminalBindableQuickPickItem[],
             _provider: unknown,
             handlers: TerminalPickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> => {
+          ) => {
             capturedPlaceholder = handlers.getPlaceholder();
             return handlers.onSelected({
               bindOptions: { kind: 'terminal', terminal: terminal2 },
@@ -352,7 +352,7 @@ describe('DestinationPicker', () => {
         });
 
         let callCount = 0;
-        showQuickPickMock.mockImplementation(async () => {
+        showQuickPickMock.mockImplementation(() => {
           callCount++;
           if (callCount === 1) {
             return moreItem;
@@ -361,12 +361,12 @@ describe('DestinationPicker', () => {
         });
 
         showTerminalPickerSpy.mockImplementation(
-          async <T>(
+          <T>(
             _terminals: readonly TerminalBindableQuickPickItem[],
             _provider: unknown,
             handlers: TerminalPickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> => handlers.onDismissed?.(),
+          ) => handlers.onDismissed?.(),
         );
 
         const result = await picker.pick(defaultOptions);

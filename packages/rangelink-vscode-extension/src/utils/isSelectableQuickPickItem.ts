@@ -1,6 +1,6 @@
-import type * as vscode from 'vscode';
-
 import { PICKER_ITEM_KINDS, type PickerItemKind } from '../types/QuickPickTypes';
+
+import type * as vscode from 'vscode';
 
 /**
  * Type guard that narrows a QuickPickItem to a selectable RangeLink item.

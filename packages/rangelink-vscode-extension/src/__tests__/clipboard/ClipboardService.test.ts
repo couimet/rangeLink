@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ClipboardService } from '../../clipboard/ClipboardService';
 import { createMockConfigReader, createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const PRIOR = 'prior-content';
 const NEW_TEXT = 'new text';

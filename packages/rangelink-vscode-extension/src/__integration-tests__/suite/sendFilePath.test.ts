@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_TERMINAL_HERE,
@@ -23,6 +18,10 @@ import {
   parseLogContext,
   standardSuite,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Send File Path', (ss) => {
   test('send-file-path-001: R-F sends workspace-relative path to bound terminal', async () => {

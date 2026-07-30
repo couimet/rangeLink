@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import { isTerminalDestination } from '../../utils';
 import type { PasteDestination } from '../PasteDestination';
+
+import type * as vscode from 'vscode';
 
 /**
  * Compare two terminals by their process IDs.

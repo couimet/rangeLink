@@ -1,7 +1,7 @@
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import type { Logger } from '@couimet/logger-contract';
 import type { Extension } from 'vscode';
-
-import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 export const isCursorIDEDetected = (ideAdapter: VscodeAdapter, logger: Logger): boolean => {
   const fnContext = { fn: 'isCursorIDEDetected' };

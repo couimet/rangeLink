@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
@@ -7,9 +5,11 @@ import {
 import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import { EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../../aiAssistants/builtInAiAssistants';
 import {
-  isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,
+  isGitHubCopilotChatAvailable,
 } from '../../aiAssistants/isGitHubCopilotChatAvailable';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('isGitHubCopilotChatAvailable', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;

@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import { classifyTerminalForBinding } from '../../../destinations/utils';
 import { markRangeLinkTestFixture } from '../../../destinations/utils/testFixtureRegistry';
 import { createMockTerminal } from '../../helpers';
+
+import type * as vscode from 'vscode';
 
 const minimalPty: vscode.Pseudoterminal = {
   onDidWrite: jest.fn(),

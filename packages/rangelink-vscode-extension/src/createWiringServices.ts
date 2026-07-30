@@ -1,7 +1,18 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
+import { CustomAiAssistantConfig, parseCustomAiAssistants } from './config/parseCustomAiAssistants';
+import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
+import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
+import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
+import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
+import { DestinationPicker } from './destinations/DestinationPicker';
+import { DestinationRegistry } from './destinations/DestinationRegistry';
+import { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import type { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
+import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
+import { FilePathTerminalProvider } from './navigation/FilePathTerminalProvider';
+import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
+import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
+import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { ClipboardService } from './clipboard';
 import {
@@ -16,25 +27,9 @@ import {
   ShowVersionCommand,
 } from './commands';
 import { ConfigReader, DelimiterCache } from './config';
-import type { CustomAiAssistantConfig } from './config/parseCustomAiAssistants';
-import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import { ContextKeyService } from './contextKeys';
 import { BoundSession } from './destinations';
-import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
-import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
-import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
-import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
-import { DestinationPicker } from './destinations/DestinationPicker';
-import { DestinationRegistry } from './destinations/DestinationRegistry';
-import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { OperationFeedbackProvider } from './feedback';
-import type { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
-import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
-import { FilePathTerminalProvider } from './navigation/FilePathTerminalProvider';
-import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
-import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
-import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import {
   FilePathPaster,
   LinkGenerator,
@@ -46,6 +41,10 @@ import {
 } from './services';
 import { RangeLinkStatusBar } from './statusBar';
 import type { VersionInfo } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import type { DelimiterConfigGetter } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 export interface WiringServices {
   ideAdapter: VscodeAdapter;

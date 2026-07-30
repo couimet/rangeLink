@@ -22,7 +22,11 @@ export const BASE_CONFIG = {
   files: 'out/__integration-tests__/suite/**/*.test.js',
   extensionDevelopmentPath: ['./', './test-fixtures/dummy-ai-extension/'],
   workspaceFolder: './',
-  version: 'stable',
+  // 1.131 is the first release where Copilot Chat's required API proposals
+  // (agentSessionsWorkspace, languageModelCapabilities, etc.) are finalized
+  // and available — without them, Copilot Chat triggers "No default agent
+  // registered" errors that contaminate test state across suites.
+  version: '1.131.0',
   launchArgs: userDataDir(),
   env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true' },
   mocha: envMocha(),

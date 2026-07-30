@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import type { PasteDestination } from '../../destinations';
 import { isSameFileDestination } from '../../utils';
+
+import type * as vscode from 'vscode';
 
 const createMockUri = (path: string): vscode.Uri =>
   ({

@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type {
   BindSuccessInfo,
   BoundSession,
@@ -15,6 +12,9 @@ import {
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Command handler for binding to a terminal.
@@ -107,7 +107,7 @@ export class BindToTerminalCommand {
       this.ideAdapter,
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
-        onSelected: async (eligible) => {
+        onSelected: (eligible) => {
           this.logger.debug(
             { ...logCtx, terminalName: eligible.name },
             `Binding to terminal "${eligible.name}"`,

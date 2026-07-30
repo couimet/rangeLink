@@ -1,6 +1,6 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * InsertFactory for Tier 3 manual-paste destinations.
@@ -18,7 +18,7 @@ export class ManualPasteInsertFactory implements InsertFactory<void> {
         { fn: 'ManualPasteInsertFactory.insert', textLength: text.length },
         'Link ready for manual paste',
       );
-      return true;
+      return await true;
     };
   }
 }

@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
 import {
   createMockDocument,
@@ -8,6 +6,8 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const DOCUMENT_URI = createMockUri('/workspace/src/file.ts');
 const DOCUMENT_URI_STRING = DOCUMENT_URI.toString();

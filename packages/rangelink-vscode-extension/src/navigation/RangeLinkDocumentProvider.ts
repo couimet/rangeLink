@@ -1,13 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { findLinksInText } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkClickArgs } from '../types';
 import { formatLinkTooltip } from '../utils';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { DelimiterConfigGetter, findLinksInText } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Document link provider for RangeLink format detection in editor files.

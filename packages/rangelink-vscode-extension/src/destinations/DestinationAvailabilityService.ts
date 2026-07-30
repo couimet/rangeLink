@@ -1,5 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config';
 import {
   DEFAULT_TERMINAL_PICKER_MAX_INLINE,
@@ -35,6 +33,8 @@ import {
   sortEligibleFiles,
   sortEligibleTerminals,
 } from './utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 const MIN_THRESHOLD = 1;
 

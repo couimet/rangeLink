@@ -1,21 +1,18 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { BookmarkService } from '../bookmarks';
 import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_MANAGE,
-  CMD_JUMP_TO_DESTINATION,
   CMD_GO_TO_RANGELINK,
+  CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
 } from '../constants';
 import {
-  buildDestinationQuickPickItems,
   type BoundSession,
-  type DestinationBinder,
+  buildDestinationQuickPickItems,
   type DestinationAvailabilityService,
+  type DestinationBinder,
 } from '../destinations';
 import {
   resolveBoundTerminalProcessId,
@@ -24,9 +21,9 @@ import {
 } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { BoundDestinationInfo } from '../types';
 import {
   type BookmarkQuickPickItem,
+  BoundDestinationInfo,
   type CommandQuickPickItem,
   type DestinationQuickPickItem,
   type InfoQuickPickItem,
@@ -34,6 +31,9 @@ import {
   type StatusBarMenuQuickPickItem,
 } from '../types';
 import { formatMessage, isEditorDestination, isSelectableQuickPickItem } from '../utils';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -287,7 +287,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         itemKind: 'command',
         command: CMD_GO_TO_RANGELINK,
       },
-      ...(this.bookmarkService.isVisible() ? this.buildBookmarksQuickPickItems() : []), // TODO: #366 remove isVisible() gate
+      ...(this.bookmarkService.isVisible() ? this.buildBookmarksQuickPickItems() : []), // TODO [2026-12-31]: #366 remove isVisible() gate
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
         itemKind: 'command',
@@ -299,7 +299,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build the jump item (when bound) or inline destinations (when unbound).
    */
-  private async buildJumpOrDestinationsSection(): Promise<
+  private buildJumpOrDestinationsSection(): Promise<
     (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
   > {
     const boundDest = this.session.get();
@@ -307,7 +307,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       const jumpDescription = isEditorDestination(boundDest)
         ? `→ ${boundDest.displayName} · ${formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: boundDest.resource.viewColumn })}`
         : `→ ${boundDest.displayName}`;
-      return [
+      return Promise.resolve([
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
           description: jumpDescription,
@@ -319,7 +319,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
           itemKind: 'command',
           command: CMD_UNBIND_DESTINATION,
         },
-      ];
+      ]);
     }
     return this.buildDestinationsQuickPickItems();
   }
@@ -360,10 +360,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   }
 
   private buildBookmarksQuickPickItems(): (
-    | BookmarkQuickPickItem
-    | CommandQuickPickItem
-    | InfoQuickPickItem
-    | vscode.QuickPickItem
+    BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem
   )[] {
     const bookmarks = this.bookmarkService.getAllBookmarks();
 

@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import {
   buildJumpMenuItem,
   MENU_ITEM_GO_TO_LINK,
@@ -14,10 +11,14 @@ import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
-import type { FileBindableQuickPickItem, TerminalBindableQuickPickItem } from '../../types';
-import { ExtensionResult } from '../../types';
+import {
+  ExtensionResult,
+  FileBindableQuickPickItem,
+  TerminalBindableQuickPickItem,
+} from '../../types';
 import {
   createMockBookmarkService,
+  createMockBoundSession,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockEditorComposablePasteDestination,
@@ -33,7 +34,9 @@ import {
   spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 /**
  * Semantic constant for when user dismisses QuickPick (Escape or click outside).
  * VSCode's showQuickPick returns undefined in this case.

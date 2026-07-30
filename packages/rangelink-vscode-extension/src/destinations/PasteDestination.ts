@@ -1,7 +1,7 @@
+import type { AutoPasteResult, DestinationKind } from '../types';
+
 import type { FormattedLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
-
-import type { AutoPasteResult, DestinationKind } from '../types';
 
 /**
  * Interface for RangeLink paste destinations

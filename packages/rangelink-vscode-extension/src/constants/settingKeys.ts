@@ -33,7 +33,7 @@ export const SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS =
   'destinations.gemini.coldStartDelayMs';
 
 // =============================================================================
-// Feature Flags — TODO: #366 remove when bookmarks graduates from beta
+// Feature Flags — TODO [2026-12-31]: #366 remove when bookmarks graduates from beta
 // =============================================================================
 
 export const SETTING_FEATURES_BOOKMARKS_ENABLED = 'features.bookmarks.enabled';

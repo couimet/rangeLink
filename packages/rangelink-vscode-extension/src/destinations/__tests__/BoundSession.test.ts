@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import {
   createMockEditorComposablePasteDestination,
   createMockSingletonComposablePasteDestination,
@@ -9,6 +6,9 @@ import {
 } from '../../__tests__/helpers';
 import { AutoPasteResult } from '../../types';
 import { BoundSession } from '../BoundSession';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 describe('BoundSession', () => {
   let mockEvents: {

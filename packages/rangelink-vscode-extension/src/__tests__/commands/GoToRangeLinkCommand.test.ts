@@ -1,10 +1,15 @@
-import { DetailedResult } from '@couimet/detailed-result';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { LinkType, RangeLinkError, RangeLinkErrorCodes, SelectionType } from 'rangelink-core-ts';
-import type { ParsedLink } from 'rangelink-core-ts';
-
 import { GoToRangeLinkCommand } from '../../commands/GoToRangeLinkCommand';
 import { createMockNavigationHandler, createMockVscodeAdapter } from '../helpers';
+
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import {
+  LinkType,
+  ParsedLink,
+  RangeLinkError,
+  RangeLinkErrorCodes,
+  SelectionType,
+} from 'rangelink-core-ts';
 
 describe('GoToRangeLinkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;

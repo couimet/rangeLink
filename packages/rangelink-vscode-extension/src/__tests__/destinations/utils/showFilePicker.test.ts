@@ -1,10 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import type { FilePickerHandlers } from '../../../destinations/types';
 import { showFilePicker } from '../../../destinations/utils';
 import type { EligibleFile, FileBindableQuickPickItem } from '../../../types';
 import { createMockQuickPickProvider, createMockTextEditorQuickPickItems } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,
@@ -104,7 +104,7 @@ describe('showFilePicker', () => {
       const result = await showFilePicker(
         items,
         quickPickProvider,
-        createHandlers(async (file) => `bound-${file.filename}`),
+        createHandlers((file) => `bound-${file.filename}`),
         logger,
       );
 
@@ -219,8 +219,8 @@ describe('showFilePicker', () => {
       const result = await showFilePicker(
         items,
         quickPickProvider,
-        createHandlers(async (file) => file.filename, {
-          onDismissed: async () => 'async-dismissed',
+        createHandlers((file) => file.filename, {
+          onDismissed: () => 'async-dismissed',
         }),
         logger,
       );

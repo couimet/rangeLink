@@ -1,6 +1,3 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import { displayName } from '../../../package.json';
 import {
   AI_ASSISTANT_PASTE_COMMANDS,
@@ -32,6 +29,9 @@ import type { MessageProvider } from '../MessageProvider';
 import type { QuickPickProvider } from '../QuickPickProvider';
 import type { TerminalPasteAdapter } from '../TerminalPasteAdapter';
 import type { VisibleEditorProvider } from '../VisibleEditorProvider';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -125,7 +125,7 @@ export class VscodeAdapter
    * Direct calls are only appropriate inside ClipboardService itself.
    */
   async readTextFromClipboard(): Promise<string> {
-    return this.ideInstance.env.clipboard.readText();
+    return await this.ideInstance.env.clipboard.readText();
   }
 
   /**
@@ -139,7 +139,7 @@ export class VscodeAdapter
       { fn: 'VscodeAdapter.writeTextToClipboard', textLength: text.length },
       'Writing to clipboard',
     );
-    return this.ideInstance.env.clipboard.writeText(text);
+    return await this.ideInstance.env.clipboard.writeText(text);
   }
 
   /**
@@ -244,7 +244,7 @@ export class VscodeAdapter
       { fn: 'VscodeAdapter.showWarningMessage', message, items },
       'Showing warning message',
     );
-    return this.ideInstance.window.showWarningMessage(message, ...items);
+    return await this.ideInstance.window.showWarningMessage(message, ...items);
   }
 
   /**
@@ -252,7 +252,7 @@ export class VscodeAdapter
    */
   async showErrorMessage(message: string): Promise<string | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.showErrorMessage', message }, 'Showing error message');
-    return this.ideInstance.window.showErrorMessage(message);
+    return await this.ideInstance.window.showErrorMessage(message);
   }
 
   /**
@@ -267,7 +267,7 @@ export class VscodeAdapter
       { fn: 'VscodeAdapter.showInformationMessage', message, items },
       'Showing info message',
     );
-    return this.ideInstance.window.showInformationMessage(message, ...items);
+    return await this.ideInstance.window.showInformationMessage(message, ...items);
   }
 
   /**
@@ -303,7 +303,7 @@ export class VscodeAdapter
       },
       'Showing quick pick',
     );
-    return this.ideInstance.window.showQuickPick(items, options);
+    return await this.ideInstance.window.showQuickPick(items, options);
   }
 
   /**
@@ -323,7 +323,7 @@ export class VscodeAdapter
    */
   async showInputBox(options?: vscode.InputBoxOptions): Promise<string | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.showInputBox', options }, 'Showing input box');
-    return this.ideInstance.window.showInputBox(options);
+    return await this.ideInstance.window.showInputBox(options);
   }
 
   /**
@@ -548,7 +548,7 @@ export class VscodeAdapter
    */
   async executeCommand<T = unknown>(command: string, ...args: unknown[]): Promise<T | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.executeCommand', command, args }, 'Executing command');
-    return this.ideInstance.commands.executeCommand<T>(command, ...args);
+    return await this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 
   /**
@@ -573,7 +573,7 @@ export class VscodeAdapter
    * @param filterInternal - If true, filters out internal commands (default: false)
    * @returns Promise resolving to array of command identifiers
    */
-  async getCommands(filterInternal = false): Promise<string[]> {
+  async getCommands(filterInternal: boolean = false): Promise<string[]> {
     return (await this.ideInstance.commands.getCommands(filterInternal)) || [];
   }
 
@@ -585,7 +585,7 @@ export class VscodeAdapter
    */
   async openExternal(uri: string): Promise<boolean> {
     this.logger.debug({ fn: 'VscodeAdapter.openExternal', uri }, 'Opening external URI');
-    return this.ideInstance.env.openExternal(this.ideInstance.Uri.parse(uri, true));
+    return await this.ideInstance.env.openExternal(this.ideInstance.Uri.parse(uri, true));
   }
 
   // ============================================================================
@@ -600,7 +600,7 @@ export class VscodeAdapter
    * @param linkPath - File path from RangeLink (may be relative or absolute)
    * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
    */
-  async resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
+  resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
     return resolveWorkspacePath(linkPath, this.ideInstance);
   }
 
