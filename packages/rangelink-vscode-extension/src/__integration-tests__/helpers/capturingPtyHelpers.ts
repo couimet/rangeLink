@@ -1,13 +1,12 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
 import { markRangeLinkTestFixture } from '../../destinations/utils/testFixtureRegistry';
 
 import { withClipboardSentinel } from './clipboardHelpers';
 import { getGeneratedLink } from './logHelpers';
-import { TERMINAL_READY_MS, settle } from './testEnv';
+import { settle, TERMINAL_READY_MS } from './testEnv';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 /**
  * A VS Code terminal backed by a custom pseudoterminal that records every
@@ -30,10 +29,7 @@ export interface CapturingTerminal {
  * running an assisted test can still see what arrived; the same input is
  * simultaneously appended to the captured buffer for assertion.
  */
-export const createCapturingTerminal = async (
-  name: string,
-  trackingArray?: vscode.Terminal[],
-): Promise<CapturingTerminal> => {
+export const createCapturingTerminal = async (name: string, trackingArray?: vscode.Terminal[]): Promise<CapturingTerminal> => {
   const writeEmitter = new vscode.EventEmitter<string>();
   let captured = '';
 
@@ -76,10 +72,7 @@ export const createCapturingTerminal = async (
  * Mirrors `createAndBindTerminal` but returns a `CapturingTerminal` so tests
  * can read back what the extension actually sent.
  */
-export const createAndBindCapturingTerminal = async (
-  name: string,
-  trackingArray?: vscode.Terminal[],
-): Promise<CapturingTerminal> => {
+export const createAndBindCapturingTerminal = async (name: string, trackingArray?: vscode.Terminal[]): Promise<CapturingTerminal> => {
   const capturing = await createCapturingTerminal(name, trackingArray);
   try {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
@@ -97,11 +90,7 @@ export const createAndBindCapturingTerminal = async (
  */
 export const assertTerminalBufferEquals = (captured: string, expected: string): void => {
   const normalized = captured.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n$/, '');
-  assert.strictEqual(
-    normalized,
-    expected,
-    `Terminal buffer mismatch:\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(normalized)}`,
-  );
+  assert.strictEqual(normalized, expected, `Terminal buffer mismatch:\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(normalized)}`);
 };
 
 /**
@@ -115,18 +104,12 @@ export const assertTerminalBufferContains = (captured: string, expected: string)
   );
 };
 
-export const assertTerminalBufferEqualsGeneratedLink = (
-  capturing: CapturingTerminal,
-  marker: string,
-): void => {
+export const assertTerminalBufferEqualsGeneratedLink = (capturing: CapturingTerminal, marker: string): void => {
   const generatedLink = getGeneratedLink(marker, { smartPad: 'both' });
   assertTerminalBufferEquals(capturing.getCapturedText(), generatedLink);
 };
 
-export const assertTerminalBufferContainsGeneratedLink = (
-  capturing: CapturingTerminal,
-  marker: string,
-): void => {
+export const assertTerminalBufferContainsGeneratedLink = (capturing: CapturingTerminal, marker: string): void => {
   const generatedLink = getGeneratedLink(marker, { smartPad: 'both' });
   assertTerminalBufferContains(capturing.getCapturedText(), generatedLink);
 };

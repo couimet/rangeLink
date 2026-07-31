@@ -1,9 +1,7 @@
+import { FILENAME_AMBIGUOUS, ResolveWorkspacePathResult } from '../types/ResolvedPath';
+
 import * as path from 'node:path';
-
 import type * as vscode from 'vscode';
-
-import { FILENAME_AMBIGUOUS } from '../types/ResolvedPath';
-import type { ResolveWorkspacePathResult } from '../types/ResolvedPath';
 
 const AMBIGUITY_THRESHOLD = 2;
 
@@ -42,10 +40,7 @@ const escapeGlobPattern = (filename: string): string => {
  * @param ideInstance - VSCode module instance for workspace/URI operations
  * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
  */
-export const resolveWorkspacePath = async (
-  linkPath: string,
-  ideInstance: typeof vscode,
-): Promise<ResolveWorkspacePathResult> => {
+export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof vscode): Promise<ResolveWorkspacePathResult> => {
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
     const uri = ideInstance.Uri.file(linkPath);
@@ -69,11 +64,7 @@ export const resolveWorkspacePath = async (
   if (isBareFilename) {
     const pattern = `**/${escapeGlobPattern(linkPath)}`;
     try {
-      const matches = await ideInstance.workspace.findFiles(
-        pattern,
-        undefined,
-        AMBIGUITY_THRESHOLD,
-      );
+      const matches = await ideInstance.workspace.findFiles(pattern, undefined, AMBIGUITY_THRESHOLD);
       if (matches.length === 1) {
         return { uri: matches[0], resolvedVia: 'filename-fallback' };
       }

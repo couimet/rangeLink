@@ -1,7 +1,7 @@
+import type { DelimiterConfigSources } from './types';
+
 import type { Logger } from '@couimet/logger-contract';
 import type { DelimiterConfig, RangeLinkError } from 'rangelink-core-ts';
-
-import type { DelimiterConfigSources } from './types';
 
 /**
  * Logs validation errors in a structured way
@@ -29,11 +29,7 @@ export const logValidationErrors = (logger: Logger, errors: RangeLinkError[]): v
  * @param delimiters - Loaded delimiter configuration
  * @param sources - Source for each delimiter field
  */
-export const logSuccessfulConfig = (
-  logger: Logger,
-  delimiters: DelimiterConfig,
-  sources: DelimiterConfigSources,
-): void => {
+export const logSuccessfulConfig = (logger: Logger, delimiters: DelimiterConfig, sources: DelimiterConfigSources): void => {
   logger.info(
     {
       fn: 'logSuccessfulConfig',

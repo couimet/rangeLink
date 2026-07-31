@@ -1,15 +1,15 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   createMockBookmarksStore,
+  createMockBoundSession,
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
   createMockVscodeAdapter,
 } from '../../__tests__/helpers';
-import { createMockBoundSession } from '../../__tests__/helpers';
 import type { Bookmark } from '../../bookmarks';
 import { BookmarkService } from '../BookmarkService';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BookmarkService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -31,14 +31,7 @@ describe('BookmarkService', () => {
   const createService = (): BookmarkService => {
     const mockSession = createMockBoundSession();
     const mockDestinationManager = createMockDestinationManager();
-    return new BookmarkService(
-      mockBookmarksStore,
-      mockAdapter,
-      mockConfigReader,
-      mockDestinationManager,
-      mockSession,
-      mockLogger,
-    );
+    return new BookmarkService(mockBookmarksStore, mockAdapter, mockConfigReader, mockDestinationManager, mockSession, mockLogger);
   };
 
   beforeEach(() => {
@@ -54,10 +47,7 @@ describe('BookmarkService', () => {
 
   describe('constructor', () => {
     it('logs initialization', () => {
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarkService.constructor' },
-        'BookmarkService initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BookmarkService.constructor' }, 'BookmarkService initialized');
     });
   });
 
@@ -122,44 +112,24 @@ describe('BookmarkService', () => {
     it('throws DESTINATION_NOT_BOUND when no destination is bound', async () => {
       const mockSession = createMockBoundSession();
       const mockDestinationManager = createMockDestinationManager();
-      const service = new BookmarkService(
-        mockBookmarksStore,
-        mockAdapter,
-        mockConfigReader,
-        mockDestinationManager,
-        mockSession,
-        mockLogger,
-      );
+      const service = new BookmarkService(mockBookmarksStore, mockAdapter, mockConfigReader, mockDestinationManager, mockSession, mockLogger);
 
-      await expect(async () => service.sendBookmark('bookmark-1')).toThrowDetailedErrorAsync(
-        'DESTINATION_NOT_BOUND',
-        {
-          message: 'Cannot send bookmark: no destination is currently bound',
-          functionName: 'BookmarkService.sendBookmark',
-        },
-      );
+      await expect(() => service.sendBookmark('bookmark-1')).toThrowDetailedErrorAsync('DESTINATION_NOT_BOUND', {
+        message: 'Cannot send bookmark: no destination is currently bound',
+        functionName: 'BookmarkService.sendBookmark',
+      });
     });
 
     it('logs warning and returns early when bookmark is not found', async () => {
       const mockSession = createMockBoundSession({ isSet: jest.fn().mockReturnValue(true) });
       const mockDestinationManager = createMockDestinationManager();
-      const service = new BookmarkService(
-        mockBookmarksStore,
-        mockAdapter,
-        mockConfigReader,
-        mockDestinationManager,
-        mockSession,
-        mockLogger,
-      );
+      const service = new BookmarkService(mockBookmarksStore, mockAdapter, mockConfigReader, mockDestinationManager, mockSession, mockLogger);
 
       await service.sendBookmark('unknown-id');
 
       expect(mockClipboard.writeText).not.toHaveBeenCalled();
       expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarkService.sendBookmark', bookmarkId: 'unknown-id' },
-        'Bookmark not found',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'BookmarkService.sendBookmark', bookmarkId: 'unknown-id' }, 'Bookmark not found');
     });
 
     it('copies link to clipboard and sends to bound destination', async () => {
@@ -167,21 +137,12 @@ describe('BookmarkService', () => {
       const mockDestinationManager = createMockDestinationManager({
         sendTextToDestinationResult: true,
       });
-      const service = new BookmarkService(
-        mockBookmarksStore,
-        mockAdapter,
-        mockConfigReader,
-        mockDestinationManager,
-        mockSession,
-        mockLogger,
-      );
+      const service = new BookmarkService(mockBookmarksStore, mockAdapter, mockConfigReader, mockDestinationManager, mockSession, mockLogger);
 
       await service.sendBookmark('bookmark-1');
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/features/my-feature.ts#L10-L20');
-      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
-        'src/features/my-feature.ts#L10-L20',
-      );
+      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('src/features/my-feature.ts#L10-L20');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BookmarkService.sendBookmark', bookmarkId: 'bookmark-1', bookmark: TEST_BOOKMARK },
         'Sent bookmark to destination: My Feature',
@@ -193,21 +154,12 @@ describe('BookmarkService', () => {
       const mockDestinationManager = createMockDestinationManager({
         sendTextToDestinationResult: true,
       });
-      const service = new BookmarkService(
-        mockBookmarksStore,
-        mockAdapter,
-        mockConfigReader,
-        mockDestinationManager,
-        mockSession,
-        mockLogger,
-      );
+      const service = new BookmarkService(mockBookmarksStore, mockAdapter, mockConfigReader, mockDestinationManager, mockSession, mockLogger);
 
       await service.sendBookmark('bookmark-1');
 
       expect(mockBookmarksStore.recordAccess).toHaveBeenCalledWith('bookmark-1');
-      expect(mockBookmarksStore.recordAccess.mock.invocationCallOrder[0]).toBeLessThan(
-        mockClipboard.writeText.mock.invocationCallOrder[0],
-      );
+      expect(mockBookmarksStore.recordAccess.mock.invocationCallOrder[0]).toBeLessThan(mockClipboard.writeText.mock.invocationCallOrder[0]);
     });
   });
 });

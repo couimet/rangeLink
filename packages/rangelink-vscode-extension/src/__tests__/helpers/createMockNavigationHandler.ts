@@ -19,9 +19,7 @@ import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavig
  * @param options - Optional method overrides
  * @returns Mock navigation handler
  */
-export const createMockNavigationHandler = (
-  options?: Partial<jest.Mocked<RangeLinkNavigationHandler>>,
-): jest.Mocked<RangeLinkNavigationHandler> =>
+export const createMockNavigationHandler = (options?: Partial<jest.Mocked<RangeLinkNavigationHandler>>): jest.Mocked<RangeLinkNavigationHandler> =>
   ({
     parseLink: jest.fn(),
     navigateToLink: jest.fn().mockResolvedValue(undefined),

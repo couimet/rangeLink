@@ -1,10 +1,3 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { FilePathDocumentProvider } from '../../navigation/FilePathDocumentProvider';
 import type { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import type { FilePathClickArgs } from '../../types';
@@ -17,6 +10,12 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import os from 'node:os';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
@@ -35,10 +34,7 @@ describe('FilePathDocumentProvider', () => {
 
   describe('constructor', () => {
     it('should log initialization', () => {
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'FilePathDocumentProvider.constructor' },
-        'FilePathDocumentProvider initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'FilePathDocumentProvider.constructor' }, 'FilePathDocumentProvider initialized');
     });
   });
 
@@ -74,9 +70,7 @@ describe('FilePathDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
       const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '/path/to/file.ts' }]));
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleFilePathClick?${expectedArgs}`,
-      );
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleFilePathClick?${expectedArgs}`);
     });
 
     it('should strip quotes from double-quoted path in command URI', () => {
@@ -90,12 +84,8 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /path/with spaces/file.ts \u2022 RangeLink');
-      const expectedArgs = encodeURIComponent(
-        JSON.stringify([{ filePath: '/path/with spaces/file.ts' }]),
-      );
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleFilePathClick?${expectedArgs}`,
-      );
+      const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '/path/with spaces/file.ts' }]));
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleFilePathClick?${expectedArgs}`);
     });
 
     it('should detect multiple paths in document', () => {
@@ -124,9 +114,7 @@ describe('FilePathDocumentProvider', () => {
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /src/file.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '../src/file.ts' }]));
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleFilePathClick?${expectedArgs}`,
-      );
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleFilePathClick?${expectedArgs}`);
     });
 
     it('should return empty array when no paths found', () => {
@@ -165,9 +153,7 @@ describe('FilePathDocumentProvider', () => {
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /path/to/file.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '/path/to/file.ts' }]));
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleFilePathClick?${expectedArgs}`,
-      );
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleFilePathClick?${expectedArgs}`);
     });
 
     it('should detect tilde path', () => {
@@ -183,12 +169,8 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /home/user/projects/app/main.ts \u2022 RangeLink');
-      const expectedArgs = encodeURIComponent(
-        JSON.stringify([{ filePath: '~/projects/app/main.ts' }]),
-      );
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleFilePathClick?${expectedArgs}`,
-      );
+      const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '~/projects/app/main.ts' }]));
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleFilePathClick?${expectedArgs}`);
     });
 
     it('should NOT detect file path when path is a RangeLink (coexistence with RangeLinkDocumentProvider)', () => {
@@ -238,9 +220,7 @@ describe('FilePathDocumentProvider', () => {
     it('should not re-throw handler errors', async () => {
       mockHandler.navigateToFile.mockRejectedValue(new Error('Failed'));
 
-      await expect(
-        provider.handleLinkClick({ filePath: '/path/to/file.ts' }),
-      ).resolves.toBeUndefined();
+      await expect(provider.handleLinkClick({ filePath: '/path/to/file.ts' })).resolves.toBeUndefined();
     });
   });
 });

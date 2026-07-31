@@ -6,9 +6,7 @@ import type { ConfigGetter, ConfigInspection } from '../../config/types';
  * @param overrides - Key-value pairs to return from get()
  * @returns A ConfigGetter that returns overrides values or undefined
  */
-export const createMockConfigGetter = (
-  overrides: Partial<Record<string, unknown>> = {},
-): ConfigGetter => ({
+export const createMockConfigGetter = (overrides: Partial<Record<string, unknown>> = {}): ConfigGetter => ({
   get: <T>(key: string): T | undefined => {
     if (key in overrides) {
       return overrides[key] as T;

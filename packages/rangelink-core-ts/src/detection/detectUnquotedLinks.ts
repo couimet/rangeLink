@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { parseLink } from '../parsing/parseLink';
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 
 import type { Cancellable, OccupiedRange } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Result of the unquoted detection pass.
@@ -43,6 +43,8 @@ export const detectUnquotedLinks = (
   pattern.lastIndex = 0;
   const matches = [...text.matchAll(pattern)];
 
+  const LEADING_TRIM_CHARS = ['(', '[', '{', '<'];
+
   for (const match of matches) {
     if (token?.isCancellationRequested) break;
 
@@ -50,24 +52,32 @@ export const detectUnquotedLinks = (
     const startIndex = match.index!;
     const length = fullMatch.length;
 
-    const parseResult = parseLink(fullMatch, delimiters);
+    // Trim leading punctuation that may surround the link in prose
+    let trimmedMatch = fullMatch;
+    let trimmedStartIndex = startIndex;
+    let trimmedLength = length;
+
+    while (trimmedLength > 0 && LEADING_TRIM_CHARS.includes(trimmedMatch[0])) {
+      trimmedMatch = trimmedMatch.slice(1);
+      trimmedStartIndex++;
+      trimmedLength--;
+    }
+
+    const parseResult = parseLink(trimmedMatch, delimiters);
     if (!parseResult.success) {
       parseFailures++;
-      logger.debug(
-        { fn: 'detectUnquotedLinks', link: fullMatch, error: parseResult.error },
-        'Skipping link that failed to parse',
-      );
+      logger.debug({ fn: 'detectUnquotedLinks', link: trimmedMatch, error: parseResult.error }, 'Skipping link that failed to parse');
       continue;
     }
 
     links.push({
-      linkText: fullMatch,
-      startIndex,
-      length,
+      linkText: trimmedMatch,
+      startIndex: trimmedStartIndex,
+      length: trimmedLength,
       parsed: parseResult.value,
     });
 
-    occupiedRanges.push({ start: startIndex, end: startIndex + length });
+    occupiedRanges.push({ start: trimmedStartIndex, end: trimmedStartIndex + trimmedLength });
   }
 
   return { links, occupiedRanges, unquotedMatches: matches.length, parseFailures };

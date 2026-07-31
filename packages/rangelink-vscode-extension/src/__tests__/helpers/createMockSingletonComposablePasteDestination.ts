@@ -1,9 +1,6 @@
 import type { DestinationKind } from '../../types';
 
-import {
-  createMockComposablePasteDestination,
-  type MockComposablePasteDestinationConfig,
-} from './createMockComposablePasteDestination';
+import { createMockComposablePasteDestination, type MockComposablePasteDestinationConfig } from './createMockComposablePasteDestination';
 
 /**
  * Configuration for creating a mock singleton ComposablePasteDestination.
@@ -11,8 +8,7 @@ import {
  * Extends base config, excluding resource (always singleton).
  * Requires explicit `id` for consistency with other mock helpers.
  */
-export interface MockSingletonComposablePasteDestinationConfig
-  extends Omit<MockComposablePasteDestinationConfig, 'resource' | 'id'> {
+export interface MockSingletonComposablePasteDestinationConfig extends Omit<MockComposablePasteDestinationConfig, 'resource' | 'id'> {
   /** Required: The destination kind being mocked */
   id: DestinationKind;
 }

@@ -1,17 +1,16 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
 import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 
 import { cleanupTrackedFiles, closeAllEditors } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { createLogger } from './logHelpers';
 import { resetRangelinkSettings } from './settingsHelpers';
-import { SsContextImpl, type SsContext } from './ssContext';
+import { type SsContext, SsContextImpl } from './ssContext';
 import { disposeAllTerminals } from './terminalHelpers';
 import { activateExtension, settle } from './testEnv';
 import type { TestWindow } from './testWindow';
+
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
 export const standardSuite = (name: string, fn: (ss: SsContext) => void): void => {
   suite(name, () => {
@@ -24,10 +23,7 @@ export const standardSuite = (name: string, fn: (ss: SsContext) => void): void =
     });
 
     setup(async () => {
-      assert.ok(
-        getLogCapture().isCapturing,
-        'RANGELINK_CAPTURE_LOGS must be true for toast assertions',
-      );
+      assert.ok(getLogCapture().isCapturing, 'RANGELINK_CAPTURE_LOGS must be true for toast assertions');
       await resetRangelinkSettings(log);
       await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
       await closeAllEditors();

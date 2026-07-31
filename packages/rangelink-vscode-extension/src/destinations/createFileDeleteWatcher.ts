@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Auto-unbind when the bound editor's underlying file is deleted from disk.
@@ -33,10 +33,7 @@ export const createFileDeleteWatcher = (deps: {
       return;
     }
 
-    deps.logger.info(
-      { fn: 'createFileDeleteWatcher', fileUri: boundUriString },
-      `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`,
-    );
+    deps.logger.info({ fn: 'createFileDeleteWatcher', fileUri: boundUriString }, `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`);
     deps.clearBinding();
     deps.feedback.notifyAutoUnbind(deps.displayName, 'file-deleted');
   });

@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { DEFAULT_DELIMITERS } from '../../constants';
 import { detectQuotedLinks } from '../../detection/detectQuotedLinks';
 import { findLinksInText } from '../../detection/findLinksInText';
@@ -8,14 +5,16 @@ import type { OccupiedRange } from '../../detection/types';
 import { RangeLinkError, RangeLinkErrorCodes } from '../../errors';
 import { parseLink } from '../../parsing/parseLink';
 import type { DetectedLink } from '../../types';
-import { Result } from '../../types/Result';
+import { CoreResult } from '../../types/CoreResult';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 jest.mock('../../parsing/parseLink', () => ({
   ...jest.requireActual('../../parsing/parseLink'),
   parseLink: jest.fn(),
 }));
-const realParseLink =
-  jest.requireActual<typeof import('../../parsing/parseLink')>('../../parsing/parseLink').parseLink;
+const realParseLink = jest.requireActual<typeof import('../../parsing/parseLink')>('../../parsing/parseLink').parseLink;
 const mockParseLink = parseLink as jest.MockedFunction<typeof parseLink>;
 
 describe('findLinksInText', () => {
@@ -28,11 +27,7 @@ describe('findLinksInText', () => {
 
   describe('unquoted links', () => {
     it('should detect a single unquoted link', () => {
-      const results = findLinksInText(
-        'Check src/auth.ts#L10 for details',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('src/auth.ts#L10');
@@ -43,11 +38,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect multiple unquoted links', () => {
-      const results = findLinksInText(
-        'See src/a.ts#L1 and src/b.ts#L2-L5',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('See src/a.ts#L1 and src/b.ts#L2-L5', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -58,6 +49,104 @@ describe('findLinksInText', () => {
       const results = findLinksInText('No links here', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(0);
+    });
+
+    describe('surrounding punctuation trimming', () => {
+      it('should strip leading and trailing parens from a matched link', () => {
+        const results = findLinksInText('(path#L1-L2)', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should strip leading paren when link is followed by trailing punctuation', () => {
+        const results = findLinksInText('(path#L1-L2):', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(1);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+        expect(results[0].parsed.start.line).toBe(1);
+        expect(results[0].parsed.end.line).toBe(2);
+      });
+
+      it('should not produce a link from bare punctuation with no valid path', () => {
+        const results = findLinksInText('()', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(0);
+      });
+
+      it('should leave a clean path unchanged', () => {
+        const results = findLinksInText('path#L1-L2', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('path#L1-L2');
+        expect(results[0].startIndex).toBe(0);
+        expect(results[0].length).toBe(10);
+        expect(results[0].parsed.path).toBe('path');
+      });
+
+      describe('prefix-only (opening character without matching closer)', () => {
+        it.each([
+          ['( (opening paren)', '(path#L5', 1],
+          ['[ (opening bracket)', '[path#L5', 1],
+          ['{ (opening brace)', '{path#L5', 1],
+          ['< (opening angle)', '<path#L5', 1],
+          ['` (backtick)', '`path#L5', 1],
+          ["' (single quote)", "'path#L5", 1],
+          ['" (double quote)', '"path#L5', 1],
+        ])('should detect link with prefix-only %s', (_label, text, expectedStartIndex) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(1);
+          expect(results[0].linkText).toBe('path#L5');
+          expect(results[0].startIndex).toBe(expectedStartIndex);
+          expect(results[0].parsed.path).toBe('path');
+          expect(results[0].parsed.start.line).toBe(5);
+        });
+      });
+
+      describe('suffix-only (closing character without matching opener)', () => {
+        it.each([
+          [') (closing paren)', 'path#L5)'],
+          ['] (closing bracket)', 'path#L5]'],
+          ['} (closing brace)', 'path#L5}'],
+          ['> (closing angle)', 'path#L5>'],
+          ['` (backtick)', 'path#L5`'],
+          ["' (single quote)", "path#L5'"],
+          ['" (double quote)', 'path#L5"'],
+        ])('should detect link with suffix-only %s', (_label, text) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(1);
+          expect(results[0].linkText).toBe('path#L5');
+          expect(results[0].startIndex).toBe(0);
+          expect(results[0].parsed.path).toBe('path');
+          expect(results[0].parsed.start.line).toBe(5);
+        });
+      });
+
+      describe('single wrapping char — no valid path', () => {
+        it.each([
+          ['bare opening paren', '('],
+          ['bare closing paren', ')'],
+          ['bare backtick', '`'],
+          ['bare single quote', "'"],
+          ['bare double quote', '"'],
+          ['bare opening angle', '<'],
+          ['bare closing angle', '>'],
+        ])('should return empty when text is just %s', (_label, text) => {
+          const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
+
+          expect(results).toHaveLength(0);
+        });
+      });
     });
 
     describe('markdown link syntax', () => {
@@ -71,11 +160,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect the path from a simple markdown link embedded in prose', () => {
-        const results = findLinksInText(
-          'See [text](src/auth.ts#L10) for details',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('See [text](src/auth.ts#L10) for details', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
         expect(results[0].linkText).toBe('src/auth.ts#L10');
@@ -91,12 +176,8 @@ describe('findLinksInText', () => {
         );
 
         expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
-        expect(results[0].parsed.path).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
+        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
         expect(results[0].parsed.start.line).toBe(876);
       });
 
@@ -106,12 +187,8 @@ describe('findLinksInText', () => {
         const results = findLinksInText(line, DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
-        );
-        expect(results[0].parsed.path).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
+        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
         expect(results[0].parsed.start.line).toBe(876);
       });
 
@@ -126,11 +203,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect a range link inside a markdown link embedded in prose', () => {
-        const results = findLinksInText(
-          'Check [text](src/auth.ts#L10-L20) above',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('Check [text](src/auth.ts#L10-L20) above', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
         expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
@@ -140,11 +213,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect both links when multiple markdown links appear in one line', () => {
-        const results = findLinksInText(
-          'Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(2);
         expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -157,11 +226,7 @@ describe('findLinksInText', () => {
 
   describe('quoted links', () => {
     it('should detect single-quoted links with spaces in paths', () => {
-      const results = findLinksInText(
-        "Open 'My Folder/file.ts#L10' to see",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("Open 'My Folder/file.ts#L10' to see", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('My Folder/file.ts#L10');
@@ -180,11 +245,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect quoted links with column positions', () => {
-      const results = findLinksInText(
-        "'Meslo Slashed/LICENSE.txt#L10C24-L11C24'",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("'Meslo Slashed/LICENSE.txt#L10C24-L11C24'", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(1);
       expect(results[0].linkText).toBe('Meslo Slashed/LICENSE.txt#L10C24-L11C24');
@@ -205,11 +266,7 @@ describe('findLinksInText', () => {
     });
 
     it('should skip quoted segments that are not valid links', () => {
-      const results = findLinksInText(
-        "Some 'random text' and 'not a link' here",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("Some 'random text' and 'not a link' here", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(0);
     });
@@ -217,11 +274,7 @@ describe('findLinksInText', () => {
 
   describe('mixed unquoted and quoted links', () => {
     it('should detect both unquoted and quoted links in same text', () => {
-      const results = findLinksInText(
-        "See src/a.ts#L1 and 'My Dir/b.ts#L5-L10'",
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText("See src/a.ts#L1 and 'My Dir/b.ts#L5-L10'", DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('src/a.ts#L1');
@@ -229,11 +282,7 @@ describe('findLinksInText', () => {
     });
 
     it('should detect both single- and double-quoted links in same text', () => {
-      const results = findLinksInText(
-        `Check 'My Dir/a.ts#L1' and "Other Dir/b.ts#L2"`,
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText(`Check 'My Dir/a.ts#L1' and "Other Dir/b.ts#L2"`, DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(2);
       expect(results[0].linkText).toBe('My Dir/a.ts#L1');
@@ -253,12 +302,7 @@ describe('findLinksInText', () => {
   describe('cancellation', () => {
     it('should respect cancellation token during unquoted pass', () => {
       const token = { isCancellationRequested: true };
-      const results = findLinksInText(
-        'src/a.ts#L1 and src/b.ts#L2',
-        DEFAULT_DELIMITERS,
-        logger,
-        token,
-      );
+      const results = findLinksInText('src/a.ts#L1 and src/b.ts#L2', DEFAULT_DELIMITERS, logger, token);
 
       expect(results).toHaveLength(0);
     });
@@ -278,19 +322,12 @@ describe('findLinksInText', () => {
         message: 'Bad format',
         functionName: 'parseLink',
       });
-      mockParseLink.mockReturnValueOnce(Result.err(mockError));
+      mockParseLink.mockReturnValueOnce(CoreResult.err(mockError));
 
-      const results = findLinksInText(
-        'Check src/auth.ts#L10 for details',
-        DEFAULT_DELIMITERS,
-        logger,
-      );
+      const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
       expect(results).toHaveLength(0);
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'detectUnquotedLinks', link: 'src/auth.ts#L10', error: mockError },
-        'Skipping link that failed to parse',
-      );
+      expect(logger.debug).toHaveBeenCalledWith({ fn: 'detectUnquotedLinks', link: 'src/auth.ts#L10', error: mockError }, 'Skipping link that failed to parse');
     });
 
     it('should count parse failures in summary log', () => {
@@ -299,7 +336,7 @@ describe('findLinksInText', () => {
         message: 'Bad format',
         functionName: 'parseLink',
       });
-      mockParseLink.mockReturnValueOnce(Result.err(mockError));
+      mockParseLink.mockReturnValueOnce(CoreResult.err(mockError));
 
       findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 

@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { Bookmark, BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 interface ManageBookmarkItem extends vscode.QuickPickItem {
   bookmark: Bookmark;
@@ -27,10 +27,7 @@ export class ManageBookmarksCommand {
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'ManageBookmarksCommand.constructor' },
-      'ManageBookmarksCommand initialized',
-    );
+    this.logger.debug({ fn: 'ManageBookmarksCommand.constructor' }, 'ManageBookmarksCommand initialized');
   }
 
   async execute(): Promise<void> {
@@ -40,9 +37,7 @@ export class ManageBookmarksCommand {
 
     if (bookmarks.length === 0) {
       this.logger.debug(logCtx, 'No bookmarks to manage');
-      await this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.BOOKMARK_MANAGE_EMPTY),
-      );
+      await this.ideAdapter.showInformationMessage(formatMessage(MessageCode.BOOKMARK_MANAGE_EMPTY));
       return;
     }
 
@@ -50,7 +45,7 @@ export class ManageBookmarksCommand {
     await this.showManageQuickPick(bookmarks);
   }
 
-  private async showManageQuickPick(bookmarks: Bookmark[]): Promise<void> {
+  private showManageQuickPick(bookmarks: Bookmark[]): void {
     const logCtx = { fn: 'ManageBookmarksCommand.showManageQuickPick' };
 
     const quickPick = this.ideAdapter.createQuickPick<ManageBookmarkItem>();
@@ -95,9 +90,7 @@ export class ManageBookmarksCommand {
     }));
   }
 
-  private async confirmAndDelete(
-    bookmark: Bookmark,
-  ): Promise<ExtensionResult<Bookmark> | undefined> {
+  private async confirmAndDelete(bookmark: Bookmark): Promise<ExtensionResult<Bookmark> | undefined> {
     const logCtx = { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark };
 
     const confirmMessage = formatMessage(MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE, {
@@ -106,11 +99,7 @@ export class ManageBookmarksCommand {
     const deleteLabel = formatMessage(MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE_YES);
     const cancelLabel = formatMessage(MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE_CANCEL);
 
-    const choice = await this.ideAdapter.showWarningMessage(
-      confirmMessage,
-      deleteLabel,
-      cancelLabel,
-    );
+    const choice = await this.ideAdapter.showWarningMessage(confirmMessage, deleteLabel, cancelLabel);
 
     if (choice !== deleteLabel) {
       this.logger.debug(logCtx, 'Delete cancelled by user');
@@ -121,14 +110,10 @@ export class ManageBookmarksCommand {
 
     if (result.success) {
       this.logger.debug(logCtx, 'Bookmark deleted successfully');
-      await this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.BOOKMARK_MANAGE_DELETED, { label: bookmark.label }),
-      );
+      await this.ideAdapter.showInformationMessage(formatMessage(MessageCode.BOOKMARK_MANAGE_DELETED, { label: bookmark.label }));
     } else {
       this.logger.warn({ ...logCtx, error: result.error }, 'Failed to delete bookmark');
-      await this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED),
-      );
+      await this.ideAdapter.showErrorMessage(formatMessage(MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED));
     }
 
     return result;

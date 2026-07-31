@@ -1,8 +1,8 @@
-import type * as vscode from 'vscode';
-
 import type { NonBindableReason } from '../../types';
 
 import { isRangeLinkTestFixture } from './testFixtureRegistry';
+
+import type * as vscode from 'vscode';
 
 /**
  * Result of classifying a terminal for the destination picker.
@@ -14,17 +14,13 @@ import { isRangeLinkTestFixture } from './testFixtureRegistry';
  *   picker but cannot be bound to; the reason drives the disabled-style
  *   rendering and selection rejection.
  */
-export type TerminalBindingClassification =
-  | { readonly visible: false }
-  | { readonly visible: true; readonly nonBindableReason?: NonBindableReason };
+export type TerminalBindingClassification = { readonly visible: false } | { readonly visible: true; readonly nonBindableReason?: NonBindableReason };
 
 const isHiddenFromUser = (terminal: vscode.Terminal): boolean =>
-  'hideFromUser' in terminal.creationOptions &&
-  (terminal.creationOptions as vscode.TerminalOptions).hideFromUser === true;
+  'hideFromUser' in terminal.creationOptions && (terminal.creationOptions as vscode.TerminalOptions).hideFromUser === true;
 
 const isExtensionManaged = (terminal: vscode.Terminal): boolean =>
-  'pty' in terminal.creationOptions &&
-  (terminal.creationOptions as vscode.ExtensionTerminalOptions).pty != null;
+  'pty' in terminal.creationOptions && (terminal.creationOptions as vscode.ExtensionTerminalOptions).pty != null;
 
 /**
  * Classify whether a terminal belongs in the destination picker, and if so
@@ -41,9 +37,7 @@ const isExtensionManaged = (terminal: vscode.Terminal): boolean =>
  * for "this terminal is owned by an extension and does not accept arbitrary
  * shell input."
  */
-export const classifyTerminalForBinding = (
-  terminal: vscode.Terminal | null | undefined,
-): TerminalBindingClassification => {
+export const classifyTerminalForBinding = (terminal: vscode.Terminal | null | undefined): TerminalBindingClassification => {
   if (terminal == null) return { visible: false };
   if (terminal.exitStatus !== undefined) return { visible: false };
   if (isRangeLinkTestFixture(terminal)) return { visible: true };

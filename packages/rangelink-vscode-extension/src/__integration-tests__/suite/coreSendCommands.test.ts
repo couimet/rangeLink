@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -16,37 +11,35 @@ import {
   assertClipboardEqualsGeneratedLink,
   assertFnLogged,
   assertNoClipboardWriteLogged,
+  assertQuickPickContains,
   assertTerminalBufferContains,
   assertTerminalBufferEqualsGeneratedLink,
   type CapturingTerminal,
   clearSelection,
   echoToTerminal,
   getGeneratedLink,
-  assertQuickPickContains,
+  getLogCapture,
   MENU_ITEM_GROUP_AI_ASSISTANTS,
   MENU_ITEM_GROUP_FILES,
   MENU_ITEM_GROUP_TERMINALS,
-  getLogCapture,
   openAndDismiss,
   standardSuite,
   TERMINAL_READY_MS,
   waitForHuman,
 } from '../helpers';
 
+import assert from 'node:assert';
+import path from 'node:path';
+import * as vscode from 'vscode';
+
 const NO_TERMINAL_SELECTION_MSG = 'No text selected in the terminal. Select text and try again.';
 
 standardSuite('Core Send Commands', (ss) => {
   test('core-send-commands-r-l-002: R-L sends RangeLink to bound text editor destination', async () => {
-    const srcUri = ss.createWorkspaceFile(
-      'csc-r-l-002-src',
-      'line 1\nline 2\nline 3\nline 4\nline 5\n',
-    );
+    const srcUri = ss.createWorkspaceFile('csc-r-l-002-src', 'line 1\nline 2\nline 3\nline 4\nline 5\n');
     const destUri = ss.createWorkspaceFile('csc-r-l-002-dest', '');
     const destBasename = path.basename(destUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: RangeLink sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const destDoc = await vscode.workspace.openTextDocument(destUri);
@@ -57,10 +50,7 @@ standardSuite('Core Send Commands', (ss) => {
 
     const srcDoc = await vscode.workspace.openTextDocument(srcUri);
     const srcEditor = await vscode.window.showTextDocument(srcDoc, vscode.ViewColumn.Beside);
-    srcEditor.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      new vscode.Position(3, 0),
-    );
+    srcEditor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(3, 0));
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -73,28 +63,17 @@ standardSuite('Core Send Commands', (ss) => {
 
     const updatedDestDoc = await vscode.workspace.openTextDocument(destUri);
     const destText = updatedDestDoc.getText();
-    assert.strictEqual(
-      destText,
-      generatedLink,
-      `Expected dest editor to contain exactly the generated link, got: ${JSON.stringify(destText)}`,
-    );
+    assert.strictEqual(destText, generatedLink, `Expected dest editor to contain exactly the generated link, got: ${JSON.stringify(destText)}`);
 
     ss.log('✓ R-L sent exact RangeLink to bound text editor destination');
   });
 
   test('core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const CSC_R_L_003_LINE_COUNT = 10;
-    const { uri: fileUri } = ss.createContentFile(
-      'csc-r-l-003',
-      CSC_R_L_003_LINE_COUNT,
-      (i) => `line ${i + 1} content`,
-    );
+    const { uri: fileUri } = ss.createContentFile('csc-r-l-003', CSC_R_L_003_LINE_COUNT, (i) => `line ${i + 1} content`);
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc);
@@ -118,19 +97,12 @@ standardSuite('Core Send Commands', (ss) => {
       tier1: string;
       tier2: string;
     };
-    assert.strictEqual(
-      dummyText.tier1,
-      generatedLink,
-      `Expected Dummy AI tier1="${generatedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
-    );
+    assert.strictEqual(dummyText.tier1, generatedLink, `Expected Dummy AI tier1="${generatedLink}", got: ${JSON.stringify(dummyText.tier1)}`);
     ss.log('✓ R-L sent RangeLink to Dummy AI (Tier 1) destination');
   });
 
   test('core-send-commands-r-c-001: R-C copies RangeLink to clipboard and does NOT send to terminal', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("csc-r-c-001-dest")',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-r-c-001-dest")', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -138,8 +110,7 @@ standardSuite('Core Send Commands', (ss) => {
     });
     const fileUri = ss.createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-r-c-001-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-r-c-001-dest');
 
     const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -154,20 +125,13 @@ standardSuite('Core Send Commands', (ss) => {
       'before-r-c-001',
     );
 
-    assert.strictEqual(
-      capturing.getCapturedText(),
-      '',
-      'Terminal should not have received anything from R-C',
-    );
+    assert.strictEqual(capturing.getCapturedText(), '', 'Terminal should not have received anything from R-C');
 
     ss.log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
 
   test('core-send-commands-r-l-004: Command dispatch "Send RangeLink" behaves identically to R-L keybinding', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("csc-r-l-004-dest")',
-      '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-004-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-r-l-004-dest")', '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-004-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -175,8 +139,7 @@ standardSuite('Core Send Commands', (ss) => {
     });
     const fileUri = ss.createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-r-l-004-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-r-l-004-dest');
 
     const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -190,16 +153,11 @@ standardSuite('Core Send Commands', (ss) => {
 
     assertTerminalBufferEqualsGeneratedLink(capturing, 'before-r-l-004');
 
-    ss.log(
-      '✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination',
-    );
+    ss.log('✓ Command dispatch "Send RangeLink" delivered exact link to bound terminal destination');
   });
 
   test('core-send-commands-r-c-002: Command dispatch "Copy RangeLink" behaves identically to R-C keybinding', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("csc-r-c-002-dest")',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-r-c-002-dest")', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -207,8 +165,7 @@ standardSuite('Core Send Commands', (ss) => {
     });
     const fileUri = ss.createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
 
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-r-c-002-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-r-c-002-dest');
 
     const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
@@ -223,27 +180,17 @@ standardSuite('Core Send Commands', (ss) => {
       'before-r-c-002',
     );
 
-    assert.strictEqual(
-      capturing.getCapturedText(),
-      '',
-      'Terminal should not have received anything from "Copy RangeLink"',
-    );
-    ss.log(
-      '✓ Command dispatch "Copy RangeLink" wrote exact link to clipboard; terminal received nothing',
-    );
+    assert.strictEqual(capturing.getCapturedText(), '', 'Terminal should not have received anything from "Copy RangeLink"');
+    ss.log('✓ Command dispatch "Copy RangeLink" wrote exact link to clipboard; terminal received nothing');
   });
 
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {
     const MARKER = 'rl-sts-001-marker';
 
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-sts-001-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-sts-001-dest');
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("csc-sts-001-dest")',
-      '✓ RangeLink: Selected text sent to Terminal ("csc-sts-001-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-sts-001-dest")', '✓ RangeLink: Selected text sent to Terminal ("csc-sts-001-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -258,11 +205,10 @@ standardSuite('Core Send Commands', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-001');
 
-    await waitForHuman(
-      'send-terminal-selection-001',
-      `In "csc-sts-001-src", select "${MARKER}" and press Cmd+R Cmd+V.`,
-      [`1. Click into "csc-sts-001-src", drag-select "${MARKER}"`, '2. Press Cmd+R Cmd+V'],
-    );
+    await waitForHuman('send-terminal-selection-001', `In "csc-sts-001-src", select "${MARKER}" and press Cmd+R Cmd+V.`, [
+      `1. Click into "csc-sts-001-src", drag-select "${MARKER}"`,
+      '2. Press Cmd+R Cmd+V',
+    ]);
 
     assertTerminalBufferContains(capturing.getCapturedText(), MARKER);
 
@@ -337,10 +283,7 @@ standardSuite('Core Send Commands', (ss) => {
     capturing.terminal.sendText(markerText, false);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-010")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-010")', '✓ RangeLink: Selected text sent to Terminal ("rl-sts-010")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -351,17 +294,13 @@ standardSuite('Core Send Commands', (ss) => {
     logCapture.mark('before-sts-010');
     capturing.clearCaptured();
 
-    await waitForHuman(
-      'send-terminal-selection-010',
-      `In "${terminalName}", select "${markerText}" and press Cmd+R Cmd+V (R-V).`,
-      [
-        `Destination: Terminal "${terminalName}" IS the bound destination (the SAME terminal we will select from).`,
-        `1. Click into "${terminalName}" to give it focus`,
-        `2. Drag-select "${markerText}" in the terminal buffer`,
-        '3. Press Cmd+R Cmd+V',
-        'The right-click menu intentionally hides "Send Selected Text" here (self-paste gate). The R-V keybinding bypasses that gate and pastes the selection BACK into the same terminal.',
-      ],
-    );
+    await waitForHuman('send-terminal-selection-010', `In "${terminalName}", select "${markerText}" and press Cmd+R Cmd+V (R-V).`, [
+      `Destination: Terminal "${terminalName}" IS the bound destination (the SAME terminal we will select from).`,
+      `1. Click into "${terminalName}" to give it focus`,
+      `2. Drag-select "${markerText}" in the terminal buffer`,
+      '3. Press Cmd+R Cmd+V',
+      'The right-click menu intentionally hides "Send Selected Text" here (self-paste gate). The R-V keybinding bypasses that gate and pastes the selection BACK into the same terminal.',
+    ]);
 
     assertTerminalBufferContains(capturing.getCapturedText(), markerText);
 
@@ -406,8 +345,7 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('send-terminal-selection-006: R-L with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-sts-006-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-sts-006-dest');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-sts-006-dest")']);
     ss.expectContextKeys({
@@ -431,8 +369,7 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('send-terminal-selection-007: R-C with terminal focus shows no-active-editor error', async () => {
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-sts-007-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-sts-007-dest');
 
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-sts-007-dest")']);
     ss.expectContextKeys({
@@ -456,23 +393,16 @@ standardSuite('Core Send Commands', (ss) => {
   });
 
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-r-l-001-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-r-l-001-dest');
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("csc-r-l-001-dest")',
-      '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-001-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("csc-r-l-001-dest")', '✓ RangeLink: RangeLink sent to Terminal ("csc-r-l-001-dest")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
       'rangelink.isBound': true,
     });
 
-    const fileUri = ss.createWorkspaceFile(
-      'csc-r-l-001',
-      'line 1\nline 2\nline 3\nline 4\nline 5\n',
-    );
+    const fileUri = ss.createWorkspaceFile('csc-r-l-001', 'line 1\nline 2\nline 3\nline 4\nline 5\n');
     const editor = await ss.openEditor(fileUri);
     editor.selection = new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(4, 0));
     await ss.settle();
@@ -499,8 +429,7 @@ standardSuite('Core Send Commands', (ss) => {
       'rangelink.isBound': true,
     });
 
-    const capturing: CapturingTerminal =
-      await ss.createAndBindCapturingTerminal('csc-fullline-001-dest');
+    const capturing: CapturingTerminal = await ss.createAndBindCapturingTerminal('csc-fullline-001-dest');
 
     const fileUri = ss.createWorkspaceFile('csc-fullline-001', 'line 1\nline 2\nline 3\n');
     await ss.openEditor(fileUri);

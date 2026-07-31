@@ -1,16 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalPasteService } from '../../services';
-import { ExtensionResult } from '../../types';
-import { BehaviourAfterPaste } from '../../types';
-import {
-  createMockClipboardService,
-  createMockTerminal,
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers';
+import { BehaviourAfterPaste, ExtensionResult } from '../../types';
+import { createMockClipboardService, createMockTerminal, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalPasteService', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -32,12 +26,9 @@ describe('TerminalPasteService', () => {
 
       const result = await service.pasteIntoTerminal('test content', terminal);
 
-      expect(result).toBeOk();
+      expect(result.success).toBe(true);
       expect(mockClipboardService.stage).toHaveBeenCalledWith('test content', expect.any(Function));
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'TerminalPasteService.pasteIntoTerminal', terminalName: 'my-terminal' },
-        'Terminal paste succeeded',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'TerminalPasteService.pasteIntoTerminal', terminalName: 'my-terminal' }, 'Terminal paste succeeded');
       expect(mockLogger.error).not.toHaveBeenCalled();
     });
 
@@ -89,7 +80,7 @@ describe('TerminalPasteService', () => {
 
       const result = await service.pasteIntoTerminal('test content', terminal);
 
-      expect(result).toBeDetailedError('TERMINAL_NOT_DEFINED', {
+      expect(result).toHaveDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -113,7 +104,7 @@ describe('TerminalPasteService', () => {
       const result = await service.pasteIntoTerminal('bad content', terminal);
 
       expect(mockClipboardService.stage).toHaveBeenCalledWith('bad content', expect.any(Function));
-      expect(result).toBeDetailedError('CLIPBOARD_READ_FAILED', {
+      expect(result).toHaveDetailedError('CLIPBOARD_READ_FAILED', {
         message: 'Failed to read clipboard',
         functionName: 'ClipboardService::stage',
       });

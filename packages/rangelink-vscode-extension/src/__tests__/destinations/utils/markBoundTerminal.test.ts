@@ -19,10 +19,7 @@ describe('markBoundTerminal', () => {
   });
 
   it('marks all as not-bound when boundTerminalProcessId is undefined', () => {
-    const terminals = [
-      createMockEligibleTerminal({ name: 'bash', processId: 100 }),
-      createMockEligibleTerminal({ name: 'zsh', processId: 200 }),
-    ];
+    const terminals = [createMockEligibleTerminal({ name: 'bash', processId: 100 }), createMockEligibleTerminal({ name: 'zsh', processId: 200 })];
 
     const result = markBoundTerminal(terminals, undefined);
 
@@ -33,10 +30,7 @@ describe('markBoundTerminal', () => {
   });
 
   it('marks all as not-bound when no processId matches', () => {
-    const terminals = [
-      createMockEligibleTerminal({ name: 'bash', processId: 100 }),
-      createMockEligibleTerminal({ name: 'zsh', processId: 200 }),
-    ];
+    const terminals = [createMockEligibleTerminal({ name: 'bash', processId: 100 }), createMockEligibleTerminal({ name: 'zsh', processId: 200 })];
 
     const result = markBoundTerminal(terminals, 999);
 
@@ -47,10 +41,7 @@ describe('markBoundTerminal', () => {
   });
 
   it('marks terminal with undefined processId as not-bound even when boundTerminalProcessId is provided', () => {
-    const terminals = [
-      createMockEligibleTerminal({ name: 'bash' }),
-      createMockEligibleTerminal({ name: 'zsh', processId: 200 }),
-    ];
+    const terminals = [createMockEligibleTerminal({ name: 'bash' }), createMockEligibleTerminal({ name: 'zsh', processId: 200 })];
 
     const result = markBoundTerminal(terminals, 200);
 
@@ -62,9 +53,7 @@ describe('markBoundTerminal', () => {
 
   it('preserves all original EligibleTerminal properties', () => {
     const terminal = createMockTerminal({ name: 'bash' });
-    const terminals = [
-      createMockEligibleTerminal({ terminal, name: 'bash', isActive: true, processId: 42 }),
-    ];
+    const terminals = [createMockEligibleTerminal({ terminal, name: 'bash', isActive: true, processId: 42 })];
 
     const result = markBoundTerminal(terminals, 42);
 

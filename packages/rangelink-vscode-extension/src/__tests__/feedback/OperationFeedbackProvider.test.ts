@@ -51,9 +51,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_LINK_COPIED_TO_CLIPBOARD', {
         linkTypeName: 'RangeLink',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink copied to clipboard');
     });
   });
 
@@ -67,9 +65,7 @@ describe('OperationFeedbackProvider', () => {
         linkTypeName: 'RangeLink',
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink sent to Terminal ("bash")',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink sent to Terminal ("bash")');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
       expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
@@ -80,9 +76,7 @@ describe('OperationFeedbackProvider', () => {
         instruction: 'Press Cmd+V to paste',
       });
 
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink copied to clipboard');
       expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Press Cmd+V to paste');
       expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
@@ -93,9 +87,7 @@ describe('OperationFeedbackProvider', () => {
         instruction: 'Manual paste required',
       });
 
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink copied to clipboard');
       expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Manual paste required');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
@@ -112,9 +104,7 @@ describe('OperationFeedbackProvider', () => {
         { kind: 'failed-automatic', destinationKind: 'text-editor' },
       );
 
-      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
-        'Could not send to editor. Make sure the bound editor is visible and focused.',
-      );
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Could not send to editor. Make sure the bound editor is visible and focused.');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
 
@@ -123,8 +113,7 @@ describe('OperationFeedbackProvider', () => {
         kind: 'self-paste-blocked',
         destinationKind: 'text-editor',
         clipboardWritten: true,
-        toastMessage:
-          'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
+        toastMessage: 'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
       });
 
       expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
@@ -133,9 +122,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_LINK_COPIED_TO_CLIPBOARD', {
         linkTypeName: 'RangeLink',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink copied to clipboard');
       expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
 
@@ -147,9 +134,7 @@ describe('OperationFeedbackProvider', () => {
         toastMessage: 'Cannot paste when bound editor has an active selection.',
       });
 
-      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-        'Cannot paste when bound editor has an active selection.',
-      );
+      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Cannot paste when bound editor has an active selection.');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
       expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
@@ -160,9 +145,7 @@ describe('OperationFeedbackProvider', () => {
       });
 
       expect(formatMessageSpy).toHaveBeenCalledWith('WARN_CLIPBOARD_PRESERVATION_FAILED');
-      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
-        'Clipboard preservation failed. Content was not sent.',
-      );
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Clipboard preservation failed. Content was not sent.');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
@@ -171,19 +154,13 @@ describe('OperationFeedbackProvider', () => {
       const bindContext = { destinationName: 'Terminal ("bash")' };
 
       it('sent-automatic + bindContext uses merged message code', () => {
-        provider.provideSendFeedback(
-          createPasteContext() as any,
-          { kind: 'sent-automatic' },
-          bindContext,
-        );
+        provider.provideSendFeedback(createPasteContext() as any, { kind: 'sent-automatic' }, bindContext);
 
         expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_BOUND_AND_SENT', {
           destinationName: 'Terminal ("bash")',
           linkTypeName: 'RangeLink',
         });
-        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-          'Bound to Terminal ("bash") — RangeLink sent',
-        );
+        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Bound to Terminal ("bash") — RangeLink sent');
         expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
         expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
       });
@@ -195,9 +172,7 @@ describe('OperationFeedbackProvider', () => {
           linkTypeName: 'RangeLink',
           destinationName: 'Terminal ("bash")',
         });
-        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-          'RangeLink sent to Terminal ("bash")',
-        );
+        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('RangeLink sent to Terminal ("bash")');
       });
 
       it('sent-manual + bindContext prepends bound prefix to clipboard status bar message', () => {
@@ -213,9 +188,7 @@ describe('OperationFeedbackProvider', () => {
         expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_BOUND_PREFIX', {
           destinationName: 'Terminal ("bash")',
         });
-        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-          'Bound to Terminal ("bash") — RangeLink copied to clipboard',
-        );
+        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Bound to Terminal ("bash") — RangeLink copied to clipboard');
         expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Press Cmd+V to paste');
       });
 
@@ -229,9 +202,7 @@ describe('OperationFeedbackProvider', () => {
           bindContext,
         );
 
-        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-          'Bound to Terminal ("bash") — RangeLink copied to clipboard',
-        );
+        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Bound to Terminal ("bash") — RangeLink copied to clipboard');
         expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Manual paste required');
       });
 
@@ -265,12 +236,8 @@ describe('OperationFeedbackProvider', () => {
           bindContext,
         );
 
-        expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-          'Cannot auto-paste to same file.',
-        );
-        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-          'Bound to Terminal ("bash") — RangeLink copied to clipboard',
-        );
+        expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Cannot auto-paste to same file.');
+        expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Bound to Terminal ("bash") — RangeLink copied to clipboard');
       });
 
       it('self-paste-blocked + bindContext without clipboard written does not show status bar', () => {
@@ -285,9 +252,7 @@ describe('OperationFeedbackProvider', () => {
           bindContext,
         );
 
-        expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-          'Cannot paste when bound editor has an active selection.',
-        );
+        expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Cannot paste when bound editor has an active selection.');
         expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
       });
 
@@ -300,24 +265,20 @@ describe('OperationFeedbackProvider', () => {
           bindContext,
         );
 
-        expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'Bound to Terminal ("bash") — Clipboard preservation failed. Content was not sent.',
-        );
+        expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Bound to Terminal ("bash") — Clipboard preservation failed. Content was not sent.');
         expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
       });
     });
 
     it('throws RangeLinkExtensionError on unexpected outcome kind', () => {
-      expect(() =>
-        provider.provideSendFeedback(
-          createPasteContext() as any,
-          { kind: 'unexpected-value' } as any,
-        ),
-      ).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
-        message: 'Unexpected paste send outcome: {"kind":"unexpected-value"}',
-        functionName: 'OperationFeedbackProvider.provideSendFeedback',
-        details: { unexpectedValue: { kind: 'unexpected-value' } },
-      });
+      expect(() => provider.provideSendFeedback(createPasteContext() as any, { kind: 'unexpected-value' } as any)).toThrowDetailedError(
+        'UNEXPECTED_SWITCH_VALUE',
+        {
+          message: 'Unexpected paste send outcome: {"kind":"unexpected-value"}',
+          functionName: 'OperationFeedbackProvider.provideSendFeedback',
+          details: { unexpectedValue: { kind: 'unexpected-value' } },
+        },
+      );
     });
   });
 
@@ -325,25 +286,15 @@ describe('OperationFeedbackProvider', () => {
     it('shows terminal-closed status bar message', () => {
       provider.notifyAutoUnbind('Terminal ("bash")', 'terminal-closed');
 
-      expect(formatMessageSpy).toHaveBeenCalledWith(
-        'STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED',
-        { destinationName: 'Terminal ("bash")' },
-      );
-      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-        'Unbound from Terminal ("bash") — terminal closed',
-      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED', { destinationName: 'Terminal ("bash")' });
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Terminal ("bash") — terminal closed');
     });
 
     it('shows editor-closed status bar message', () => {
       provider.notifyAutoUnbind('Text Editor ("file.ts")', 'editor-closed');
 
-      expect(formatMessageSpy).toHaveBeenCalledWith(
-        'STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED',
-        { destinationName: 'Text Editor ("file.ts")' },
-      );
-      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-        'Unbound from Text Editor ("file.ts") — editor closed',
-      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED', { destinationName: 'Text Editor ("file.ts")' });
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Text Editor ("file.ts") — editor closed');
     });
 
     it('shows file-deleted status bar message and warning toast', () => {
@@ -352,26 +303,19 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED', {
         destinationName: 'Text Editor ("server.ts")',
       });
-      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-        'Unbound from Text Editor ("server.ts") — file deleted',
-      );
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file deleted');
       expect(formatMessageSpy).toHaveBeenCalledWith('WARN_DESTINATION_UNBOUND_FILE_DELETED', {
         destinationName: 'Text Editor ("server.ts")',
       });
-      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
-        'Unbound from Text Editor ("server.ts") — file was deleted from disk',
-      );
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file was deleted from disk');
     });
 
     it('throws on unexpected reason', () => {
-      expect(() => provider.notifyAutoUnbind('Test', 'unknown-reason' as any)).toThrowDetailedError(
-        'UNEXPECTED_SWITCH_VALUE',
-        {
-          message: 'Unexpected auto-unbind reason: "unknown-reason"',
-          functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
-          details: { unexpectedValue: 'unknown-reason' },
-        },
-      );
+      expect(() => provider.notifyAutoUnbind('Test', 'unknown-reason' as any)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: 'Unexpected auto-unbind reason: "unknown-reason"',
+        functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
+        details: { unexpectedValue: 'unknown-reason' },
+      });
     });
   });
 
@@ -393,53 +337,38 @@ describe('OperationFeedbackProvider', () => {
       const result = (provider as any).buildPasteFailureMessage('text-editor');
 
       expect(formatMessageSpy).toHaveBeenCalledWith('WARN_PASTE_FAILED_EDITOR_HIDDEN');
-      expect(result).toBe(
-        'Could not send to editor. Make sure the bound editor is visible and focused.',
-      );
+      expect(result).toBe('Could not send to editor. Make sure the bound editor is visible and focused.');
     });
 
     it('returns formatted message for terminal destination', () => {
       const result = (provider as any).buildPasteFailureMessage('terminal');
 
       expect(formatMessageSpy).toHaveBeenCalledWith('WARN_PASTE_FAILED_TERMINAL');
-      expect(result).toBe(
-        'Could not send to terminal. Terminal may be closed or not accepting input.',
-      );
+      expect(result).toBe('Could not send to terminal. Terminal may be closed or not accepting input.');
     });
 
     it('throws for claude-code chat assistant destination', () => {
-      expect(() => (provider as any).buildPasteFailureMessage('claude-code')).toThrowDetailedError(
-        'UNEXPECTED_SWITCH_VALUE',
-        {
-          message:
-            "Chat assistant destination 'claude-code' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
-          functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-          details: { unexpectedValue: 'claude-code' },
-        },
-      );
+      expect(() => (provider as any).buildPasteFailureMessage('claude-code')).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: "Chat assistant destination 'claude-code' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+        functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
+        details: { unexpectedValue: 'claude-code' },
+      });
     });
 
     it('throws for custom AI assistant destination', () => {
-      expect(() =>
-        (provider as any).buildPasteFailureMessage('custom-ai:my-extension'),
-      ).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
-        message:
-          "AI assistant destination 'custom-ai:my-extension' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+      expect(() => (provider as any).buildPasteFailureMessage('custom-ai:my-extension')).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: "AI assistant destination 'custom-ai:my-extension' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
         functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
         details: { unexpectedValue: 'custom-ai:my-extension' },
       });
     });
 
     it('throws DESTINATION_NOT_IMPLEMENTED for unknown destination kind', () => {
-      expect(() => (provider as any).buildPasteFailureMessage('unknown-kind')).toThrowDetailedError(
-        'DESTINATION_NOT_IMPLEMENTED',
-        {
-          message:
-            "Unknown destination kind 'unknown-kind' - missing case in buildPasteFailureMessage()",
-          functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
-          details: { destinationKind: 'unknown-kind' },
-        },
-      );
+      expect(() => (provider as any).buildPasteFailureMessage('unknown-kind')).toThrowDetailedError('DESTINATION_NOT_IMPLEMENTED', {
+        message: "Unknown destination kind 'unknown-kind' - missing case in buildPasteFailureMessage()",
+        functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
+        details: { destinationKind: 'unknown-kind' },
+      });
     });
   });
 
@@ -450,9 +379,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_BOUND', {
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'Bound to Terminal ("bash")',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Bound to Terminal ("bash")');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
   });
@@ -465,9 +392,7 @@ describe('OperationFeedbackProvider', () => {
         previousDestination: 'Terminal ("bash")',
         newDestination: 'Text Editor ("file.ts")',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'Unbound Terminal ("bash"), now bound to Text Editor ("file.ts")',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Unbound Terminal ("bash"), now bound to Text Editor ("file.ts")');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
   });
@@ -479,9 +404,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('ALREADY_BOUND_TO_DESTINATION', {
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-        'Already bound to Terminal ("bash")',
-      );
+      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Already bound to Terminal ("bash")');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
   });
@@ -495,9 +418,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_EDITOR_READ_ONLY', {
         scheme: 'output',
       });
-      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
-        'Cannot bind to read-only editor (output)',
-      );
+      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith('Cannot bind to read-only editor (output)');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
   });
@@ -507,9 +428,7 @@ describe('OperationFeedbackProvider', () => {
       provider.notifyBindFailedNotAvailable('Claude Code', 'claude-code');
 
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLAUDE_CODE_NOT_AVAILABLE');
-      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
-        'Cannot bind Claude Code - extension not installed or not active',
-      );
+      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith('Cannot bind Claude Code - extension not installed or not active');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
 
@@ -519,9 +438,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CUSTOM_AI_NOT_AVAILABLE', {
         extensionName: 'My Extension',
       });
-      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
-        'Cannot bind My Extension - extension not installed or not active',
-      );
+      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith('Cannot bind My Extension - extension not installed or not active');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
   });
@@ -533,9 +450,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('INFO_BACKGROUND_TAB_OPENED', {
         fileName: 'file.ts',
       });
-      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-        '"file.ts" opened at last cursor position. Adjust cursor before pasting.',
-      );
+      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('"file.ts" opened at last cursor position. Adjust cursor before pasting.');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
   });
@@ -547,9 +462,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND', {
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'Unbound from Terminal ("bash")',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Unbound from Terminal ("bash")');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
   });
@@ -568,9 +481,7 @@ describe('OperationFeedbackProvider', () => {
     it('shows provided message as successful status bar message', () => {
       provider.notifyJumpFocused('Focused Terminal ("bash")');
 
-      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith(
-        'Focused Terminal ("bash")',
-      );
+      expect(mockAdapter.setSuccessfulStatusBarMessage).toHaveBeenCalledWith('Focused Terminal ("bash")');
       expect(mockAdapter.showInformationMessage).not.toHaveBeenCalled();
     });
   });
@@ -582,9 +493,7 @@ describe('OperationFeedbackProvider', () => {
       expect(formatMessageSpy).toHaveBeenCalledWith('INFO_JUMP_FOCUS_FAILED', {
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith(
-        'Failed to focus Terminal ("bash")',
-      );
+      expect(mockAdapter.showInformationMessage).toHaveBeenCalledWith('Failed to focus Terminal ("bash")');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
   });

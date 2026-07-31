@@ -1,19 +1,13 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import type { FormattedLink } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
-import {
-  type AIAssistantDestinationKind,
-  type AutoPasteResult,
-  type CustomAiAssistantKind,
-  type DestinationKind,
-  PasteContentType,
-} from '../types';
+import { type AIAssistantDestinationKind, type AutoPasteResult, type CustomAiAssistantKind, type DestinationKind, PasteContentType } from '../types';
 
 import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { FocusCapability } from './capabilities/FocusCapability';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type { FormattedLink } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 // ============================================================================
 // Factory Method Parameter Types
@@ -235,7 +229,7 @@ export class ComposablePasteDestination implements PasteDestination {
    *
    * @returns Promise resolving to true if pasteLink() can succeed, false otherwise
    */
-  async isAvailable(): Promise<boolean> {
+  isAvailable(): Promise<boolean> {
     return this.isAvailableFn();
   }
 
@@ -247,7 +241,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param formattedLink - The formatted RangeLink to check
    * @returns Promise resolving to true if paste should proceed, false to skip
    */
-  async isEligibleForPasteLink(formattedLink: FormattedLink): Promise<boolean> {
+  isEligibleForPasteLink(formattedLink: FormattedLink): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.isEligibleForPasteLink`,
       ...this.loggingDetails,
@@ -263,7 +257,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param content - The text content to check
    * @returns Promise resolving to true if paste should proceed, false to skip
    */
-  async isEligibleForPasteContent(content: string): Promise<boolean> {
+  isEligibleForPasteContent(content: string): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.isEligibleForPasteContent`,
       ...this.loggingDetails,
@@ -278,7 +272,7 @@ export class ComposablePasteDestination implements PasteDestination {
 
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+  pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteLink`,
       formattedLink,
@@ -296,7 +290,7 @@ export class ComposablePasteDestination implements PasteDestination {
 
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteContent(content: string): Promise<boolean> {
+  pasteContent(content: string): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteContent`,
       contentLength: content.length,
@@ -325,11 +319,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param contentType - Type of content being pasted (for log messages)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  private async performPaste(
-    text: string,
-    context: LoggingContext,
-    contentType: PasteContentType,
-  ): Promise<boolean> {
+  private async performPaste(text: string, context: LoggingContext, contentType: PasteContentType): Promise<boolean> {
     const contentLabel = contentType === PasteContentType.Link ? 'link' : 'content';
 
     // Check availability
@@ -342,10 +332,7 @@ export class ComposablePasteDestination implements PasteDestination {
     const focusResult = await this.focusCapability.focus(context);
 
     if (!focusResult.success) {
-      this.logger.warn(
-        { ...context, reason: focusResult.error.reason },
-        `Focus failed, cannot paste ${contentLabel}`,
-      );
+      this.logger.warn({ ...context, reason: focusResult.error.reason }, `Focus failed, cannot paste ${contentLabel}`);
       return false;
     }
 
@@ -472,17 +459,17 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param other - The destination to compare against (may be undefined)
    * @returns Promise<true> if same destination, Promise<false> otherwise
    */
-  async equals(other: PasteDestination | undefined): Promise<boolean> {
+  equals(other: PasteDestination | undefined): Promise<boolean> {
     if (other === undefined) {
-      return false;
+      return Promise.resolve(false);
     }
 
     if (this.compareWithFn !== undefined) {
-      return this.compareWithFn(other);
+      return Promise.resolve(this.compareWithFn(other));
     }
 
     // Default: singleton comparison
-    return this === other;
+    return Promise.resolve(this === other);
   }
 
   // ============================================================================
@@ -507,7 +494,7 @@ export class ComposablePasteDestination implements PasteDestination {
       resource: { kind: 'terminal', terminal: params.terminal },
       focusCapability: params.focusCapability,
       eligibilityChecker: new ContentEligibilityChecker(params.logger),
-      isAvailable: async () => true,
+      isAvailable: () => Promise.resolve(true),
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
       logger: params.logger,
@@ -534,7 +521,7 @@ export class ComposablePasteDestination implements PasteDestination {
       resource: { kind: 'editor', uri: params.uri, viewColumn: params.viewColumn },
       focusCapability: params.focusCapability,
       eligibilityChecker: params.eligibilityChecker,
-      isAvailable: async () => true,
+      isAvailable: () => Promise.resolve(true),
       editorHasActiveSelection: params.editorHasActiveSelection,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
@@ -569,7 +556,7 @@ export class ComposablePasteDestination implements PasteDestination {
       logger: params.logger,
       getUserInstruction: params.getUserInstruction,
       shouldPreserveClipboard: params.shouldPreserveClipboard,
-      compareWith: async (other) => other.id === params.id,
+      compareWith: (other) => Promise.resolve(other.id === params.id),
     });
   }
 

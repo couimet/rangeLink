@@ -1,14 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
-import type { FocusedDestination } from '../../../destinations/capabilities/FocusCapability';
-import {
-  createMockDocument,
-  createMockEditor,
-  createMockInsertFactory,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockDocument, createMockEditor, createMockInsertFactory, createMockUri, createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const DOCUMENT_URI = createMockUri('/workspace/src/file.ts');
 const DOCUMENT_URI_STRING = DOCUMENT_URI.toString();
@@ -35,19 +28,11 @@ describe('EditorFocusCapability', () => {
       const mockInsertFactory = createMockInsertFactory();
       mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
       expect(mockAdapter.hasVisibleEditorAt).toHaveBeenCalledWith(DOCUMENT_URI, BOUND_VIEW_COLUMN);
       expect(mockAdapter.findVisibleEditorsByUri).toHaveBeenCalledWith(DOCUMENT_URI);
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
@@ -84,22 +69,12 @@ describe('EditorFocusCapability', () => {
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeErrWith((error) => {
-        expect(error).toStrictEqual({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
-      });
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
-      );
+      expect(result).toBeFailure({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
+      expect(showErrorSpy).toHaveBeenCalledWith('Bound editor is open in multiple tab groups. Close the duplicate tab and try again.');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'EditorFocusCapability.resolveViewColumn',
@@ -132,19 +107,11 @@ describe('EditorFocusCapability', () => {
       const mockInsertFactory = createMockInsertFactory();
       mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, { viewColumn: 2 });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -176,19 +143,11 @@ describe('EditorFocusCapability', () => {
       const mockInsertFactory = createMockInsertFactory();
       mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
         viewColumn: BOUND_VIEW_COLUMN,
       });
@@ -211,22 +170,12 @@ describe('EditorFocusCapability', () => {
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeErrWith((error) => {
-        expect(error).toStrictEqual({ reason: 'EDITOR_NOT_VISIBLE' });
-      });
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'Bound editor is no longer visible. Re-open the file and bind again.',
-      );
+      expect(result).toBeFailure({ reason: 'EDITOR_NOT_VISIBLE' });
+      expect(showErrorSpy).toHaveBeenCalledWith('Bound editor is no longer visible. Re-open the file and bind again.');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING },
         'Bound editor not visible (defensive: auto-unbind should prevent this)',
@@ -249,22 +198,12 @@ describe('EditorFocusCapability', () => {
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeErrWith((error) => {
-        expect(error).toStrictEqual({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
-      });
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
-      );
+      expect(result).toBeFailure({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
+      expect(showErrorSpy).toHaveBeenCalledWith('Bound editor is open in multiple tab groups. Close the duplicate tab and try again.');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'EditorFocusCapability.resolveViewColumn',
@@ -281,9 +220,7 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
-      jest
-        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
-        .mockReturnValue([{ viewColumn: BOUND_VIEW_COLUMN } as any]);
+      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([{ viewColumn: BOUND_VIEW_COLUMN } as any]);
 
       const freshEditor = createMockEditor({
         document: createMockDocument({ uri: DOCUMENT_URI }),
@@ -295,19 +232,11 @@ describe('EditorFocusCapability', () => {
       const mockInsertFactory = createMockInsertFactory();
       mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
         viewColumn: BOUND_VIEW_COLUMN,
       });
@@ -328,10 +257,7 @@ describe('EditorFocusCapability', () => {
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
       jest
         .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
-        .mockReturnValue([
-          { viewColumn: DIFFERENT_VIEW_COLUMN } as any,
-          { viewColumn: BOUND_VIEW_COLUMN } as any,
-        ]);
+        .mockReturnValue([{ viewColumn: DIFFERENT_VIEW_COLUMN } as any, { viewColumn: BOUND_VIEW_COLUMN } as any]);
 
       const freshEditor = createMockEditor({
         document: createMockDocument({ uri: DOCUMENT_URI }),
@@ -343,19 +269,11 @@ describe('EditorFocusCapability', () => {
       const mockInsertFactory = createMockInsertFactory();
       mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
         viewColumn: BOUND_VIEW_COLUMN,
       });
@@ -374,28 +292,16 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
-      jest
-        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
-        .mockReturnValue([{ viewColumn: DIFFERENT_VIEW_COLUMN } as any]);
+      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([{ viewColumn: DIFFERENT_VIEW_COLUMN } as any]);
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeErrWith((error) => {
-        expect(error).toStrictEqual({ reason: 'EDITOR_NOT_VISIBLE' });
-      });
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'Bound editor is no longer visible. Re-open the file and bind again.',
-      );
+      expect(result).toBeFailure({ reason: 'EDITOR_NOT_VISIBLE' });
+      expect(showErrorSpy).toHaveBeenCalledWith('Bound editor is no longer visible. Re-open the file and bind again.');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING },
         'Bound editor not visible (defensive: auto-unbind should prevent this)',
@@ -412,19 +318,11 @@ describe('EditorFocusCapability', () => {
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showDocError);
 
       const mockInsertFactory = createMockInsertFactory();
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        BOUND_VIEW_COLUMN,
-        mockInsertFactory,
-        mockLogger,
-      );
+      const capability = new EditorFocusCapability(mockAdapter, DOCUMENT_URI, BOUND_VIEW_COLUMN, mockInsertFactory, mockLogger);
 
       const result = await capability.focus(LOGGING_CONTEXT);
 
-      expect(result).toBeErrWith((error) => {
-        expect(error).toStrictEqual({ reason: 'SHOW_DOCUMENT_FAILED', cause: showDocError });
-      });
+      expect(result).toBeFailure({ reason: 'SHOW_DOCUMENT_FAILED', cause: showDocError });
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           ...LOGGING_CONTEXT,

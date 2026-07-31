@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import type { BoundSession } from '../../destinations';
 import type { BoundDestinationInfo } from '../../types';
+
+import * as vscode from 'vscode';
 
 export const createMockBoundSession = (overrides?: { get?: jest.Mock; isSet?: jest.Mock }) => {
   let stored: BoundDestinationInfo | undefined = undefined;
@@ -38,9 +38,7 @@ export const createMockBoundSession = (overrides?: { get?: jest.Mock; isSet?: je
       fn(getMock());
       return emitter.event(fn);
     }),
-    onDidChange: jest.fn((fn: (info: BoundDestinationInfo | undefined) => void) =>
-      emitter.event(fn),
-    ),
+    onDidChange: jest.fn((fn: (info: BoundDestinationInfo | undefined) => void) => emitter.event(fn)),
     _emitter: emitter,
     isClipboardRestorationApplicable: jest.fn().mockReturnValue(true),
     dispose: jest.fn(),

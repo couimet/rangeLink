@@ -1,5 +1,3 @@
-import type * as vscode from 'vscode';
-
 import type { DestinationRegistry, PasteDestination } from '../../destinations';
 import { DESTINATION_KINDS, type DestinationKind } from '../../types';
 
@@ -10,6 +8,8 @@ import { createMockGeminiCodeAssistComposableDestination } from './createMockGem
 import { createMockGitHubCopilotChatComposableDestination } from './createMockGitHubCopilotChatComposableDestination';
 import { createMockTerminalComposablePasteDestination } from './createMockTerminalComposablePasteDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
+
+import type * as vscode from 'vscode';
 
 /**
  * Options for configuring mock destination registry behavior.
@@ -32,12 +32,7 @@ export interface MockDestinationRegistryOptions {
    * Custom implementation for create() method.
    * If provided, overrides default destination lookup behavior.
    */
-  createImpl?: (options: {
-    kind: string;
-    terminal?: vscode.Terminal;
-    uri?: vscode.Uri;
-    viewColumn?: number;
-  }) => PasteDestination | undefined;
+  createImpl?: (options: { kind: string; terminal?: vscode.Terminal; uri?: vscode.Uri; viewColumn?: number }) => PasteDestination | undefined;
 }
 
 const DEFAULT_DISPLAY_NAMES: Record<DestinationKind, string> = {
@@ -59,21 +54,14 @@ const DEFAULT_DISPLAY_NAMES: Record<DestinationKind, string> = {
  * @param options - Configuration for mock registry behavior
  * @returns Mock DestinationRegistry with jest.Mocked type
  */
-export const createMockDestinationRegistry = (
-  options?: MockDestinationRegistryOptions,
-): jest.Mocked<DestinationRegistry> => {
+export const createMockDestinationRegistry = (options?: MockDestinationRegistryOptions): jest.Mocked<DestinationRegistry> => {
   const destinations = options?.destinations ?? {
     terminal: createMockTerminalPasteDestination(),
-    'text-editor':
-      createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
-    'claude-code':
-      createMockClaudeCodeComposableDestination() as unknown as jest.Mocked<PasteDestination>,
-    'gemini-code-assist':
-      createMockGeminiCodeAssistComposableDestination() as unknown as jest.Mocked<PasteDestination>,
-    'cursor-ai':
-      createMockCursorAIComposableDestination() as unknown as jest.Mocked<PasteDestination>,
-    'github-copilot-chat':
-      createMockGitHubCopilotChatComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'text-editor': createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
+    'claude-code': createMockClaudeCodeComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'gemini-code-assist': createMockGeminiCodeAssistComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'cursor-ai': createMockCursorAIComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'github-copilot-chat': createMockGitHubCopilotChatComposableDestination() as unknown as jest.Mocked<PasteDestination>,
   };
 
   const defaultCreateImpl = (createOptions: {

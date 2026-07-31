@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import type { BindableQuickPickItem, CommandQuickPickItem, InfoQuickPickItem } from '../../types';
 import { isSelectableQuickPickItem } from '../isSelectableQuickPickItem';
+
+import * as vscode from 'vscode';
 
 describe('isSelectableQuickPickItem', () => {
   it('returns true for a bindable QuickPickItem', () => {

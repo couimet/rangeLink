@@ -23,9 +23,7 @@ export function isRectangularSelection(selections: readonly vscode.Selection[]):
   const firstEndChar = selections[0].end.character;
 
   // Check if all selections have the same character range
-  const allHaveSameCharacterRange = selections.every(
-    (sel) => sel.start.character === firstStartChar && sel.end.character === firstEndChar,
-  );
+  const allHaveSameCharacterRange = selections.every((sel) => sel.start.character === firstStartChar && sel.end.character === firstEndChar);
 
   if (!allHaveSameCharacterRange) {
     return false;

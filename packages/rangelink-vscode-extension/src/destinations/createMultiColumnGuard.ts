@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Warn when the bound editor appears in multiple tab groups.

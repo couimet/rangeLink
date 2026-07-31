@@ -1,6 +1,6 @@
-import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
-
 import type { RangeLinkExtensionErrorCodes } from './RangeLinkExtensionErrorCodes';
+
+import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
 
 /**
  * Base error class for all rangelink-vscode-extension errors.

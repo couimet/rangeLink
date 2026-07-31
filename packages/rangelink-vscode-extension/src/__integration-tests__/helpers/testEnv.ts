@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
@@ -28,8 +27,7 @@ export const getExtensionVersion = (): string => {
   return ext.packageJSON.version as string;
 };
 
-export const settle = (ms: number = SETTLE_MS): Promise<void> =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
+export const settle = (ms: number = SETTLE_MS): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const dismissQuickPick = async (): Promise<void> => {
   await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
@@ -58,17 +56,13 @@ export const waitForExtensionActive = async (
     }
     const currentState = ext ? `found, isActive=${ext.isActive}` : 'not found';
     if (currentState !== lastState) {
-      log(
-        `[waitForExtensionActive] ${extensionId} → ${currentState} (${Date.now() - start}ms elapsed)`,
-      );
+      log(`[waitForExtensionActive] ${extensionId} → ${currentState} (${Date.now() - start}ms elapsed)`);
       lastState = currentState;
     }
     await new Promise<void>((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
   }
   const ext = vscode.extensions.getExtension(extensionId);
-  throw new Error(
-    `Extension ${extensionId} did not activate within ${timeoutMs}ms (found=${ext !== undefined}, isActive=${ext?.isActive ?? 'N/A'})`,
-  );
+  throw new Error(`Extension ${extensionId} did not activate within ${timeoutMs}ms (found=${ext !== undefined}, isActive=${ext?.isActive ?? 'N/A'})`);
 };
 
 /**
@@ -82,15 +76,10 @@ export const openAndDismiss = async (command: string): Promise<void> => {
   // Retry dismissal until the command resolves — the picker may be slow to render on loaded CI.
   for (;;) {
     await dismissQuickPick();
-    const done = await Promise.race([
-      promise.then(() => true),
-      settle(POLL_INTERVAL_MS).then(() => false),
-    ]);
+    const done = await Promise.race([promise.then(() => true), settle(POLL_INTERVAL_MS).then(() => false)]);
     if (done) break;
     if (Date.now() >= deadline) {
-      throw new Error(
-        `openAndDismiss: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`,
-      );
+      throw new Error(`openAndDismiss: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`);
     }
   }
   await promise;
@@ -105,10 +94,7 @@ export const openAndDismiss = async (command: string): Promise<void> => {
  * @param preAccept - Optional callback run after the InputBox opens but before accepting.
  *                    Use for programmatic clipboard paste (`editor.action.clipboardPasteAction`).
  */
-export const openAndAccept = async (
-  command: string,
-  preAccept?: () => Promise<void>,
-): Promise<void> => {
+export const openAndAccept = async (command: string, preAccept?: () => Promise<void>): Promise<void> => {
   const promise = vscode.commands.executeCommand(command);
   await settle();
   if (preAccept !== undefined) {
@@ -118,15 +104,10 @@ export const openAndAccept = async (
   const deadline = Date.now() + POLL_TIMEOUT_MS;
   for (;;) {
     await acceptQuickInput();
-    const done = await Promise.race([
-      promise.then(() => true),
-      settle(POLL_INTERVAL_MS).then(() => false),
-    ]);
+    const done = await Promise.race([promise.then(() => true), settle(POLL_INTERVAL_MS).then(() => false)]);
     if (done) break;
     if (Date.now() >= deadline) {
-      throw new Error(
-        `openAndAccept: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`,
-      );
+      throw new Error(`openAndAccept: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`);
     }
   }
   await promise;

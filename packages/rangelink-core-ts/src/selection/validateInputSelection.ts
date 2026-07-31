@@ -1,6 +1,7 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
 import { InputSelection } from '../types/InputSelection';
+import { SelectionCoverage } from '../types/SelectionCoverage';
 import { SelectionType } from '../types/SelectionType';
 
 import { validateNormalMode } from './validateNormalMode';
@@ -30,12 +31,7 @@ export function validateInputSelection(inputSelection: InputSelection): void {
   for (let i = 0; i < selections.length; i++) {
     const sel = selections[i];
 
-    if (
-      sel.start.line < 0 ||
-      sel.end.line < 0 ||
-      sel.start.character < 0 ||
-      sel.end.character < 0
-    ) {
+    if (sel.start.line < 0 || sel.end.line < 0 || sel.start.character < 0 || sel.end.character < 0) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
         message: `Negative coordinates not allowed (startLine=${sel.start.line}, endLine=${sel.end.line}, startCharacter=${sel.start.character}, endCharacter=${sel.end.character})`,
@@ -77,7 +73,7 @@ export function validateInputSelection(inputSelection: InputSelection): void {
       });
     }
 
-    if (sel.start.line === sel.end.line && sel.start.character === sel.end.character) {
+    if (sel.start.line === sel.end.line && sel.start.character === sel.end.character && sel.coverage !== SelectionCoverage.FullLine) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_ZERO_WIDTH,
         message: `Zero-width selection not allowed (cursor position at line ${sel.start.line}, character ${sel.start.character})`,
@@ -98,14 +94,7 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     case SelectionType.Rectangular:
       validateRectangularMode(selections);
       break;
-    default: {
-      const _exhaustive: never = selectionType;
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_UNKNOWN_TYPE,
-        message: `Unknown SelectionType: "${_exhaustive}"`,
-        functionName: 'validateInputSelection',
-        details: { selectionType: _exhaustive },
-      });
-    }
+    default:
+      throw RangeLinkError.forUnexpectedSwitchDefault('selection type', selectionType, 'validateInputSelection');
   }
 }

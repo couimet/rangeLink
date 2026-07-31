@@ -1,17 +1,16 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
-import type { BoundDestinationInfo } from '../types';
-import { AutoPasteResult } from '../types';
+import { AutoPasteResult, BoundDestinationInfo } from '../types';
 import { isEditorDestination, isTerminalDestination } from '../utils';
 
 import { createFileDeleteWatcher } from './createFileDeleteWatcher';
 import { createMultiColumnGuard } from './createMultiColumnGuard';
 import { createTabCloseGuard } from './createTabCloseGuard';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Manages the lifecycle of a bound destination.
@@ -98,9 +97,7 @@ export class BoundSession implements vscode.Disposable {
   }
 
   getInfo(): BoundDestinationInfo | undefined {
-    return this.bound !== undefined
-      ? { id: this.bound.id, displayName: this.bound.displayName }
-      : undefined;
+    return this.bound !== undefined ? { id: this.bound.id, displayName: this.bound.displayName } : undefined;
   }
 
   /**
@@ -144,10 +141,7 @@ export class BoundSession implements vscode.Disposable {
       if (this.bound.resource.terminal === closedTerminal) {
         const destinationName = this.bound.displayName;
         const terminalName = closedTerminal.name || 'Unnamed Terminal'; // log-only, no i18n needed
-        this.logger.info(
-          { fn: 'BoundSession.setupTerminalCloseListener', terminalName },
-          `Bound terminal closed: ${terminalName} - auto-unbinding`,
-        );
+        this.logger.info({ fn: 'BoundSession.setupTerminalCloseListener', terminalName }, `Bound terminal closed: ${terminalName} - auto-unbinding`);
         this.clear();
         this.feedback.notifyAutoUnbind(destinationName, 'terminal-closed');
       }
@@ -188,17 +182,11 @@ export class BoundSession implements vscode.Disposable {
       };
 
       if (!closedDocument.isClosed) {
-        this.logger.info(
-          logCtx,
-          `Document close event with isClosed=false — language-mode transition detected, keeping binding for ${editorDisplayName}`,
-        );
+        this.logger.info(logCtx, `Document close event with isClosed=false — language-mode transition detected, keeping binding for ${editorDisplayName}`);
         return;
       }
 
-      this.logger.info(
-        logCtx,
-        `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`,
-      );
+      this.logger.info(logCtx, `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`);
       const destinationName = this.bound.displayName;
       this.clear();
       this.feedback.notifyAutoUnbind(destinationName, 'editor-closed');

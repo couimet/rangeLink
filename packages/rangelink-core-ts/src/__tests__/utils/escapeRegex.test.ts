@@ -149,9 +149,7 @@ describe('escapeRegex', () => {
       const escapedPosition = escapeRegex(position);
       const escapedRange = escapeRegex(range);
 
-      const pattern = new RegExp(
-        `^${escapedLine}(\\d+)${escapedPosition}(\\d+)${escapedRange}${escapedLine}(\\d+)$`,
-      );
+      const pattern = new RegExp(`^${escapedLine}(\\d+)${escapedPosition}(\\d+)${escapedRange}${escapedLine}(\\d+)$`);
 
       expect('L10.5+L20').toMatch(pattern);
     });

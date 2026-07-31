@@ -1,22 +1,15 @@
-import type * as vscode from 'vscode';
-
 import type { BindOptions, TerminalBindOptions, TextEditorBindOptions } from './BindOptions';
 import type { EligibleFile } from './EligibleFile';
 import type { EligibleTerminal } from './EligibleTerminal';
 import type { WithDisplayName } from './WithDisplayName';
 
+import type * as vscode from 'vscode';
+
 /**
  * Discriminator values for QuickPick items across all RangeLink menus.
  * Used for runtime validation in type guards.
  */
-export const PICKER_ITEM_KINDS = [
-  'bindable',
-  'file-more',
-  'terminal-more',
-  'command',
-  'bookmark',
-  'info',
-] as const;
+export const PICKER_ITEM_KINDS = ['bindable', 'file-more', 'terminal-more', 'command', 'bookmark', 'info'] as const;
 
 /**
  * Discriminator for QuickPick items across all RangeLink menus.
@@ -65,10 +58,7 @@ export interface FileBindableQuickPickItem extends BindableQuickPickItem<TextEdi
 /**
  * QuickPickItem representing the "More files..." overflow trigger.
  */
-export interface FileMoreQuickPickItem
-  extends BaseQuickPickItem,
-    WithDisplayName,
-    WithRemainingCount {
+export interface FileMoreQuickPickItem extends BaseQuickPickItem, WithDisplayName, WithRemainingCount {
   readonly itemKind: Extract<PickerItemKind, 'file-more'>;
 }
 
@@ -79,10 +69,7 @@ export interface FileMoreQuickPickItem
 /**
  * QuickPickItem representing the "More terminals..." overflow trigger.
  */
-export interface TerminalMoreQuickPickItem
-  extends BaseQuickPickItem,
-    WithDisplayName,
-    WithRemainingCount {
+export interface TerminalMoreQuickPickItem extends BaseQuickPickItem, WithDisplayName, WithRemainingCount {
   readonly itemKind: Extract<PickerItemKind, 'terminal-more'>;
 }
 
@@ -99,10 +86,7 @@ export interface TerminalMoreQuickPickItem
  * - `BindableQuickPickItem` - any destination (default)
  * - `BindableQuickPickItem<TerminalBindOptions>` - terminal only
  */
-export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
-  extends BaseQuickPickItem,
-    WithBindOptions<T>,
-    WithDisplayName {
+export interface BindableQuickPickItem<T extends BindOptions = BindOptions> extends BaseQuickPickItem, WithBindOptions<T>, WithDisplayName {
   readonly itemKind: Extract<PickerItemKind, 'bindable'>;
 }
 
@@ -123,10 +107,7 @@ export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<Ter
  * Union of all QuickPickItem types used in destination pickers.
  * Includes bindable destinations and overflow items for files and terminals.
  */
-export type DestinationQuickPickItem =
-  | BindableQuickPickItem
-  | FileMoreQuickPickItem
-  | TerminalMoreQuickPickItem;
+export type DestinationQuickPickItem = BindableQuickPickItem | FileMoreQuickPickItem | TerminalMoreQuickPickItem;
 
 // ============================================================================
 // Menu Item Types (StatusBar, ListBookmarks, etc.)
@@ -172,9 +153,4 @@ export interface ConfirmationQuickPickItem extends vscode.QuickPickItem {
  * Separators (QuickPickItemKind.Separator) are not selectable and use plain vscode.QuickPickItem.
  */
 export type StatusBarMenuQuickPickItem =
-  | BindableQuickPickItem
-  | FileMoreQuickPickItem
-  | TerminalMoreQuickPickItem
-  | CommandQuickPickItem
-  | BookmarkQuickPickItem
-  | InfoQuickPickItem;
+  BindableQuickPickItem | FileMoreQuickPickItem | TerminalMoreQuickPickItem | CommandQuickPickItem | BookmarkQuickPickItem | InfoQuickPickItem;

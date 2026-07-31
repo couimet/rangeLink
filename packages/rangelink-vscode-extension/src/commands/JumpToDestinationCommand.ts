@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { BoundSession, DestinationFocuser } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import { type BindOptions, MessageCode } from '../types';
 import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for jumping to the bound destination.
@@ -22,10 +22,7 @@ export class JumpToDestinationCommand {
     private readonly destinationPicker: DestinationPicker,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'JumpToDestinationCommand.constructor' },
-      'JumpToDestinationCommand initialized',
-    );
+    this.logger.debug({ fn: 'JumpToDestinationCommand.constructor' }, 'JumpToDestinationCommand initialized');
   }
 
   async execute(): Promise<JumpToDestinationResult> {
@@ -54,15 +51,8 @@ export class JumpToDestinationCommand {
       case 'selected':
         return this.bindAndFocus(pickerResult.bindOptions, logCtx);
 
-      default: {
-        const _exhaustiveCheck: never = pickerResult;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unhandled picker outcome in JumpToDestinationCommand',
-          functionName: 'JumpToDestinationCommand.execute',
-          details: { pickerResult: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('picker outcome', pickerResult, 'JumpToDestinationCommand.execute');
     }
   }
 
@@ -77,10 +67,7 @@ export class JumpToDestinationCommand {
     return { outcome: 'focused', destinationName: focusResult.value.destinationName };
   }
 
-  private async bindAndFocus(
-    bindOptions: BindOptions,
-    logCtx: { fn: string },
-  ): Promise<JumpToDestinationResult> {
+  private async bindAndFocus(bindOptions: BindOptions, logCtx: { fn: string }): Promise<JumpToDestinationResult> {
     this.logger.debug(logCtx, 'Binding selected destination and focusing');
     const result = await this.focuser.bindAndFocus(bindOptions);
 

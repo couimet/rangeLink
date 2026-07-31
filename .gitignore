@@ -5,6 +5,7 @@ node_modules
 .DS_Store
 .history
 coverage/
+coverage2/
 
 # Package manager files (keep pnpm lock in repo for consistency)
 package-lock.json

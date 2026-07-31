@@ -17,9 +17,7 @@ import * as vscode from 'vscode';
  * @param overrides - Document properties (getText, uri, lineCount, etc.)
  * @returns Mock TextDocument with provided properties
  */
-export const createMockDocument = (
-  overrides: Partial<vscode.TextDocument>,
-): vscode.TextDocument => {
+export const createMockDocument = (overrides: Partial<vscode.TextDocument>): vscode.TextDocument => {
   return {
     ...overrides,
   } as vscode.TextDocument;

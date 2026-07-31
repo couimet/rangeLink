@@ -2,9 +2,9 @@
  * Create a mock vscode.Extension object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockUri } from './createMockUri';
+
+import * as vscode from 'vscode';
 
 /**
  * Options for creating a mock extension.
@@ -34,9 +34,7 @@ export interface MockExtensionOptions {
  * @param options - Optional configuration for the mock extension
  * @returns Mock vscode.Extension<unknown> object
  */
-export const createMockExtension = (
-  options: MockExtensionOptions = {},
-): vscode.Extension<unknown> => {
+export const createMockExtension = (options: MockExtensionOptions = {}): vscode.Extension<unknown> => {
   const id = options.id ?? 'test.extension';
   const defaultPath = `/mock/path/${id}`;
 

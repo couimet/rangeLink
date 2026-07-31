@@ -2,14 +2,7 @@
  * Create a mock FormattedLink for testing
  */
 
-import type {
-  ComputedSelection,
-  DelimiterConfig,
-  FormattedLink,
-  RangeFormat,
-  SelectionType,
-} from 'rangelink-core-ts';
-import { LinkType } from 'rangelink-core-ts';
+import { ComputedSelection, DelimiterConfig, FormattedLink, LinkType, RangeFormat, SelectionType } from 'rangelink-core-ts';
 
 /**
  * Create a mock FormattedLink for testing
@@ -21,10 +14,7 @@ import { LinkType } from 'rangelink-core-ts';
  * @param overrides - Optional partial FormattedLink to override defaults
  * @returns Mock FormattedLink with all required properties
  */
-export const createMockFormattedLink = (
-  link = 'test-link',
-  overrides: Partial<FormattedLink> = {},
-): FormattedLink => {
+export const createMockFormattedLink = (link = 'test-link', overrides: Partial<FormattedLink> = {}): FormattedLink => {
   const defaultDelimiters: DelimiterConfig = {
     line: 'L',
     position: 'C',

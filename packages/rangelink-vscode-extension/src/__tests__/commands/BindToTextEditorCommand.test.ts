@@ -1,12 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { BindToTextEditorCommand } from '../../commands';
 import type { BoundSession } from '../../destinations';
 import type { FilePickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import { ExtensionResult } from '../../types';
-import type { FileBindableQuickPickItem } from '../../types';
+import { ExtensionResult, FileBindableQuickPickItem } from '../../types';
 import {
+  createMockBoundSession,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockEditor,
@@ -20,7 +18,8 @@ import {
   createMockVscodeAdapter,
   spyOnShowFilePicker,
 } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('BindToTextEditorCommand', () => {
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
@@ -38,48 +37,31 @@ describe('BindToTextEditorCommand', () => {
     mockSession = createMockBoundSession();
     mockLogger = createMockLogger();
     showFilePickerSpy = spyOnShowFilePicker();
-    command = new BindToTextEditorCommand(
-      mockAdapter,
-      mockAvailabilityService,
-      mockDestinationManager,
-      mockSession,
-      mockLogger,
-    );
+    command = new BindToTextEditorCommand(mockAdapter, mockAvailabilityService, mockDestinationManager, mockSession, mockLogger);
   });
 
   it('logs initialization in constructor', () => {
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'BindToTextEditorCommand.constructor' },
-      'BindToTextEditorCommand initialized',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.constructor' }, 'BindToTextEditorCommand initialized');
   });
 
   describe('executeWithPicker (no URI)', () => {
     it('shows error and returns no-resource when no files are available', async () => {
       mockAvailabilityService.getAllFileItems.mockReturnValue([]);
-      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
-        .showErrorMessage as jest.Mock;
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window.showErrorMessage as jest.Mock;
 
       const result = await command.execute();
 
       expect(result).toStrictEqual({ outcome: 'no-resource' });
-      expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'No bindable text editor. Open a file and try again.',
-      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith('No bindable text editor. Open a file and try again.');
       expect(showFilePickerSpy).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker' },
-        'No files available',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker' }, 'No files available');
     });
 
     it('auto-binds without showing a picker when only 1 file is available', async () => {
       const eligibleFile = createMockEligibleFile({ filename: 'app.ts', viewColumn: 1 });
       const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }));
 
       const result = await command.execute();
 
@@ -89,10 +71,7 @@ describe('BindToTextEditorCommand', () => {
         bindInfo: { destinationName: 'app.ts', destinationKind: 'text-editor' },
       });
       expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile.bindOptions);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker', filename: 'app.ts' },
-        'Single file, auto-binding',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker', filename: 'app.ts' }, 'Single file, auto-binding');
     });
 
     it('returns cancelled when user dismisses the file picker', async () => {
@@ -117,16 +96,10 @@ describe('BindToTextEditorCommand', () => {
         createMockTextEditorQuickPickItem(eligibleFile1),
         createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'utils.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'utils.ts', destinationKind: 'text-editor' }));
       showFilePickerSpy.mockImplementation(
-        async (
-          _files: readonly FileBindableQuickPickItem[],
-          _provider: unknown,
-          handlers: FilePickerHandlers<unknown>,
-          _logger: unknown,
-        ) => handlers.onSelected(eligibleFile2),
+        (_files: readonly FileBindableQuickPickItem[], _provider: unknown, handlers: FilePickerHandlers<unknown>, _logger: unknown) =>
+          handlers.onSelected(eligibleFile2),
       );
 
       const result = await command.execute();
@@ -136,10 +109,7 @@ describe('BindToTextEditorCommand', () => {
         bindInfo: { destinationName: 'utils.ts', destinationKind: 'text-editor' },
       });
       expect(mockDestinationManager.bind).toHaveBeenCalledWith(eligibleFile2.bindOptions);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 2 },
-        'Starting bind to text editor command',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 2 }, 'Starting bind to text editor command');
     });
 
     it('returns bind-failed when bind fails after selection from the picker', async () => {
@@ -156,12 +126,8 @@ describe('BindToTextEditorCommand', () => {
       });
       mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
       showFilePickerSpy.mockImplementation(
-        async (
-          _files: readonly FileBindableQuickPickItem[],
-          _provider: unknown,
-          handlers: FilePickerHandlers<unknown>,
-          _logger: unknown,
-        ) => handlers.onSelected(eligibleFile1),
+        (_files: readonly FileBindableQuickPickItem[], _provider: unknown, handlers: FilePickerHandlers<unknown>, _logger: unknown) =>
+          handlers.onSelected(eligibleFile1),
       );
 
       const result = await command.execute();
@@ -179,28 +145,13 @@ describe('BindToTextEditorCommand', () => {
       mockSession.isSet.mockReturnValue(true);
       mockSession.get.mockReturnValue(boundEditorDest);
       mockAvailabilityService.getAllFileItems.mockReturnValue([]);
-      command = new BindToTextEditorCommand(
-        mockAdapter,
-        mockAvailabilityService,
-        mockDestinationManager,
-        mockSession,
-        mockLogger,
-      );
+      command = new BindToTextEditorCommand(mockAdapter, mockAvailabilityService, mockDestinationManager, mockSession, mockLogger);
 
       await command.execute();
 
-      expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(
-        'file:///workspace/src/bound.ts',
-        3,
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 },
-        'Starting bind to text editor command',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker' },
-        'No files available',
-      );
+      expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith('file:///workspace/src/bound.ts', 3);
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 }, 'Starting bind to text editor command');
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker' }, 'No files available');
     });
 
     it('passes no bound state to getAllFileItems when nothing is bound', async () => {
@@ -209,14 +160,8 @@ describe('BindToTextEditorCommand', () => {
       await command.execute();
 
       expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(undefined, undefined);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 },
-        'Starting bind to text editor command',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithPicker' },
-        'No files available',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 }, 'Starting bind to text editor command');
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithPicker' }, 'No files available');
     });
 
     it('invokes getPlaceholder callback when multiple files trigger the picker', async () => {
@@ -226,17 +171,11 @@ describe('BindToTextEditorCommand', () => {
         createMockTextEditorQuickPickItem(eligibleFile1),
         createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
-      showFilePickerSpy.mockImplementation(
-        async (
-          _files: readonly FileBindableQuickPickItem[],
-          _provider: unknown,
-          handlers: FilePickerHandlers<unknown>,
-        ) => {
-          const placeholder = handlers.getPlaceholder();
-          expect(placeholder).toBe('Select file to bind to');
-          return undefined;
-        },
-      );
+      showFilePickerSpy.mockImplementation((_files: readonly FileBindableQuickPickItem[], _provider: unknown, handlers: FilePickerHandlers<unknown>) => {
+        const placeholder = handlers.getPlaceholder();
+        expect(placeholder).toBe('Select file to bind to');
+        return undefined;
+      });
 
       await command.execute();
 
@@ -248,14 +187,10 @@ describe('BindToTextEditorCommand', () => {
     it('opens file and binds when file is not in any tab group', async () => {
       const uri = createMockUri('/workspace/src/new-file.ts');
       const mockEditor = createMockEditor({ viewColumn: 1 });
-      const showTextDocSpy = jest
-        .spyOn(mockAdapter, 'showTextDocument')
-        .mockResolvedValue(mockEditor);
+      const showTextDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
       const vscodeInstance = mockAdapter.__getVscodeInstance();
       vscodeInstance.window.tabGroups = createMockTabGroups({ all: [] });
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'new-file.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'new-file.ts', destinationKind: 'text-editor' }));
 
       const result = await command.execute(uri);
 
@@ -264,10 +199,7 @@ describe('BindToTextEditorCommand', () => {
         bindInfo: { destinationName: 'new-file.ts', destinationKind: 'text-editor' },
       });
       expect(showTextDocSpy).toHaveBeenCalledWith(uri, undefined);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithUri', matchCount: 0 },
-        'Found tab groups containing URI',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithUri', matchCount: 0 }, 'Found tab groups containing URI');
     });
 
     it('focuses existing tab group when file is in exactly one group', async () => {
@@ -275,14 +207,10 @@ describe('BindToTextEditorCommand', () => {
       const tab = createMockTab(uri);
       const group = createMockTabGroup([tab], { viewColumn: 2 });
       const mockEditor = createMockEditor({ viewColumn: 2 });
-      const showTextDocSpy = jest
-        .spyOn(mockAdapter, 'showTextDocument')
-        .mockResolvedValue(mockEditor);
+      const showTextDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
       const vscodeInstance = mockAdapter.__getVscodeInstance();
       vscodeInstance.window.tabGroups = createMockTabGroups({ all: [group] });
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'existing.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'existing.ts', destinationKind: 'text-editor' }));
 
       const result = await command.execute(uri);
 
@@ -305,9 +233,7 @@ describe('BindToTextEditorCommand', () => {
         label: 'Group 3',
         viewColumn: 3,
       } as any);
-      mockDestinationManager.bind.mockResolvedValue(
-        ExtensionResult.ok({ destinationName: 'shared.ts', destinationKind: 'text-editor' }),
-      );
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.ok({ destinationName: 'shared.ts', destinationKind: 'text-editor' }));
 
       const result = await command.execute(uri);
 
@@ -337,10 +263,7 @@ describe('BindToTextEditorCommand', () => {
 
       expect(result).toStrictEqual({ outcome: 'cancelled' });
       expect(mockDestinationManager.bind).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BindToTextEditorCommand.executeWithUri' },
-        'User cancelled tab group picker',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTextEditorCommand.executeWithUri' }, 'User cancelled tab group picker');
     });
   });
 });

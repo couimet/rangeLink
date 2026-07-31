@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ShowVersionCommand } from '../../commands/ShowVersionCommand';
 import type { VersionInfo } from '../../types';
 import { createMockClipboard, createMockVscodeAdapter } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ShowVersionCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -31,10 +31,7 @@ describe('ShowVersionCommand', () => {
 
       new ShowVersionCommand(mockAdapter, mockLogger, CLEAN_VERSION_INFO);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ShowVersionCommand.constructor' },
-        'ShowVersionCommand initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ShowVersionCommand.constructor' }, 'ShowVersionCommand initialized');
     });
   });
 
@@ -52,10 +49,7 @@ describe('ShowVersionCommand', () => {
         await command.execute();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Version information not available');
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          { fn: 'ShowVersionCommand.execute' },
-          'Failed to load version info',
-        );
+        expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'ShowVersionCommand.execute' }, 'Failed to load version info');
       });
     });
 
@@ -71,10 +65,7 @@ describe('ShowVersionCommand', () => {
 
         await command.execute();
 
-        expect(mockShowInformationMessage).toHaveBeenCalledWith(
-          'RangeLink v1.0.0\nCommit: abc123\nBranch: main\nBuild: 2025-01-16',
-          'Copy Commit Hash',
-        );
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('RangeLink v1.0.0\nCommit: abc123\nBranch: main\nBuild: 2025-01-16', 'Copy Commit Hash');
         expect(mockLogger.info).toHaveBeenCalledWith(
           {
             fn: 'ShowVersionCommand.execute',
@@ -117,10 +108,7 @@ describe('ShowVersionCommand', () => {
 
     describe('when user clicks copy button', () => {
       it('copies full commit hash to clipboard and shows confirmation', async () => {
-        const mockShowInformationMessage = jest
-          .fn()
-          .mockResolvedValueOnce('Copy Commit Hash')
-          .mockResolvedValueOnce(undefined);
+        const mockShowInformationMessage = jest.fn().mockResolvedValueOnce('Copy Commit Hash').mockResolvedValueOnce(undefined);
         const mockClipboard = createMockClipboard();
         const mockAdapter = createMockVscodeAdapter({
           windowOptions: {

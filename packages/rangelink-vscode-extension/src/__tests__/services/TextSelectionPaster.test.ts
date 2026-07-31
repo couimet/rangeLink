@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { TextSelectionPaster } from '../../services/TextSelectionPaster';
 import {
   createMockConfigReader,
@@ -10,6 +8,8 @@ import {
   createMockText,
   createMockUri,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TextSelectionPaster', () => {
   let paster: TextSelectionPaster;
@@ -35,13 +35,7 @@ describe('TextSelectionPaster', () => {
     mockSelectionValidator = {
       validateSelectionsAndShowError: jest.fn(),
     };
-    paster = new TextSelectionPaster(
-      mockDestinationManager,
-      mockConfigReader,
-      mockSendRouter as any,
-      mockSelectionValidator as any,
-      mockLogger,
-    );
+    paster = new TextSelectionPaster(mockDestinationManager, mockConfigReader, mockSendRouter as any, mockSelectionValidator as any, mockLogger);
   });
 
   it('returns early when validation fails', async () => {

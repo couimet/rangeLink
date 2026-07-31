@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantKind, DestinationKind } from './DestinationKind';
 import type { WithDestinationKind } from './WithDestinationKind';
+
+import type * as vscode from 'vscode';
 
 /**
  * Bind to a specific terminal.

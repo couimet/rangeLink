@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import { isTerminalDestination } from '../../utils';
 import type { PasteDestination } from '../PasteDestination';
+
+import type * as vscode from 'vscode';
 
 /**
  * Compare two terminals by their process IDs.
@@ -13,10 +13,7 @@ import type { PasteDestination } from '../PasteDestination';
  * @param other - The destination to compare against
  * @returns Promise resolving to true if both terminals have matching process IDs
  */
-export const compareTerminalsByProcessId = async (
-  thisTerminal: vscode.Terminal,
-  other: PasteDestination,
-): Promise<boolean> => {
+export const compareTerminalsByProcessId = async (thisTerminal: vscode.Terminal, other: PasteDestination): Promise<boolean> => {
   if (!isTerminalDestination(other)) {
     return false;
   }

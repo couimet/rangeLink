@@ -1,17 +1,12 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
-
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import { PathFormat } from '../../types/PathFormat';
 import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
-import {
-  createMockUri,
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers';
+import { createMockUri, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import os from 'node:os';
+import { buildFilePathPattern, DEFAULT_DELIMITERS, extractFilePath } from 'rangelink-core-ts';
 
 describe('FilePathNavigationHandler', () => {
   let handler: FilePathNavigationHandler;
@@ -26,10 +21,7 @@ describe('FilePathNavigationHandler', () => {
 
   describe('constructor', () => {
     it('should log initialization', () => {
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'FilePathNavigationHandler.constructor' },
-        'FilePathNavigationHandler initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'FilePathNavigationHandler.constructor' }, 'FilePathNavigationHandler initialized');
     });
   });
 
@@ -46,35 +38,25 @@ describe('FilePathNavigationHandler', () => {
 
     describe('quoted paths', () => {
       it('should match double-quoted path', () => {
-        expect(matchesPattern('Check "/path/to/file.ts" for details')).toStrictEqual([
-          '/path/to/file.ts',
-        ]);
+        expect(matchesPattern('Check "/path/to/file.ts" for details')).toStrictEqual(['/path/to/file.ts']);
       });
 
       it('should match single-quoted path', () => {
-        expect(matchesPattern("Check '/path/to/file.ts' for details")).toStrictEqual([
-          '/path/to/file.ts',
-        ]);
+        expect(matchesPattern("Check '/path/to/file.ts' for details")).toStrictEqual(['/path/to/file.ts']);
       });
 
       it('should match double-quoted path with spaces', () => {
-        expect(matchesPattern('Open "/path/with spaces/file.ts" now')).toStrictEqual([
-          '/path/with spaces/file.ts',
-        ]);
+        expect(matchesPattern('Open "/path/with spaces/file.ts" now')).toStrictEqual(['/path/with spaces/file.ts']);
       });
     });
 
     describe('absolute paths', () => {
       it('should match absolute path', () => {
-        expect(matchesPattern('See /path/to/file.ts for details')).toStrictEqual([
-          '/path/to/file.ts',
-        ]);
+        expect(matchesPattern('See /path/to/file.ts for details')).toStrictEqual(['/path/to/file.ts']);
       });
 
       it('should match absolute path with hyphens and dots', () => {
-        expect(matchesPattern('/path/to/my-file.test.ts')).toStrictEqual([
-          '/path/to/my-file.test.ts',
-        ]);
+        expect(matchesPattern('/path/to/my-file.test.ts')).toStrictEqual(['/path/to/my-file.test.ts']);
       });
 
       it('should NOT match absolute path inside a URL', () => {
@@ -94,9 +76,7 @@ describe('FilePathNavigationHandler', () => {
 
     describe('tilde paths', () => {
       it('should match ~/path', () => {
-        expect(matchesPattern('Open ~/projects/app/main.ts now')).toStrictEqual([
-          '~/projects/app/main.ts',
-        ]);
+        expect(matchesPattern('Open ~/projects/app/main.ts now')).toStrictEqual(['~/projects/app/main.ts']);
       });
     });
 
@@ -116,10 +96,7 @@ describe('FilePathNavigationHandler', () => {
 
     describe('multiple matches', () => {
       it('should match multiple paths in one line', () => {
-        expect(matchesPattern('From ./src/a.ts to ./src/b.ts')).toStrictEqual([
-          './src/a.ts',
-          './src/b.ts',
-        ]);
+        expect(matchesPattern('From ./src/a.ts to ./src/b.ts')).toStrictEqual(['./src/a.ts', './src/b.ts']);
       });
     });
   });
@@ -130,9 +107,7 @@ describe('FilePathNavigationHandler', () => {
       const resolveWorkspacePathSpy = jest
         .spyOn(mockAdapter, 'resolveWorkspacePath')
         .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
-      const showTextDocumentSpy = jest
-        .spyOn(mockAdapter, 'showTextDocument')
-        .mockResolvedValue(undefined as any);
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(undefined as any);
 
       await handler.navigateToFile('/resolved/file.ts');
 
@@ -146,13 +121,11 @@ describe('FilePathNavigationHandler', () => {
 
     it('should show warning when file cannot be resolved', async () => {
       jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-      const showWarningMessageSpy = jest
-        .spyOn(mockAdapter, 'showWarningMessage')
-        .mockResolvedValue(undefined);
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
 
       await handler.navigateToFile('/nonexistent/file.ts');
 
-      expect(showWarningMessageSpy).toHaveBeenCalledWith('Cannot find file: /nonexistent/file.ts');
+      expect(showWarningMessageSpy).toHaveBeenCalledWith('File does not exist at: /nonexistent/file.ts');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',
@@ -165,9 +138,7 @@ describe('FilePathNavigationHandler', () => {
 
     it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
       jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
-      const showWarningMessageSpy = jest
-        .spyOn(mockAdapter, 'showWarningMessage')
-        .mockResolvedValue(undefined);
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
 
       await handler.navigateToFile('index.ts');
 
@@ -185,9 +156,7 @@ describe('FilePathNavigationHandler', () => {
     it('should expand tilde and resolve expanded path', async () => {
       const homeDir = os.homedir();
       const fileUri = createMockUri(`${homeDir}/projects/file.ts`);
-      const resolveWorkspacePathSpy = jest
-        .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.Absolute });
+      const resolveWorkspacePathSpy = jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.Absolute });
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(undefined as any);
 
       await handler.navigateToFile('~/projects/file.ts');
@@ -197,20 +166,14 @@ describe('FilePathNavigationHandler', () => {
 
     it('should show error message and rethrow on showTextDocument failure', async () => {
       const fileUri = createMockUri('/path/file.ts');
-      jest
-        .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
       const navigationError = new Error('Failed to open document');
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(navigationError);
-      const showErrorMessageSpy = jest
-        .spyOn(mockAdapter, 'showErrorMessage')
-        .mockResolvedValue(undefined);
+      const showErrorMessageSpy = jest.spyOn(mockAdapter, 'showErrorMessage').mockResolvedValue(undefined);
 
       await expect(handler.navigateToFile('/path/file.ts')).rejects.toThrow(navigationError);
 
-      expect(showErrorMessageSpy).toHaveBeenCalledWith(
-        'Failed to open file /path/file.ts: Failed to open document',
-      );
+      expect(showErrorMessageSpy).toHaveBeenCalledWith('Failed to open file /path/file.ts: Failed to open document');
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',
@@ -223,20 +186,14 @@ describe('FilePathNavigationHandler', () => {
 
     it('should convert non-Error throwables to string for error message', async () => {
       const fileUri = createMockUri('/path/file.ts');
-      jest
-        .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
       const nonErrorThrowable = 'Disk I/O failure';
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorThrowable);
-      const showErrorMessageSpy = jest
-        .spyOn(mockAdapter, 'showErrorMessage')
-        .mockResolvedValue(undefined);
+      const showErrorMessageSpy = jest.spyOn(mockAdapter, 'showErrorMessage').mockResolvedValue(undefined);
 
       await expect(handler.navigateToFile('/path/file.ts')).rejects.toBe(nonErrorThrowable);
 
-      expect(showErrorMessageSpy).toHaveBeenCalledWith(
-        'Failed to open file /path/file.ts: Disk I/O failure',
-      );
+      expect(showErrorMessageSpy).toHaveBeenCalledWith('Failed to open file /path/file.ts: Disk I/O failure');
     });
   });
 });

@@ -1,13 +1,10 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import {
   buildTerminalDestination,
   buildTextEditorDestination,
   createCustomAiAssistantBuilder,
-  type DestinationBuilderContext,
   type DestinationBuilder,
+  type DestinationBuilderContext,
   registerAllDestinationBuilders,
   resolveKindByExtensionId,
 } from '../../destinations';
@@ -27,12 +24,13 @@ import {
   spyOnIsGitHubCopilotChatAvailable,
 } from '../helpers';
 
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
+
 describe('destinationBuilders', () => {
   const mockLogger = createMockLogger();
 
-  const createMockContext = (
-    adapterOverrides?: Parameters<typeof createMockVscodeAdapter>[0],
-  ): DestinationBuilderContext => ({
+  const createMockContext = (adapterOverrides?: Parameters<typeof createMockVscodeAdapter>[0]): DestinationBuilderContext => ({
     factories: {
       focusCapability: createMockFocusCapabilityFactory(),
       eligibilityChecker: createMockEligibilityCheckerFactory(),
@@ -76,10 +74,7 @@ describe('destinationBuilders', () => {
       const destination = buildTerminalDestination({ kind: 'terminal', terminal }, context);
 
       const otherTerminal = createMockTerminal({ name: 'bash', processId: Promise.resolve(5678) });
-      const otherDestination = buildTerminalDestination(
-        { kind: 'terminal', terminal: otherTerminal },
-        context,
-      );
+      const otherDestination = buildTerminalDestination({ kind: 'terminal', terminal: otherTerminal }, context);
 
       expect(await destination.equals(otherDestination)).toBe(false);
       expect(await destination.equals(destination)).toBe(true);
@@ -88,24 +83,20 @@ describe('destinationBuilders', () => {
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
-      expect(() =>
-        buildTerminalDestination(
-          { kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 },
-          context,
-        ),
-      ).toThrowDetailedError('UNEXPECTED_DESTINATION_KIND', {
-        message: 'buildTerminalDestination called with wrong kind: text-editor',
-        functionName: 'buildTerminalDestination',
-        details: { actualKind: 'text-editor', expectedKind: 'terminal' },
-      });
+      expect(() => buildTerminalDestination({ kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 }, context)).toThrowDetailedError(
+        'UNEXPECTED_DESTINATION_KIND',
+        {
+          message: 'buildTerminalDestination called with wrong kind: text-editor',
+          functionName: 'buildTerminalDestination',
+          details: { actualKind: 'text-editor', expectedKind: 'terminal' },
+        },
+      );
     });
 
     it('throws when getTerminalName returns an error', () => {
       const context = createMockContext();
 
-      expect(() =>
-        buildTerminalDestination({ kind: 'terminal', terminal: undefined as any }, context),
-      ).toThrowDetailedError('TERMINAL_NOT_DEFINED', {
+      expect(() => buildTerminalDestination({ kind: 'terminal', terminal: undefined as any }, context)).toThrowDetailedError('TERMINAL_NOT_DEFINED', {
         message: 'Terminal reference is not defined',
         functionName: 'validateTerminalDefined',
       });
@@ -123,10 +114,7 @@ describe('destinationBuilders', () => {
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: mockUri });
       context.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/auth.ts');
 
-      const destination = buildTextEditorDestination(
-        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
-        context,
-      );
+      const destination = buildTextEditorDestination({ kind: 'text-editor', uri: mockUri, viewColumn: 1 }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -143,10 +131,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
 
-      const destination = buildTextEditorDestination(
-        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
-        context,
-      );
+      const destination = buildTextEditorDestination({ kind: 'text-editor', uri: mockUri, viewColumn: 1 }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -165,10 +150,7 @@ describe('destinationBuilders', () => {
       });
       const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
 
-      const destination = buildTextEditorDestination(
-        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
-        context,
-      );
+      const destination = buildTextEditorDestination({ kind: 'text-editor', uri: mockUri, viewColumn: 1 }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -186,10 +168,7 @@ describe('destinationBuilders', () => {
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: mockUri });
       context.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/auth.ts');
 
-      const destination = buildTextEditorDestination(
-        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
-        context,
-      );
+      const destination = buildTextEditorDestination({ kind: 'text-editor', uri: mockUri, viewColumn: 1 }, context);
 
       const differentUri = createMockUri('/workspace/src/other.ts');
       const otherEditor = createMockEditor({
@@ -202,10 +181,7 @@ describe('destinationBuilders', () => {
       otherContext.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: differentUri });
       otherContext.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/other.ts');
 
-      const otherDestination = buildTextEditorDestination(
-        { kind: 'text-editor', uri: differentUri, viewColumn: 2 },
-        otherContext,
-      );
+      const otherDestination = buildTextEditorDestination({ kind: 'text-editor', uri: differentUri, viewColumn: 2 }, otherContext);
 
       expect(await destination.equals(otherDestination)).toBe(false);
       expect(await destination.equals(destination)).toBe(true);
@@ -214,13 +190,14 @@ describe('destinationBuilders', () => {
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
-      expect(() =>
-        buildTextEditorDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowDetailedError('UNEXPECTED_DESTINATION_KIND', {
-        message: 'buildTextEditorDestination called with wrong kind: terminal',
-        functionName: 'buildTextEditorDestination',
-        details: { actualKind: 'terminal', expectedKind: 'text-editor' },
-      });
+      expect(() => buildTextEditorDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context)).toThrowDetailedError(
+        'UNEXPECTED_DESTINATION_KIND',
+        {
+          message: 'buildTextEditorDestination called with wrong kind: terminal',
+          functionName: 'buildTextEditorDestination',
+          details: { actualKind: 'terminal', expectedKind: 'text-editor' },
+        },
+      );
     });
   });
 
@@ -260,9 +237,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const destination = builder({ kind: 'cursor-ai' }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Cursor chat to use.');
     });
 
     it('creates claude-code destination with correct id and displayName', () => {
@@ -300,9 +275,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const destination = builder({ kind: 'claude-code' }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Claude Code chat to use.');
     });
 
     it('creates gemini-code-assist destination with correct id and displayName', () => {
@@ -318,7 +291,7 @@ describe('destinationBuilders', () => {
     });
 
     it('gemini-code-assist isAvailable delegates to isGeminiCodeAssistAvailable', async () => {
-      const spy = spyOnIsGeminiCodeAssistAvailable().mockResolvedValue(true);
+      const spy = spyOnIsGeminiCodeAssistAvailable().mockReturnValue(true);
       const builder = getBuiltinBuilder('gemini-code-assist');
       const context = createMockContext();
       const destination = builder({ kind: 'gemini-code-assist' }, context);
@@ -340,9 +313,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const destination = builder({ kind: 'gemini-code-assist' }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Gemini Code Assist to use.');
     });
 
     it('creates github-copilot-chat destination with correct id and displayName', () => {
@@ -380,9 +351,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const destination = builder({ kind: 'github-copilot-chat' }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.');
     });
   });
 
@@ -433,9 +402,7 @@ describe('destinationBuilders', () => {
     it('isAvailable falls back to command check when extension not found', async () => {
       const context = createMockContext();
       jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
-      jest
-        .spyOn(context.ideAdapter, 'getCommands')
-        .mockResolvedValue(['sparkAi.focus', 'other.cmd']);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['sparkAi.focus', 'other.cmd']);
 
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
@@ -491,9 +458,7 @@ describe('destinationBuilders', () => {
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Spark AI to use.');
     });
 
     it('jumpSuccessMessage uses i18n with extensionName', () => {
@@ -564,9 +529,7 @@ describe('destinationBuilders', () => {
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
-        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe('Paste (Cmd/Ctrl+V) in Spark AI to use.');
     });
   });
 
@@ -580,10 +543,7 @@ describe('destinationBuilders', () => {
 
     const buildOverriddenDestination = (context: DestinationBuilderContext) => {
       const builders = new Map<DestinationKind, DestinationBuilder>();
-      registerAllDestinationBuilders(
-        { register: (k: DestinationKind, b: DestinationBuilder) => builders.set(k, b) },
-        [overrideConfig],
-      );
+      registerAllDestinationBuilders({ register: (k: DestinationKind, b: DestinationBuilder) => builders.set(k, b) }, [overrideConfig]);
       const builder = builders.get('claude-code')!;
       return builder({ kind: 'claude-code' }, context);
     };
@@ -612,9 +572,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       buildOverriddenDestination(context);
 
-      expect(context.factories.focusCapability.buildCustomAIAssistantTiers).toHaveBeenCalledWith(
-        overrideConfig,
-      );
+      expect(context.factories.focusCapability.buildCustomAIAssistantTiers).toHaveBeenCalledWith(overrideConfig);
     });
 
     it('calls buildBuiltinFallbackTier with built-in focus commands', () => {
@@ -628,16 +586,11 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       buildOverriddenDestination(context);
 
-      const buildFallbackSpy = context.factories.focusCapability
-        .buildBuiltinFallbackTier as jest.Mock;
+      const buildFallbackSpy = context.factories.focusCapability.buildBuiltinFallbackTier as jest.Mock;
       const mockFallbackTier = buildFallbackSpy.mock.results[0].value;
       const FALLBACK_TIER_INDEX = 0;
 
-      expect(context.factories.focusCapability.createLazyResolvedCapability).toHaveBeenCalledWith(
-        [mockFallbackTier],
-        'Claude Code Chat',
-        FALLBACK_TIER_INDEX,
-      );
+      expect(context.factories.focusCapability.createLazyResolvedCapability).toHaveBeenCalledWith([mockFallbackTier], 'Claude Code Chat', FALLBACK_TIER_INDEX);
     });
 
     it('isAvailable delegates to built-in availability check', async () => {
@@ -666,9 +619,7 @@ describe('destinationBuilders', () => {
 
       const destination = buildOverriddenDestination(context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
-        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe('Paste (Cmd/Ctrl+V) in Claude Code chat to use.');
     });
 
     it('getUserInstruction returns undefined on success when tier is not focusCommands', () => {
@@ -685,9 +636,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const destination = buildOverriddenDestination(context);
 
-      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Claude Code chat to use.');
     });
   });
 
@@ -702,14 +651,7 @@ describe('destinationBuilders', () => {
 
       registerAllDestinationBuilders(mockRegistry);
 
-      expect(registeredKinds).toStrictEqual([
-        'terminal',
-        'text-editor',
-        'cursor-ai',
-        'claude-code',
-        'gemini-code-assist',
-        'github-copilot-chat',
-      ]);
+      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'cursor-ai', 'claude-code', 'gemini-code-assist', 'github-copilot-chat']);
     });
 
     it('registers custom AI assistants when provided', () => {
@@ -757,14 +699,7 @@ describe('destinationBuilders', () => {
         },
       ]);
 
-      expect(registeredKinds).toStrictEqual([
-        'terminal',
-        'text-editor',
-        'claude-code',
-        'cursor-ai',
-        'gemini-code-assist',
-        'github-copilot-chat',
-      ]);
+      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'claude-code', 'cursor-ai', 'gemini-code-assist', 'github-copilot-chat']);
     });
 
     it('overridden built-in uses built-in kind, not custom-ai prefix', () => {
@@ -795,16 +730,13 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       builder({ kind: 'claude-code' }, context);
 
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledWith(
         ['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open'],
         expect.any(Function),
       );
 
-      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (
-        ...args: unknown[]
-      ) => unknown;
+      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (...args: unknown[]) => unknown;
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();
@@ -819,8 +751,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       builder({ kind: 'cursor-ai' }, context);
 
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledWith(expect.any(Array), undefined);
     });
 
@@ -834,8 +765,7 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'claude-code' }, context);
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledTimes(1);
       const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
@@ -856,8 +786,7 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'claude-code' }, context);
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledTimes(1);
       const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
@@ -879,16 +808,10 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       builder({ kind: 'gemini-code-assist' }, context);
 
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
-      expect(createCapabilityMock).toHaveBeenCalledWith(
-        ['cloudcode.gemini.chatView.focus'],
-        expect.any(Function),
-      );
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledWith(['cloudcode.gemini.chatView.focus'], expect.any(Function));
 
-      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (
-        ...args: unknown[]
-      ) => unknown;
+      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (...args: unknown[]) => unknown;
       expect(typeof getColdRefocusArg).toBe('function');
 
       const result = getColdRefocusArg();
@@ -908,8 +831,7 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'gemini-code-assist' }, context);
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledTimes(1);
       const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
@@ -930,8 +852,7 @@ describe('destinationBuilders', () => {
       });
 
       builder({ kind: 'gemini-code-assist' }, context);
-      const createCapabilityMock = context.factories.focusCapability
-        .createAIAssistantCapability as jest.Mock;
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledTimes(1);
       const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
 
@@ -964,9 +885,7 @@ describe('destinationBuilders', () => {
         },
       ];
 
-      expect(resolveKindByExtensionId('my-extension', customAssistants)).toBe(
-        'custom-ai:my-extension',
-      );
+      expect(resolveKindByExtensionId('my-extension', customAssistants)).toBe('custom-ai:my-extension');
     });
 
     it('prioritises built-in over custom when both match', () => {
@@ -979,9 +898,7 @@ describe('destinationBuilders', () => {
         },
       ];
 
-      expect(resolveKindByExtensionId('anthropic.claude-code', customAssistants)).toBe(
-        'claude-code',
-      );
+      expect(resolveKindByExtensionId('anthropic.claude-code', customAssistants)).toBe('claude-code');
     });
 
     it('returns undefined when extensionId matches neither built-in nor custom', () => {

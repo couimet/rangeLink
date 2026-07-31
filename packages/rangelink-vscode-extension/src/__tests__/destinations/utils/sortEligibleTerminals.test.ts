@@ -75,10 +75,7 @@ describe('sortEligibleTerminals', () => {
   });
 
   it('does not mutate the input array', () => {
-    const terminals = [
-      createMockEligibleTerminal({ name: 'A', boundState: 'not-bound' }),
-      createMockEligibleTerminal({ name: 'B', boundState: 'bound' }),
-    ];
+    const terminals = [createMockEligibleTerminal({ name: 'A', boundState: 'not-bound' }), createMockEligibleTerminal({ name: 'B', boundState: 'bound' })];
     const original = [...terminals];
 
     sortEligibleTerminals(terminals);

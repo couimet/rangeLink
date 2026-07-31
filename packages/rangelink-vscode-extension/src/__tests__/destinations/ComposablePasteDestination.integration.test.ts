@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import {
   AIAssistantFocusCapability,
   AIAssistantInsertFactory,
@@ -22,6 +20,8 @@ import {
   createMockVscodeAdapter,
 } from '../helpers';
 
+import { createMockLogger } from '@couimet/logger-contract-testing';
+
 describe('ComposablePasteDestination Integration Tests', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
 
@@ -37,24 +37,13 @@ describe('ComposablePasteDestination Integration Tests', () => {
         processId: Promise.resolve(12345),
       });
 
-      const terminalPasteService = new TerminalPasteService(
-        mockAdapter,
-        createMockClipboardService(),
-        mockLogger,
-      );
+      const terminalPasteService = new TerminalPasteService(mockAdapter, createMockClipboardService(), mockLogger);
       const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
-      const focusCapability = new TerminalFocusCapability(
-        mockAdapter,
-        mockTerminal,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new TerminalFocusCapability(mockAdapter, mockTerminal, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal');
-      const pasteTextSpy = jest
-        .spyOn(terminalPasteService, 'pasteIntoTerminal')
-        .mockResolvedValue(ExtensionResult.ok(undefined));
+      const pasteTextSpy = jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockResolvedValue(ExtensionResult.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
@@ -92,18 +81,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const terminalPasteService = new TerminalPasteService(
-        mockAdapter,
-        createMockClipboardService(),
-        mockLogger,
-      );
+      const terminalPasteService = new TerminalPasteService(mockAdapter, createMockClipboardService(), mockLogger);
       const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
-      const focusCapability = new TerminalFocusCapability(
-        mockAdapter,
-        mockTerminal,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new TerminalFocusCapability(mockAdapter, mockTerminal, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const callOrder: string[] = [];
@@ -113,9 +93,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
         return ExtensionResult.ok(undefined);
       });
 
-      jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(async () => {
+      jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockImplementation(() => {
         callOrder.push('insert');
-        return ExtensionResult.ok(undefined);
+        return Promise.resolve(ExtensionResult.ok(undefined));
       });
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -151,21 +131,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
 
       const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new AIAssistantFocusCapability(
-        mockAdapter,
-        ['ai.assistant.focus'],
-        undefined,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new AIAssistantFocusCapability(mockAdapter, ['ai.assistant.focus'], undefined, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockResolvedValue(undefined);
-      const pasteClipboardSpy = jest
-        .spyOn(mockAdapter, 'pasteClipboardToAiAssistant')
-        .mockResolvedValue(true);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const pasteClipboardSpy = jest.spyOn(mockAdapter, 'pasteClipboardToAiAssistant').mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'claude-code',
@@ -210,10 +180,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       );
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('First failed'))
-        .mockResolvedValueOnce(undefined);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First failed')).mockResolvedValueOnce(undefined);
       jest.spyOn(mockAdapter, 'pasteClipboardToAiAssistant').mockResolvedValue(true);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -250,19 +217,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
 
       const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new AIAssistantFocusCapability(
-        mockAdapter,
-        ['command.first', 'command.second'],
-        undefined,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new AIAssistantFocusCapability(mockAdapter, ['command.first', 'command.second'], undefined, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('First failed'))
-        .mockRejectedValueOnce(new Error('Second failed'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First failed')).mockRejectedValueOnce(new Error('Second failed'));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'claude-code',
@@ -306,13 +264,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
 
       const insertFactory = new EditorInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new EditorFocusCapability(
-        mockAdapter,
-        mockUri,
-        1,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new EditorFocusCapability(mockAdapter, mockUri, 1, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -356,13 +308,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(new Error('Editor not found'));
 
       const insertFactory = new EditorInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new EditorFocusCapability(
-        mockAdapter,
-        mockUri,
-        1,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new EditorFocusCapability(mockAdapter, mockUri, 1, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -405,13 +351,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(false);
 
       const insertFactory = new EditorInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new EditorFocusCapability(
-        mockAdapter,
-        mockUri,
-        1,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new EditorFocusCapability(mockAdapter, mockUri, 1, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -447,18 +387,9 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const terminalPasteService = new TerminalPasteService(
-        mockAdapter,
-        createMockClipboardService(),
-        mockLogger,
-      );
+      const terminalPasteService = new TerminalPasteService(mockAdapter, createMockClipboardService(), mockLogger);
       const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
-      const focusCapability = new TerminalFocusCapability(
-        mockAdapter,
-        mockTerminal,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new TerminalFocusCapability(mockAdapter, mockTerminal, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const destination = ComposablePasteDestination.createForTesting({
@@ -492,24 +423,13 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const terminalPasteService = new TerminalPasteService(
-        mockAdapter,
-        createMockClipboardService(),
-        mockLogger,
-      );
+      const terminalPasteService = new TerminalPasteService(mockAdapter, createMockClipboardService(), mockLogger);
       const insertFactory = new TerminalInsertFactory(terminalPasteService, mockLogger);
-      const focusCapability = new TerminalFocusCapability(
-        mockAdapter,
-        mockTerminal,
-        insertFactory,
-        mockLogger,
-      );
+      const focusCapability = new TerminalFocusCapability(mockAdapter, mockTerminal, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(ExtensionResult.ok(undefined));
-      const pasteTextSpy = jest
-        .spyOn(terminalPasteService, 'pasteIntoTerminal')
-        .mockResolvedValue(ExtensionResult.ok(undefined));
+      const pasteTextSpy = jest.spyOn(terminalPasteService, 'pasteIntoTerminal').mockResolvedValue(ExtensionResult.ok(undefined));
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',

@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { ResolvedFocusCapability } from '../../../destinations/capabilities/ResolvedFocusCapability';
 import type { FocusTier } from '../../../destinations/types';
 import { createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const CONTEXT = { fn: 'test' };
 
@@ -33,14 +33,11 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(factory.forTarget).toHaveBeenCalled();
     expect(executeCommandSpy).not.toHaveBeenCalled();
     expect(capability.resolvedTierLabel).toBe('insertCommands');
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { ...CONTEXT, tier: 'insertCommands' },
-      'Resolved tier insertCommands — returning inserter directly',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ ...CONTEXT, tier: 'insertCommands' }, 'Resolved tier insertCommands — returning inserter directly');
   });
 
   it('executes focus command for probeMode execute and returns inserter', async () => {
@@ -58,17 +55,14 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(factory.forTarget).toHaveBeenCalled();
     expect(capability.resolvedTierLabel).toBe('focusAndPasteCommands');
   });
 
   it('tries multiple commands within the resolved tier', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockRejectedValueOnce(new Error('First cmd failed'))
-      .mockResolvedValueOnce(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First cmd failed')).mockResolvedValueOnce(undefined);
 
     const factory = createMockInsertFactory();
     const tier: FocusTier = {
@@ -81,7 +75,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
     expect(executeCommandSpy).toHaveBeenCalledTimes(2);
     expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'tier.primary');
     expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'tier.fallback');
@@ -101,9 +95,7 @@ describe('ResolvedFocusCapability', () => {
     const capability = new ResolvedFocusCapability(mockAdapter, tier, mockLogger);
     const result = await capability.focus(CONTEXT);
 
-    expect(result).toBeErrWith((error: { reason: string }) => {
-      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
-    });
+    expect(result).toBeFailure({ reason: 'COMMAND_FOCUS_FAILED' });
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { ...CONTEXT, tier: 'focusAndPasteCommands', allCommandsFailed: true },
       'All focus commands failed for resolved tier focusAndPasteCommands',

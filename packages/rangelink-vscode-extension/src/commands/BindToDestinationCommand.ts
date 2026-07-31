@@ -1,12 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { BoundSession, DestinationBinder } from '../destinations';
 import type { DestinationPicker } from '../destinations/DestinationPicker';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { RangeLinkExtensionError } from '../errors';
 import { MessageCode } from '../types';
 import type { QuickPickBindResult } from '../types/QuickPickBindResult';
 import { isEditorDestination } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for binding to a destination via picker.
@@ -21,10 +21,7 @@ export class BindToDestinationCommand {
     private readonly session: BoundSession,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'BindToDestinationCommand.constructor' },
-      'BindToDestinationCommand initialized',
-    );
+    this.logger.debug({ fn: 'BindToDestinationCommand.constructor' }, 'BindToDestinationCommand initialized');
   }
 
   async execute(): Promise<QuickPickBindResult> {
@@ -67,15 +64,8 @@ export class BindToDestinationCommand {
         return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
-      default: {
-        const _exhaustiveCheck: never = pickerResult;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unhandled picker outcome in BindToDestinationCommand',
-          functionName: 'BindToDestinationCommand.execute',
-          details: { pickerResult: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('picker outcome', pickerResult, 'BindToDestinationCommand.execute');
     }
   }
 }

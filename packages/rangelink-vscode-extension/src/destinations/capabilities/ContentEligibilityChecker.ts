@@ -1,8 +1,8 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import { isEligibleForPaste } from '../../utils';
 
 import type { EligibilityChecker } from './EligibilityChecker';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * Validates content eligibility for paste operations.
@@ -16,16 +16,13 @@ import type { EligibilityChecker } from './EligibilityChecker';
 export class ContentEligibilityChecker implements EligibilityChecker {
   constructor(private readonly logger: Logger) {}
 
-  async isEligible(text: string, context: LoggingContext): Promise<boolean> {
+  isEligible(text: string, context: LoggingContext): Promise<boolean> {
     const eligible = isEligibleForPaste(text);
 
     if (!eligible) {
-      this.logger.info(
-        { ...context, contentLength: text.length },
-        'Content not eligible for paste',
-      );
+      this.logger.info({ ...context, contentLength: text.length }, 'Content not eligible for paste');
     }
 
-    return eligible;
+    return Promise.resolve(eligible);
   }
 }

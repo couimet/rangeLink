@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
-
 import {
   ComposablePasteDestination,
   type ComposablePasteDestinationConfig,
@@ -11,13 +8,15 @@ import {
 } from '../../destinations';
 import type { AutoPasteResult } from '../../types';
 
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+
 /**
  * Configuration overrides for creating a mock ComposablePasteDestination.
  *
  * All properties are optional with sensible defaults.
  */
-export interface MockComposablePasteDestinationConfig
-  extends Partial<ComposablePasteDestinationConfig> {
+export interface MockComposablePasteDestinationConfig extends Partial<ComposablePasteDestinationConfig> {
   focusCapability?: jest.Mocked<FocusCapability>;
   eligibilityChecker?: jest.Mocked<EligibilityChecker>;
   getUserInstruction?: jest.Mock<string | undefined, [AutoPasteResult]>;
@@ -28,16 +27,14 @@ export interface MockComposablePasteDestinationConfig
  * Create a mock jest.Mocked<FocusCapability> for testing.
  *
  * @param insertReturns - What inserter() should return (default: true)
- * @returns Mocked FocusCapability with focus() returning Result.ok({ inserter: ... })
+ * @returns Mocked FocusCapability with focus() returning DetailedResult.success({ inserter: ... })
  */
-export const createMockFocusCapability = (
-  insertReturns: boolean = true,
-): jest.Mocked<FocusCapability> => {
+export const createMockFocusCapability = (insertReturns: boolean = true): jest.Mocked<FocusCapability> => {
   const mockInsert = jest.fn().mockResolvedValue(insertReturns);
   const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
   const capability: jest.Mocked<FocusCapability> & { _mockInsert: jest.Mock } = {
-    focus: jest.fn().mockResolvedValue(Result.ok(focusedDestination)),
+    focus: jest.fn().mockResolvedValue(DetailedResult.success(focusedDestination)),
     _mockInsert: mockInsert,
   };
   return capability;
@@ -57,7 +54,7 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
  * Create a mock ComposablePasteDestination for testing.
  *
  * Provides default mocks for all capabilities with sensible behaviors:
- * - FocusCapability: Returns Result.ok({ inserter: ... }) that returns true
+ * - FocusCapability: Returns DetailedResult.success({ inserter: ... }) that returns true
  * - EligibilityChecker: Returns true (always eligible)
  * - isAvailable: Returns true (always available)
  * - All other config: Sensible defaults
@@ -65,9 +62,7 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance with mocked capabilities
  */
-export const createMockComposablePasteDestination = (
-  overrides: MockComposablePasteDestinationConfig = {},
-): ComposablePasteDestination => {
+export const createMockComposablePasteDestination = (overrides: MockComposablePasteDestinationConfig = {}): ComposablePasteDestination => {
   const config: ComposablePasteDestinationConfig = {
     id: 'text-editor',
     displayName: 'Mock Destination',

@@ -1,13 +1,11 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
-import type { FilePathTerminalLink } from '../types';
-import { MessageCode } from '../types';
+import { FilePathTerminalLink, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { buildFilePathPattern, DelimiterConfigGetter, extractFilePath } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Terminal link provider for plain file path detection.
@@ -34,10 +32,7 @@ export class FilePathTerminalProvider implements vscode.TerminalLinkProvider<Fil
     private readonly handler: FilePathNavigationHandler,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'FilePathTerminalProvider.constructor' },
-      'FilePathTerminalProvider initialized',
-    );
+    this.logger.debug({ fn: 'FilePathTerminalProvider.constructor' }, 'FilePathTerminalProvider initialized');
   }
 
   /**
@@ -49,9 +44,7 @@ export class FilePathTerminalProvider implements vscode.TerminalLinkProvider<Fil
    * @param context - Terminal line context from VS Code
    * @returns Array of detected terminal links
    */
-  provideTerminalLinks(
-    context: vscode.TerminalLinkContext,
-  ): vscode.ProviderResult<FilePathTerminalLink[]> {
+  provideTerminalLinks(context: vscode.TerminalLinkContext): vscode.ProviderResult<FilePathTerminalLink[]> {
     const pattern = buildFilePathPattern(this.getDelimiters());
     const links: FilePathTerminalLink[] = [];
     let match: RegExpExecArray | null;

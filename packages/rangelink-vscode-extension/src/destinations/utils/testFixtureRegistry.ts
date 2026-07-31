@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
-
 import { ENV_RANGELINK_TEST_FIXTURES_ENABLED } from '../../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+
+import type * as vscode from 'vscode';
 
 const MARKER = '__rangeLinkTestFixture';
 

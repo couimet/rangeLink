@@ -7,10 +7,7 @@ export const ASSISTED_TIMEOUT_MS = 600_000;
 // No human in CI — automated tests resolve in under 5s.
 export const CI_TIMEOUT_MS = 20_000;
 
-export const userDataDir = (suffix = '') => [
-  '--user-data-dir',
-  path.join(os.tmpdir(), `rl-vscode-test${suffix}`),
-];
+export const userDataDir = (suffix = '') => ['--user-data-dir', path.join(os.tmpdir(), `rl-vscode-test${suffix}`)];
 
 // grep and invert are driven by env vars set in test-release-run.sh.
 const envMocha = () => ({
@@ -22,7 +19,11 @@ export const BASE_CONFIG = {
   files: 'out/__integration-tests__/suite/**/*.test.js',
   extensionDevelopmentPath: ['./', './test-fixtures/dummy-ai-extension/'],
   workspaceFolder: './',
-  version: 'stable',
+  // 1.131 is the first release where Copilot Chat's required API proposals
+  // (agentSessionsWorkspace, languageModelCapabilities, etc.) are finalized
+  // and available — without them, Copilot Chat triggers "No default agent
+  // registered" errors that contaminate test state across suites.
+  version: '1.131.0',
   launchArgs: userDataDir(),
   env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true' },
   mocha: envMocha(),

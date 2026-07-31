@@ -1,12 +1,6 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_SMART_PADDING_PASTE_CONTENT,
-  SETTING_SMART_PADDING_PASTE_CONTENT,
-  VSCODE_CMD_TERMINAL_COPY_SELECTION,
-} from '../constants';
+import { DEFAULT_SMART_PADDING_PASTE_CONTENT, SETTING_SMART_PADDING_PASTE_CONTENT, VSCODE_CMD_TERMINAL_COPY_SELECTION } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -15,6 +9,8 @@ import { applySmartPadding, formatMessage } from '../utils';
 
 import type { SendRouter } from './SendRouter';
 import { toBindContext } from './toBindContext';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 interface CaptureErrorInfo {
   readonly logMessage: string;
@@ -62,15 +58,11 @@ export class TerminalSelectionService {
 
     logCtx.terminalName = activeTerminal.name;
 
-    const captureResult = await this.clipboardService.capture(
-      () => this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION),
-      logCtx,
-    );
+    const captureResult = await this.clipboardService.capture(() => this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION), logCtx);
 
     if (!captureResult.success) {
       const error = captureResult.error;
-      const isCopyFailure =
-        error.code === RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED;
+      const isCopyFailure = error.code === RangeLinkExtensionErrorCodes.CLIPBOARD_CAPTURE_EXECUTION_FAILED;
       const errorInfo = isCopyFailure ? COPY_FAILURE : CAPTURE_FAILURE;
 
       this.logger.error({ ...logCtx, error, isCopyFailure }, errorInfo.logMessage);
@@ -86,18 +78,12 @@ export class TerminalSelectionService {
       return { outcome: 'no-text-selected' };
     }
 
-    this.logger.debug(
-      { ...logCtx, contentLength: terminalText.length },
-      `Read ${terminalText.length} chars from terminal selection`,
-    );
+    this.logger.debug({ ...logCtx, contentLength: terminalText.length }, `Read ${terminalText.length} chars from terminal selection`);
 
     const resolveResult = await this.sendRouter.resolveDestination(logCtx);
     if (!resolveResult.canProceed) return { outcome: 'picker-cancelled' };
 
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_CONTENT,
-      DEFAULT_SMART_PADDING_PASTE_CONTENT,
-    );
+    const paddingMode = this.configReader.getPaddingMode(SETTING_SMART_PADDING_PASTE_CONTENT, DEFAULT_SMART_PADDING_PASTE_CONTENT);
 
     const paddedText = applySmartPadding(terminalText, paddingMode);
     const bindContext = toBindContext(resolveResult);
@@ -137,9 +123,7 @@ export class TerminalSelectionService {
     const result = await this.pasteTerminalSelectionToDestination();
 
     if (result.outcome === 'success') {
-      this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP),
-      );
+      this.ideAdapter.showInformationMessage(formatMessage(MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP));
     }
   }
 
@@ -153,8 +137,6 @@ export class TerminalSelectionService {
     const logCtx = { fn: 'TerminalSelectionService.terminalCopyLinkGuard' };
     this.logger.debug(logCtx, 'R-C pressed in terminal context');
 
-    this.ideAdapter.showErrorMessage(
-      formatMessage(MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED),
-    );
+    this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED));
   }
 }

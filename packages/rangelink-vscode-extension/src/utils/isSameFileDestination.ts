@@ -1,6 +1,6 @@
-import type * as vscode from 'vscode';
-
 import type { PasteDestination } from '../destinations';
+
+import type * as vscode from 'vscode';
 
 /**
  * Check if paste would go to the same file as the source, accounting for view columns.
@@ -14,11 +14,7 @@ import type { PasteDestination } from '../destinations';
  * @param sourceViewColumn - Optional view column of the source editor
  * @returns true if source and destination are the same file AND same view column
  */
-export const isSameFileDestination = (
-  sourceUri: vscode.Uri,
-  destination: PasteDestination | undefined,
-  sourceViewColumn?: vscode.ViewColumn,
-): boolean => {
+export const isSameFileDestination = (sourceUri: vscode.Uri, destination: PasteDestination | undefined, sourceViewColumn?: vscode.ViewColumn): boolean => {
   if (!destination) return false;
 
   const destUri = destination.getDestinationUri();

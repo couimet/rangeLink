@@ -1,15 +1,13 @@
-import * as vscode from 'vscode';
-
 import { createMockEditor } from '../../__tests__/helpers/createMockEditor';
 import { ActiveSelections } from '../ActiveSelections';
+
+import * as vscode from 'vscode';
 
 describe('ActiveSelections', () => {
   describe('create', () => {
     it('should create instance with editor and selections', () => {
       const mockEditor = createMockEditor({
-        selections: [
-          { isEmpty: false, start: { line: 0, character: 0 }, end: { line: 0, character: 5 } },
-        ] as any,
+        selections: [{ isEmpty: false, start: { line: 0, character: 0 }, end: { line: 0, character: 5 } }] as any,
       });
 
       const result = ActiveSelections.create(mockEditor);

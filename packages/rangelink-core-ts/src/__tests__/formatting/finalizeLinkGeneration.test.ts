@@ -1,14 +1,11 @@
-import { getLogger } from '@couimet/logger-contract';
-
-import {
-  finalizeLinkGeneration,
-  LinkGenerationResult,
-} from '../../formatting/finalizeLinkGeneration';
+import { finalizeLinkGeneration, LinkGenerationResult } from '../../formatting/finalizeLinkGeneration';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { LinkType } from '../../types/LinkType';
 import { RangeFormat } from '../../types/RangeFormat';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+import { getLogger } from '@couimet/logger-contract';
 
 describe('finalizeLinkGeneration', () => {
   const defaultDelimiters: DelimiterConfig = {
@@ -43,25 +40,16 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/file.ts');
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L10-L20',
-        rawLink: 'src/file.ts#L10-L20',
-        linkType: 'regular',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'LineOnly',
-        selectionType: 'Normal',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L10-L20',
+      rawLink: 'src/file.ts#L10-L20',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
     });
   });
 
@@ -88,25 +76,16 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Portable,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Portable, defaultDelimiters, 'src/file.ts');
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L10-L20~#~L~-~',
-        rawLink: 'src/file.ts#L10-L20~#~L~-~',
-        linkType: 'portable',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'LineOnly',
-        selectionType: 'Normal',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L10-L20~#~L~-~',
+      rawLink: 'src/file.ts#L10-L20~#~L~-~',
+      linkType: 'portable',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
     });
   });
 
@@ -145,16 +124,17 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = finalizeLinkGeneration(
-      maliciousGenerator,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/test.ts',
-    );
+    const result = finalizeLinkGeneration(maliciousGenerator, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/test.ts');
 
-    expect(result).toBeOk();
+    expect(result).toBeSuccess({
+      link: 'src/test.ts#L10',
+      rawLink: 'src/test.ts#L10',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'LineOnly',
+      selectionType: 'Normal',
+    });
 
     // CRITICAL ASSERTIONS: Our attributes must win over malicious logContext
     expect(mockDebug).toHaveBeenCalledWith(
@@ -196,25 +176,16 @@ describe('finalizeLinkGeneration', () => {
       selectionType: SelectionType.Rectangular,
     };
 
-    const result = finalizeLinkGeneration(
-      generateLink,
-      spec,
-      inputSelection,
-      LinkType.Regular,
-      defaultDelimiters,
-      'src/file.ts',
-    );
+    const result = finalizeLinkGeneration(generateLink, spec, inputSelection, LinkType.Regular, defaultDelimiters, 'src/file.ts');
 
-    expect(result).toBeOkWith((value) => {
-      expect(value).toStrictEqual({
-        link: 'src/file.ts#L5C10-L15C20',
-        rawLink: 'src/file.ts#L5C10-L15C20',
-        linkType: 'regular',
-        delimiters: defaultDelimiters,
-        computedSelection: spec,
-        rangeFormat: 'WithPositions',
-        selectionType: 'Rectangular',
-      });
+    expect(result).toBeSuccess({
+      link: 'src/file.ts#L5C10-L15C20',
+      rawLink: 'src/file.ts#L5C10-L15C20',
+      linkType: 'regular',
+      delimiters: defaultDelimiters,
+      computedSelection: spec,
+      rangeFormat: 'WithPositions',
+      selectionType: 'Rectangular',
     });
   });
 });

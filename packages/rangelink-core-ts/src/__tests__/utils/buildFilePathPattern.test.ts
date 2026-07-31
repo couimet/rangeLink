@@ -28,45 +28,31 @@ describe('buildFilePathPattern', () => {
 
   describe('quoted paths — true positives', () => {
     it('should match double-quoted absolute path', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_ABSOLUTE)).toStrictEqual([
-        '/path/to/file.ts',
-      ]);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_ABSOLUTE)).toStrictEqual(['/path/to/file.ts']);
     });
 
     it('should match single-quoted absolute path', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_ABSOLUTE)).toStrictEqual([
-        '/path/to/file.ts',
-      ]);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_ABSOLUTE)).toStrictEqual(['/path/to/file.ts']);
     });
 
     it('should match double-quoted path with spaces', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_WITH_SPACES)).toStrictEqual([
-        '/path/with spaces/file.ts',
-      ]);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_WITH_SPACES)).toStrictEqual(['/path/with spaces/file.ts']);
     });
 
     it('should match single-quoted path with spaces', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_WITH_SPACES)).toStrictEqual([
-        '/path/with spaces/file.ts',
-      ]);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_WITH_SPACES)).toStrictEqual(['/path/with spaces/file.ts']);
     });
 
     it('should match double-quoted multi-extension path and capture last extension', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_MULTI_EXTENSION)).toStrictEqual([
-        '/path/to/file.test.ts',
-      ]);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_MULTI_EXTENSION)).toStrictEqual(['/path/to/file.test.ts']);
     });
 
     it('should match single-quoted path when possessive apostrophe appears earlier in sentence', () => {
-      expect(
-        matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVE_BEFORE_SINGLE_QUOTED_PATH),
-      ).toStrictEqual(['/path/to/out.ts']);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVE_BEFORE_SINGLE_QUOTED_PATH)).toStrictEqual(['/path/to/out.ts']);
     });
 
     it('should match double-quoted path when possessives surround the quoted expression', () => {
-      expect(
-        matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVES_SURROUNDING_DOUBLE_QUOTED_PATH),
-      ).toStrictEqual(['/path/to/file.ts']);
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVES_SURROUNDING_DOUBLE_QUOTED_PATH)).toStrictEqual(['/path/to/file.ts']);
     });
   });
 
@@ -112,9 +98,7 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should NOT span across newline — the valid quoted path on the second line should match independently', () => {
-      expect(
-        matchesPattern(QUOTED_FALSE_POSITIVES.NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE),
-      ).toStrictEqual(['/path/to/file.ts']);
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE)).toStrictEqual(['/path/to/file.ts']);
     });
   });
 
@@ -132,53 +116,37 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should match the unquoted relative path when a contraction appears earlier on the same line', () => {
-      expect(matchesPattern(PROSE_INPUTS.CONTRACTION_WITH_VALID_RELATIVE_PATH)).toStrictEqual([
-        './src/component.tsx',
-      ]);
+      expect(matchesPattern(PROSE_INPUTS.CONTRACTION_WITH_VALID_RELATIVE_PATH)).toStrictEqual(['./src/component.tsx']);
     });
   });
 
   describe('absolute paths', () => {
     it('should match absolute path', () => {
-      expect(matchesPattern('See /path/to/file.ts for details')).toStrictEqual([
-        '/path/to/file.ts',
-      ]);
+      expect(matchesPattern('See /path/to/file.ts for details')).toStrictEqual(['/path/to/file.ts']);
     });
 
     it('should match absolute path with hyphens and dots in name', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.MULTI_EXTENSION)).toStrictEqual([
-        '/path/to/my-file.test.ts',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.MULTI_EXTENSION)).toStrictEqual(['/path/to/my-file.test.ts']);
     });
 
     it('should match absolute path with @ in path component', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.AT_IN_COMPONENT)).toStrictEqual([
-        '/home/user@hostname/project/file.ts',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.AT_IN_COMPONENT)).toStrictEqual(['/home/user@hostname/project/file.ts']);
     });
 
     it('should match absolute path with dot in directory name (version directory)', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY)).toStrictEqual([
-        '/path/to/v1.2/config.ts',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY)).toStrictEqual(['/path/to/v1.2/config.ts']);
     });
 
     it('should match absolute path for dotfile', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_ABSOLUTE)).toStrictEqual([
-        '/repo/.eslintrc.js',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_ABSOLUTE)).toStrictEqual(['/repo/.eslintrc.js']);
     });
 
     it('should match absolute path with numeric extension', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.EXTENSION_DIGITS)).toStrictEqual([
-        '/path/to/output.mp4',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.EXTENSION_DIGITS)).toStrictEqual(['/path/to/output.mp4']);
     });
 
     it('should match absolute path with numbers in filename', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.NUMBERS_IN_FILENAME)).toStrictEqual([
-        '/path/to/script2.sh',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.NUMBERS_IN_FILENAME)).toStrictEqual(['/path/to/script2.sh']);
     });
   });
 
@@ -192,29 +160,21 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should match relative path with dot in directory name', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY_RELATIVE)).toStrictEqual([
-        './src/v1.2/utils/helper.ts',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY_RELATIVE)).toStrictEqual(['./src/v1.2/utils/helper.ts']);
     });
 
     it('should match ./ shell script', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.SHELL_SCRIPT_RELATIVE)).toStrictEqual([
-        './deploy.sh',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.SHELL_SCRIPT_RELATIVE)).toStrictEqual(['./deploy.sh']);
     });
   });
 
   describe('tilde paths', () => {
     it('should match ~/path', () => {
-      expect(matchesPattern('Open ~/projects/app/main.ts now')).toStrictEqual([
-        '~/projects/app/main.ts',
-      ]);
+      expect(matchesPattern('Open ~/projects/app/main.ts now')).toStrictEqual(['~/projects/app/main.ts']);
     });
 
     it('should match ~/path with yaml extension', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.YAML_TILDE)).toStrictEqual([
-        '~/config/settings.yaml',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.YAML_TILDE)).toStrictEqual(['~/config/settings.yaml']);
     });
   });
 
@@ -270,21 +230,15 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should match absolute path after a colon-label', () => {
-      expect(matchesPattern(BOUNDARY_INPUTS.PATH_AFTER_COLON_LABEL)).toStrictEqual([
-        '/path/to/file.ts',
-      ]);
+      expect(matchesPattern(BOUNDARY_INPUTS.PATH_AFTER_COLON_LABEL)).toStrictEqual(['/path/to/file.ts']);
     });
 
     it('should match absolute path wrapped in backticks without capturing backtick', () => {
-      expect(matchesPattern(BOUNDARY_INPUTS.ABS_PATH_IN_BACKTICKS)).toStrictEqual([
-        '/path/to/file.ts',
-      ]);
+      expect(matchesPattern(BOUNDARY_INPUTS.ABS_PATH_IN_BACKTICKS)).toStrictEqual(['/path/to/file.ts']);
     });
 
     it('should match single-quoted dotfile and capture full path', () => {
-      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_SINGLE_QUOTED)).toStrictEqual([
-        '/path/.gitignore',
-      ]);
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_SINGLE_QUOTED)).toStrictEqual(['/path/.gitignore']);
     });
   });
 
@@ -351,9 +305,7 @@ describe('buildFilePathPattern', () => {
       const pattern = buildFilePathPattern({ hash: '@', line: 'l', position: 'C', range: '-' });
       const results: string[] = [];
       let match;
-      while (
-        (match = pattern.exec(RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK)) !== null
-      ) {
+      while ((match = pattern.exec(RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK)) !== null) {
         results.push(extractFilePath(match));
       }
       expect(results).toStrictEqual([]);
@@ -362,31 +314,19 @@ describe('buildFilePathPattern', () => {
 
   describe('multiple matches', () => {
     it('should match multiple relative paths in one line', () => {
-      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_RELATIVE_PATHS)).toStrictEqual([
-        './src/a.ts',
-        './src/b.ts',
-      ]);
+      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_RELATIVE_PATHS)).toStrictEqual(['./src/a.ts', './src/b.ts']);
     });
 
     it('should match absolute and relative path on same line', () => {
-      expect(matchesPattern(MULTI_MATCH_INPUTS.ABS_AND_RELATIVE)).toStrictEqual([
-        '/abs/file.ts',
-        './rel/file.ts',
-      ]);
+      expect(matchesPattern(MULTI_MATCH_INPUTS.ABS_AND_RELATIVE)).toStrictEqual(['/abs/file.ts', './rel/file.ts']);
     });
 
     it('should match quoted and unquoted path on same line', () => {
-      expect(matchesPattern(MULTI_MATCH_INPUTS.QUOTED_AND_UNQUOTED)).toStrictEqual([
-        '/src/a.ts',
-        '/dst/b.ts',
-      ]);
+      expect(matchesPattern(MULTI_MATCH_INPUTS.QUOTED_AND_UNQUOTED)).toStrictEqual(['/src/a.ts', '/dst/b.ts']);
     });
 
     it('should match two double-quoted paths on same line', () => {
-      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_DOUBLE_QUOTED)).toStrictEqual([
-        '/src/a.ts',
-        '/src/b.ts',
-      ]);
+      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_DOUBLE_QUOTED)).toStrictEqual(['/src/a.ts', '/src/b.ts']);
     });
   });
 });

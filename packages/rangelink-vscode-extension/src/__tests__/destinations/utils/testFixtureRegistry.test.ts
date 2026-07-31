@@ -1,7 +1,4 @@
-import {
-  isRangeLinkTestFixture,
-  markRangeLinkTestFixture,
-} from '../../../destinations/utils/testFixtureRegistry';
+import { isRangeLinkTestFixture, markRangeLinkTestFixture } from '../../../destinations/utils/testFixtureRegistry';
 import { createMockTerminal } from '../../helpers';
 
 describe('testFixtureRegistry', () => {
@@ -27,13 +24,10 @@ describe('testFixtureRegistry', () => {
 
     it('markRangeLinkTestFixture throws TEST_FIXTURE_REGISTRY_DISABLED', () => {
       const terminal = createMockTerminal({ name: 'any' });
-      expect(() => markRangeLinkTestFixture(terminal)).toThrowDetailedError(
-        'TEST_FIXTURE_REGISTRY_DISABLED',
-        {
-          message: 'markRangeLinkTestFixture requires RANGELINK_TEST_FIXTURES_ENABLED=true',
-          functionName: 'markRangeLinkTestFixture',
-        },
-      );
+      expect(() => markRangeLinkTestFixture(terminal)).toThrowDetailedError('TEST_FIXTURE_REGISTRY_DISABLED', {
+        message: 'markRangeLinkTestFixture requires RANGELINK_TEST_FIXTURES_ENABLED=true',
+        functionName: 'markRangeLinkTestFixture',
+      });
     });
   });
 

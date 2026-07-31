@@ -2,9 +2,9 @@
  * Create a mock vscode.extensions object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockExtension, type MockExtensionOptions } from './createMockExtension';
+
+import * as vscode from 'vscode';
 
 /**
  * Configuration for a mock extension.
@@ -31,9 +31,7 @@ const normalizeExtensionConfig = (config: MockExtensionConfig): vscode.Extension
  * @param extensions - Array of extension configs (string IDs or detailed objects)
  * @returns Mock extensions object
  */
-export const createMockExtensions = (
-  extensions: MockExtensionConfig[] = [],
-): typeof vscode.extensions => {
+export const createMockExtensions = (extensions: MockExtensionConfig[] = []): typeof vscode.extensions => {
   const mockExtensions = extensions.map(normalizeExtensionConfig);
 
   return {

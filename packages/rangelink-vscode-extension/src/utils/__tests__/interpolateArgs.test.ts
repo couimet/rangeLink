@@ -9,15 +9,11 @@ describe('interpolateArgs', () => {
     });
 
     it('replaces ${content} within a larger string', () => {
-      expect(interpolateArgs('prefix-${content}-suffix', LINK_TEXT)).toBe(
-        'prefix-src/app.ts#L10-L20-suffix',
-      );
+      expect(interpolateArgs('prefix-${content}-suffix', LINK_TEXT)).toBe('prefix-src/app.ts#L10-L20-suffix');
     });
 
     it('replaces all ${content} occurrences in a single string', () => {
-      expect(interpolateArgs('${content} and ${content}', LINK_TEXT)).toBe(
-        'src/app.ts#L10-L20 and src/app.ts#L10-L20',
-      );
+      expect(interpolateArgs('${content} and ${content}', LINK_TEXT)).toBe('src/app.ts#L10-L20 and src/app.ts#L10-L20');
     });
 
     it('returns string unchanged when no placeholder present', () => {
@@ -31,10 +27,7 @@ describe('interpolateArgs', () => {
 
   describe('array templates', () => {
     it('interpolates each element in an array', () => {
-      expect(interpolateArgs(['${content}', 'static'], LINK_TEXT)).toStrictEqual([
-        'src/app.ts#L10-L20',
-        'static',
-      ]);
+      expect(interpolateArgs(['${content}', 'static'], LINK_TEXT)).toStrictEqual(['src/app.ts#L10-L20', 'static']);
     });
 
     it('handles empty array', () => {
@@ -67,18 +60,14 @@ describe('interpolateArgs', () => {
 
   describe('mixed structures', () => {
     it('interpolates through objects containing arrays', () => {
-      expect(
-        interpolateArgs({ items: ['${content}', 'other'], label: '${content}' }, LINK_TEXT),
-      ).toStrictEqual({
+      expect(interpolateArgs({ items: ['${content}', 'other'], label: '${content}' }, LINK_TEXT)).toStrictEqual({
         items: ['src/app.ts#L10-L20', 'other'],
         label: 'src/app.ts#L10-L20',
       });
     });
 
     it('interpolates through arrays containing objects', () => {
-      expect(
-        interpolateArgs([{ text: '${content}' }, { text: 'static' }], LINK_TEXT),
-      ).toStrictEqual([{ text: 'src/app.ts#L10-L20' }, { text: 'static' }]);
+      expect(interpolateArgs([{ text: '${content}' }, { text: 'static' }], LINK_TEXT)).toStrictEqual([{ text: 'src/app.ts#L10-L20' }, { text: 'static' }]);
     });
   });
 
@@ -100,9 +89,7 @@ describe('interpolateArgs', () => {
     });
 
     it('preserves non-string values inside objects', () => {
-      expect(
-        interpolateArgs({ text: '${content}', count: 5, enabled: true }, LINK_TEXT),
-      ).toStrictEqual({
+      expect(interpolateArgs({ text: '${content}', count: 5, enabled: true }, LINK_TEXT)).toStrictEqual({
         text: 'src/app.ts#L10-L20',
         count: 5,
         enabled: true,

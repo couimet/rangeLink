@@ -1,40 +1,21 @@
-import assert from 'node:assert';
-
-import * as vscode from 'vscode';
-
-import {
-  CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
-  CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
-  CONTEXT_IS_BOUND,
-} from '../../constants/contextKeys';
+import { CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE, CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION, CONTEXT_IS_BOUND } from '../../constants/contextKeys';
 import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
 
 import { getLogCapture } from './getLogCapture';
 import { parseLogContext } from './logBasedUiAssertions';
 
-const STATUS_BAR_FNS = [
-  'VscodeAdapter.setStatusBarMessage',
-  'VscodeAdapter.setSuccessfulStatusBarMessage',
-];
+import assert from 'node:assert';
+import * as vscode from 'vscode';
 
-const TOAST_FNS = [
-  'VscodeAdapter.showInformationMessage',
-  'VscodeAdapter.showWarningMessage',
-  'VscodeAdapter.showErrorMessage',
-];
+const STATUS_BAR_FNS = ['VscodeAdapter.setStatusBarMessage', 'VscodeAdapter.setSuccessfulStatusBarMessage'];
 
-const MODAL_DIALOG_FNS = [
-  'VscodeAdapter.showInformationMessage',
-  'VscodeAdapter.showWarningMessage',
-];
+const TOAST_FNS = ['VscodeAdapter.showInformationMessage', 'VscodeAdapter.showWarningMessage', 'VscodeAdapter.showErrorMessage'];
+
+const MODAL_DIALOG_FNS = ['VscodeAdapter.showInformationMessage', 'VscodeAdapter.showWarningMessage'];
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 
-const KNOWN_CONTEXT_KEYS = [
-  CONTEXT_IS_BOUND,
-  CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE,
-  CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION,
-] as const;
+const KNOWN_CONTEXT_KEYS = [CONTEXT_IS_BOUND, CONTEXT_IS_ACTIVE_TERMINAL_BINDABLE, CONTEXT_IS_ACTIVE_TERMINAL_PASTE_DESTINATION] as const;
 
 const DEFAULT_CONTEXT_KEY_VALUES: Record<string, unknown> = {
   [CONTEXT_IS_BOUND]: false,
@@ -150,11 +131,7 @@ export class TestWindowImpl implements TestWindow {
     const logged: ModalDialogExpectation[] = [];
     for (const line of lines) {
       const ctx = parseLogContext(line);
-      if (
-        ctx !== undefined &&
-        MODAL_DIALOG_FNS.includes(ctx.fn) &&
-        typeof ctx.message === 'string'
-      ) {
+      if (ctx !== undefined && MODAL_DIALOG_FNS.includes(ctx.fn) && typeof ctx.message === 'string') {
         if (Array.isArray(ctx.items) && ctx.items.length > 0) {
           logged.push({
             level: this.fnToDialogLevel(ctx.fn),
@@ -174,12 +151,7 @@ export class TestWindowImpl implements TestWindow {
    * as formatted JSON so the developer can copy the actual block directly
    * into the test body without needing to re-run for template extraction.
    */
-  private dumpFailure(
-    category: string,
-    expected: unknown,
-    actual: unknown,
-    callName: string,
-  ): never {
+  private dumpFailure(category: string, expected: unknown, actual: unknown, callName: string): never {
     const expectedJson = JSON.stringify(expected, null, 2);
     const actualJson = JSON.stringify(actual, null, 2);
 
@@ -210,13 +182,8 @@ export class TestWindowImpl implements TestWindow {
     const expected = this.getExpectedContextKeys();
     for (const key of KNOWN_CONTEXT_KEYS) {
       const actualValue: unknown = key in values ? values[key] : undefined;
-      const expectedValue: unknown =
-        key in expected ? expected[key] : DEFAULT_CONTEXT_KEY_VALUES[key];
-      assert.strictEqual(
-        actualValue,
-        expectedValue,
-        `Context key "${key}": expected ${JSON.stringify(expectedValue)} but got ${JSON.stringify(actualValue)}`,
-      );
+      const expectedValue: unknown = key in expected ? expected[key] : DEFAULT_CONTEXT_KEY_VALUES[key];
+      assert.strictEqual(actualValue, expectedValue, `Context key "${key}": expected ${JSON.stringify(expectedValue)} but got ${JSON.stringify(actualValue)}`);
     }
   }
 

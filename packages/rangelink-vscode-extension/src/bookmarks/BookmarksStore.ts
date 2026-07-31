@@ -1,21 +1,13 @@
-import type { Logger } from '@couimet/logger-contract';
-import { nanoid } from 'nanoid';
-import type * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../types';
 import { createIsoTimestamp } from '../utils';
 
-import type {
-  Bookmark,
-  BookmarkId,
-  BookmarkInput,
-  BookmarksStoreData,
-  BookmarkUpdate,
-  IdGenerator,
-  TimestampGenerator,
-} from './types';
+import type { Bookmark, BookmarkId, BookmarkInput, BookmarksStoreData, BookmarkUpdate, IdGenerator, TimestampGenerator } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { nanoid } from 'nanoid';
+import type * as vscode from 'vscode';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 const MAX_ID_GENERATION_RETRIES = 10;
@@ -53,26 +45,17 @@ export class BookmarksStore {
     if ('setKeysForSync' in globalState && typeof globalState.setKeysForSync === 'function') {
       globalState.setKeysForSync([STORAGE_KEY]);
       this.syncEnabled = true;
-      this.logger.debug(
-        { fn: 'BookmarksStore.constructor', syncEnabled: true },
-        'Settings Sync enabled for bookmarks',
-      );
+      this.logger.debug({ fn: 'BookmarksStore.constructor', syncEnabled: true }, 'Settings Sync enabled for bookmarks');
     } else {
       this.syncEnabled = false;
-      this.logger.warn(
-        { fn: 'BookmarksStore.constructor', syncEnabled: false },
-        'Settings Sync not available - bookmarks will only be stored locally',
-      );
+      this.logger.warn({ fn: 'BookmarksStore.constructor', syncEnabled: false }, 'Settings Sync not available - bookmarks will only be stored locally');
     }
   }
 
   private findBookmarkIndex(data: BookmarksStoreData, id: BookmarkId, operation: string): number {
     const index = data.bookmarks.findIndex((b) => b.id === id);
     if (index === -1) {
-      this.logger.warn(
-        { fn: `BookmarksStore.${operation}`, bookmarkId: id },
-        `Cannot ${operation} bookmark: not found`,
-      );
+      this.logger.warn({ fn: `BookmarksStore.${operation}`, bookmarkId: id }, `Cannot ${operation} bookmark: not found`);
     }
     return index;
   }
@@ -83,10 +66,7 @@ export class BookmarksStore {
       if (!existingIds.has(id)) {
         return id;
       }
-      this.logger.debug(
-        { fn: 'BookmarksStore.generateUniqueId', attempt, collidingId: id },
-        'ID collision detected, generating new ID',
-      );
+      this.logger.debug({ fn: 'BookmarksStore.generateUniqueId', attempt, collidingId: id }, 'ID collision detected, generating new ID');
     }
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.BOOKMARK_ID_GENERATION_FAILED,
@@ -114,10 +94,7 @@ export class BookmarksStore {
       data.bookmarks.unshift(bookmark);
       await this.save(data, 'add');
 
-      this.logger.debug(
-        { fn: 'BookmarksStore.add', bookmark, syncEnabled: this.syncEnabled },
-        `Added bookmark: ${bookmark.label}`,
-      );
+      this.logger.debug({ fn: 'BookmarksStore.add', bookmark, syncEnabled: this.syncEnabled }, `Added bookmark: ${bookmark.label}`);
 
       return ExtensionResult.ok(bookmark);
     } catch (error) {
@@ -232,10 +209,7 @@ export class BookmarksStore {
       const [removed] = data.bookmarks.splice(index, 1);
       await this.save(data, 'remove');
 
-      this.logger.debug(
-        { fn: 'BookmarksStore.remove', removedBookmark: removed, syncEnabled: this.syncEnabled },
-        `Removed bookmark: ${removed.label}`,
-      );
+      this.logger.debug({ fn: 'BookmarksStore.remove', removedBookmark: removed, syncEnabled: this.syncEnabled }, `Removed bookmark: ${removed.label}`);
 
       return ExtensionResult.ok(removed);
     } catch (error) {
@@ -312,10 +286,7 @@ export class BookmarksStore {
     try {
       await this.globalState.update(STORAGE_KEY, data);
     } catch (error) {
-      this.logger.error(
-        { fn: `BookmarksStore.${operation}`, error, syncEnabled: this.syncEnabled },
-        `Failed to save bookmarks during ${operation}`,
-      );
+      this.logger.error({ fn: `BookmarksStore.${operation}`, error, syncEnabled: this.syncEnabled }, `Failed to save bookmarks during ${operation}`);
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
         message: `Failed to persist bookmarks during ${operation}`,
@@ -337,10 +308,7 @@ export class BookmarksStore {
       return data as BookmarksStoreData;
     }
 
-    this.logger.warn(
-      { fn: 'BookmarksStore.migrate', data },
-      'Unknown bookmark data format, resetting to empty',
-    );
+    this.logger.warn({ fn: 'BookmarksStore.migrate', data }, 'Unknown bookmark data format, resetting to empty');
     return createEmptyStoreData();
   }
 }

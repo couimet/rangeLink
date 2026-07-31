@@ -4,4 +4,4 @@ const getMessage = (): string => {
   return 'This file lives in a directory with spaces';
 };
 
-export { SPACED_PATH, getMessage };
+export { getMessage, SPACED_PATH };

@@ -2,10 +2,10 @@
  * Create a mock vscode.window object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockQuickPick } from './createMockQuickPick';
 import { createMockStatusBarItem } from './createMockStatusBarItem';
+
+import * as vscode from 'vscode';
 
 /**
  * Mock vscode.window object for testing.
@@ -28,9 +28,7 @@ import { createMockStatusBarItem } from './createMockStatusBarItem';
  * @param options - Optional property overrides
  * @returns Mock window object
  */
-export const createMockWindow = (
-  options?: Record<string, unknown> | Partial<typeof vscode.window>,
-) => {
+export const createMockWindow = (options?: Record<string, unknown> | Partial<typeof vscode.window>) => {
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,

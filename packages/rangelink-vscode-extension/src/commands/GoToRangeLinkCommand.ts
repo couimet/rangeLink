@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkNavigationHandler } from '../navigation/RangeLinkNavigationHandler';
 import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for going to a RangeLink entered via input box.
@@ -18,10 +18,7 @@ export class GoToRangeLinkCommand {
     private readonly navigationHandler: RangeLinkNavigationHandler,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'GoToRangeLinkCommand.constructor' },
-      'GoToRangeLinkCommand initialized',
-    );
+    this.logger.debug({ fn: 'GoToRangeLinkCommand.constructor' }, 'GoToRangeLinkCommand initialized');
   }
 
   async execute(): Promise<void> {
@@ -52,13 +49,8 @@ export class GoToRangeLinkCommand {
     const parseResult = this.navigationHandler.parseLink(trimmedInput);
 
     if (!parseResult.success) {
-      this.logger.debug(
-        { ...logCtx, input, trimmedInput, error: parseResult.error },
-        'Invalid link format',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.INFO_NAVIGATION_INVALID_LINK, { input: trimmedInput }),
-      );
+      this.logger.debug({ ...logCtx, input, trimmedInput, error: parseResult.error }, 'Invalid link format');
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.INFO_NAVIGATION_INVALID_LINK, { input: trimmedInput }));
       return;
     }
 

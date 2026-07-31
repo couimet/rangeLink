@@ -1,7 +1,4 @@
-import {
-  createBaseMockPasteDestination,
-  type MockDestinationOptions,
-} from './createBaseMockPasteDestination';
+import { createBaseMockPasteDestination, type MockDestinationOptions } from './createBaseMockPasteDestination';
 
 /**
  * Create a mock Claude Code destination for testing (Paradigm A).

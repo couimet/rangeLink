@@ -1,9 +1,8 @@
+import { getWorkspaceRoot } from './testEnv';
+
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
 import * as vscode from 'vscode';
-
-import { getWorkspaceRoot } from './testEnv';
 
 let cachedRangelinkKeys: string[] | undefined;
 
@@ -23,9 +22,7 @@ const getRangelinkKeys = (): string[] => {
     throw new Error(`getRangelinkKeys: Failed to parse package.json: ${err}`);
   }
 
-  cachedRangelinkKeys = Object.keys(pkg.contributes?.configuration?.properties ?? {}).filter((k) =>
-    k.startsWith('rangelink.'),
-  );
+  cachedRangelinkKeys = Object.keys(pkg.contributes?.configuration?.properties ?? {}).filter((k) => k.startsWith('rangelink.'));
 
   return cachedRangelinkKeys;
 };

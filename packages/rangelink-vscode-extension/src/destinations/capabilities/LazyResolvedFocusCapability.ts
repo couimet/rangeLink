@@ -1,12 +1,11 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { FocusTier, FocusTierLabel } from '../types';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import { ResolvedFocusCapability } from './ResolvedFocusCapability';
 import { resolveFocusTier, type TierResolutionResult } from './resolveFocusTier';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * FocusCapability that resolves the winning tier lazily on first focus() call.
@@ -51,7 +50,7 @@ export class LazyResolvedFocusCapability implements FocusCapability {
 
   async focus(context: LoggingContext): Promise<FocusResult> {
     if (this.resolutionFailed) {
-      return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
+      return FocusResult.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
     }
 
     if (!this.resolved) {
@@ -68,7 +67,7 @@ export class LazyResolvedFocusCapability implements FocusCapability {
     }
 
     if (this.resolutionFailed) {
-      return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
+      return FocusResult.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
     }
 
     return this.resolved!.focus(context);
@@ -76,20 +75,11 @@ export class LazyResolvedFocusCapability implements FocusCapability {
 
   private async resolve(context: LoggingContext): Promise<void> {
     const registeredCommands = await this.ideAdapter.getCommands();
-    const result = resolveFocusTier(
-      this.tiers,
-      registeredCommands,
-      this.logger,
-      this.logPrefix,
-      this.fallbackTierIndex,
-    );
+    const result = resolveFocusTier(this.tiers, registeredCommands, this.logger, this.logPrefix, this.fallbackTierIndex);
 
     if (!result) {
       this.resolutionFailed = true;
-      this.logger.warn(
-        { ...context, logPrefix: this.logPrefix },
-        `${this.logPrefix}: tier resolution failed — no commands registered`,
-      );
+      this.logger.warn({ ...context, logPrefix: this.logPrefix }, `${this.logPrefix}: tier resolution failed — no commands registered`);
       return;
     }
 

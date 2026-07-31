@@ -1,27 +1,15 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
-import type {
-  DestinationBinder,
-  DestinationPicker,
-  PasteDestination,
-  BoundSession,
-} from '../destinations';
+import type { BoundSession, DestinationBinder, DestinationPicker, PasteDestination } from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { OperationFeedbackProvider } from '../feedback';
-import type { PasteContext, PasteSendOutcome } from '../feedback';
+import { RangeLinkExtensionError } from '../errors';
+import type { OperationFeedbackProvider, PasteContext, PasteSendOutcome } from '../feedback';
 import type { ClipboardWriter } from '../ide/ClipboardProvider';
-import {
-  AutoPasteResult,
-  type BindContext,
-  MessageCode,
-  type QuickPickBindResult,
-  type SendOptions,
-} from '../types';
+import { AutoPasteResult, type BindContext, MessageCode, type QuickPickBindResult, type SendOptions } from '../types';
 import { formatMessage, isEditorDestination, isSameFileDestination } from '../utils';
 
 import type { ResolveResult } from './types';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * Routes content through clipboard and to a bound destination.
@@ -55,10 +43,7 @@ export class SendRouter {
           destinationName: pickerResult.bindInfo.destinationName,
         };
       }
-      this.logger.debug(
-        { ...logCtx, outcome: pickerResult.outcome },
-        'Picker did not bind, aborting',
-      );
+      this.logger.debug({ ...logCtx, outcome: pickerResult.outcome }, 'Picker did not bind, aborting');
       return { canProceed: false };
     }
     return { canProceed: true, bindPerformed: false };
@@ -80,10 +65,7 @@ export class SendRouter {
         () => this.shouldRestoreClipboard(outcome, destinationSnapshot),
       );
       if (!routeResult.success) {
-        this.logger.error(
-          { fn: 'SendRouter.sendToDestination', error: routeResult.error },
-          'Clipboard routing failed',
-        );
+        this.logger.error({ fn: 'SendRouter.sendToDestination', error: routeResult.error }, 'Clipboard routing failed');
         if (destinationSnapshot) {
           this.feedbackProvider.provideSendFeedback(
             this.buildPasteContext(options, destinationSnapshot),
@@ -94,21 +76,14 @@ export class SendRouter {
         return;
       }
       if (outcome !== undefined && destinationSnapshot) {
-        this.feedbackProvider.provideSendFeedback(
-          this.buildPasteContext(options, destinationSnapshot),
-          outcome,
-          bindContext,
-        );
+        this.feedbackProvider.provideSendFeedback(this.buildPasteContext(options, destinationSnapshot), outcome, bindContext);
       }
     } else {
       await this.executeSend(options);
     }
   }
 
-  private buildPasteContext<T>(
-    options: SendOptions<T>,
-    destination: PasteDestination,
-  ): PasteContext {
+  private buildPasteContext<T>(options: SendOptions<T>, destination: PasteDestination): PasteContext {
     return {
       contentType: options.contentNameCode,
       destination: {
@@ -140,35 +115,22 @@ export class SendRouter {
 
     const isEligible = await strategies.isEligibleFn(destination, content.send);
     if (!isEligible) {
-      this.logger.debug(
-        { fn: fnName, boundDestination: displayName },
-        'Content not eligible for paste - skipping auto-paste',
-      );
+      this.logger.debug({ fn: fnName, boundDestination: displayName }, 'Content not eligible for paste - skipping auto-paste');
       return undefined;
     }
 
-    this.logger.debug(
-      { fn: fnName, boundDestination: displayName },
-      `Attempting to send content to bound destination: ${displayName}`,
-    );
+    this.logger.debug({ fn: fnName, boundDestination: displayName }, `Attempting to send content to bound destination: ${displayName}`);
 
     const pasteSucceeded = await strategies.sendFn(content.send);
 
     return this.computeOutcome(destination, pasteSucceeded);
   }
 
-  private async checkSelfPaste<T>(
-    options: SendOptions<T>,
-    destination: PasteDestination,
-  ): Promise<PasteSendOutcome | undefined> {
+  private async checkSelfPaste<T>(options: SendOptions<T>, destination: PasteDestination): Promise<PasteSendOutcome | undefined> {
     const { content, fnName, selfPastePolicy, writeClipboardOnSelfPasteBlock } = options;
     if (!content.sourceUri) return undefined;
 
-    const isSameFile = isSameFileDestination(
-      content.sourceUri,
-      destination,
-      content.sourceViewColumn,
-    );
+    const isSameFile = isSameFileDestination(content.sourceUri, destination, content.sourceViewColumn);
     if (!isSameFile) return undefined;
 
     const policyIsDefault = !selfPastePolicy;
@@ -241,10 +203,7 @@ export class SendRouter {
    * clipboard — the written content must survive. Otherwise delegates to
    * PasteDestinationManager's restoration logic.
    */
-  private shouldRestoreClipboard(
-    outcome: PasteSendOutcome | undefined,
-    destination: PasteDestination | undefined,
-  ): boolean {
+  private shouldRestoreClipboard(outcome: PasteSendOutcome | undefined, destination: PasteDestination | undefined): boolean {
     if (outcome?.kind === 'self-paste-blocked' && outcome.clipboardWritten) {
       return false;
     }
@@ -290,25 +249,15 @@ export class SendRouter {
       case 'selected': {
         const bindResult = await this.binder.bind(result.bindOptions, { skipMessage: true });
         if (!bindResult.success) {
-          this.logger.error(
-            { ...logCtx, error: bindResult.error },
-            'Binding failed - no action taken',
-          );
+          this.logger.error({ ...logCtx, error: bindResult.error }, 'Binding failed - no action taken');
           this.feedbackProvider.showError(formatMessage(MessageCode.ERROR_BIND_FAILED));
           return { outcome: 'bind-failed', error: bindResult.error };
         }
         return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unexpected picker result outcome',
-          functionName: 'SendRouter.showPickerAndBind',
-          details: { result: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('picker result', result, 'SendRouter.showPickerAndBind');
     }
   }
 }

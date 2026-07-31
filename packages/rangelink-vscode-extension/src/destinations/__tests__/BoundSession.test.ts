@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import {
   createMockEditorComposablePasteDestination,
   createMockSingletonComposablePasteDestination,
@@ -9,6 +6,9 @@ import {
 } from '../../__tests__/helpers';
 import { AutoPasteResult } from '../../types';
 import { BoundSession } from '../BoundSession';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 describe('BoundSession', () => {
   let mockEvents: {
@@ -29,8 +29,7 @@ describe('BoundSession', () => {
     onDidDelete: jest.fn(),
   });
 
-  const createSession = (): BoundSession =>
-    new BoundSession(mockEvents, mockEditors, mockFeedback, mockWatcherFactory, mockLogger);
+  const createSession = (): BoundSession => new BoundSession(mockEvents, mockEditors, mockFeedback, mockWatcherFactory, mockLogger);
 
   beforeEach(() => {
     mockEvents = {
@@ -84,9 +83,7 @@ describe('BoundSession', () => {
 
     it('returns undefined after set then clear', () => {
       const session = createSession();
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
       session.clear();
 
       expect(session.get()).toBeUndefined();
@@ -102,18 +99,14 @@ describe('BoundSession', () => {
 
     it('returns true after set', () => {
       const session = createSession();
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
 
       expect(session.isSet()).toBe(true);
     });
 
     it('returns false after set then clear', () => {
       const session = createSession();
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
       session.clear();
 
       expect(session.isSet()).toBe(false);
@@ -163,9 +156,7 @@ describe('BoundSession', () => {
 
     it('throws when set is called while already bound', () => {
       const session = createSession();
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
 
       expect(() =>
         session.set(
@@ -183,9 +174,7 @@ describe('BoundSession', () => {
   describe('clear', () => {
     it('fires onDidChange with undefined', () => {
       const session = createSession();
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
       const listener = jest.fn();
       session.onDidChange(listener);
 
@@ -254,9 +243,7 @@ describe('BoundSession', () => {
       const dispose1 = jest.fn();
       const dispose2 = jest.fn();
       const fileDeleteDispose1 = jest.fn();
-      mockEvents.onDidChangeTabs
-        .mockReturnValueOnce({ dispose: dispose1 })
-        .mockReturnValueOnce({ dispose: dispose2 });
+      mockEvents.onDidChangeTabs.mockReturnValueOnce({ dispose: dispose1 }).mockReturnValueOnce({ dispose: dispose2 });
       mockWatcherFactory.createFileSystemWatcherForFile.mockReturnValueOnce({
         dispose: fileDeleteDispose1,
         onDidDelete: jest.fn(),
@@ -276,9 +263,7 @@ describe('BoundSession', () => {
       const dispose3 = jest.fn();
       const dispose4 = jest.fn();
       const fileDeleteDispose2 = jest.fn();
-      mockEvents.onDidChangeTabs
-        .mockReturnValueOnce({ dispose: dispose3 })
-        .mockReturnValueOnce({ dispose: dispose4 });
+      mockEvents.onDidChangeTabs.mockReturnValueOnce({ dispose: dispose3 }).mockReturnValueOnce({ dispose: dispose4 });
       mockWatcherFactory.createFileSystemWatcherForFile.mockReturnValueOnce({
         dispose: fileDeleteDispose2,
         onDidDelete: jest.fn(),
@@ -340,11 +325,7 @@ describe('BoundSession', () => {
       const dest = createMockSingletonComposablePasteDestination({
         id: 'terminal',
         displayName: 'Terminal',
-        getUserInstruction: jest
-          .fn()
-          .mockImplementation((result: AutoPasteResult) =>
-            result === AutoPasteResult.Failure ? undefined : 'Press Cmd+V',
-          ),
+        getUserInstruction: jest.fn().mockImplementation((result: AutoPasteResult) => (result === AutoPasteResult.Failure ? undefined : 'Press Cmd+V')),
       });
       session.set(dest);
 
@@ -397,9 +378,7 @@ describe('BoundSession', () => {
       const disposable = session.subscribe(listener);
       listener.mockClear();
 
-      session.set(
-        createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }),
-      );
+      session.set(createMockSingletonComposablePasteDestination({ id: 'terminal', displayName: 'Terminal' }));
       expect(listener).toHaveBeenCalledTimes(1);
 
       disposable.dispose();
@@ -443,10 +422,7 @@ describe('BoundSession', () => {
         { fn: 'BoundSession.setupTerminalCloseListener', terminalName: 'bash' },
         'Bound terminal closed: bash - auto-unbinding',
       );
-      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
-        'Terminal ("bash")',
-        'terminal-closed',
-      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Terminal ("bash")', 'terminal-closed');
     });
 
     it('does not unbind when a different terminal closes', () => {
@@ -533,10 +509,7 @@ describe('BoundSession', () => {
         },
         'Bound document closed (isClosed=true): Text Editor ("test.ts") — auto-unbinding',
       );
-      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
-        'Text Editor ("test.ts")',
-        'editor-closed',
-      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'editor-closed');
     });
 
     it('falls back to Unknown in log when editor displayName is empty', () => {

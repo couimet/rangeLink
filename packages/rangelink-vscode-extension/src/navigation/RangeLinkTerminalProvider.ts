@@ -1,13 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-import type { DelimiterConfigGetter } from 'rangelink-core-ts';
-import { findLinksInText } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, type RangeLinkTerminalLink } from '../types';
 import { formatLinkTooltip, formatMessage } from '../utils';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
+
+import type { Logger } from '@couimet/logger-contract';
+import { DelimiterConfigGetter, findLinksInText } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Terminal link provider for RangeLink format detection.
@@ -21,9 +20,7 @@ import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
  * - Rectangular: `file.ts##L10C5-L20C10`
  * - Hash in filename: `file#1.ts#L10`
  */
-export class RangeLinkTerminalProvider
-  implements vscode.TerminalLinkProvider<RangeLinkTerminalLink>
-{
+export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<RangeLinkTerminalLink> {
   /**
    * Create a new terminal link provider.
    *
@@ -38,10 +35,7 @@ export class RangeLinkTerminalProvider
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'RangeLinkTerminalProvider.constructor' },
-      'RangeLinkTerminalProvider initialized',
-    );
+    this.logger.debug({ fn: 'RangeLinkTerminalProvider.constructor' }, 'RangeLinkTerminalProvider initialized');
   }
 
   /**
@@ -54,10 +48,7 @@ export class RangeLinkTerminalProvider
    * @param token - Cancellation token
    * @returns Array of detected terminal links
    */
-  provideTerminalLinks(
-    context: vscode.TerminalLinkContext,
-    token: vscode.CancellationToken,
-  ): vscode.ProviderResult<RangeLinkTerminalLink[]> {
+  provideTerminalLinks(context: vscode.TerminalLinkContext, token: vscode.CancellationToken): vscode.ProviderResult<RangeLinkTerminalLink[]> {
     const detectedLinks = findLinksInText(context.line, this.getDelimiters(), this.logger, token);
 
     this.logger.debug(
@@ -102,19 +93,14 @@ export class RangeLinkTerminalProvider
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, { linkText }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, { linkText }));
       return;
     }
 
     try {
       await this.handler.navigateToLink(link.parsed, linkText);
     } catch (error) {
-      this.logger.debug(
-        { ...logCtx, error },
-        'Terminal link handling completed with error (already handled by navigation handler)',
-      );
+      this.logger.debug({ ...logCtx, error }, 'Terminal link handling completed with error (already handled by navigation handler)');
     }
   }
 }

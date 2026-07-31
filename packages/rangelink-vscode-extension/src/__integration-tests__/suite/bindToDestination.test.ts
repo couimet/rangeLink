@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -11,8 +6,6 @@ import {
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
 import {
-  MENU_ITEM_GROUP_AI_ASSISTANTS,
-  MENU_ITEM_GROUP_TERMINALS,
   assertQuickPickContains,
   assertQuickPickItemsLogged,
   closeAllEditors,
@@ -22,6 +15,8 @@ import {
   findTestItemsByPrefix,
   getLogCapture,
   getQuickPickLines,
+  MENU_ITEM_GROUP_AI_ASSISTANTS,
+  MENU_ITEM_GROUP_TERMINALS,
   openAndDismiss,
   parseQuickPickItemsFromLogLine,
   standardSuite,
@@ -29,9 +24,12 @@ import {
   waitForHumanVerdict,
 } from '../helpers';
 
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+
 standardSuite('R-D Bind to Destination', (ss) => {
-  const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-    findTestItemsByPrefix(items, '__rl-test-btd-');
+  const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] => findTestItemsByPrefix(items, '__rl-test-btd-');
 
   test('bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
     await ss.createTerminal('rl-btd-004');
@@ -190,15 +188,11 @@ standardSuite('R-D Bind to Destination', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
 
-    await waitForHuman(
-      'bind-to-destination-008',
-      'Cmd+R Cmd+D → select "rl-btd-008-b" → click "Yes, replace"',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Select Terminal ("rl-btd-008-b") from the list',
-        '3. When the confirmation dialog appears, click "Yes, replace"',
-      ],
-    );
+    await waitForHuman('bind-to-destination-008', 'Cmd+R Cmd+D → select "rl-btd-008-b" → click "Yes, replace"', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Select Terminal ("rl-btd-008-b") from the list',
+      '3. When the confirmation dialog appears, click "Yes, replace"',
+    ]);
 
     ss.log('✓ Replacement binding toast logged; old binding not re-confirmed');
   });
@@ -230,11 +224,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
       ],
     );
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported the original binding was NOT preserved when clicking "No, keep current binding"',
-    );
+    assert.strictEqual(verdict, 'pass', 'Human reported the original binding was NOT preserved when clicking "No, keep current binding"');
 
     ss.log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
   });
@@ -284,25 +274,18 @@ standardSuite('R-D Bind to Destination', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: Unbound GitHub Copilot Chat, now bound to Dummy AI (Tier 3)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat', '✓ RangeLink: Unbound GitHub Copilot Chat, now bound to Dummy AI (Tier 3)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-012');
 
-    await waitForHuman(
-      'bind-to-destination-012',
-      'Cmd+R Cmd+D → select Dummy AI (Tier 3) → click "Yes, replace"',
-      [
-        'The Dummy AI extension is loaded — its destinations appear in the picker.',
-        '1. Press Cmd+R Cmd+D',
-        '2. Select "Dummy AI (Tier 3)" (custom AI assistant) from the picker',
-        '3. When the confirmation dialog appears, click "Yes, replace"',
-      ],
-    );
+    await waitForHuman('bind-to-destination-012', 'Cmd+R Cmd+D → select Dummy AI (Tier 3) → click "Yes, replace"', [
+      'The Dummy AI extension is loaded — its destinations appear in the picker.',
+      '1. Press Cmd+R Cmd+D',
+      '2. Select "Dummy AI (Tier 3)" (custom AI assistant) from the picker',
+      '3. When the confirmation dialog appears, click "Yes, replace"',
+    ]);
 
     const lines = logCapture.getLinesSince('before-btd-012');
 
@@ -312,9 +295,7 @@ standardSuite('R-D Bind to Destination', (ss) => {
       `Expected at least 2 showQuickPick entries (destination picker + confirmation dialog), got ${quickPickEntries.length}`,
     );
 
-    const confirmItems = parseQuickPickItemsFromLogLine(
-      quickPickEntries[quickPickEntries.length - 1],
-    );
+    const confirmItems = parseQuickPickItemsFromLogLine(quickPickEntries[quickPickEntries.length - 1]);
     assert.deepStrictEqual(
       confirmItems.map(({ label }) => ({ label })),
       [{ label: 'Yes, replace' }, { label: 'No, keep current binding' }],

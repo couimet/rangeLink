@@ -1,12 +1,11 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
-
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../constants/aiAssistantPasteConstants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import type { ColdRefocusConfig } from './ColdRefocusConfig';
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
 
 /**
  * FocusCapability for AI assistant destinations.
@@ -45,7 +44,7 @@ export class AIAssistantFocusCapability implements FocusCapability {
 
         this.panelIsWarm = true;
 
-        return Result.ok({
+        return FocusResult.ok({
           inserter: this.insertFactory.forTarget(),
         });
       } catch (error) {
@@ -54,17 +53,14 @@ export class AIAssistantFocusCapability implements FocusCapability {
     }
 
     this.logger.warn({ ...context, allCommandsFailed: true }, 'All focus commands failed');
-    return Result.err({
+    return FocusResult.err({
       reason: FocusErrorReason.COMMAND_FOCUS_FAILED,
     });
   }
 
   private async refocusDuring(context: LoggingContext, refocus: ColdRefocusConfig): Promise<void> {
     if (refocus.totalMs <= 0 || refocus.intervalMs <= 0 || refocus.totalMs <= refocus.intervalMs) {
-      this.logger.warn(
-        { ...context, totalMs: refocus.totalMs, intervalMs: refocus.intervalMs },
-        'Invalid cold refocus config, falling back to warm delay',
-      );
+      this.logger.warn({ ...context, totalMs: refocus.totalMs, intervalMs: refocus.intervalMs }, 'Invalid cold refocus config, falling back to warm delay');
       await new Promise<void>((resolve) => setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
       return;
     }
@@ -91,9 +87,6 @@ export class AIAssistantFocusCapability implements FocusCapability {
       }
     }
 
-    this.logger.debug(
-      { ...context, totalMs: Date.now() - start, intervalMs: refocus.intervalMs },
-      'Cold refocus loop completed',
-    );
+    this.logger.debug({ ...context, totalMs: Date.now() - start, intervalMs: refocus.intervalMs }, 'Cold refocus loop completed');
   }
 }

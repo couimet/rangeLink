@@ -1,8 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
-import { DirectInsertFactory } from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
-import type { InsertCommandEntry } from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
+import { DirectInsertFactory, InsertCommandEntry } from '../../../../destinations/capabilities/insertFactories/directInsertFactory';
 import { createMockVscodeAdapter } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const LINK_TEXT = 'src/app.ts#L10-L20';
 
@@ -15,9 +14,7 @@ describe('DirectInsertFactory', () => {
 
   it('calls executeCommand with text as first positional arg when no args template', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValue(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
     const entries: InsertCommandEntry[] = [{ command: 'sparkAi.insertText' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
@@ -27,21 +24,14 @@ describe('DirectInsertFactory', () => {
 
     expect(result).toBe(true);
     expect(executeCommandSpy).toHaveBeenCalledWith('sparkAi.insertText', 'src/app.ts#L10-L20');
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'DirectInsertFactory.insert', command: 'sparkAi.insertText' },
-      'Direct insert succeeded',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'DirectInsertFactory.insert', command: 'sparkAi.insertText' }, 'Direct insert succeeded');
   });
 
   it('interpolates ${content} in args template and spreads as arguments', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValue(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
-    const entries: InsertCommandEntry[] = [
-      { command: 'fancy.cmd', args: [{ text: '${content}', format: 'markdown' }] },
-    ];
+    const entries: InsertCommandEntry[] = [{ command: 'fancy.cmd', args: [{ text: '${content}', format: 'markdown' }] }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 
@@ -56,9 +46,7 @@ describe('DirectInsertFactory', () => {
 
   it('wraps non-array interpolated args as a single argument', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValue(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
     const entries: InsertCommandEntry[] = [{ command: 'cmd', args: { content: '${content}' } }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
@@ -72,13 +60,9 @@ describe('DirectInsertFactory', () => {
 
   it('spreads multiple elements from an array args template as separate arguments', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValue(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
-    const entries: InsertCommandEntry[] = [
-      { command: 'multi.cmd', args: ['${content}', { source: 'rangelink' }] },
-    ];
+    const entries: InsertCommandEntry[] = [{ command: 'multi.cmd', args: ['${content}', { source: 'rangelink' }] }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 
@@ -88,19 +72,13 @@ describe('DirectInsertFactory', () => {
     expect(executeCommandSpy).toHaveBeenCalledWith('multi.cmd', 'src/app.ts#L10-L20', {
       source: 'rangelink',
     });
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'DirectInsertFactory.insert', command: 'multi.cmd' },
-      'Direct insert succeeded',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'DirectInsertFactory.insert', command: 'multi.cmd' }, 'Direct insert succeeded');
   });
 
   it('falls through to next command when first fails', async () => {
     const mockAdapter = createMockVscodeAdapter();
     const primaryError = new Error('Not found');
-    const executeCommandSpy = jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockRejectedValueOnce(primaryError)
-      .mockResolvedValueOnce(undefined);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(primaryError).mockResolvedValueOnce(undefined);
 
     const entries: InsertCommandEntry[] = [{ command: 'cmd.primary' }, { command: 'cmd.fallback' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
@@ -120,10 +98,7 @@ describe('DirectInsertFactory', () => {
 
   it('returns false when all commands fail', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockRejectedValueOnce(new Error('First failed'))
-      .mockRejectedValueOnce(new Error('Second failed'));
+    jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First failed')).mockRejectedValueOnce(new Error('Second failed'));
 
     const entries: InsertCommandEntry[] = [{ command: 'cmd.first' }, { command: 'cmd.second' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
@@ -132,9 +107,6 @@ describe('DirectInsertFactory', () => {
     const result = await insertFn(LINK_TEXT);
 
     expect(result).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'DirectInsertFactory.insert', allCommandsFailed: true },
-      'All direct insert commands failed',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'DirectInsertFactory.insert', allCommandsFailed: true }, 'All direct insert commands failed');
   });
 });

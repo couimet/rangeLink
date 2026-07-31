@@ -1,14 +1,12 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { ClipboardService } from '../clipboard/ClipboardService';
 import { VSCODE_CMD_TERMINAL_PASTE } from '../constants';
-import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import type { TerminalPasteAdapter } from '../ide/TerminalPasteAdapter';
-import type { SendTextToTerminalOptions } from '../types';
-import { BehaviourAfterPaste } from '../types';
+import { BehaviourAfterPaste, SendTextToTerminalOptions } from '../types';
+import { ExtensionResult } from '../types/ExtensionResult';
 import { validateTerminalDefined } from '../utils';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Clipboard-aware terminal paste orchestration.
@@ -25,11 +23,7 @@ export class TerminalPasteService {
     private readonly logger: Logger,
   ) {}
 
-  async pasteIntoTerminal(
-    content: string,
-    terminal: vscode.Terminal,
-    options?: SendTextToTerminalOptions,
-  ): Promise<Result<void, RangeLinkExtensionError>> {
+  async pasteIntoTerminal(content: string, terminal: vscode.Terminal, options?: SendTextToTerminalOptions): Promise<ExtensionResult<void>> {
     const logCtx: LoggingContext = {
       fn: 'TerminalPasteService.pasteIntoTerminal',
       terminalName: terminal?.name,
@@ -37,11 +31,8 @@ export class TerminalPasteService {
 
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
-      this.logger.error(
-        { ...logCtx, error: validationResult.error },
-        'Terminal paste failed - terminal not defined',
-      );
-      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
+      this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal paste failed - terminal not defined');
+      return validationResult as unknown as ExtensionResult<void>;
     }
 
     const stageResult = await this.clipboardService.stage(content, async () => {
@@ -54,14 +45,11 @@ export class TerminalPasteService {
     });
 
     if (!stageResult.success) {
-      this.logger.error(
-        { ...logCtx, error: stageResult.error },
-        'Terminal paste failed - clipboard service problem',
-      );
+      this.logger.error({ ...logCtx, error: stageResult.error }, 'Terminal paste failed - clipboard service problem');
       return stageResult;
     }
 
     this.logger.info(logCtx, 'Terminal paste succeeded');
-    return Result.ok(undefined);
+    return ExtensionResult.ok(undefined);
   }
 }

@@ -27,5 +27,4 @@ export const createMockPosition = (overrides: Partial<vscode.Position>): vscode.
  * @param character - Character offset
  * @returns Mock Position with line and character set
  */
-export const createMockPos = (line: number, character: number): vscode.Position =>
-  createMockPosition({ line, character });
+export const createMockPos = (line: number, character: number): vscode.Position => createMockPosition({ line, character });

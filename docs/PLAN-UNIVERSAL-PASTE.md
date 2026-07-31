@@ -234,12 +234,7 @@ class DestinationFactory {
 **New file:** `packages/rangelink-vscode-extension/src/destinations/PasteDestination.ts`
 
 ```typescript
-export type DestinationType =
-  | 'terminal'
-  | 'text-editor'
-  | 'cursor-ai'
-  | 'github-copilot'
-  | 'claude-code';
+export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
 
 export interface PasteDestination {
   /** Unique identifier for this destination type */
@@ -299,10 +294,7 @@ export class TerminalDestination implements PasteDestination {
     this.boundTerminal.sendText(paddedText, false);
     this.boundTerminal.show(false);
 
-    this.logger.info(
-      { fn: 'TerminalDestination.paste', terminalName: this.boundTerminal.name },
-      `Pasted to terminal: ${this.boundTerminal.name}`,
-    );
+    this.logger.info({ fn: 'TerminalDestination.paste', terminalName: this.boundTerminal.name }, `Pasted to terminal: ${this.boundTerminal.name}`);
 
     return true;
   }
@@ -461,10 +453,7 @@ export class TextEditorDestination implements PasteDestination {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
-      this.logger.warn(
-        { fn: 'TextEditorDestination.paste' },
-        'Cannot paste: No active text editor',
-      );
+      this.logger.warn({ fn: 'TextEditorDestination.paste' }, 'Cannot paste: No active text editor');
       return false;
     }
 
@@ -476,17 +465,11 @@ export class TextEditorDestination implements PasteDestination {
         editBuilder.insert(position, paddedText);
       });
 
-      this.logger.info(
-        { fn: 'TextEditorDestination.paste', textLength: text.length },
-        'Successfully pasted to text editor at cursor',
-      );
+      this.logger.info({ fn: 'TextEditorDestination.paste', textLength: text.length }, 'Successfully pasted to text editor at cursor');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'TextEditorDestination.paste', error },
-        'Failed to paste to text editor',
-      );
+      this.logger.error({ fn: 'TextEditorDestination.paste', error }, 'Failed to paste to text editor');
       return false;
     }
   }
@@ -518,20 +501,14 @@ export class CursorAIDestination implements PasteDestination {
     // Runtime check: try to detect Cursor environment
     const isCursor = this.detectCursorEnvironment();
 
-    this.logger.debug(
-      { fn: 'CursorAIDestination.isAvailable', isCursor },
-      isCursor ? 'Running in Cursor' : 'Not running in Cursor',
-    );
+    this.logger.debug({ fn: 'CursorAIDestination.isAvailable', isCursor }, isCursor ? 'Running in Cursor' : 'Not running in Cursor');
 
     return isCursor;
   }
 
   async paste(text: string): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'CursorAIDestination.paste' },
-        'Cannot paste: Not running in Cursor IDE',
-      );
+      this.logger.warn({ fn: 'CursorAIDestination.paste' }, 'Cannot paste: Not running in Cursor IDE');
       return false;
     }
 
@@ -607,18 +584,12 @@ export class GitHubCopilotDestination implements PasteDestination {
     const extension = vscode.extensions.getExtension(COPILOT_EXTENSION_ID);
 
     if (!extension) {
-      this.logger.debug(
-        { fn: 'GitHubCopilotDestination.isAvailable' },
-        'GitHub Copilot extension not installed',
-      );
+      this.logger.debug({ fn: 'GitHubCopilotDestination.isAvailable' }, 'GitHub Copilot extension not installed');
       return false;
     }
 
     if (!extension.isActive) {
-      this.logger.debug(
-        { fn: 'GitHubCopilotDestination.isAvailable' },
-        'GitHub Copilot extension not active',
-      );
+      this.logger.debug({ fn: 'GitHubCopilotDestination.isAvailable' }, 'GitHub Copilot extension not active');
       return false;
     }
 
@@ -627,10 +598,7 @@ export class GitHubCopilotDestination implements PasteDestination {
 
   async paste(text: string): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'GitHubCopilotDestination.paste' },
-        'Cannot paste: GitHub Copilot not available',
-      );
+      this.logger.warn({ fn: 'GitHubCopilotDestination.paste' }, 'Cannot paste: GitHub Copilot not available');
       return false;
     }
 
@@ -642,17 +610,11 @@ export class GitHubCopilotDestination implements PasteDestination {
         query: paddedText,
       });
 
-      this.logger.info(
-        { fn: 'GitHubCopilotDestination.paste', textLength: text.length },
-        'Successfully pasted to GitHub Copilot Chat',
-      );
+      this.logger.info({ fn: 'GitHubCopilotDestination.paste', textLength: text.length }, 'Successfully pasted to GitHub Copilot Chat');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'GitHubCopilotDestination.paste', error },
-        'Failed to paste to GitHub Copilot Chat',
-      );
+      this.logger.error({ fn: 'GitHubCopilotDestination.paste', error }, 'Failed to paste to GitHub Copilot Chat');
       return false;
     }
   }
@@ -684,10 +646,7 @@ export class ClaudeCodeDestination implements PasteDestination {
     const extension = vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID);
 
     if (!extension || !extension.isActive) {
-      this.logger.debug(
-        { fn: 'ClaudeCodeDestination.isAvailable' },
-        'Claude Code extension not available',
-      );
+      this.logger.debug({ fn: 'ClaudeCodeDestination.isAvailable' }, 'Claude Code extension not available');
       return false;
     }
 
@@ -696,10 +655,7 @@ export class ClaudeCodeDestination implements PasteDestination {
 
   async paste(text: string): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'ClaudeCodeDestination.paste' },
-        'Cannot paste: Claude Code not available',
-      );
+      this.logger.warn({ fn: 'ClaudeCodeDestination.paste' }, 'Cannot paste: Claude Code not available');
       return false;
     }
 
@@ -713,30 +669,18 @@ export class ClaudeCodeDestination implements PasteDestination {
       // 2. Try programmatic paste
       try {
         await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
-        this.logger.info(
-          { fn: 'ClaudeCodeDestination.paste' },
-          'Successfully pasted to Claude Code (automatic)',
-        );
+        this.logger.info({ fn: 'ClaudeCodeDestination.paste' }, 'Successfully pasted to Claude Code (automatic)');
         return true;
       } catch (pasteError) {
         // 3. Fallback: Show notification for manual paste
-        this.logger.warn(
-          { fn: 'ClaudeCodeDestination.paste', error: pasteError },
-          'Automatic paste failed, prompting user for manual paste',
-        );
+        this.logger.warn({ fn: 'ClaudeCodeDestination.paste', error: pasteError }, 'Automatic paste failed, prompting user for manual paste');
 
-        vscode.window.showInformationMessage(
-          'RangeLink focused in Claude Code - press Cmd+V (Mac) or Ctrl+V (Win/Linux) to paste',
-          { modal: false },
-        );
+        vscode.window.showInformationMessage('RangeLink focused in Claude Code - press Cmd+V (Mac) or Ctrl+V (Win/Linux) to paste', { modal: false });
 
         return true; // Still count as success (focused)
       }
     } catch (error) {
-      this.logger.error(
-        { fn: 'ClaudeCodeDestination.paste', error },
-        'Failed to paste to Claude Code',
-      );
+      this.logger.error({ fn: 'ClaudeCodeDestination.paste', error }, 'Failed to paste to Claude Code');
       return false;
     }
   }
@@ -820,10 +764,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Listen for terminal closure (backward compatibility)
     const terminalCloseListener = vscode.window.onDidCloseTerminal((closedTerminal) => {
       if (this.boundTerminal === closedTerminal) {
-        this.logger.info(
-          { fn: 'PasteDestinationManager.onDidCloseTerminal' },
-          'Bound terminal closed - auto-unbinding',
-        );
+        this.logger.info({ fn: 'PasteDestinationManager.onDidCloseTerminal' }, 'Bound terminal closed - auto-unbinding');
         this.unbind();
         vscode.window.setStatusBarMessage('Destination binding removed (terminal closed)', 3000);
       }
@@ -841,13 +782,8 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Check if already bound
     if (this.boundDestination) {
       const currentType = this.boundDestination.id;
-      this.logger.warn(
-        { fn: 'bind', currentType, requestedType: type },
-        'Already bound to a destination',
-      );
-      vscode.window.showErrorMessage(
-        `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`,
-      );
+      this.logger.warn({ fn: 'bind', currentType, requestedType: type }, 'Already bound to a destination');
+      vscode.window.showErrorMessage(`RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`);
       return false;
     }
 
@@ -860,14 +796,8 @@ export class PasteDestinationManager implements vscode.Disposable {
     const destination = this.factory.create(type);
 
     if (!(await destination.isAvailable())) {
-      this.logger.warn(
-        { fn: 'bind', type },
-        `Cannot bind: ${destination.displayName} not available`,
-      );
-      vscode.window.showErrorMessage(
-        `RangeLink: ${destination.displayName} is not available. ` +
-          `Make sure the extension is installed and active.`,
-      );
+      this.logger.warn({ fn: 'bind', type }, `Cannot bind: ${destination.displayName} not available`);
+      vscode.window.showErrorMessage(`RangeLink: ${destination.displayName} is not available. ` + `Make sure the extension is installed and active.`);
       return false;
     }
 
@@ -889,9 +819,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!activeTerminal) {
       this.logger.warn({ fn: 'bindTerminal' }, 'No active terminal');
-      vscode.window.showErrorMessage(
-        'RangeLink: No active terminal. Open a terminal and try again.',
-      );
+      vscode.window.showErrorMessage('RangeLink: No active terminal. Open a terminal and try again.');
       return false;
     }
 
@@ -901,15 +829,9 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundDestination = destination;
     this.boundTerminal = activeTerminal; // Track for closure events
 
-    this.logger.info(
-      { fn: 'bindTerminal', terminalName: activeTerminal.name },
-      `Successfully bound to terminal: ${activeTerminal.name}`,
-    );
+    this.logger.info({ fn: 'bindTerminal', terminalName: activeTerminal.name }, `Successfully bound to terminal: ${activeTerminal.name}`);
 
-    vscode.window.setStatusBarMessage(
-      `✓ RangeLink bound to terminal: ${activeTerminal.name}`,
-      3000,
-    );
+    vscode.window.setStatusBarMessage(`✓ RangeLink bound to terminal: ${activeTerminal.name}`, 3000);
 
     return true;
   }
@@ -960,10 +882,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const result = await this.boundDestination.paste(text);
 
     if (!result) {
-      this.logger.error(
-        { fn: 'sendToDestination', destinationType: this.boundDestination.id },
-        'Paste failed',
-      );
+      this.logger.error({ fn: 'sendToDestination', destinationType: this.boundDestination.id }, 'Paste failed');
       // Don't show error toast (paste() already logged, user sees no action)
     }
 
@@ -1211,10 +1130,7 @@ context.subscriptions.push(
 ```typescript
 const MIGRATION_KEY = 'rangelink.settingsMigrated.v2';
 
-export const migrateSettingsIfNeeded = async (
-  context: vscode.ExtensionContext,
-  logger: Logger,
-): Promise<void> => {
+export const migrateSettingsIfNeeded = async (context: vscode.ExtensionContext, logger: Logger): Promise<void> => {
   const migrated = context.globalState.get<boolean>(MIGRATION_KEY, false);
 
   if (migrated) {
@@ -1226,10 +1142,7 @@ export const migrateSettingsIfNeeded = async (
   const boundTerminal = config.get<string | null>('autoPaste.boundTerminal');
 
   if (boundTerminal) {
-    logger.info(
-      { fn: 'migrateSettingsIfNeeded', boundTerminal },
-      'Migrating legacy terminal binding setting',
-    );
+    logger.info({ fn: 'migrateSettingsIfNeeded', boundTerminal }, 'Migrating legacy terminal binding setting');
 
     // Migrate: boundTerminal set → destinationType = 'terminal'
     await config.update('autoPaste.destinationType', 'terminal', vscode.ConfigurationTarget.Global);
@@ -1238,8 +1151,7 @@ export const migrateSettingsIfNeeded = async (
     // User might want to rebind to same terminal later
 
     vscode.window.showInformationMessage(
-      'RangeLink: Your terminal binding has been migrated to the new system. ' +
-        'Use "RangeLink: Bind terminal" to re-bind.',
+      'RangeLink: Your terminal binding has been migrated to the new system. ' + 'Use "RangeLink: Bind terminal" to re-bind.',
     );
   } else {
     logger.debug({ fn: 'migrateSettingsIfNeeded' }, 'No legacy settings to migrate');

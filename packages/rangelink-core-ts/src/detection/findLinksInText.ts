@@ -1,5 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 import { buildLinkPattern } from '../utils/buildLinkPattern';
@@ -7,6 +5,8 @@ import { buildLinkPattern } from '../utils/buildLinkPattern';
 import { detectQuotedLinks } from './detectQuotedLinks';
 import { detectUnquotedLinks } from './detectUnquotedLinks';
 import type { Cancellable } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 export type { Cancellable } from './types';
 
@@ -27,31 +27,13 @@ export type { Cancellable } from './types';
  * @param token - Optional cancellation token
  * @returns Array of detected links with parsed data
  */
-export const findLinksInText = (
-  text: string,
-  delimiters: DelimiterConfig,
-  logger: Logger,
-  token?: Cancellable,
-): DetectedLink[] => {
+export const findLinksInText = (text: string, delimiters: DelimiterConfig, logger: Logger, token?: Cancellable): DetectedLink[] => {
   const logCtx = { fn: 'findLinksInText' };
 
   const pattern = buildLinkPattern(delimiters);
-  const { links, occupiedRanges, unquotedMatches, parseFailures } = detectUnquotedLinks(
-    text,
-    pattern,
-    delimiters,
-    logger,
-    token,
-  );
+  const { links, occupiedRanges, unquotedMatches, parseFailures } = detectUnquotedLinks(text, pattern, delimiters, logger, token);
 
-  const { quotedCandidates, quotedParseFailures, quotedReplacements } = detectQuotedLinks(
-    text,
-    links,
-    occupiedRanges,
-    delimiters,
-    logger,
-    token,
-  );
+  const { quotedCandidates, quotedParseFailures, quotedReplacements } = detectQuotedLinks(text, links, occupiedRanges, delimiters, logger, token);
 
   const hasActivity = links.length > 0 || parseFailures > 0 || quotedCandidates > 0;
   if (hasActivity) {

@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ContentEligibilityChecker } from '../../../destinations/capabilities/ContentEligibilityChecker';
 import { EligibilityCheckerFactory } from '../../../destinations/capabilities/EligibilityCheckerFactory';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('EligibilityCheckerFactory', () => {
   const mockLogger = createMockLogger();

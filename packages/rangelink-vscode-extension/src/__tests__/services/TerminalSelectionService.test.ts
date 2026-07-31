@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
@@ -13,6 +11,8 @@ import {
   spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalSelectionService', () => {
   let service: TerminalSelectionService;
@@ -46,14 +46,7 @@ describe('TerminalSelectionService', () => {
       resolveDestination: jest.fn(),
       sendToDestination: jest.fn(),
     };
-    service = new TerminalSelectionService(
-      mockAdapter,
-      mockDestinationManager,
-      mockConfigReader,
-      mockClipboardService,
-      mockSendRouter as any,
-      mockLogger,
-    );
+    service = new TerminalSelectionService(mockAdapter, mockDestinationManager, mockConfigReader, mockClipboardService, mockSendRouter as any, mockLogger);
     formatMessageSpy = spyOnFormatMessage();
   });
 
@@ -66,10 +59,7 @@ describe('TerminalSelectionService', () => {
       expect(result).toStrictEqual({ outcome: 'no-active-terminal' });
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_NO_ACTIVE_TERMINAL');
       expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' },
-        'No active terminal',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' }, 'No active terminal');
     });
 
     it('returns clipboard-read-failed when clipboard capture fails', async () => {
@@ -127,9 +117,7 @@ describe('TerminalSelectionService', () => {
     it('returns no-text-selected when clipboard roundtrip yields empty string', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
-      mockClipboardService.capture.mockResolvedValue(
-        ExtensionResult.ok({ clipboard: '', produced: undefined }),
-      );
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.ok({ clipboard: '', produced: undefined }));
 
       const result = await service.pasteTerminalSelectionToDestination();
 
@@ -144,9 +132,7 @@ describe('TerminalSelectionService', () => {
     it('returns picker-cancelled when resolveDestination returns undefined', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
-      mockClipboardService.capture.mockResolvedValue(
-        ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
-      );
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }));
       mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       const result = await service.pasteTerminalSelectionToDestination();
@@ -158,9 +144,7 @@ describe('TerminalSelectionService', () => {
     it('sends content to destination and returns success', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
-      mockClipboardService.capture.mockResolvedValue(
-        ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }),
-      );
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }));
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -204,9 +188,7 @@ describe('TerminalSelectionService', () => {
     it('shows info tip when paste succeeds', async () => {
       const terminal = createMockTerminal({ name: 'zsh' });
       Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
-      mockClipboardService.capture.mockResolvedValue(
-        ExtensionResult.ok({ clipboard: 'text', produced: undefined }),
-      );
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.ok({ clipboard: 'text', produced: undefined }));
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -237,10 +219,7 @@ describe('TerminalSelectionService', () => {
 
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED');
       expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'TerminalSelectionService.terminalCopyLinkGuard' },
-        'R-C pressed in terminal context',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'TerminalSelectionService.terminalCopyLinkGuard' }, 'R-C pressed in terminal context');
     });
   });
 });

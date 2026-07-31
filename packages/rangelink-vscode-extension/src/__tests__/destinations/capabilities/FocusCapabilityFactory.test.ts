@@ -1,17 +1,12 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
-import {
-  createMockTerminal,
-  createMockTerminalPasteService,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('FocusCapabilityFactory', () => {
   let factory: FocusCapabilityFactory;
@@ -38,10 +33,7 @@ describe('FocusCapabilityFactory', () => {
   });
 
   it('creates AIAssistantFocusCapability', () => {
-    const capability = factory.createAIAssistantCapability(
-      ['workbench.action.chat.open'],
-      undefined,
-    );
+    const capability = factory.createAIAssistantCapability(['workbench.action.chat.open'], undefined);
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });

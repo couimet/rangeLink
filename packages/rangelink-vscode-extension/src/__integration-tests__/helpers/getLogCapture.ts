@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
 import type { LogCapture } from '../../LogCapture';
 import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
+
+import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 

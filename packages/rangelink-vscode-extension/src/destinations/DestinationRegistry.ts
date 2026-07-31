@@ -1,15 +1,14 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
-import type { BindOptions, DestinationKind } from '../types';
+import { BindOptions, DestinationKind, MessageCode } from '../types';
 import { formatMessage } from '../utils/formatMessage';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { FocusCapabilityFactory } from './capabilities/FocusCapabilityFactory';
 import type { PasteDestination } from './PasteDestination';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Maps destination kinds to their i18n MessageCode for display names.
@@ -60,10 +59,7 @@ export interface DestinationBuilderContext {
  * @param context - Factory bundle and infrastructure dependencies
  * @returns Configured PasteDestination instance
  */
-export type DestinationBuilder = (
-  options: BindOptions,
-  context: DestinationBuilderContext,
-) => PasteDestination;
+export type DestinationBuilder = (options: BindOptions, context: DestinationBuilderContext) => PasteDestination;
 
 /**
  * Registry for destination builders supporting IoC pattern.
@@ -112,10 +108,7 @@ export class DestinationRegistry {
    * @param builder - Function that creates PasteDestination instances
    */
   register(kind: DestinationKind, builder: DestinationBuilder): void {
-    this.context.logger.debug(
-      { fn: 'DestinationRegistry.register', kind },
-      `Registering builder for destination: ${kind}`,
-    );
+    this.context.logger.debug({ fn: 'DestinationRegistry.register', kind }, `Registering builder for destination: ${kind}`);
     this.builders.set(kind, builder);
   }
 
@@ -142,10 +135,7 @@ export class DestinationRegistry {
       });
     }
 
-    this.context.logger.debug(
-      { fn: 'DestinationRegistry.create', kind },
-      `Creating destination: ${kind}`,
-    );
+    this.context.logger.debug({ fn: 'DestinationRegistry.create', kind }, `Creating destination: ${kind}`);
     return builder(options, this.context);
   }
 
@@ -173,8 +163,6 @@ export class DestinationRegistry {
    * @returns Record mapping destination kinds to display names
    */
   getDisplayNames(): Record<DestinationKind, string> {
-    return Object.fromEntries(
-      Object.entries(DISPLAY_NAME_CODES).map(([kind, code]) => [kind, formatMessage(code)]),
-    ) as Record<DestinationKind, string>;
+    return Object.fromEntries(Object.entries(DISPLAY_NAME_CODES).map(([kind, code]) => [kind, formatMessage(code)])) as Record<DestinationKind, string>;
   }
 }

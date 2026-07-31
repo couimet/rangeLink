@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { AIAssistantInsertFactory } from '../../../../destinations/capabilities/insertFactories/aiAssistantInsertFactory';
 import { createMockVscodeAdapter } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('AIAssistantInsertFactory', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -37,10 +37,7 @@ describe('AIAssistantInsertFactory', () => {
     const result = await insertFn('content');
 
     expect(result).toBe(false);
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true },
-      'Clipboard paste command failed',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true }, 'Clipboard paste command failed');
     expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
   });
 });

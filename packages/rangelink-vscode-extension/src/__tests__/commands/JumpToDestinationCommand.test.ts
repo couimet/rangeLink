@@ -1,27 +1,19 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { JumpToDestinationCommand } from '../../commands';
-import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
-import type { BoundSession } from '../../destinations';
-import type { DestinationPicker } from '../../destinations';
+import type { BoundSession, DestinationPicker, FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { messagesEn } from '../../i18n';
-import type { BindOptions, DestinationPickerResult } from '../../types';
-import { ExtensionResult } from '../../types';
-import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
-import { createMockBoundSession } from '../helpers';
+import { BindOptions, DestinationPickerResult, ExtensionResult } from '../../types';
+import { createMockBoundSession, createMockDestinationManager, createMockDestinationPicker } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('JumpToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
-    expect(messagesEn['INFO_JUMP_QUICK_PICK_PLACEHOLDER']).toBe(
-      'RangeLink: No destination bound. Choose destination to jump to',
-    );
+    expect(messagesEn['INFO_JUMP_QUICK_PICK_PLACEHOLDER']).toBe('RangeLink: No destination bound. Choose destination to jump to');
   });
 
   it('no-destinations message explains how to resolve the situation', () => {
-    expect(messagesEn['INFO_JUMP_NO_DESTINATIONS_AVAILABLE']).toBe(
-      'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
-    );
+    expect(messagesEn['INFO_JUMP_NO_DESTINATIONS_AVAILABLE']).toBe('No destinations available. Open a terminal, a file, or install an AI assistant extension.');
   });
 });
 
@@ -37,19 +29,11 @@ describe('JumpToDestinationCommand', () => {
     mockSession = createMockBoundSession();
     mockPickerCommand = createMockDestinationPicker();
     mockLogger = createMockLogger();
-    command = new JumpToDestinationCommand(
-      mockDestinationManager,
-      mockSession,
-      mockPickerCommand,
-      mockLogger,
-    );
+    command = new JumpToDestinationCommand(mockDestinationManager, mockSession, mockPickerCommand, mockLogger);
   });
 
   it('logs initialization in constructor', () => {
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'JumpToDestinationCommand.constructor' },
-      'JumpToDestinationCommand initialized',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.constructor' }, 'JumpToDestinationCommand initialized');
   });
 
   describe('when destination is already bound', () => {
@@ -72,10 +56,7 @@ describe('JumpToDestinationCommand', () => {
         destinationName: 'Terminal ("bash")',
       });
       expect(mockPickerCommand.pick).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'Destination already bound, focusing',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'Destination already bound, focusing');
     });
 
     it('returns focus-failed when focus fails', async () => {
@@ -84,9 +65,7 @@ describe('JumpToDestinationCommand', () => {
         message: 'Failed to focus destination: Terminal ("bash")',
         functionName: 'PasteDestinationManager.focusBoundDestination',
       });
-      mockDestinationManager.focusBoundDestination.mockResolvedValue(
-        ExtensionResult.err(focusError),
-      );
+      mockDestinationManager.focusBoundDestination.mockResolvedValue(ExtensionResult.err(focusError));
 
       const result = await command.execute();
 
@@ -124,14 +103,8 @@ describe('JumpToDestinationCommand', () => {
         placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
       });
       expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'No destination bound, showing picker',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'Binding selected destination and focusing',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'No destination bound, showing picker');
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'Binding selected destination and focusing');
     });
 
     it('returns no-resource when picker reports no destinations available', async () => {
@@ -147,14 +120,8 @@ describe('JumpToDestinationCommand', () => {
         placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
       });
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'No destination bound, showing picker',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'No destinations available',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'No destination bound, showing picker');
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'No destinations available');
     });
 
     it('returns cancelled when user cancels picker', async () => {
@@ -170,10 +137,7 @@ describe('JumpToDestinationCommand', () => {
         placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
       });
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'User cancelled picker',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'User cancelled picker');
     });
 
     it('returns focus-failed when bindAndFocus fails after picker selection', async () => {
@@ -187,9 +151,7 @@ describe('JumpToDestinationCommand', () => {
         outcome: 'selected',
         bindOptions,
       });
-      mockDestinationManager.bindAndFocus.mockResolvedValue(
-        ExtensionResult.err<FocusSuccessInfo>(bindError),
-      );
+      mockDestinationManager.bindAndFocus.mockResolvedValue(ExtensionResult.err<FocusSuccessInfo>(bindError));
 
       const result = await command.execute();
 
@@ -198,10 +160,7 @@ describe('JumpToDestinationCommand', () => {
         noDestinationsMessageCode: 'INFO_JUMP_NO_DESTINATIONS_AVAILABLE',
         placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'JumpToDestinationCommand.execute' },
-        'Bind and focus failed',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'JumpToDestinationCommand.execute' }, 'Bind and focus failed');
     });
   });
 });

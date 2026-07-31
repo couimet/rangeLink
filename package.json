@@ -44,19 +44,13 @@
     "verify:qa-scripts:vscode-extension": "pnpm --filter rangelink-vscode-extension verify:qa-scripts",
     "watch": "pnpm -r --parallel watch"
   },
+  "prettier": "@couimet/eslint-config/prettier",
   "devDependencies": {
-    "@eslint/js": "^9.10.0",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0",
+    "@couimet/eslint-config": "^1.1.0",
     "baseline-browser-mapping": "^2.10.10",
-    "eslint": "^9.10.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^17.10.0",
-    "eslint-plugin-unicorn": "^55.0.0",
+    "eslint": "^10.4.0",
+    "globals": "^16.0.0",
     "prettier": "^3.1.1",
-    "prettier-plugin-packagejson": "^2.5.0",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8",

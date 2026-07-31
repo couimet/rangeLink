@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode, type VersionInfo } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Command handler for displaying version information.
@@ -26,15 +26,11 @@ export class ShowVersionCommand {
 
     if (!versionInfo) {
       this.logger.error(logCtx, 'Failed to load version info');
-      await this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE),
-      );
+      await this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE));
       return;
     }
 
-    const isDirtyIndicator = versionInfo.isDirty
-      ? formatMessage(MessageCode.INFO_VERSION_DIRTY_INDICATOR)
-      : '';
+    const isDirtyIndicator = versionInfo.isDirty ? formatMessage(MessageCode.INFO_VERSION_DIRTY_INDICATOR) : '';
     const message = formatMessage(MessageCode.INFO_VERSION_INFO, {
       version: versionInfo.version,
       commit: versionInfo.commit,
@@ -48,9 +44,7 @@ export class ShowVersionCommand {
 
     if (selection === copyButtonLabel) {
       await this.ideAdapter.writeTextToClipboard(versionInfo.commitFull);
-      await this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
-      );
+      await this.ideAdapter.showInformationMessage(formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED));
     }
 
     this.logger.info(

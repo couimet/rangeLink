@@ -1,7 +1,4 @@
-import {
-  createBaseMockPasteDestination,
-  type MockDestinationOptions,
-} from './createBaseMockPasteDestination';
+import { createBaseMockPasteDestination, type MockDestinationOptions } from './createBaseMockPasteDestination';
 
 /**
  * Create a mock GitHub Copilot Chat destination for testing (Paradigm A).
@@ -12,9 +9,7 @@ import {
  * @param overrides - Optional overrides for mock behavior
  * @returns Mock PasteDestination configured as GitHub Copilot Chat
  */
-export const createMockGitHubCopilotChatDestination = (
-  overrides?: Omit<MockDestinationOptions, 'id'>,
-) =>
+export const createMockGitHubCopilotChatDestination = (overrides?: Omit<MockDestinationOptions, 'id'>) =>
   createBaseMockPasteDestination({
     id: 'github-copilot-chat',
     displayName: 'GitHub Copilot Chat',

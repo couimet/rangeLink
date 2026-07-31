@@ -10,7 +10,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 
   it('should return Ok for LINE/COL/#/TO (multi-char delimiters with no substring overlap)', () => {
@@ -21,7 +21,7 @@ describe('validateSubstringConflicts', () => {
       range: 'TO',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 
   it('should return Err when line contains position', () => {
@@ -32,7 +32,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -47,7 +47,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -62,7 +62,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -77,7 +77,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -92,7 +92,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -107,7 +107,7 @@ describe('validateSubstringConflicts', () => {
       range: 'thru',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 
   it('should return Err for hash substring conflict', () => {
@@ -118,7 +118,7 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
+    expect(result).toHaveDetailedError('CONFIG_DELIMITER_SUBSTRING_CONFLICT', {
       message: 'Delimiters cannot be substrings of each other',
       functionName: 'validateSubstringConflicts',
       details: { delimiters },
@@ -135,6 +135,6 @@ describe('validateSubstringConflicts', () => {
       range: '-',
     };
     const result = validateSubstringConflicts(delimiters);
-    expect(result).toBeOk();
+    expect(result.success).toBe(true);
   });
 });

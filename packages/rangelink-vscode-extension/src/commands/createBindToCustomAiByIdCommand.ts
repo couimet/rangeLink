@@ -1,11 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
 import { resolveKindByExtensionId } from '../destinations/destinationBuilders';
-import type { BindSuccessInfo } from '../destinations/PasteDestinationManager';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { BindSuccessInfo, PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { ExtensionResult } from '../types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 const FN = 'createBindToCustomAiByIdCommand';
 
@@ -39,7 +38,7 @@ export const createBindToCustomAiByIdCommand = (
 
     logger.debug({ fn: FN, extensionId, kind }, 'Binding to custom AI by ID');
 
-    return destinationManager.bind({ kind } as Parameters<PasteDestinationManager['bind']>[0]);
+    return await destinationManager.bind({ kind } as Parameters<PasteDestinationManager['bind']>[0]);
   };
 };
 

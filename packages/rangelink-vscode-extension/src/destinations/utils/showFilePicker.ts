@@ -1,13 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { QuickPickProvider } from '../../ide/QuickPickProvider';
-import type { FileBindableQuickPickItem } from '../../types';
-import { MessageCode } from '../../types';
+import { FileBindableQuickPickItem, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
 import type { FilePickerHandlers } from '../types';
 
 import { buildFilePickerItems } from './buildFilePickerItems';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Show a sectioned QuickPick to select a file from a list of eligible files.

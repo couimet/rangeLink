@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { FilePathPaster, getReferencePath } from '../../services/FilePathPaster';
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { DirtyBufferWarningResult, PathFormat } from '../../types';
@@ -14,6 +12,8 @@ import {
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
+import { createMockLogger } from '@couimet/logger-contract-testing';
+
 describe('getReferencePath', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;
 
@@ -23,9 +23,7 @@ describe('getReferencePath', () => {
 
   it('returns workspace-relative path when pathFormat is WorkspaceRelative and file is in workspace', () => {
     const uri = createMockUri('/workspace/src/file.ts');
-    jest
-      .spyOn(mockAdapter, 'getWorkspaceFolder')
-      .mockReturnValue(createMockWorkspaceFolder('/workspace'));
+    jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(createMockWorkspaceFolder('/workspace'));
     jest.spyOn(mockAdapter, 'asRelativePath').mockReturnValue('src/file.ts');
 
     const result = getReferencePath(mockAdapter, uri, PathFormat.WorkspaceRelative);
@@ -36,9 +34,7 @@ describe('getReferencePath', () => {
 
   it('returns absolute fsPath when pathFormat is Absolute', () => {
     const uri = createMockUri('/workspace/src/file.ts');
-    jest
-      .spyOn(mockAdapter, 'getWorkspaceFolder')
-      .mockReturnValue(createMockWorkspaceFolder('/workspace'));
+    jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(createMockWorkspaceFolder('/workspace'));
 
     const result = getReferencePath(mockAdapter, uri, PathFormat.Absolute);
 
@@ -81,13 +77,7 @@ describe('FilePathPaster', () => {
       resolveDestination: jest.fn(),
       sendToDestination: jest.fn(),
     };
-    paster = new FilePathPaster(
-      mockAdapter,
-      mockDestinationManager,
-      mockConfigReader,
-      mockSendRouter as any,
-      mockLogger,
-    );
+    paster = new FilePathPaster(mockAdapter, mockDestinationManager, mockConfigReader, mockSendRouter as any, mockLogger);
     formatMessageSpy = spyOnFormatMessage();
   });
 
@@ -99,10 +89,7 @@ describe('FilePathPaster', () => {
 
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE');
       expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'FilePathPaster.pasteCurrentFilePath', pathFormat: 'absolute' },
-        'No active editor',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'FilePathPaster.pasteCurrentFilePath', pathFormat: 'absolute' }, 'No active editor');
     });
 
     it('delegates to pasteFilePath when active editor exists', async () => {
@@ -121,9 +108,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
       mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
@@ -135,9 +120,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -183,9 +166,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri("/workspace/my project/file's.ts");
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -235,9 +216,7 @@ describe('FilePathPaster', () => {
       const document = createMockDocument({ uri });
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(document);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.Dismissed);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.Dismissed);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
@@ -248,9 +227,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(createMockDocument({ uri }));
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.SaveFailed);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.SaveFailed);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 
@@ -261,9 +238,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(createMockDocument({ uri }));
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.SaveAndContinue);
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -300,9 +275,7 @@ describe('FilePathPaster', () => {
       const uri = createMockUri('/workspace/src/file.ts');
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(createMockDocument({ uri }));
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
+      jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.ContinueAnyway);
       mockSendRouter.resolveDestination.mockResolvedValue({
         canProceed: true,
         bindPerformed: false,
@@ -340,9 +313,7 @@ describe('FilePathPaster', () => {
       const document = createMockDocument({ uri });
       jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(document);
       jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      const warningSpy = jest
-        .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
-        .mockResolvedValue(DirtyBufferWarningResult.Dismissed);
+      const warningSpy = jest.spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning').mockResolvedValue(DirtyBufferWarningResult.Dismissed);
 
       await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
 

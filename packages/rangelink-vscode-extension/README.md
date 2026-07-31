@@ -4,8 +4,8 @@
   <img src="https://raw.githubusercontent.com/couimet/rangelink/main/assets/icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
-[![Open VSX Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
+[![Open VSX / Cursor Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX%20%2F%20Cursor&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension) [![Open VSX / Cursor Downloads](https://img.shields.io/open-vsx/dt/couimet/rangelink-vscode-extension?label=Open%20VSX%20%2F%20Cursor%20Downloads&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
+[![VS Code Marketplace Version](https://vsmarketplacebadges.dev/version/couimet.rangelink-vscode-extension.svg)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) [![VS Code Marketplace Installs](https://vsmarketplacebadges.dev/downloads-short/couimet.rangelink-vscode-extension.svg)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
@@ -213,9 +213,11 @@ Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink
 - **Jump to Bound Destination** — Focus your currently bound destination
 - **Bind to a destination** — When unbound, the menu shows available destinations inline (AI assistants, terminals, text editors) so you can bind directly from the menu
 - **Go to Link** — Paste or type a RangeLink to go directly to that code location
+
 <!-- TODO: #366 unhide when bookmarks graduates from beta
 - **Bookmarks** — Quick access to saved bookmarks, plus add/manage actions
   -->
+
 - **Show Version Info** — Display extension version and build details
 
 ---

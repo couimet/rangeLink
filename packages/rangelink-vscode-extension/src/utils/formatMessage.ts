@@ -1,14 +1,8 @@
-import { getLogger } from '@couimet/logger-contract';
-
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import {
-  getCurrentLocale,
-  getMessages,
-  messagesEn,
-  supportedLocales,
-  type LocaleCode,
-} from '../i18n';
+import { getCurrentLocale, getMessages, type LocaleCode, messagesEn, supportedLocales } from '../i18n';
 import { MessageCode } from '../types';
+
+import { getLogger } from '@couimet/logger-contract';
 
 const logger = getLogger();
 
@@ -31,11 +25,7 @@ const logger = getLogger();
  * @returns Formatted message string with substituted parameters
  * @throws {RangeLinkExtensionError} If message code missing in all locales (programming error)
  */
-export const formatMessage = (
-  code: MessageCode,
-  params?: Record<string, unknown>,
-  localeOverride?: LocaleCode,
-): string => {
+export const formatMessage = (code: MessageCode, params?: Record<string, unknown>, localeOverride?: LocaleCode): string => {
   // Determine which messages to use (override or current locale)
   const messages = localeOverride ? supportedLocales[localeOverride] : getMessages();
   const activeLocale = localeOverride || getCurrentLocale();
@@ -85,10 +75,7 @@ export const formatMessage = (
       return JSON.stringify(value);
     } catch (error) {
       // Fallback for circular references or other JSON errors
-      logger.warn(
-        { fn: 'formatMessage', key, valueType: typeof value, error },
-        'Failed to stringify parameter value, using String() fallback',
-      );
+      logger.warn({ fn: 'formatMessage', key, valueType: typeof value, error }, 'Failed to stringify parameter value, using String() fallback');
       return String(value);
     }
   });

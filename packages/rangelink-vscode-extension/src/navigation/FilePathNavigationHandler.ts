@@ -1,10 +1,9 @@
-import os from 'node:os';
-
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import type { Logger } from '@couimet/logger-contract';
+import os from 'node:os';
 
 /**
  * Navigation handler for plain file path navigation.
@@ -25,10 +24,7 @@ export class FilePathNavigationHandler {
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'FilePathNavigationHandler.constructor' },
-      'FilePathNavigationHandler initialized',
-    );
+    this.logger.debug({ fn: 'FilePathNavigationHandler.constructor' }, 'FilePathNavigationHandler initialized');
   }
 
   /**
@@ -52,24 +48,17 @@ export class FilePathNavigationHandler {
 
     if (resolved === FILENAME_AMBIGUOUS) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Multiple files match bare filename');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }));
       return;
     }
 
     if (resolved) {
-      this.logger.debug(
-        { ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia },
-        'Path resolved',
-      );
+      this.logger.debug({ ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia }, 'Path resolved');
     }
 
     if (!resolved) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_FILE_PATH_NOT_FOUND, { path: rawPath }),
-      );
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST, { path: rawPath }));
       return;
     }
 

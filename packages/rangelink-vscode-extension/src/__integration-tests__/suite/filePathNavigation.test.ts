@@ -1,10 +1,9 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import { CMD_HANDLE_FILE_PATH_CLICK } from '../../constants/commandIds';
 import { getWorkspaceRoot, openEditor, standardSuite } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 
@@ -17,11 +16,7 @@ standardSuite('File Path Navigation', (ss) => {
     });
 
     const activeUri = vscode.window.activeTextEditor?.document.uri.fsPath;
-    assert.strictEqual(
-      activeUri,
-      testFileUri.fsPath,
-      `Expected active editor to be ${testFileUri.fsPath} but got ${activeUri}`,
-    );
+    assert.strictEqual(activeUri, testFileUri.fsPath, `Expected active editor to be ${testFileUri.fsPath} but got ${activeUri}`);
   });
 
   test('clickable-file-paths-011: handleFilePathClick with non-existent path does not change active editor', async () => {
@@ -31,7 +26,7 @@ standardSuite('File Path Navigation', (ss) => {
 
     const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
 
-    ss.expectToastMessages([{ level: 'warning', message: `Cannot find file: ${nonExistentPath}` }]);
+    ss.expectToastMessages([{ level: 'warning', message: `File does not exist at: ${nonExistentPath}` }]);
 
     void vscode.commands.executeCommand(CMD_HANDLE_FILE_PATH_CLICK, {
       filePath: nonExistentPath,
@@ -40,10 +35,6 @@ standardSuite('File Path Navigation', (ss) => {
     await ss.settle(NON_EXISTENT_PATH_SETTLE_MS);
 
     const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
-    assert.strictEqual(
-      editorAfter,
-      editorBefore,
-      `Expected active editor to remain ${editorBefore} but got ${editorAfter}`,
-    );
+    assert.strictEqual(editorAfter, editorBefore, `Expected active editor to remain ${editorBefore} but got ${editorAfter}`);
   });
 });

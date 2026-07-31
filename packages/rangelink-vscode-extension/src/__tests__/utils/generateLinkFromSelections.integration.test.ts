@@ -7,15 +7,12 @@
  *
  * Purpose: Ensure mocks used in unit tests accurately represent real rangelink-core-ts behavior.
  */
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { type DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
-import {
-  generateLinkFromSelections,
-  type GenerateLinkFromSelectionsOptions,
-} from '../../utils/generateLinkFromSelections';
+import { generateLinkFromSelections, type GenerateLinkFromSelectionsOptions } from '../../utils/generateLinkFromSelections';
 import { createMockDocument, createMockPosition, createMockSelection } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { type DelimiterConfig, LinkType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const DELIMITERS: DelimiterConfig = {
   line: 'L',
@@ -26,12 +23,7 @@ const DELIMITERS: DelimiterConfig = {
 
 let mockLogger: ReturnType<typeof createMockLogger>;
 
-const mockSelection = (
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number,
-): vscode.Selection => {
+const mockSelection = (startLine: number, startCharacter: number, endLine: number, endCharacter: number): vscode.Selection => {
   const start = createMockPosition({ line: startLine, character: startCharacter });
   const end = createMockPosition({ line: endLine, character: endCharacter });
   return createMockSelection({
@@ -94,13 +86,8 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
-      'Generated link: src/file.ts#L5',
-    );
+    expect(result).toBeSuccess(expectedFormattedLink);
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink }, 'Generated link: src/file.ts#L5');
   });
 
   it('multi-line full selection (Ctrl+L x3) produces #L5-L7 without character positions', () => {
@@ -132,9 +119,7 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
+    expect(result).toBeSuccess(expectedFormattedLink);
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
       'Generated link: src/file.ts#L5-L7',
@@ -172,9 +157,7 @@ describe('trailing newline normalization integration', () => {
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
     };
-    expect(result).toBeOkWith((value: FormattedLink) => {
-      expect(value).toStrictEqual(expectedFormattedLink);
-    });
+    expect(result).toBeSuccess(expectedFormattedLink);
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'generateLinkFromSelections', formattedLink: expectedFormattedLink },
       'Generated link: src/file.ts#L5C9-L5C19',

@@ -1,6 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { Result } from 'rangelink-core-ts';
-
 import { FocusErrorReason } from '../../destinations/capabilities/FocusCapability';
 import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { AutoPasteResult, PasteContentType } from '../../types';
@@ -11,6 +8,9 @@ import {
   createMockFormattedLink,
   createMockTerminalComposablePasteDestination,
 } from '../helpers';
+
+import { DetailedResult } from '@couimet/detailed-result';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ComposablePasteDestination', () => {
   const mockLogger = createMockLogger();
@@ -45,7 +45,7 @@ describe('ComposablePasteDestination', () => {
     it('should pass text through as-is (padding applied upstream at call sites)', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
+      focusCapability.focus.mockResolvedValue(DetailedResult.success({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -60,15 +60,15 @@ describe('ComposablePasteDestination', () => {
 
     it('should focus before inserting text', async () => {
       const callOrder: string[] = [];
-      const mockInsert = jest.fn().mockImplementation(async () => {
+      const mockInsert = jest.fn().mockImplementation(() => {
         callOrder.push('insert');
         return true;
       });
 
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockImplementation(async () => {
+      focusCapability.focus.mockImplementation(() => {
         callOrder.push('focus');
-        return Result.ok({ inserter: mockInsert });
+        return Promise.resolve(DetailedResult.success({ inserter: mockInsert }));
       });
 
       const destination = createMockComposablePasteDestination({
@@ -87,7 +87,7 @@ describe('ComposablePasteDestination', () => {
     it('should return true when insertion succeeds', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
+      focusCapability.focus.mockResolvedValue(DetailedResult.success({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -103,7 +103,7 @@ describe('ComposablePasteDestination', () => {
     it('should return false when insertion fails', async () => {
       const mockInsert = jest.fn().mockResolvedValue(false);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
+      focusCapability.focus.mockResolvedValue(DetailedResult.success({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -118,9 +118,7 @@ describe('ComposablePasteDestination', () => {
 
     it('should return false when focus fails', async () => {
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(
-        Result.err({ reason: FocusErrorReason.SHOW_DOCUMENT_FAILED }),
-      );
+      focusCapability.focus.mockResolvedValue(DetailedResult.failure({ reason: FocusErrorReason.SHOW_DOCUMENT_FAILED }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -143,10 +141,7 @@ describe('ComposablePasteDestination', () => {
 
       await destination['performPaste']('text', context, PasteContentType.Link);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        context,
-        'Cannot paste link: Mock Destination not available',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith(context, 'Cannot paste link: Mock Destination not available');
     });
 
     it('should use "content" label for PasteContentType.Text in log messages', async () => {
@@ -159,10 +154,7 @@ describe('ComposablePasteDestination', () => {
 
       await destination['performPaste']('text', context, PasteContentType.Text);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        context,
-        'Cannot paste content: Mock Destination not available',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith(context, 'Cannot paste content: Mock Destination not available');
     });
   });
 
@@ -188,7 +180,7 @@ describe('ComposablePasteDestination', () => {
     it('should pass link text to insert function unchanged (padding applied upstream)', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
+      focusCapability.focus.mockResolvedValue(DetailedResult.success({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -222,7 +214,7 @@ describe('ComposablePasteDestination', () => {
     it('should pass content text to insert function unchanged (padding applied upstream)', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
+      focusCapability.focus.mockResolvedValue(DetailedResult.success({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -286,9 +278,7 @@ describe('ComposablePasteDestination', () => {
 
     it('should return false when focus fails', async () => {
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(
-        Result.err({ reason: FocusErrorReason.TERMINAL_FOCUS_FAILED }),
-      );
+      focusCapability.focus.mockResolvedValue(DetailedResult.failure({ reason: FocusErrorReason.TERMINAL_FOCUS_FAILED }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -349,9 +339,7 @@ describe('ComposablePasteDestination', () => {
     });
 
     describe('AI assistant kind-based equality (createAiAssistant factory)', () => {
-      const createAiAssistantDestination = (
-        id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat',
-      ) =>
+      const createAiAssistantDestination = (id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat') =>
         ComposablePasteDestination.createAiAssistant({
           id,
           displayName: `Mock ${id}`,

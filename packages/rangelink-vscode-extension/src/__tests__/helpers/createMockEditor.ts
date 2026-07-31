@@ -2,11 +2,11 @@
  * Create a mock TextEditor for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockDocument } from './createMockDocument';
 import { createMockText } from './createMockText';
 import { createMockUri } from './createMockUri';
+
+import * as vscode from 'vscode';
 
 /**
  * Structured options for creating mock editors with common test scenarios.
@@ -23,22 +23,11 @@ export interface MockEditorOptions {
 
 const DEFAULT_FS_PATH = '/test/file.ts';
 
-const STRUCTURED_OPTION_KEYS: (keyof MockEditorOptions)[] = [
-  'text',
-  'isUntitled',
-  'fsPath',
-  'selectionStart',
-  'selectionEnd',
-  'isEmpty',
-];
+const STRUCTURED_OPTION_KEYS: (keyof MockEditorOptions)[] = ['text', 'isUntitled', 'fsPath', 'selectionStart', 'selectionEnd', 'isEmpty'];
 
-const isStructuredOptions = (
-  options: MockEditorOptions | Partial<vscode.TextEditor> | undefined,
-): options is MockEditorOptions => {
+const isStructuredOptions = (options: MockEditorOptions | Partial<vscode.TextEditor> | undefined): options is MockEditorOptions => {
   if (!options) return false;
-  return Object.keys(options).some((key) =>
-    STRUCTURED_OPTION_KEYS.includes(key as keyof MockEditorOptions),
-  );
+  return Object.keys(options).some((key) => STRUCTURED_OPTION_KEYS.includes(key as keyof MockEditorOptions));
 };
 
 const createEditorFromStructuredOptions = (options: MockEditorOptions): vscode.TextEditor => {
@@ -139,9 +128,7 @@ const createEditorFromOverrides = (overrides?: Partial<vscode.TextEditor>): vsco
  */
 export function createMockEditor(options: MockEditorOptions): vscode.TextEditor;
 export function createMockEditor(overrides?: Partial<vscode.TextEditor>): vscode.TextEditor;
-export function createMockEditor(
-  options?: MockEditorOptions | Partial<vscode.TextEditor>,
-): vscode.TextEditor {
+export function createMockEditor(options?: MockEditorOptions | Partial<vscode.TextEditor>): vscode.TextEditor {
   if (isStructuredOptions(options)) {
     return createEditorFromStructuredOptions(options);
   }

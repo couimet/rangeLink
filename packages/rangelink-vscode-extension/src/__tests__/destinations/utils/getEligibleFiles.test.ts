@@ -1,12 +1,7 @@
-import * as vscode from 'vscode';
-
 import { getEligibleFiles } from '../../../destinations/utils';
-import {
-  createMockTab,
-  createMockTabGroup,
-  createMockUri,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockTab, createMockTabGroup, createMockUri, createMockVscodeAdapter } from '../../helpers';
+
+import * as vscode from 'vscode';
 
 const createNonTextTab = (): vscode.Tab => ({ input: { uri: undefined } }) as unknown as vscode.Tab;
 

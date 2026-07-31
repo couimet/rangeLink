@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockMemento, type MockMemento } from '../../__tests__/helpers';
 import { BookmarksStore } from '../BookmarksStore';
 import type { Bookmark, BookmarksStoreData } from '../types';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 
@@ -29,10 +29,7 @@ describe('BookmarksStore', () => {
       new BookmarksStore(mockMemento, mockLogger);
 
       expect(mockMemento.setKeysForSync).toHaveBeenCalledWith([STORAGE_KEY]);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.constructor', syncEnabled: true },
-        'Settings Sync enabled for bookmarks',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BookmarksStore.constructor', syncEnabled: true }, 'Settings Sync enabled for bookmarks');
     });
 
     it('logs warning when setKeysForSync is not available', () => {
@@ -72,13 +69,10 @@ describe('BookmarksStore', () => {
     });
 
     it('throws when globalState is undefined', () => {
-      expect(() => new BookmarksStore(undefined as never, mockLogger)).toThrowDetailedError(
-        'BOOKMARK_STORE_NOT_AVAILABLE',
-        {
-          message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
-          functionName: 'BookmarksStore.constructor',
-        },
-      );
+      expect(() => new BookmarksStore(undefined as never, mockLogger)).toThrowDetailedError('BOOKMARK_STORE_NOT_AVAILABLE', {
+        message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
+        functionName: 'BookmarksStore.constructor',
+      });
     });
   });
 
@@ -89,8 +83,7 @@ describe('BookmarksStore', () => {
         link: '/Users/test/project/CLAUDE.md#L10-L20',
       });
 
-      expect(result.success).toBe(true);
-      expect(result.value).toStrictEqual({
+      expect(result).toBeSuccess({
         id: 'test-bookmark-id-001',
         label: 'CLAUDE.md Instructions',
         link: '/Users/test/project/CLAUDE.md#L10-L20',
@@ -121,8 +114,7 @@ describe('BookmarksStore', () => {
         link: '/path/to/file.ts#L5',
       });
 
-      expect(result.success).toBe(true);
-      expect(result.value.scope).toBe('global');
+      expect(result).toBeSuccess(expect.objectContaining({ scope: 'global' }));
     });
 
     it('persists to globalState', async () => {
@@ -181,8 +173,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'New', link: '/new#L1' });
 
-      expect(result.success).toBe(true);
-      expect(result.value.id).toBe('unique-id');
+      expect(result).toBeSuccess(expect.objectContaining({ id: 'unique-id' }));
       expect(mockIdGenerator).toHaveBeenCalledTimes(2);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BookmarksStore.generateUniqueId', attempt: 1, collidingId: 'colliding-id' },
@@ -205,7 +196,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'New', link: '/new#L1' });
 
-      expect(result).toBeDetailedError('BOOKMARK_ID_GENERATION_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_ID_GENERATION_FAILED', {
         message: 'Failed to generate unique bookmark ID after 10 attempts',
         functionName: 'BookmarksStore.generateUniqueId',
       });
@@ -311,9 +302,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { label: 'New Label' });
 
-      expect(result.success).toBe(true);
-      expect(result.value.label).toBe('New Label');
-      expect(result.value.link).toBe('/original#L1');
+      expect(result).toBeSuccess(expect.objectContaining({ label: 'New Label', link: '/original#L1' }));
     });
 
     it('updates link field', async () => {
@@ -322,9 +311,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { link: '/new/path#L10' });
 
-      expect(result.success).toBe(true);
-      expect(result.value.link).toBe('/new/path#L10');
-      expect(result.value.label).toBe('Original Label');
+      expect(result).toBeSuccess(expect.objectContaining({ link: '/new/path#L10', label: 'Original Label' }));
     });
 
     it('updates multiple fields', async () => {
@@ -336,8 +323,7 @@ describe('BookmarksStore', () => {
         link: '/updated#L5',
       });
 
-      expect(result.success).toBe(true);
-      expect(result.value).toStrictEqual({
+      expect(result).toBeSuccess({
         id: 'existing-id',
         label: 'Updated Label',
         link: '/updated#L5',
@@ -381,10 +367,11 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { label: 'Changed' });
 
-      expect(result.success).toBe(true);
-      expect(result.value.createdAt).toBe('2025-01-01T00:00:00.000Z');
-      expect(result.value.accessCount).toBe(5);
-      expect(result.value.scope).toBe('global');
+      expect(result).toBeSuccessWith((value) => {
+        expect(value.createdAt).toBe('2025-01-01T00:00:00.000Z');
+        expect(value.accessCount).toBe(5);
+        expect(value.scope).toBe('global');
+      });
     });
 
     it('returns Result.err and logs warning for non-existent id', async () => {
@@ -393,15 +380,12 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('non-existent', { label: 'New' });
 
-      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
+      expect(result).toHaveDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot update bookmark: not found',
         functionName: 'BookmarksStore.update',
         details: { bookmarkId: 'non-existent' },
       });
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.update', bookmarkId: 'non-existent' },
-        'Cannot update bookmark: not found',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'BookmarksStore.update', bookmarkId: 'non-existent' }, 'Cannot update bookmark: not found');
     });
 
     it('persists changes', async () => {
@@ -430,9 +414,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove('to-remove');
 
-      expect(result).toBeOkWith((deleted) => {
-        expect(deleted).toStrictEqual(bookmark);
-      });
+      expect(result).toBeSuccess(bookmark);
       expect(store.getAll()).toStrictEqual([]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -457,15 +439,12 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove('non-existent');
 
-      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
+      expect(result).toHaveDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot remove bookmark: not found',
         functionName: 'BookmarksStore.remove',
         details: { bookmarkId: 'non-existent' },
       });
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.remove', bookmarkId: 'non-existent' },
-        'Cannot remove bookmark: not found',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'BookmarksStore.remove', bookmarkId: 'non-existent' }, 'Cannot remove bookmark: not found');
     });
 
     it('persists changes', async () => {
@@ -550,7 +529,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess('non-existent');
 
-      expect(result).toBeDetailedError('BOOKMARK_NOT_FOUND', {
+      expect(result).toHaveDetailedError('BOOKMARK_NOT_FOUND', {
         message: 'Cannot record access: bookmark not found',
         functionName: 'BookmarksStore.recordAccess',
         details: { bookmarkId: 'non-existent' },
@@ -668,16 +647,13 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during add',
         functionName: 'BookmarksStore.add',
         details: { operation: 'add' },
         cause: saveError,
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.add', error: saveError, syncEnabled: true },
-        'Failed to save bookmarks during add',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'BookmarksStore.add', error: saveError, syncEnabled: true }, 'Failed to save bookmarks during add');
     });
 
     it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in update', async () => {
@@ -687,7 +663,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update(TEST_ID, { label: 'updated' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during update',
         functionName: 'BookmarksStore.update',
         details: { operation: 'update' },
@@ -706,7 +682,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove(TEST_ID);
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during remove',
         functionName: 'BookmarksStore.remove',
         details: { operation: 'remove' },
@@ -725,7 +701,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess(TEST_ID);
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during recordAccess',
         functionName: 'BookmarksStore.recordAccess',
         details: { operation: 'recordAccess' },
@@ -747,7 +723,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while adding bookmark',
         functionName: 'BookmarksStore.add',
         cause: genericError,
@@ -763,7 +739,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.update(TEST_ID, { label: 'updated' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while updating bookmark',
         functionName: 'BookmarksStore.update',
         cause: genericError,
@@ -779,7 +755,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove(TEST_ID);
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while removing bookmark',
         functionName: 'BookmarksStore.remove',
         cause: genericError,
@@ -795,7 +771,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.recordAccess(TEST_ID);
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while recording bookmark access',
         functionName: 'BookmarksStore.recordAccess',
         cause: genericError,
@@ -809,7 +785,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Unexpected error while adding bookmark',
         functionName: 'BookmarksStore.add',
       });
@@ -820,7 +796,7 @@ describe('BookmarksStore', () => {
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });
 
-      expect(result).toBeDetailedError('BOOKMARK_SAVE_FAILED', {
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
         message: 'Failed to persist bookmarks during add',
         functionName: 'BookmarksStore.add',
         details: { operation: 'add' },

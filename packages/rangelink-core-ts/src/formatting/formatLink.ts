@@ -20,12 +20,7 @@ import { joinWithHash } from './joinWithHash';
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
  */
-export function formatLink(
-  path: string,
-  inputSelection: InputSelection,
-  delimiters: DelimiterConfig,
-  options?: FormatOptions,
-): CoreResult<FormattedLink> {
+export function formatLink(path: string, inputSelection: InputSelection, delimiters: DelimiterConfig, options?: FormatOptions): CoreResult<FormattedLink> {
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {
@@ -36,11 +31,7 @@ export function formatLink(
   const linkType = options?.linkType ?? LinkType.Regular;
 
   // Special case: single-line full-line selection
-  if (
-    spec.startLine === spec.endLine &&
-    spec.rangeFormat === 'LineOnly' &&
-    spec.startPosition === undefined
-  ) {
+  if (spec.startLine === spec.endLine && spec.rangeFormat === 'LineOnly' && spec.startPosition === undefined) {
     return finalizeLinkGeneration(
       () => ({
         link: formatSimpleLineReference(path, spec.startLine, delimiters),
@@ -57,14 +48,7 @@ export function formatLink(
   }
 
   // Build standard anchor
-  const anchor = buildAnchor(
-    spec.startLine,
-    spec.endLine,
-    spec.startPosition,
-    spec.endPosition,
-    delimiters,
-    spec.rangeFormat,
-  );
+  const anchor = buildAnchor(spec.startLine, spec.endLine, spec.startPosition, spec.endPosition, delimiters, spec.rangeFormat);
 
   return finalizeLinkGeneration(
     () => ({

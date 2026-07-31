@@ -1,14 +1,12 @@
+import type { Bookmark, BookmarkService } from '../bookmarks';
+import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
+import { RangeLinkExtensionError } from '../errors';
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem, MessageCode } from '../types';
+import { formatMessage, isSelectableQuickPickItem } from '../utils';
+
 import type { Logger } from '@couimet/logger-contract';
 import * as vscode from 'vscode';
-
-import type { Bookmark } from '../bookmarks';
-import type { BookmarkService } from '../bookmarks';
-import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem } from '../types';
-import { MessageCode } from '../types';
-import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 type ListBookmarksQuickPickItem = BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem;
 
@@ -25,10 +23,7 @@ export class ListBookmarksCommand {
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'ListBookmarksCommand.constructor' },
-      'ListBookmarksCommand initialized',
-    );
+    this.logger.debug({ fn: 'ListBookmarksCommand.constructor' }, 'ListBookmarksCommand initialized');
   }
 
   async execute(): Promise<void> {
@@ -55,10 +50,7 @@ export class ListBookmarksCommand {
     switch (selected.itemKind) {
       case 'bookmark':
         await this.bookmarkService.sendBookmark(selected.bookmarkId);
-        this.logger.debug(
-          { ...logCtx, bookmarkId: selected.bookmarkId },
-          'Bookmark selected and sent',
-        );
+        this.logger.debug({ ...logCtx, bookmarkId: selected.bookmarkId }, 'Bookmark selected and sent');
         break;
       case 'command':
         await this.ideAdapter.executeCommand(selected.command);
@@ -67,15 +59,8 @@ export class ListBookmarksCommand {
       case 'info':
         this.logger.debug({ ...logCtx, selectedItem: selected }, 'Non-actionable item selected');
         break;
-      default: {
-        const _exhaustiveCheck: never = selected;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
-          message: 'Unhandled item kind in bookmark list',
-          functionName: 'ListBookmarksCommand.handleSelection',
-          details: { selectedItem: _exhaustiveCheck },
-        });
-      }
+      default:
+        throw RangeLinkExtensionError.forUnexpectedSwitchDefault('item kind', selected, 'ListBookmarksCommand.handleSelection');
     }
   }
 

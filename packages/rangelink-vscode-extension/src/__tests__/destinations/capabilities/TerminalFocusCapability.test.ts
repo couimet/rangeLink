@@ -1,15 +1,11 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
 import { RangeLinkExtensionError } from '../../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../../../types';
-import {
-  createMockInsertFactory,
-  createMockTerminal,
-  createMockVscodeAdapter,
-} from '../../helpers';
+import { createMockInsertFactory, createMockTerminal, createMockVscodeAdapter } from '../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 const LOGGING_CONTEXT = { fn: 'test' };
 
@@ -23,22 +19,12 @@ describe('TerminalFocusCapability', () => {
     const mockInsertFactory = createMockInsertFactory<vscode.Terminal>();
     mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
 
-    const capability = new TerminalFocusCapability(
-      mockAdapter,
-      terminal,
-      mockInsertFactory,
-      mockLogger,
-    );
+    const capability = new TerminalFocusCapability(mockAdapter, terminal, mockInsertFactory, mockLogger);
 
     const result = await capability.focus(LOGGING_CONTEXT);
 
-    expect(result).toBeOkWith((value: { inserter: unknown }) => {
-      expect(value.inserter).toBe(mockInserterFn);
-    });
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'test::focus', terminalName: 'zsh' },
-      'Terminal focused via showTerminal()',
-    );
+    expect(result).toBeSuccess(expect.objectContaining({ inserter: mockInserterFn }));
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test::focus', terminalName: 'zsh' }, 'Terminal focused via showTerminal()');
   });
 
   it('returns TERMINAL_FOCUS_FAILED error when showTerminal fails', async () => {
@@ -51,24 +37,14 @@ describe('TerminalFocusCapability', () => {
     const terminal = createMockTerminal({ name: 'bash' });
     const mockInsertFactory = createMockInsertFactory<vscode.Terminal>();
 
-    const capability = new TerminalFocusCapability(
-      mockAdapter,
-      terminal,
-      mockInsertFactory,
-      mockLogger,
-    );
+    const capability = new TerminalFocusCapability(mockAdapter, terminal, mockInsertFactory, mockLogger);
 
     const result = await capability.focus(LOGGING_CONTEXT);
 
-    expect(result).toBeErrWith((error: { reason: string; cause: unknown }) => {
-      expect(error).toStrictEqual({
-        reason: 'TERMINAL_FOCUS_FAILED',
-        cause: focusError,
-      });
+    expect(result).toBeFailure({
+      reason: 'TERMINAL_FOCUS_FAILED',
+      cause: focusError,
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'test::focus', terminalName: 'bash', error: focusError },
-      'Failed to focus terminal',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test::focus', terminalName: 'bash', error: focusError }, 'Failed to focus terminal');
   });
 });

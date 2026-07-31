@@ -1,7 +1,7 @@
+import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
+
 import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
-
-import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 
 const STABLE_MS = 300;
 const TIMEOUT_MS = 10000;
@@ -28,11 +28,7 @@ export const navigateViaHandleLinkClick = (
       if (lastResult) {
         resolve(lastResult);
       } else {
-        reject(
-          new Error(
-            `No selection change event received within ${TIMEOUT_MS}ms for ${testFilename}`,
-          ),
-        );
+        reject(new Error(`No selection change event received within ${TIMEOUT_MS}ms for ${testFilename}`));
       }
     }, TIMEOUT_MS);
 
@@ -48,9 +44,7 @@ export const navigateViaHandleLinkClick = (
       }
     });
 
-    Promise.resolve(
-      vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed }),
-    ).catch((error: unknown) => {
+    Promise.resolve(vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed })).catch((error: unknown) => {
       clearTimeout(overallTimeout);
       if (stableTimer) clearTimeout(stableTimer);
       disposable.dispose();

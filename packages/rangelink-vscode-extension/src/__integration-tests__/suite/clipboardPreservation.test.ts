@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_TEXT_EDITOR_HERE,
@@ -14,7 +9,6 @@ import {
 } from '../../constants/commandIds';
 import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
-  TERMINAL_READY_MS,
   assertClipboardEqualsGeneratedLink,
   assertClipboardPreservedAndTerminalLink,
   assertTerminalBufferContains,
@@ -23,11 +17,16 @@ import {
   openAndDismiss,
   parseLogContext,
   standardSuite,
+  TERMINAL_READY_MS,
   withClipboardChanged,
   withClipboardSentinel,
   writeClipboardSentinel,
 } from '../helpers';
 import type { CapturingTerminal } from '../helpers/capturingPtyHelpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Clipboard Preservation', (ss) => {
   let testFileUri: vscode.Uri;
@@ -45,18 +44,13 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
-      '✓ RangeLink: File path sent to Terminal ("rl-clipboard-test")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-clipboard-test")', '✓ RangeLink: File path sent to Terminal ("rl-clipboard-test")']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     capturing.clearCaptured();
     await withClipboardSentinel('before-003', 'R-F', async () => {
@@ -67,18 +61,13 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-006: R-L with preserve=never leaves clipboard with the generated link', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
-      '✓ RangeLink: RangeLink sent to Terminal ("rl-clipboard-test")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-clipboard-test")', '✓ RangeLink: RangeLink sent to Terminal ("rl-clipboard-test")']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     capturing.clearCaptured();
     await assertClipboardEqualsGeneratedLink(
@@ -94,18 +83,13 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-clipboard-test")', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     await assertClipboardEqualsGeneratedLink(
       'R-C with preserve=always',
@@ -118,10 +102,7 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-019: R-C writes link to clipboard with default preserve setting', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-clipboard-test")', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -138,18 +119,13 @@ standardSuite('Clipboard Preservation', (ss) => {
   });
 
   test('clipboard-preservation-020: R-C writes link to clipboard with preserve=never', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-clipboard-test")',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-clipboard-test")', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
     });
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('rangelink').update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     await assertClipboardEqualsGeneratedLink(
       'R-C with preserve=never',
@@ -181,10 +157,7 @@ standardSuite('Clipboard Preservation', (ss) => {
 
 standardSuite('Clipboard Preservation — Assisted', (ss) => {
   test('clipboard-preservation-001: always mode — R-L to terminal restores clipboard', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("cbp-001-dest")',
-      '✓ RangeLink: RangeLink sent to Terminal ("cbp-001-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("cbp-001-dest")', '✓ RangeLink: RangeLink sent to Terminal ("cbp-001-dest")']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -196,10 +169,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
 
     const editor001 = await ss.openEditor(fileUri);
     const lastSelectedLine = editor001.document.lineAt(3);
-    editor001.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      lastSelectedLine.range.end,
-    );
+    editor001.selection = new vscode.Selection(new vscode.Position(1, 0), lastSelectedLine.range.end);
     await ss.settle();
 
     await assertClipboardPreservedAndTerminalLink(capturing, 'before-001', 'R-L', async () => {
@@ -214,10 +184,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
 
     const fileUri = ss.createWorkspaceFile('cbp-002', '');
     const destBasename = path.basename(fileUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -243,18 +210,12 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     });
 
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
-    assert.ok(
-      destContent.replace(/[\r\n]/g, '').includes(PHRASE),
-      `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
-    );
+    assert.ok(destContent.replace(/[\r\n]/g, '').includes(PHRASE), `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`);
     ss.log('✓ Clipboard restored to sentinel and phrase landed in destination file after R-V');
   });
 
   test('clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: RangeLink sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     const { uri: fileUri } = ss.createContentFile('cbp-004', 10, (i) => `line ${i + 1} content`);
 
@@ -279,19 +240,12 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
       tier1: string;
       tier2: string;
     };
-    assert.strictEqual(
-      dummyText.tier1,
-      ` ${expectedLink} `,
-      `Expected Dummy AI tier1=" ${expectedLink} ", got: ${JSON.stringify(dummyText.tier1)}`,
-    );
+    assert.strictEqual(dummyText.tier1, ` ${expectedLink} `, `Expected Dummy AI tier1=" ${expectedLink} ", got: ${JSON.stringify(dummyText.tier1)}`);
     ss.log('✓ Clipboard restored to sentinel and link landed in Dummy AI after R-L');
   });
 
   test('clipboard-preservation-005: always mode — terminal paste (fresh bind) restores clipboard', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("cbp-005-dest")',
-      '✓ RangeLink: RangeLink sent to Terminal ("cbp-005-dest")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("cbp-005-dest")', '✓ RangeLink: RangeLink sent to Terminal ("cbp-005-dest")']);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -303,10 +257,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
 
     const editor005 = await ss.openEditor(fileUri);
     const lastSelectedLine = editor005.document.lineAt(2);
-    editor005.selection = new vscode.Selection(
-      new vscode.Position(1, 0),
-      lastSelectedLine.range.end,
-    );
+    editor005.selection = new vscode.Selection(new vscode.Position(1, 0), lastSelectedLine.range.end);
     await ss.settle();
 
     await assertClipboardPreservedAndTerminalLink(capturing, 'before-005', 'R-L', async () => {
@@ -330,10 +281,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     await ss.settle();
 
     const destBasename = path.basename(fileUri.fsPath);
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${destBasename}")`, `✓ RangeLink: Selected text sent to Text Editor ("${destBasename}")`]);
     ss.expectContextKeys({
       'rangelink.isBound': true,
       'rangelink.isActiveTerminalBindable': true,
@@ -355,10 +303,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     });
 
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
-    assert.ok(
-      destContent.replace(/[\r\n]/g, '').includes(PHRASE),
-      `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
-    );
+    assert.ok(destContent.replace(/[\r\n]/g, '').includes(PHRASE), `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`);
     ss.log('✓ Clipboard changed from sentinel and phrase landed in destination file after R-V');
   });
 
@@ -395,13 +340,8 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 3, 0);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
-    ss.expectToastMessages([
-      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Focus-Fail)', '✓ RangeLink: RangeLink copied to clipboard']);
+    ss.expectToastMessages([{ level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' }]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
@@ -424,9 +364,7 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
       return ctx?.fn?.endsWith('.pasteLink') && ctx?.reason !== undefined;
     });
     assert.ok(focusFailed010, 'Expected focus failure log with reason field');
-    ss.log(
-      '✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste',
-    );
+    ss.log('✓ Clipboard not restored after focus failure — link stays in clipboard for manual paste');
   });
 
   test('clipboard-preservation-022: focus command failure preserves portable link in clipboard for manual paste with portable content type in UI', async () => {
@@ -436,13 +374,8 @@ standardSuite('Clipboard Preservation — Assisted', (ss) => {
     editor.selection = new vscode.Selection(0, 0, 3, 0);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
-      '✓ RangeLink: Portable RangeLink copied to clipboard',
-    ]);
-    ss.expectToastMessages([
-      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Focus-Fail)', '✓ RangeLink: Portable RangeLink copied to clipboard']);
+    ss.expectToastMessages([{ level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' }]);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {

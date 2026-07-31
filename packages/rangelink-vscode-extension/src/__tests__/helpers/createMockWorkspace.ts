@@ -2,9 +2,9 @@
  * Create a mock workspace object for testing
  */
 
-import * as vscode from 'vscode';
-
 import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
+
+import * as vscode from 'vscode';
 
 /**
  * Create a mock workspace object for navigation tests.
@@ -21,17 +21,11 @@ import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
  * @param options - Optional workspace properties to override defaults
  * @returns Mock workspace with file operations and document handling
  */
-export const createMockWorkspace = (
-  options?: Record<string, unknown> | Partial<typeof vscode.workspace>,
-) => {
+export const createMockWorkspace = (options?: Record<string, unknown> | Partial<typeof vscode.workspace>) => {
   const defaultWorkspaceFolders = ['/workspace'];
-  const workspaceFoldersInput =
-    (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??
-    defaultWorkspaceFolders;
+  const workspaceFoldersInput = (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ?? defaultWorkspaceFolders;
 
-  const folders = workspaceFoldersInput?.map((folder) =>
-    typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
-  );
+  const folders = workspaceFoldersInput?.map((folder) => (typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder));
 
   return {
     workspaceFolders: folders,

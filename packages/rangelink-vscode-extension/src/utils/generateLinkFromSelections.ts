@@ -1,18 +1,12 @@
-import type { Logger } from '@couimet/logger-contract';
-import {
-  DelimiterConfig,
-  formatLink,
-  type FormattedLink,
-  FormatOptions,
-  LinkType,
-} from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../types';
 
 import { toInputSelection } from './toInputSelection';
+
+import type { Logger } from '@couimet/logger-contract';
+import { DelimiterConfig, formatLink, FormatOptions, type FormattedLink, LinkType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 /**
  * Options for generating a link from editor selections.
@@ -65,9 +59,7 @@ const FN_NAME = 'generateLinkFromSelections';
  * @param options - Configuration for link generation
  * @returns Result containing FormattedLink on success, or RangeLinkExtensionError on failure
  */
-export const generateLinkFromSelections = (
-  options: GenerateLinkFromSelectionsOptions,
-): ExtensionResult<FormattedLink> => {
+export const generateLinkFromSelections = (options: GenerateLinkFromSelectionsOptions): ExtensionResult<FormattedLink> => {
   const { referencePath, document, selections, delimiters, linkType, logger } = options;
 
   if (selections.length === 0) {
@@ -93,10 +85,7 @@ export const generateLinkFromSelections = (
 
   const inputSelectionResult = toInputSelection(document, selections, logger);
   if (!inputSelectionResult.success) {
-    logger.error(
-      { fn: FN_NAME, error: inputSelectionResult.error },
-      'Failed to convert selections to InputSelection',
-    );
+    logger.error({ fn: FN_NAME, error: inputSelectionResult.error }, 'Failed to convert selections to InputSelection');
     return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_CONVERSION_FAILED,

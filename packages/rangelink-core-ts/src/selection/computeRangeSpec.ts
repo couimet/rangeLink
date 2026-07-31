@@ -17,10 +17,7 @@ import { validateInputSelection } from './validateInputSelection';
  * @param inputSelection InputSelection containing selections array and selectionType
  * @param options Optional formatting parameters (notation, linkType, etc.)
  */
-export function computeRangeSpec(
-  inputSelection: InputSelection,
-  options?: FormatOptions,
-): CoreResult<ComputedSelection> {
+export function computeRangeSpec(inputSelection: InputSelection, options?: FormatOptions): CoreResult<ComputedSelection> {
   try {
     validateInputSelection(inputSelection);
   } catch (error) {
@@ -36,10 +33,7 @@ export function computeRangeSpec(
 
   // Convert to 1-based indexing
   const startLine = primary.start.line + 1;
-  const endLine =
-    (selectionType === SelectionType.Rectangular
-      ? selections[selections.length - 1].start.line
-      : primary.end.line) + 1;
+  const endLine = (selectionType === SelectionType.Rectangular ? selections[selections.length - 1].start.line : primary.end.line) + 1;
   const startPosition = primary.start.character + 1;
   const endPosition = primary.end.character + 1;
 

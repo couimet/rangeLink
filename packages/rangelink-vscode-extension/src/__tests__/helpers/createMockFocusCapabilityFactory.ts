@@ -1,5 +1,4 @@
-import type { FocusCapabilityFactory } from '../../destinations/capabilities';
-import type { LazyResolvedFocusCapability } from '../../destinations/capabilities';
+import type { FocusCapabilityFactory, LazyResolvedFocusCapability } from '../../destinations/capabilities';
 
 /**
  * Create a mock LazyResolvedFocusCapability for testing.
@@ -30,7 +29,5 @@ export const createMockFocusCapabilityFactory = (): jest.Mocked<FocusCapabilityF
       label: 'builtinFallback',
       probeMode: 'execute',
     }),
-    createLazyResolvedCapability: jest
-      .fn()
-      .mockReturnValue(createMockLazyResolvedFocusCapability()),
+    createLazyResolvedCapability: jest.fn().mockReturnValue(createMockLazyResolvedFocusCapability()),
   }) as unknown as jest.Mocked<FocusCapabilityFactory>;

@@ -1,19 +1,8 @@
+import { CMD_BIND_TO_TERMINAL_HERE, CMD_COPY_LINK_ONLY_RELATIVE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import { assertClipboardEqualsGeneratedLink, getLogCapture, standardSuite, waitForHuman, waitForHumanVerdict } from '../helpers';
+
 import assert from 'node:assert';
-
 import * as vscode from 'vscode';
-
-import {
-  CMD_BIND_TO_TERMINAL_HERE,
-  CMD_COPY_LINK_ONLY_RELATIVE,
-  CMD_UNBIND_DESTINATION,
-} from '../../constants/commandIds';
-import {
-  assertClipboardEqualsGeneratedLink,
-  getLogCapture,
-  standardSuite,
-  waitForHuman,
-  waitForHumanVerdict,
-} from '../helpers';
 
 standardSuite('Unbind Destination', (ss) => {
   test('unbind-001: unbindDestination unbinds a currently bound terminal destination', async () => {
@@ -51,10 +40,7 @@ standardSuite('Unbind Destination', (ss) => {
   });
 
   test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-unbind-004-test")',
-      '✓ RangeLink: Unbound from Terminal ("rl-unbind-004-test")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-unbind-004-test")', '✓ RangeLink: Unbound from Terminal ("rl-unbind-004-test")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     await ss.createTerminal('rl-unbind-004-test');
@@ -68,15 +54,11 @@ standardSuite('Unbind Destination', (ss) => {
   });
 
   test('[assisted] unbind-005: "RangeLink: Unbind" hidden in command palette when no destination is bound', async () => {
-    const verdict = await waitForHumanVerdict(
-      'unbind-005',
-      'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind" — is "RangeLink: Unbind" ABSENT?',
-      [
-        '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
-        '2. Type "RangeLink: Unbind"',
-        'Verdict:',
-      ],
-    );
+    const verdict = await waitForHumanVerdict('unbind-005', 'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind" — is "RangeLink: Unbind" ABSENT?', [
+      '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
+      '2. Type "RangeLink: Unbind"',
+      'Verdict:',
+    ]);
 
     assert.strictEqual(
       verdict,
@@ -86,10 +68,7 @@ standardSuite('Unbind Destination', (ss) => {
   });
 
   test('[assisted] unbind-006: "RangeLink: Unbind" visible in command palette when a destination is bound', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-unbind-006-test")',
-      '✓ RangeLink: Unbound from Terminal ("rl-unbind-006-test")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-unbind-006-test")', '✓ RangeLink: Unbound from Terminal ("rl-unbind-006-test")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     await ss.createTerminal('rl-unbind-006-test');
@@ -99,24 +78,17 @@ standardSuite('Unbind Destination', (ss) => {
 
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
 
-    await waitForHuman(
-      'unbind-006',
-      'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind", and execute it.',
-      [
-        '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
-        '2. Type "RangeLink: Unbind"',
-        '3. Execute "RangeLink: Unbind" to unbind the destination',
-      ],
-    );
+    await waitForHuman('unbind-006', 'Open Command Palette (Cmd+Shift+P), type "RangeLink: Unbind", and execute it.', [
+      '1. Open the Command Palette (Cmd+Shift+P / Ctrl+Shift+P)',
+      '2. Type "RangeLink: Unbind"',
+      '3. Execute "RangeLink: Unbind" to unbind the destination',
+    ]);
 
     ss.log('✓ Unbind executed from palette; isBound context set to false');
   });
 
   test('unbind-003: unbindDestination is a safe no-op when no destination is bound', async () => {
-    ss.expectStatusBarMessages([
-      'RangeLink: No destination bound',
-      'RangeLink: No destination bound',
-    ]);
+    ss.expectStatusBarMessages(['RangeLink: No destination bound', 'RangeLink: No destination bound']);
 
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
 

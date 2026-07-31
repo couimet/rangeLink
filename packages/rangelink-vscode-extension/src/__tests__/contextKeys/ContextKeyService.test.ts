@@ -1,5 +1,3 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ContextKeyService } from '../../contextKeys/ContextKeyService';
 import {
   createMockBoundSession,
@@ -8,6 +6,8 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const MINIMAL_PTY = {
   onDidWrite: jest.fn(),
@@ -22,8 +22,7 @@ describe('ContextKeyService', () => {
   let logger: ReturnType<typeof createMockLogger>;
   let setContextSpy: jest.SpyInstance;
 
-  const createService = (): ContextKeyService =>
-    new ContextKeyService(adapter, session as any, logger);
+  const createService = (): ContextKeyService => new ContextKeyService(adapter, session as any, logger);
 
   beforeEach(() => {
     adapter = createMockVscodeAdapter();
@@ -40,10 +39,7 @@ describe('ContextKeyService', () => {
     createService();
 
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', false);
-    expect(logger.debug).toHaveBeenCalledWith(
-      { fn: 'ContextKeyService.updateIsBound', isBound: false },
-      'Evaluating isBound context key',
-    );
+    expect(logger.debug).toHaveBeenCalledWith({ fn: 'ContextKeyService.updateIsBound', isBound: false }, 'Evaluating isBound context key');
   });
 
   it('sets isBound=true on construction when a destination is bound', () => {
@@ -52,10 +48,7 @@ describe('ContextKeyService', () => {
     createService();
 
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', true);
-    expect(logger.debug).toHaveBeenCalledWith(
-      { fn: 'ContextKeyService.updateIsBound', isBound: true },
-      'Evaluating isBound context key',
-    );
+    expect(logger.debug).toHaveBeenCalledWith({ fn: 'ContextKeyService.updateIsBound', isBound: true }, 'Evaluating isBound context key');
   });
 
   // --- isActiveTerminalBindable ---
@@ -189,10 +182,7 @@ describe('ContextKeyService', () => {
   it('logs initialization on construction', () => {
     createService();
 
-    expect(logger.debug).toHaveBeenCalledWith(
-      { fn: 'ContextKeyService' },
-      'ContextKeyService initializing all context keys',
-    );
+    expect(logger.debug).toHaveBeenCalledWith({ fn: 'ContextKeyService' }, 'ContextKeyService initializing all context keys');
   });
 
   // --- re-evaluation ---
@@ -238,10 +228,7 @@ describe('ContextKeyService', () => {
     session._emitter.fire({ id: 'terminal', displayName: 'Terminal ("zsh")' });
 
     expect(setContextSpy).toHaveBeenCalledWith('rangelink.isBound', true);
-    expect(logger.debug).toHaveBeenCalledWith(
-      { fn: 'ContextKeyService.updateIsBound', isBound: true },
-      'Evaluating isBound context key',
-    );
+    expect(logger.debug).toHaveBeenCalledWith({ fn: 'ContextKeyService.updateIsBound', isBound: true }, 'Evaluating isBound context key');
   });
 
   // --- getLastSetValues ---
@@ -282,9 +269,7 @@ describe('ContextKeyService', () => {
     const boundDisposable = { dispose: jest.fn() };
     (vscodeMock.window.onDidOpenTerminal as jest.Mock).mockReturnValueOnce(openDisposable);
     (vscodeMock.window.onDidCloseTerminal as jest.Mock).mockReturnValueOnce(closeDisposable);
-    (vscodeMock.window.onDidChangeActiveTerminal as jest.Mock).mockReturnValueOnce(
-      changeDisposable,
-    );
+    (vscodeMock.window.onDidChangeActiveTerminal as jest.Mock).mockReturnValueOnce(changeDisposable);
     session.onDidChange.mockReturnValueOnce(boundDisposable);
 
     const service = createService();
@@ -294,9 +279,6 @@ describe('ContextKeyService', () => {
     expect(closeDisposable.dispose).toHaveBeenCalledTimes(1);
     expect(changeDisposable.dispose).toHaveBeenCalledTimes(1);
     expect(boundDisposable.dispose).toHaveBeenCalledTimes(1);
-    expect(logger.debug).toHaveBeenCalledWith(
-      { fn: 'ContextKeyService' },
-      'Disposing ContextKeyService',
-    );
+    expect(logger.debug).toHaveBeenCalledWith({ fn: 'ContextKeyService' }, 'Disposing ContextKeyService');
   });
 });

@@ -1,6 +1,6 @@
-import { defineConfig } from '@vscode/test-cli';
+import { BASE_CONFIG, CI_TIMEOUT_MS } from './.vscode-test.base.mjs';
 
-import { CI_TIMEOUT_MS, BASE_CONFIG } from './.vscode-test.base.mjs';
+import { defineConfig } from '@vscode/test-cli';
 
 export default defineConfig([
   {

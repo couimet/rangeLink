@@ -14,10 +14,7 @@ import * as vscode from 'vscode';
  * @param overrides - Optional property overrides (e.g., activeTab)
  * @returns Mock TabGroup instance
  */
-export const createMockTabGroup = (
-  tabs: vscode.Tab[] = [],
-  overrides?: Partial<vscode.TabGroup>,
-): vscode.TabGroup => {
+export const createMockTabGroup = (tabs: vscode.Tab[] = [], overrides?: Partial<vscode.TabGroup>): vscode.TabGroup => {
   return {
     tabs,
     activeTab: tabs[0],

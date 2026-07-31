@@ -2,9 +2,9 @@
  * Configure workspace mocks for typical file editor tests
  */
 
-import * as vscode from 'vscode';
-
 import { createMockTabGroups } from './createMockTabGroups';
+
+import * as vscode from 'vscode';
 
 /**
  * Configure workspace mocks for typical file editor tests.
@@ -32,11 +32,7 @@ export const configureWorkspaceMocks = (
     visibleEditors?: vscode.TextEditor[];
   } = {},
 ): void => {
-  const {
-    workspacePath = '/workspace',
-    relativePath = 'src/file.ts',
-    visibleEditors = [],
-  } = options;
+  const { workspacePath = '/workspace', relativePath = 'src/file.ts', visibleEditors = [] } = options;
 
   // Mock workspace folder lookup
   (mockVscode.workspace.getWorkspaceFolder as jest.Mock) = jest.fn().mockReturnValue({
@@ -47,9 +43,7 @@ export const configureWorkspaceMocks = (
   (mockVscode.workspace.asRelativePath as jest.Mock) = jest.fn().mockReturnValue(relativePath);
 
   // Mock document opening
-  (mockVscode.workspace.openTextDocument as jest.Mock) = jest
-    .fn()
-    .mockImplementation((uri: vscode.Uri) => Promise.resolve({ uri }));
+  (mockVscode.workspace.openTextDocument as jest.Mock) = jest.fn().mockImplementation((uri: vscode.Uri) => Promise.resolve({ uri }));
 
   // Set visible editors
   mockVscode.window.visibleTextEditors = visibleEditors;

@@ -1,5 +1,4 @@
-import { LinkType, SelectionType } from 'rangelink-core-ts';
-import type { DetectedLink, ParsedLink } from 'rangelink-core-ts';
+import { DetectedLink, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
 
 const DEFAULT_PARSED: ParsedLink = {
   path: 'src/file.ts',

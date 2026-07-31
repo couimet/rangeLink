@@ -1,14 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
-import {
-  createMockDocument,
-  createMockEditor,
-  createMockLineAt,
-  createMockPos,
-  createMockSelection,
-  createMockVscodeAdapter,
-} from '../../__tests__/helpers';
+import { createMockDocument, createMockEditor, createMockLineAt, createMockPos, createMockSelection, createMockVscodeAdapter } from '../../__tests__/helpers';
 import { SelectionValidator } from '../SelectionValidator';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('SelectionValidator', () => {
   const mockLogger = createMockLogger();
@@ -36,9 +29,7 @@ describe('SelectionValidator', () => {
           fn: 'SelectionValidator.validateSelectionsAndShowError',
           hasEditor: true,
           selectionCount: 1,
-          selections: [
-            { index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 10 }, isEmpty: false },
-          ],
+          selections: [{ index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 10 }, isEmpty: false }],
           documentVersion: undefined,
           documentLineCount: undefined,
           documentIsDirty: undefined,
@@ -92,25 +83,19 @@ describe('SelectionValidator', () => {
       const result = validator.validateSelectionsAndShowError();
 
       expect(result).toBeUndefined();
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'No text selected. Click in the file, select text, and try again.',
-      );
+      expect(showErrorSpy).toHaveBeenCalledWith('No text selected. Click in the file, select text, and try again.');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'SelectionValidator.validateSelectionsAndShowError',
           hasEditor: true,
           errorCode: 'ERROR_NO_TEXT_SELECTED',
           selectionCount: 1,
-          selections: [
-            { index: 0, start: { line: 5, char: 0 }, end: { line: 5, char: 0 }, isEmpty: true },
-          ],
+          selections: [{ index: 0, start: { line: 5, char: 0 }, end: { line: 5, char: 0 }, isEmpty: true }],
           documentVersion: undefined,
           documentLineCount: undefined,
           documentIsDirty: undefined,
           documentIsClosed: undefined,
-          lineContentAtBoundaries: [
-            { index: 0, startLineContent: undefined, endLineContent: undefined },
-          ],
+          lineContentAtBoundaries: [{ index: 0, startLineContent: undefined, endLineContent: undefined }],
         },
         'Selection validation failed - full diagnostic context',
       );
@@ -165,9 +150,7 @@ describe('SelectionValidator', () => {
 
       const result = validator.getLineContentAtSelectionBoundaries(document, [selection]);
 
-      expect(result).toStrictEqual([
-        { index: 0, startLineContent: 'line content', endLineContent: 'line content' },
-      ]);
+      expect(result).toStrictEqual([{ index: 0, startLineContent: 'line content', endLineContent: 'line content' }]);
     });
 
     it('returns undefined for out-of-bounds line numbers', () => {
@@ -185,9 +168,7 @@ describe('SelectionValidator', () => {
 
       const result = validator.getLineContentAtSelectionBoundaries(document, [selection]);
 
-      expect(result).toStrictEqual([
-        { index: 0, startLineContent: undefined, endLineContent: undefined },
-      ]);
+      expect(result).toStrictEqual([{ index: 0, startLineContent: undefined, endLineContent: undefined }]);
     });
 
     it('returns undefined when lineAt throws', () => {
@@ -207,9 +188,7 @@ describe('SelectionValidator', () => {
 
       const result = validator.getLineContentAtSelectionBoundaries(document, [selection]);
 
-      expect(result).toStrictEqual([
-        { index: 0, startLineContent: undefined, endLineContent: undefined },
-      ]);
+      expect(result).toStrictEqual([{ index: 0, startLineContent: undefined, endLineContent: undefined }]);
     });
 
     it('handles negative line numbers as out-of-bounds', () => {
@@ -227,9 +206,7 @@ describe('SelectionValidator', () => {
 
       const result = validator.getLineContentAtSelectionBoundaries(document, [selection]);
 
-      expect(result).toStrictEqual([
-        { index: 0, startLineContent: undefined, endLineContent: 'content' },
-      ]);
+      expect(result).toStrictEqual([{ index: 0, startLineContent: undefined, endLineContent: 'content' }]);
     });
   });
 });

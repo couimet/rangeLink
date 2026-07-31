@@ -15,5 +15,4 @@ import { isWritableScheme } from '../../utils/isWritableScheme';
  * @param fsPath - The file system path (e.g., '/workspace/src/app.ts')
  * @returns true if file can be used as a text editor destination
  */
-export const isFileEligible = (scheme: string, fsPath: string): boolean =>
-  isWritableScheme(scheme) && !isBinaryFile(scheme, fsPath);
+export const isFileEligible = (scheme: string, fsPath: string): boolean => isWritableScheme(scheme) && !isBinaryFile(scheme, fsPath);

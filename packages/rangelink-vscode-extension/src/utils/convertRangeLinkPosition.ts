@@ -35,10 +35,7 @@ export interface ConvertedPosition {
  * @param document - VSCode document for bounds checking
  * @returns Converted position (0-indexed, clamped to document bounds)
  */
-export const convertRangeLinkPosition = (
-  position: LinkPosition,
-  document: vscode.TextDocument,
-): ConvertedPosition => {
+export const convertRangeLinkPosition = (position: LinkPosition, document: vscode.TextDocument): ConvertedPosition => {
   const requestedLine = position.line - 1;
   const maxLine = document.lineCount - 1;
   const line = Math.max(0, Math.min(requestedLine, maxLine));

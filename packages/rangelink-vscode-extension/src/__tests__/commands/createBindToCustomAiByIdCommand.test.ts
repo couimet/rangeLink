@@ -1,11 +1,11 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createBindToCustomAiByIdCommand } from '../../commands/createBindToCustomAiByIdCommand';
 import type { BindSuccessInfo } from '../../destinations';
 import * as destinationBuilders from '../../destinations/destinationBuilders';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { ExtensionResult } from '../../types';
 import { createMockDestinationManager } from '../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('createBindToCustomAiByIdCommand', () => {
   const mockLogger = createMockLogger();
@@ -23,16 +23,13 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(undefined);
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
 
     expect(mockManager.bind).not.toHaveBeenCalled();
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'createBindToCustomAiByIdCommand' },
-      'Invalid or missing arguments for bindToCustomAiById',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'createBindToCustomAiByIdCommand' }, 'Invalid or missing arguments for bindToCustomAiById');
   });
 
   it('returns error when args is null', async () => {
@@ -41,7 +38,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(null);
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -53,7 +50,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler('anthropic.claude-code');
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -65,7 +62,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler(['anthropic.claude-code']);
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -77,15 +74,12 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({});
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
 
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      { fn: 'createBindToCustomAiByIdCommand', argsType: 'object' },
-      'Missing or invalid extensionId in args',
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'createBindToCustomAiByIdCommand', argsType: 'object' }, 'Missing or invalid extensionId in args');
   });
 
   it('returns error when extensionId is an empty string', async () => {
@@ -94,7 +88,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: '' });
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -106,22 +100,20 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 123 });
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: 'Argument must be { extensionId: string }',
       functionName: 'createBindToCustomAiByIdCommand',
     });
   });
 
   it('returns error when resolveKindByExtensionId returns undefined for unknown extensionId', async () => {
-    const resolveSpy = jest
-      .spyOn(destinationBuilders, 'resolveKindByExtensionId')
-      .mockReturnValue(undefined);
+    const resolveSpy = jest.spyOn(destinationBuilders, 'resolveKindByExtensionId').mockReturnValue(undefined);
     const mockManager = createMockDestinationManager();
 
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 'unknown.missing' });
 
-    expect(result).toBeDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
+    expect(result).toHaveDetailedError('CUSTOM_AI_NOT_FOUND_BY_EXTENSION_ID', {
       message: "No AI assistant found with extension ID 'unknown.missing'",
       functionName: 'createBindToCustomAiByIdCommand',
     });
@@ -131,9 +123,7 @@ describe('createBindToCustomAiByIdCommand', () => {
   });
 
   it('binds a built-in assistant when resolveKindByExtensionId returns a built-in kind', async () => {
-    const resolveSpy = jest
-      .spyOn(destinationBuilders, 'resolveKindByExtensionId')
-      .mockReturnValue('claude-code');
+    const resolveSpy = jest.spyOn(destinationBuilders, 'resolveKindByExtensionId').mockReturnValue('claude-code');
 
     const bindResult = ExtensionResult.ok<BindSuccessInfo>({
       destinationName: 'Claude Code Chat',
@@ -147,11 +137,9 @@ describe('createBindToCustomAiByIdCommand', () => {
     expect(resolveSpy).toHaveBeenCalledWith('anthropic.claude-code', []);
     expect(mockManager.bind).toHaveBeenCalledWith({ kind: 'claude-code' });
 
-    expect(result).toBeOkWith((value: BindSuccessInfo) => {
-      expect(value).toStrictEqual({
-        destinationName: 'Claude Code Chat',
-        destinationKind: 'claude-code',
-      });
+    expect(result).toBeSuccess({
+      destinationName: 'Claude Code Chat',
+      destinationKind: 'claude-code',
     });
 
     expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -169,9 +157,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const kind = `custom-ai:${extensionId}` as const;
     const customAssistants = [createCustomConfig(extensionId)];
 
-    const resolveSpy = jest
-      .spyOn(destinationBuilders, 'resolveKindByExtensionId')
-      .mockReturnValue(kind);
+    const resolveSpy = jest.spyOn(destinationBuilders, 'resolveKindByExtensionId').mockReturnValue(kind);
 
     const bindResult = ExtensionResult.ok<BindSuccessInfo>({
       destinationName: 'Custom my-custom.extension',
@@ -186,11 +172,9 @@ describe('createBindToCustomAiByIdCommand', () => {
     expect(resolveSpy).toHaveBeenCalledWith(extensionId, customAssistants);
     expect(mockManager.bind).toHaveBeenCalledWith({ kind });
 
-    expect(result).toBeOkWith((value: BindSuccessInfo) => {
-      expect(value).toStrictEqual({
-        destinationName: 'Custom my-custom.extension',
-        destinationKind: kind,
-      });
+    expect(result).toBeSuccess({
+      destinationName: 'Custom my-custom.extension',
+      destinationKind: kind,
     });
 
     expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -204,9 +188,7 @@ describe('createBindToCustomAiByIdCommand', () => {
   });
 
   it('passes bind error through when destinationManager.bind returns an error', async () => {
-    const resolveSpy = jest
-      .spyOn(destinationBuilders, 'resolveKindByExtensionId')
-      .mockReturnValue('gemini-code-assist');
+    const resolveSpy = jest.spyOn(destinationBuilders, 'resolveKindByExtensionId').mockReturnValue('gemini-code-assist');
 
     const bindError = new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
@@ -219,7 +201,7 @@ describe('createBindToCustomAiByIdCommand', () => {
     const handler = createBindToCustomAiByIdCommand([], mockManager, mockLogger);
     const result = await handler({ extensionId: 'google.geminicodeassist' });
 
-    expect(result).toBeDetailedError('DESTINATION_BIND_FAILED', {
+    expect(result).toHaveDetailedError('DESTINATION_BIND_FAILED', {
       message: 'Destination not available',
       functionName: 'PasteDestinationManager.bindGenericDestination',
     });

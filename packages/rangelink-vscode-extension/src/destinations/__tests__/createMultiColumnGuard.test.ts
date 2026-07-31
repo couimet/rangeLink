@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
-
 import { createMockOperationFeedbackProvider, createMockUri } from '../../__tests__/helpers';
 import { createMultiColumnGuard } from '../createMultiColumnGuard';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import type * as vscode from 'vscode';
 
 describe('createMultiColumnGuard', () => {
   let mockEvents: {

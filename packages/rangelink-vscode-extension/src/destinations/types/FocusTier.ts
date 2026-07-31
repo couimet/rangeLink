@@ -19,11 +19,7 @@ export type FocusTierProbeMode = 'execute' | 'none';
  * Used to make tier-dependent decisions type-safe (e.g., clipboard
  * preservation checks compare against this union, not raw strings).
  */
-export type FocusTierLabel =
-  | 'insertCommands'
-  | 'focusAndPasteCommands'
-  | 'focusCommands'
-  | 'builtinFallback';
+export type FocusTierLabel = 'insertCommands' | 'focusAndPasteCommands' | 'focusCommands' | 'builtinFallback';
 
 /**
  * A tier in the tiered focus strategy.

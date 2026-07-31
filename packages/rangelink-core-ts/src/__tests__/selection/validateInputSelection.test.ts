@@ -1,5 +1,3 @@
-import { getUniqueInt } from '@couimet/dynamic-testing';
-
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { validateInputSelection } from '../../selection/validateInputSelection';
@@ -9,13 +7,13 @@ import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
 
+import { getUniqueInt } from '@couimet/dynamic-testing';
+
 jest.mock('../../selection/validateNormalMode');
 jest.mock('../../selection/validateRectangularMode');
 
 const mockValidateNormalMode = validateNormalMode as jest.MockedFunction<typeof validateNormalMode>;
-const mockValidateRectangularMode = validateRectangularMode as jest.MockedFunction<
-  typeof validateRectangularMode
->;
+const mockValidateRectangularMode = validateRectangularMode as jest.MockedFunction<typeof validateRectangularMode>;
 
 describe('validateInputSelection', () => {
   describe('Empty selections array', () => {
@@ -49,18 +47,15 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_BACKWARD_LINE',
-        {
-          message: `Backward selection not allowed (startLine=${startLine} > endLine=${endLine})`,
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            startLine,
-            endLine,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_BACKWARD_LINE', {
+        message: `Backward selection not allowed (startLine=${startLine} > endLine=${endLine})`,
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          startLine,
+          endLine,
         },
-      );
+      });
     });
   });
 
@@ -81,19 +76,16 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_BACKWARD_CHARACTER',
-        {
-          message: `Backward character selection not allowed (startCharacter=${startPosition} > endCharacter=${endPosition} on line ${line})`,
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            line,
-            startCharacter: startPosition,
-            endCharacter: endPosition,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_BACKWARD_CHARACTER', {
+        message: `Backward character selection not allowed (startCharacter=${startPosition} > endCharacter=${endPosition} on line ${line})`,
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          line,
+          startCharacter: startPosition,
+          endCharacter: endPosition,
         },
-      );
+      });
     });
 
     it('should allow startCharacter > endCharacter when on different lines', () => {
@@ -131,21 +123,17 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_NEGATIVE_COORDINATES',
-        {
-          message:
-            'Negative coordinates not allowed (startLine=-1, endLine=10, startCharacter=0, endCharacter=10)',
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            startLine: -1,
-            endLine: 10,
-            startCharacter: 0,
-            endCharacter: 10,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_NEGATIVE_COORDINATES', {
+        message: 'Negative coordinates not allowed (startLine=-1, endLine=10, startCharacter=0, endCharacter=10)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          startLine: -1,
+          endLine: 10,
+          startCharacter: 0,
+          endCharacter: 10,
         },
-      );
+      });
     });
 
     it('should throw error for negative endLine', () => {
@@ -161,21 +149,17 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_NEGATIVE_COORDINATES',
-        {
-          message:
-            'Negative coordinates not allowed (startLine=0, endLine=-1, startCharacter=0, endCharacter=10)',
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            startLine: 0,
-            endLine: -1,
-            startCharacter: 0,
-            endCharacter: 10,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_NEGATIVE_COORDINATES', {
+        message: 'Negative coordinates not allowed (startLine=0, endLine=-1, startCharacter=0, endCharacter=10)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          startLine: 0,
+          endLine: -1,
+          startCharacter: 0,
+          endCharacter: 10,
         },
-      );
+      });
     });
 
     it('should throw error for negative startCharacter', () => {
@@ -191,21 +175,17 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_NEGATIVE_COORDINATES',
-        {
-          message:
-            'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=-1, endCharacter=10)',
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            startLine: 0,
-            endLine: 10,
-            startCharacter: -1,
-            endCharacter: 10,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_NEGATIVE_COORDINATES', {
+        message: 'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=-1, endCharacter=10)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          startLine: 0,
+          endLine: 10,
+          startCharacter: -1,
+          endCharacter: 10,
         },
-      );
+      });
     });
 
     it('should throw error for negative endCharacter', () => {
@@ -221,21 +201,17 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_NEGATIVE_COORDINATES',
-        {
-          message:
-            'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=0, endCharacter=-1)',
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            startLine: 0,
-            endLine: 10,
-            startCharacter: 0,
-            endCharacter: -1,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_NEGATIVE_COORDINATES', {
+        message: 'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=0, endCharacter=-1)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          startLine: 0,
+          endLine: 10,
+          startCharacter: 0,
+          endCharacter: -1,
         },
-      );
+      });
     });
   });
 
@@ -253,14 +229,11 @@ describe('validateInputSelection', () => {
         selectionType: 'InvalidType' as any,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_UNKNOWN_TYPE',
-        {
-          message: 'Unknown SelectionType: "InvalidType"',
-          functionName: 'validateInputSelection',
-          details: { selectionType: 'InvalidType' },
-        },
-      );
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: 'Unexpected selection type: "InvalidType"',
+        functionName: 'validateInputSelection',
+        details: { unexpectedValue: 'InvalidType' },
+      });
     });
   });
 
@@ -279,18 +252,15 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_ZERO_WIDTH',
-        {
-          message: `Zero-width selection not allowed (cursor position at line ${line}, character ${position})`,
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            line,
-            character: position,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_ZERO_WIDTH', {
+        message: `Zero-width selection not allowed (cursor position at line ${line}, character ${position})`,
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          line,
+          character: position,
         },
-      );
+      });
     });
 
     it('should throw error for zero-width selection at line start', () => {
@@ -306,18 +276,57 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError(
-        'SELECTION_ZERO_WIDTH',
-        {
-          message: 'Zero-width selection not allowed (cursor position at line 0, character 0)',
-          functionName: 'validateInputSelection',
-          details: {
-            selectionIndex: 0,
-            line: 0,
-            character: 0,
-          },
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_ZERO_WIDTH', {
+        message: 'Zero-width selection not allowed (cursor position at line 0, character 0)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          line: 0,
+          character: 0,
         },
-      );
+      });
+    });
+
+    it('should allow empty-line FullLine zero-width selection', () => {
+      mockValidateNormalMode.mockImplementation(() => {});
+
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 5, character: 0 },
+            end: { line: 5, character: 0 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      validateInputSelection(inputSelection);
+
+      expect(mockValidateNormalMode).toHaveBeenCalledWith(inputSelection.selections);
+    });
+
+    it('should still reject cursor-position PartialLine zero-width selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 5, character: 3 },
+            end: { line: 5, character: 3 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      expect(() => validateInputSelection(inputSelection)).toThrowDetailedError('SELECTION_ZERO_WIDTH', {
+        message: 'Zero-width selection not allowed (cursor position at line 5, character 3)',
+        functionName: 'validateInputSelection',
+        details: {
+          selectionIndex: 0,
+          line: 5,
+          character: 3,
+        },
+      });
     });
   });
 

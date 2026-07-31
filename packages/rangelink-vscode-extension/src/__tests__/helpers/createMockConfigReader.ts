@@ -9,9 +9,7 @@ export interface MockConfigReaderOverrides {
   inspect?: jest.Mock;
 }
 
-export const createMockConfigReader = (
-  overrides?: MockConfigReaderOverrides,
-): jest.Mocked<ConfigReader> => {
+export const createMockConfigReader = (overrides?: MockConfigReaderOverrides): jest.Mocked<ConfigReader> => {
   const baseConfigReader = {
     getPaddingMode: jest.fn((_key: string, defaultValue: PaddingMode) => defaultValue),
     getWithDefault: jest.fn((_key: string, defaultValue: unknown) => defaultValue),

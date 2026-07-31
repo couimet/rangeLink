@@ -1,40 +1,20 @@
-import assert from 'node:assert';
+import { assertSuppressionLogged, getLogCapture, navigateViaHandleLinkClick, standardSuite } from '../helpers';
 
+import assert from 'node:assert';
 import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
-
-import {
-  assertSuppressionLogged,
-  getLogCapture,
-  navigateViaHandleLinkClick,
-  standardSuite,
-} from '../helpers';
 
 standardSuite('Navigation Toast Settings', (ss) => {
   teardown(async () => {
     const config = vscode.workspace.getConfiguration('rangelink');
-    await config.update(
-      'navigation.showNavigatedToast',
-      undefined,
-      vscode.ConfigurationTarget.Workspace,
-    );
-    await config.update(
-      'navigation.showClampingWarning',
-      undefined,
-      vscode.ConfigurationTarget.Workspace,
-    );
+    await config.update('navigation.showNavigatedToast', undefined, vscode.ConfigurationTarget.Workspace);
+    await config.update('navigation.showClampingWarning', undefined, vscode.ConfigurationTarget.Workspace);
   });
 
   test('navigation-toast-settings-001: showNavigatedToast=false suppresses info toast but navigation still works', async () => {
-    const { filename: testFilename } = ss.createContentFile(
-      'toast-settings-001',
-      10,
-      (i) => `line ${i + 1} content here`,
-    );
+    const { filename: testFilename } = ss.createContentFile('toast-settings-001', 10, (i) => `line ${i + 1} content here`);
 
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('navigation.showNavigatedToast', false, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace.getConfiguration('rangelink').update('navigation.showNavigatedToast', false, vscode.ConfigurationTarget.Workspace);
 
     const linkText = `${testFilename}#L5`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
@@ -56,15 +36,9 @@ standardSuite('Navigation Toast Settings', (ss) => {
   });
 
   test('navigation-toast-settings-002: showClampingWarning=false suppresses clamping warning but navigation still works', async () => {
-    const { filename: testFilename } = ss.createContentFile(
-      'toast-settings-002',
-      10,
-      (i) => `line ${i + 1} content here`,
-    );
+    const { filename: testFilename } = ss.createContentFile('toast-settings-002', 10, (i) => `line ${i + 1} content here`);
 
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('navigation.showClampingWarning', false, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace.getConfiguration('rangelink').update('navigation.showClampingWarning', false, vscode.ConfigurationTarget.Workspace);
 
     const linkText = `${testFilename}#L50`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
@@ -73,11 +47,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-toast-settings-002');
 
-    const { sel, doc } = await navigateViaHandleLinkClick(
-      linkText,
-      parseResult.value,
-      testFilename,
-    );
+    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
     await ss.settle();
 
     const lastLine = doc.lineCount - 1;
@@ -91,11 +61,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
   });
 
   test('navigation-toast-settings-003: default settings show info toast after successful navigation', async () => {
-    const { filename: testFilename } = ss.createContentFile(
-      'toast-settings-003',
-      10,
-      (i) => `line ${i + 1} content here`,
-    );
+    const { filename: testFilename } = ss.createContentFile('toast-settings-003', 10, (i) => `line ${i + 1} content here`);
 
     const linkText = `${testFilename}#L3`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);

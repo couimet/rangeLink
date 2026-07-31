@@ -1,24 +1,19 @@
-import assert from 'node:assert';
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
+import { CMD_BIND_TO_TERMINAL, CMD_BIND_TO_TERMINAL_HERE, CMD_CONTEXT_EDITOR_CONTENT_BIND } from '../../constants/commandIds';
 import {
-  CMD_BIND_TO_TERMINAL,
-  CMD_BIND_TO_TERMINAL_HERE,
-  CMD_CONTEXT_EDITOR_CONTENT_BIND,
-} from '../../constants/commandIds';
-import {
-  TERMINAL_READY_MS,
   assertQuickPickContains,
   assertTerminalBufferContains,
   echoToTerminal,
   getLogCapture,
   parseLogContext,
   standardSuite,
+  TERMINAL_READY_MS,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
+
+import assert from 'node:assert';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
 
 standardSuite('Context Menus — Terminal', (ss) => {
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
@@ -35,15 +30,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-001');
 
-    await waitForHuman(
-      'context-menus-terminal-001',
-      `Right-click the "${terminalName}" terminal TAB → "RangeLink: Bind Here"`,
-      [
-        `1. Locate the "${terminalName}" tab in the terminal panel's tab bar`,
-        '2. Right-click the tab (NOT the terminal content area)',
-        '3. Select "RangeLink: Bind Here"',
-      ],
-    );
+    await waitForHuman('context-menus-terminal-001', `Right-click the "${terminalName}" terminal TAB → "RangeLink: Bind Here"`, [
+      `1. Locate the "${terminalName}" tab in the terminal panel's tab bar`,
+      '2. Right-click the tab (NOT the terminal content area)',
+      '3. Select "RangeLink: Bind Here"',
+    ]);
 
     ss.log('✓ Terminal-tab context menu bound the terminal destination');
   });
@@ -62,15 +53,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-002');
 
-    await waitForHuman(
-      'context-menus-terminal-002',
-      `Right-click INSIDE the "${terminalName}" terminal content area → "RangeLink: Bind Here"`,
-      [
-        `1. Focus the "${terminalName}" terminal`,
-        '2. Right-click INSIDE the terminal output area (NOT the tab)',
-        '3. Select "RangeLink: Bind Here"',
-      ],
-    );
+    await waitForHuman('context-menus-terminal-002', `Right-click INSIDE the "${terminalName}" terminal content area → "RangeLink: Bind Here"`, [
+      `1. Focus the "${terminalName}" terminal`,
+      '2. Right-click INSIDE the terminal output area (NOT the tab)',
+      '3. Select "RangeLink: Bind Here"',
+    ]);
 
     ss.log('✓ Terminal content-area context menu bound the terminal destination');
   });
@@ -81,25 +68,18 @@ standardSuite('Context Menus — Terminal', (ss) => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")',
-      '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-term-003")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-ctxmenu-term-003")', '✓ RangeLink: Unbound from Terminal ("rl-ctxmenu-term-003")']);
     ss.expectContextKeys({ 'rangelink.isActiveTerminalBindable': true });
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-003');
 
-    await waitForHuman(
-      'context-menus-terminal-003',
-      `Right-click INSIDE the "${terminalName}" terminal content area → "RangeLink: Unbind"`,
-      [
-        `1. Focus the "${terminalName}" terminal`,
-        '2. Right-click INSIDE the terminal CONTENT AREA (not the tab — the tab menu does not render Unbind on VSCode)',
-        '3. Verify "RangeLink: Unbind" IS present in the menu (clicking it proves visibility)',
-        '4. Select "RangeLink: Unbind"',
-      ],
-    );
+    await waitForHuman('context-menus-terminal-003', `Right-click INSIDE the "${terminalName}" terminal content area → "RangeLink: Unbind"`, [
+      `1. Focus the "${terminalName}" terminal`,
+      '2. Right-click INSIDE the terminal CONTENT AREA (not the tab — the tab menu does not render Unbind on VSCode)',
+      '3. Verify "RangeLink: Unbind" IS present in the menu (clicking it proves visibility)',
+      '4. Select "RangeLink: Unbind"',
+    ]);
 
     ss.log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
   });
@@ -120,17 +100,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-004');
 
-    await waitForHuman(
-      'context-menus-terminal-004',
-      `Right-click the "${targetName}" TAB → "RangeLink: Bind Here"`,
-      [
-        `Two terminals exist: "${otherName}" and "${targetName}"`,
-        `1. In the terminal panel's tab bar, locate the "${targetName}" tab specifically`,
-        '2. Right-click THAT tab',
-        '3. Select "RangeLink: Bind Here"',
-        'The TARGET terminal should bind — not the OTHER one.',
-      ],
-    );
+    await waitForHuman('context-menus-terminal-004', `Right-click the "${targetName}" TAB → "RangeLink: Bind Here"`, [
+      `Two terminals exist: "${otherName}" and "${targetName}"`,
+      `1. In the terminal panel's tab bar, locate the "${targetName}" tab specifically`,
+      '2. Right-click THAT tab',
+      '3. Select "RangeLink: Bind Here"',
+      'The TARGET terminal should bind — not the OTHER one.',
+    ]);
 
     ss.log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
   });
@@ -151,17 +127,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-005');
 
-    await waitForHuman(
-      'context-menus-terminal-005',
-      `Right-click INSIDE the "${targetName}" CONTENT AREA → "RangeLink: Bind Here"`,
-      [
-        `Two terminals exist: "${otherName}" and "${targetName}"`,
-        `1. Click to focus the "${targetName}" terminal`,
-        '2. Right-click INSIDE its content area (not the tab)',
-        '3. Select "RangeLink: Bind Here"',
-        'The TARGET terminal should bind — not the OTHER one.',
-      ],
-    );
+    await waitForHuman('context-menus-terminal-005', `Right-click INSIDE the "${targetName}" CONTENT AREA → "RangeLink: Bind Here"`, [
+      `Two terminals exist: "${otherName}" and "${targetName}"`,
+      `1. Click to focus the "${targetName}" terminal`,
+      '2. Right-click INSIDE its content area (not the tab)',
+      '3. Select "RangeLink: Bind Here"',
+      'The TARGET terminal should bind — not the OTHER one.',
+    ]);
 
     ss.log('✓ Right-clicked CONTENT AREA bound the target terminal directly (picker bypassed)');
   });
@@ -188,17 +160,9 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const verdict = await waitForHumanVerdict(
       'context-menus-terminal-006',
       `Right-click the "${terminalName}" pty terminal TAB. Is "RangeLink: Bind Here" ABSENT from the menu?`,
-      [
-        `1. Locate the "${terminalName}" tab in the terminal panel's tab bar`,
-        '2. Right-click the tab (NOT the content area)',
-        'Verdict:',
-      ],
+      [`1. Locate the "${terminalName}" tab in the terminal panel's tab bar`, '2. Right-click the tab (NOT the content area)', 'Verdict:'],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Expected "RangeLink: Bind Here" to be absent from the pty terminal tab menu',
-    );
+    assert.strictEqual(verdict, 'pass', 'Expected "RangeLink: Bind Here" to be absent from the pty terminal tab menu');
 
     ss.log('✓ "Bind Here" absent from pty terminal tab menu');
   });
@@ -218,17 +182,9 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const verdict = await waitForHumanVerdict(
       'context-menus-terminal-007',
       `Right-click INSIDE the "${terminalName}" pty terminal content area. Is "RangeLink: Bind Here" ABSENT from the menu?`,
-      [
-        `1. Focus the "${terminalName}" pty terminal`,
-        '2. Right-click INSIDE the terminal output area (NOT the tab)',
-        'Verdict:',
-      ],
+      [`1. Focus the "${terminalName}" pty terminal`, '2. Right-click INSIDE the terminal output area (NOT the tab)', 'Verdict:'],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Expected "RangeLink: Bind Here" to be absent from the pty terminal content-area menu',
-    );
+    assert.strictEqual(verdict, 'pass', 'Expected "RangeLink: Bind Here" to be absent from the pty terminal content-area menu');
 
     ss.log('✓ "Bind Here" absent from pty terminal content-area menu');
   });
@@ -257,17 +213,13 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-term-008');
 
-    await waitForHuman(
-      'context-menus-terminal-008',
-      `Right-click the "${shellName}" shell terminal TAB → "RangeLink: Bind Here"`,
-      [
-        `A pty terminal "${ptyName}" and a shell terminal "${shellName}" both exist`,
-        `1. Locate the "${shellName}" tab in the terminal panel's tab bar`,
-        '2. Right-click the tab (NOT the pty tab, NOT the content area)',
-        '3. Select "RangeLink: Bind Here"',
-        `The "${shellName}" terminal should bind — NOT the pty.`,
-      ],
-    );
+    await waitForHuman('context-menus-terminal-008', `Right-click the "${shellName}" shell terminal TAB → "RangeLink: Bind Here"`, [
+      `A pty terminal "${ptyName}" and a shell terminal "${shellName}" both exist`,
+      `1. Locate the "${shellName}" tab in the terminal panel's tab bar`,
+      '2. Right-click the tab (NOT the pty tab, NOT the content area)',
+      '3. Select "RangeLink: Bind Here"',
+      `The "${shellName}" terminal should bind — NOT the pty.`,
+    ]);
 
     ss.log('✓ Shell tab "Bind Here" present and bound the shell (not the pty) when both open');
   });
@@ -300,11 +252,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       `Right-click inside the "${ptyName}" pty terminal content area. Is "RangeLink: Unbind" PRESENT and "RangeLink: Bind Here" ABSENT?`,
       ['1. Right-click INSIDE the pty terminal content area', 'Verdict:'],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Expected "Unbind" present and "Bind Here" absent on the pty content-area menu when bound to a different terminal',
-    );
+    assert.strictEqual(verdict, 'pass', 'Expected "Unbind" present and "Bind Here" absent on the pty content-area menu when bound to a different terminal');
 
     ss.log('✓ Pty content menu: Unbind present, Bind Here absent (when bound to shell)');
   });
@@ -324,9 +272,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     terminal.show(true);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Terminal ("${destName}") — Selected text sent`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Terminal ("${destName}") — Selected text sent`]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -348,9 +294,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    ss.log(
-      '✓ Terminal content-area "Send Selected Text" visible when terminal has selection and is not bound',
-    );
+    ss.log('✓ Terminal content-area "Send Selected Text" visible when terminal has selection and is not bound');
   });
 
   // TC context-menus-terminal-011: R-V HIDDEN from both terminal menus when
@@ -394,9 +338,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       'Expected "Send Selected Text" to be hidden from the terminal content-area menu when the terminal IS the bound destination',
     );
 
-    ss.log(
-      '✓ Self-paste gate: R-V hidden from terminal content-area menu when terminal IS the bound destination',
-    );
+    ss.log('✓ Self-paste gate: R-V hidden from terminal content-area menu when terminal IS the bound destination');
   });
 
   // ---------------------------------------------------------------------------
@@ -422,11 +364,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
         'Verdict:',
       ],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Expected "Send Selected Text" to be absent from terminal content-area menu when no text is selected',
-    );
+    assert.strictEqual(verdict, 'pass', 'Expected "Send Selected Text" to be absent from terminal content-area menu when no text is selected');
 
     ss.log('✓ No-selection negative: R-V absent from terminal content-area menu');
   });
@@ -439,10 +377,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-005: Terminal content-area "Send Selected Text" sends selected text to bound editor', async () => {
-    const editorUri = await ss.createAndOpenFile(
-      'ctxmenu-term-sts-005',
-      'destination file — terminal selection arrives here\n',
-    );
+    const editorUri = await ss.createAndOpenFile('ctxmenu-term-sts-005', 'destination file — terminal selection arrives here\n');
     const editorFn = path.basename(editorUri.fsPath);
 
     await vscode.commands.executeCommand(CMD_CONTEXT_EDITOR_CONTENT_BIND, editorUri);
@@ -455,10 +390,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      `✓ RangeLink: Bound to Text Editor ("${editorFn}")`,
-      `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`,
-    ]);
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${editorFn}")`, `✓ RangeLink: Selected text sent to Text Editor ("${editorFn}")`]);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isBound': true,
@@ -467,26 +399,19 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-005');
 
-    await waitForHuman(
-      'send-terminal-selection-005',
-      `Select "${markerText}" in terminal "${terminalName}" → right-click → "RangeLink: Send Selected Text"`,
-      [
-        `A Text Editor "${editorFn}" is currently bound as the destination.`,
-        `The terminal "${terminalName}" has "${markerText}" in its output.`,
-        `1. Select the "${markerText}" text in the terminal content area`,
-        '2. Right-click INSIDE the terminal content area (not the tab)',
-        '3. Verify "RangeLink: Send Selected Text" is present',
-        '4. Select "RangeLink: Send Selected Text"',
-        `The selected text should appear in the "${editorFn}" editor.`,
-      ],
-    );
+    await waitForHuman('send-terminal-selection-005', `Select "${markerText}" in terminal "${terminalName}" → right-click → "RangeLink: Send Selected Text"`, [
+      `A Text Editor "${editorFn}" is currently bound as the destination.`,
+      `The terminal "${terminalName}" has "${markerText}" in its output.`,
+      `1. Select the "${markerText}" text in the terminal content area`,
+      '2. Right-click INSIDE the terminal content area (not the tab)',
+      '3. Verify "RangeLink: Send Selected Text" is present',
+      '4. Select "RangeLink: Send Selected Text"',
+      `The selected text should appear in the "${editorFn}" editor.`,
+    ]);
 
     const editor = await ss.openEditor(editorUri);
     const editorText = editor.document.getText();
-    assert.ok(
-      editorText.includes(markerText),
-      `Expected editor to contain "${markerText}" but got: ${editorText}`,
-    );
+    assert.ok(editorText.includes(markerText), `Expected editor to contain "${markerText}" but got: ${editorText}`);
 
     ss.log('✓ Terminal context-menu "Send Selected Text" routed selection to bound editor');
   });
@@ -507,10 +432,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(sourceTerminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")',
-      '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-008-BOUND")', '✓ RangeLink: Selected text sent to Terminal ("rl-sts-008-BOUND")']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -521,19 +443,15 @@ standardSuite('Context Menus — Terminal', (ss) => {
     logCapture.mark('before-sts-008');
     capturingBound.clearCaptured();
 
-    await waitForHuman(
-      'send-terminal-selection-008',
-      `Select "${markerText}" in SOURCE terminal "${sourceName}" → right-click → "Send Selected Text"`,
-      [
-        `Destination: Terminal "${boundName}" is bound (pty-captured — the test reads its buffer to verify content).`,
-        `Source: Terminal "${sourceName}" contains "${markerText}".`,
-        `1. Click the "${sourceName}" terminal to focus it`,
-        `2. Select the "${markerText}" text in its output`,
-        '3. Right-click INSIDE the source terminal content area (not the tab)',
-        '4. Select "RangeLink: Send Selected Text"',
-        `The selection should paste into "${boundName}" and focus should shift there.`,
-      ],
-    );
+    await waitForHuman('send-terminal-selection-008', `Select "${markerText}" in SOURCE terminal "${sourceName}" → right-click → "Send Selected Text"`, [
+      `Destination: Terminal "${boundName}" is bound (pty-captured — the test reads its buffer to verify content).`,
+      `Source: Terminal "${sourceName}" contains "${markerText}".`,
+      `1. Click the "${sourceName}" terminal to focus it`,
+      `2. Select the "${markerText}" text in its output`,
+      '3. Right-click INSIDE the source terminal content area (not the tab)',
+      '4. Select "RangeLink: Send Selected Text"',
+      `The selection should paste into "${boundName}" and focus should shift there.`,
+    ]);
 
     const stsLines = getLogCapture().getLinesSince('before-sts-008');
     const focusLogged = stsLines.some((l) => {
@@ -544,9 +462,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     assertTerminalBufferContains(capturingBound.getCapturedText(), markerText);
 
-    ss.log(
-      '✓ Cross-terminal send: source selection landed in bound terminal buffer (pty-captured) with focus shift',
-    );
+    ss.log('✓ Cross-terminal send: source selection landed in bound terminal buffer (pty-captured) with focus shift');
   });
 
   test('[assisted] send-terminal-selection-009: "Send Selected Text" is NOT in the terminal TAB menu', async () => {
@@ -578,11 +494,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
       ],
     );
 
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported "Send Selected Text" WAS visible in the tab menu — this is a bug',
-    );
+    assert.strictEqual(verdict, 'pass', 'Human reported "Send Selected Text" WAS visible in the tab menu — this is a bug');
 
     ss.log('✓ Tab menu did NOT offer "Send Selection" (human verdict)');
   });
@@ -598,9 +510,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(sourceTerminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST") — Selected text sent',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Terminal ("rl-sts-011-DEST") — Selected text sent']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isActiveTerminalPasteDestination': true,
@@ -633,9 +543,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
 
     assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);
 
-    ss.log(
-      '✓ Unbound state: menu item shown; click opened picker; selection landed in picked destination buffer (pty-captured)',
-    );
+    ss.log('✓ Unbound state: menu item shown; click opened picker; selection landed in picked destination buffer (pty-captured)');
   });
 
   // ---------------------------------------------------------------------------
@@ -687,15 +595,11 @@ standardSuite('Context Menus — Terminal', (ss) => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-013: Terminal content-area "Send Selection" delivers selected text to bound AI-assistant destination', async () => {
-    await waitForHuman(
-      'send-terminal-selection-013-bind',
-      'Cmd+R Cmd+D → select "Dummy AI (Tier 1)"',
-      [
-        'Setup: bind the Dummy AI test extension as the destination.',
-        '1. Press Cmd+R Cmd+D',
-        '2. Select "Dummy AI (Tier 1)" from the destination picker',
-      ],
-    );
+    await waitForHuman('send-terminal-selection-013-bind', 'Cmd+R Cmd+D → select "Dummy AI (Tier 1)"', [
+      'Setup: bind the Dummy AI test extension as the destination.',
+      '1. Press Cmd+R Cmd+D',
+      '2. Select "Dummy AI (Tier 1)" from the destination picker',
+    ]);
 
     const terminalName = 'rl-sts-013';
     const terminal = await ss.createTerminal(terminalName);
@@ -703,10 +607,7 @@ standardSuite('Context Menus — Terminal', (ss) => {
     echoToTerminal(terminal, markerText);
     await ss.settle(TERMINAL_READY_MS);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Tier 1)',
-      '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Tier 1)', '✓ RangeLink: Selected text sent to Dummy AI (Tier 1)']);
     ss.expectContextKeys({
       'rangelink.isActiveTerminalBindable': true,
       'rangelink.isBound': true,
@@ -715,31 +616,20 @@ standardSuite('Context Menus — Terminal', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-013');
 
-    await waitForHuman(
-      'send-terminal-selection-013',
-      `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selected Text"`,
-      [
-        'Destination: Dummy AI (Tier 1) is bound.',
-        `Source: "${terminalName}" has "${markerText}" in its output.`,
-        `1. Click the "${terminalName}" terminal to focus it`,
-        `2. Select "${markerText}" in its output`,
-        '3. Right-click INSIDE the terminal content area (not the tab)',
-        '4. Select "RangeLink: Send Selected Text"',
-        'The selection should be delivered to the Dummy AI extension via direct insert.',
-      ],
-    );
+    await waitForHuman('send-terminal-selection-013', `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selected Text"`, [
+      'Destination: Dummy AI (Tier 1) is bound.',
+      `Source: "${terminalName}" has "${markerText}" in its output.`,
+      `1. Click the "${terminalName}" terminal to focus it`,
+      `2. Select "${markerText}" in its output`,
+      '3. Right-click INSIDE the terminal content area (not the tab)',
+      '4. Select "RangeLink: Send Selected Text"',
+      'The selection should be delivered to the Dummy AI extension via direct insert.',
+    ]);
 
-    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
-      | { tier1: string; tier2: string }
-      | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as { tier1: string; tier2: string } | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(
-      textResult!.tier1.includes(markerText),
-      `Expected Dummy AI tier1 textarea to contain "${markerText}" but got: ${textResult!.tier1}`,
-    );
+    assert.ok(textResult!.tier1.includes(markerText), `Expected Dummy AI tier1 textarea to contain "${markerText}" but got: ${textResult!.tier1}`);
 
-    ss.log(
-      '✓ Terminal context-menu "Send Selection" delivered selection to Dummy AI via Tier 1 direct insert',
-    );
+    ss.log('✓ Terminal context-menu "Send Selection" delivered selection to Dummy AI via Tier 1 direct insert');
   });
 });

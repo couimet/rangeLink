@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import type { WiringServices } from '../../createWiringServices';
 
 import { createMockVscodeAdapter } from './createMockVscodeAdapter';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 /**
  * Create a mock WiringServices with jest.fn() stubs for all service methods.

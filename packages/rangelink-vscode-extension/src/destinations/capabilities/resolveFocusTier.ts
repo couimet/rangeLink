@@ -1,6 +1,6 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { FocusTier } from '../types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Result of tier resolution — the winning tier plus metadata about
@@ -59,9 +59,6 @@ export const resolveFocusTier = (
     );
   }
 
-  logger.warn(
-    { fn, logPrefix, tierCount: tiers.length },
-    `${logPrefix}: no tiers have registered commands — resolution failed`,
-  );
+  logger.warn({ fn, logPrefix, tierCount: tiers.length }, `${logPrefix}: no tiers have registered commands — resolution failed`);
   return undefined;
 };

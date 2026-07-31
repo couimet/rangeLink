@@ -1,28 +1,9 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { displayName } from '../../../package.json';
-import {
-  AI_ASSISTANT_PASTE_COMMANDS,
-  CLIPBOARD_POST_PASTE_DELAY_MS,
-  ENV_RANGELINK_CAPTURE_LOGS,
-  FOCUS_TO_PASTE_DELAY_MS,
-} from '../../constants';
+import { AI_ASSISTANT_PASTE_COMMANDS, CLIPBOARD_POST_PASTE_DELAY_MS, ENV_RANGELINK_CAPTURE_LOGS, FOCUS_TO_PASTE_DELAY_MS } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
-import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
-import {
-  MessageCode,
-  RelativePathFormat,
-  type ResolveWorkspacePathResult,
-  TerminalFocusType,
-} from '../../types';
-import {
-  formatMessage,
-  getUntitledDisplayName,
-  resolveWorkspacePath,
-  validateTerminalDefined,
-} from '../../utils';
+import { MessageCode, RelativePathFormat, type ResolveWorkspacePathResult, TerminalFocusType } from '../../types';
+import { ExtensionResult } from '../../types/ExtensionResult';
+import { formatMessage, getUntitledDisplayName, resolveWorkspacePath, validateTerminalDefined } from '../../utils';
 import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
@@ -32,6 +13,9 @@ import type { MessageProvider } from '../MessageProvider';
 import type { QuickPickProvider } from '../QuickPickProvider';
 import type { TerminalPasteAdapter } from '../TerminalPasteAdapter';
 import type { VisibleEditorProvider } from '../VisibleEditorProvider';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -50,8 +34,7 @@ const getUnknownFilename = (): string => formatMessage(MessageCode.UNKNOWN_FILEN
  */
 const isLogCaptureEnabled = process.env[ENV_RANGELINK_CAPTURE_LOGS] === 'true';
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
 /**
  * Test-only projection: pull the status fields integration tests destructure
@@ -63,9 +46,7 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
  *
  * Exported for direct unit testing; not part of the adapter's public API.
  */
-export const projectTestStatusFields = (
-  record: Record<string, unknown>,
-): { isActive?: boolean; boundState?: string } => {
+export const projectTestStatusFields = (record: Record<string, unknown>): { isActive?: boolean; boundState?: string } => {
   const fields: { isActive?: boolean; boundState?: string } = {};
   const terminalInfo = isObject(record.terminalInfo) ? record.terminalInfo : undefined;
   const fileInfo = isObject(record.fileInfo) ? record.fileInfo : undefined;
@@ -125,7 +106,7 @@ export class VscodeAdapter
    * Direct calls are only appropriate inside ClipboardService itself.
    */
   async readTextFromClipboard(): Promise<string> {
-    return this.ideInstance.env.clipboard.readText();
+    return await this.ideInstance.env.clipboard.readText();
   }
 
   /**
@@ -135,11 +116,8 @@ export class VscodeAdapter
    * Direct calls are only appropriate inside ClipboardService itself.
    */
   async writeTextToClipboard(text: string): Promise<void> {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.writeTextToClipboard', textLength: text.length },
-      'Writing to clipboard',
-    );
-    return this.ideInstance.env.clipboard.writeText(text);
+    this.logger.debug({ fn: 'VscodeAdapter.writeTextToClipboard', textLength: text.length }, 'Writing to clipboard');
+    return await this.ideInstance.env.clipboard.writeText(text);
   }
 
   /**
@@ -198,36 +176,18 @@ export class VscodeAdapter
   /**
    * Show temporary status bar message prefixed with "RangeLink: ".
    */
-  setStatusBarMessage(
-    message: string,
-    timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
-  ): vscode.Disposable {
-    return this.setStatusBarMessageInternal(
-      `${STATUS_BAR_PREFIX}${message}`,
-      timeout,
-      'VscodeAdapter.setStatusBarMessage',
-    );
+  setStatusBarMessage(message: string, timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS): vscode.Disposable {
+    return this.setStatusBarMessageInternal(`${STATUS_BAR_PREFIX}${message}`, timeout, 'VscodeAdapter.setStatusBarMessage');
   }
 
   /**
    * Show temporary success status bar message prefixed with "✓ RangeLink: ".
    */
-  setSuccessfulStatusBarMessage(
-    message: string,
-    timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
-  ): vscode.Disposable {
-    return this.setStatusBarMessageInternal(
-      `${STATUS_BAR_SUCCESS_PREFIX}${message}`,
-      timeout,
-      'VscodeAdapter.setSuccessfulStatusBarMessage',
-    );
+  setSuccessfulStatusBarMessage(message: string, timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS): vscode.Disposable {
+    return this.setStatusBarMessageInternal(`${STATUS_BAR_SUCCESS_PREFIX}${message}`, timeout, 'VscodeAdapter.setSuccessfulStatusBarMessage');
   }
 
-  private setStatusBarMessageInternal(
-    message: string,
-    timeout: number,
-    fn: string,
-  ): vscode.Disposable {
+  private setStatusBarMessageInternal(message: string, timeout: number, fn: string): vscode.Disposable {
     this.logger.debug({ fn, message, timeout }, 'Setting status bar message');
     return this.ideInstance.window.setStatusBarMessage(message, timeout);
   }
@@ -240,11 +200,8 @@ export class VscodeAdapter
    * @returns Promise resolving to selected button label, or undefined if dismissed
    */
   async showWarningMessage(message: string, ...items: string[]): Promise<string | undefined> {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.showWarningMessage', message, items },
-      'Showing warning message',
-    );
-    return this.ideInstance.window.showWarningMessage(message, ...items);
+    this.logger.debug({ fn: 'VscodeAdapter.showWarningMessage', message, items }, 'Showing warning message');
+    return await this.ideInstance.window.showWarningMessage(message, ...items);
   }
 
   /**
@@ -252,7 +209,7 @@ export class VscodeAdapter
    */
   async showErrorMessage(message: string): Promise<string | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.showErrorMessage', message }, 'Showing error message');
-    return this.ideInstance.window.showErrorMessage(message);
+    return await this.ideInstance.window.showErrorMessage(message);
   }
 
   /**
@@ -263,11 +220,8 @@ export class VscodeAdapter
    * @returns Promise resolving to selected button label, or undefined if dismissed
    */
   async showInformationMessage(message: string, ...items: string[]): Promise<string | undefined> {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.showInformationMessage', message, items },
-      'Showing info message',
-    );
-    return this.ideInstance.window.showInformationMessage(message, ...items);
+    this.logger.debug({ fn: 'VscodeAdapter.showInformationMessage', message, items }, 'Showing info message');
+    return await this.ideInstance.window.showInformationMessage(message, ...items);
   }
 
   /**
@@ -277,10 +231,7 @@ export class VscodeAdapter
    * @param options - Optional configuration for the quick pick
    * @returns Promise resolving to the selected item, or undefined if cancelled
    */
-  async showQuickPick<T extends vscode.QuickPickItem>(
-    items: T[],
-    options?: vscode.QuickPickOptions,
-  ): Promise<T | undefined> {
+  async showQuickPick<T extends vscode.QuickPickItem>(items: T[], options?: vscode.QuickPickOptions): Promise<T | undefined> {
     this.logger.debug(
       {
         fn: 'VscodeAdapter.showQuickPick',
@@ -303,7 +254,7 @@ export class VscodeAdapter
       },
       'Showing quick pick',
     );
-    return this.ideInstance.window.showQuickPick(items, options);
+    return await this.ideInstance.window.showQuickPick(items, options);
   }
 
   /**
@@ -323,7 +274,7 @@ export class VscodeAdapter
    */
   async showInputBox(options?: vscode.InputBoxOptions): Promise<string | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.showInputBox', options }, 'Showing input box');
-    return this.ideInstance.window.showInputBox(options);
+    return await this.ideInstance.window.showInputBox(options);
   }
 
   /**
@@ -339,10 +290,7 @@ export class VscodeAdapter
    * @param options - Optional view configuration (preserveFocus, viewColumn, etc.)
    * @returns Promise resolving to the text editor showing the document
    */
-  async showTextDocument(
-    uri: vscode.Uri,
-    options?: vscode.TextDocumentShowOptions,
-  ): Promise<vscode.TextEditor> {
+  async showTextDocument(uri: vscode.Uri, options?: vscode.TextDocumentShowOptions): Promise<vscode.TextEditor> {
     const document = await this.ideInstance.workspace.openTextDocument(uri);
     return this.ideInstance.window.showTextDocument(document, options);
   }
@@ -359,10 +307,7 @@ export class VscodeAdapter
    * Architecture note: Uses enum parameter instead of boolean for extensibility.
    * Additional focus types can be added later without breaking existing code.
    */
-  showTerminal(
-    terminal: vscode.Terminal,
-    focusType: TerminalFocusType,
-  ): Result<void, RangeLinkExtensionError> {
+  showTerminal(terminal: vscode.Terminal, focusType: TerminalFocusType): ExtensionResult<void> {
     const logCtx: LoggingContext = {
       fn: 'VscodeAdapter.showTerminal',
       terminalName: terminal?.name,
@@ -372,24 +317,17 @@ export class VscodeAdapter
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
       this.logger.error({ ...logCtx, error: validationResult.error }, 'Terminal validation failed');
-      return validationResult as unknown as Result<void, RangeLinkExtensionError>;
+      return validationResult as unknown as ExtensionResult<void>;
     }
 
     switch (focusType) {
       case TerminalFocusType.StealFocus:
         terminal.show(false); // false = don't preserve focus, steal it to terminal
         this.logger.debug(logCtx, 'Showing terminal');
-        return Result.ok(undefined);
+        return ExtensionResult.ok(undefined);
       default:
         this.logger.error(logCtx, `Unknown focus type: ${focusType}`);
-        return Result.err(
-          new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
-            message: `Unknown focus type: ${focusType}`,
-            functionName: 'VscodeAdapter.showTerminal',
-            details: { focusType: focusType as never },
-          }),
-        );
+        return ExtensionResult.err(RangeLinkExtensionError.forUnexpectedSwitchDefault('focus type', focusType, 'VscodeAdapter.showTerminal'));
     }
   }
 
@@ -398,16 +336,13 @@ export class VscodeAdapter
    *
    * Wrapper for terminal.name property access to isolate destination classes.
    */
-  getTerminalName(terminal: vscode.Terminal): Result<string, RangeLinkExtensionError> {
+  getTerminalName(terminal: vscode.Terminal): ExtensionResult<string> {
     const validationResult = validateTerminalDefined(terminal);
     if (!validationResult.success) {
-      this.logger.error(
-        { fn: 'VscodeAdapter.getTerminalName', error: validationResult.error },
-        'Terminal validation failed',
-      );
-      return validationResult as unknown as Result<string, RangeLinkExtensionError>;
+      this.logger.error({ fn: 'VscodeAdapter.getTerminalName', error: validationResult.error }, 'Terminal validation failed');
+      return validationResult as unknown as ExtensionResult<string>;
     }
-    return Result.ok(terminal.name);
+    return ExtensionResult.ok(terminal.name);
   }
 
   // ============================================================================
@@ -436,10 +371,7 @@ export class VscodeAdapter
       editBuilder.insert(editor.selection.active, text);
     });
     if (!success) {
-      this.logger.warn(
-        { fn: 'VscodeAdapter.insertTextAtCursor', editorUri: editor.document.uri.toString() },
-        'Editor edit failed',
-      );
+      this.logger.warn({ fn: 'VscodeAdapter.insertTextAtCursor', editorUri: editor.document.uri.toString() }, 'Editor edit failed');
     }
     return success;
   }
@@ -551,7 +483,7 @@ export class VscodeAdapter
    */
   async executeCommand<T = unknown>(command: string, ...args: unknown[]): Promise<T | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.executeCommand', command, args }, 'Executing command');
-    return this.ideInstance.commands.executeCommand<T>(command, ...args);
+    return await this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 
   /**
@@ -561,10 +493,7 @@ export class VscodeAdapter
    * to log context-key changes themselves.
    */
   setContext(key: string, value: unknown): void {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.setContext', key, value },
-      `Setting context key: ${key} = ${value}`,
-    );
+    this.logger.debug({ fn: 'VscodeAdapter.setContext', key, value }, `Setting context key: ${key} = ${value}`);
     void this.ideInstance.commands.executeCommand('setContext', key, value);
   }
 
@@ -576,7 +505,7 @@ export class VscodeAdapter
    * @param filterInternal - If true, filters out internal commands (default: false)
    * @returns Promise resolving to array of command identifiers
    */
-  async getCommands(filterInternal = false): Promise<string[]> {
+  async getCommands(filterInternal: boolean = false): Promise<string[]> {
     return (await this.ideInstance.commands.getCommands(filterInternal)) || [];
   }
 
@@ -588,7 +517,7 @@ export class VscodeAdapter
    */
   async openExternal(uri: string): Promise<boolean> {
     this.logger.debug({ fn: 'VscodeAdapter.openExternal', uri }, 'Opening external URI');
-    return this.ideInstance.env.openExternal(this.ideInstance.Uri.parse(uri, true));
+    return await this.ideInstance.env.openExternal(this.ideInstance.Uri.parse(uri, true));
   }
 
   // ============================================================================
@@ -603,7 +532,7 @@ export class VscodeAdapter
    * @param linkPath - File path from RangeLink (may be relative or absolute)
    * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
    */
-  async resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
+  resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
     return resolveWorkspacePath(linkPath, this.ideInstance);
   }
 
@@ -641,9 +570,7 @@ export class VscodeAdapter
    * invocation on a closed file).
    */
   findOpenDocument(uri: vscode.Uri): vscode.TextDocument | undefined {
-    return this.ideInstance.workspace.textDocuments.find(
-      (doc) => doc.uri.toString() === uri.toString(),
-    );
+    return this.ideInstance.workspace.textDocuments.find((doc) => doc.uri.toString() === uri.toString());
   }
 
   // ============================================================================
@@ -667,10 +594,7 @@ export class VscodeAdapter
    * @param priority - Priority determines position relative to other items (higher = more left)
    * @returns StatusBarItem instance
    */
-  createStatusBarItem(
-    alignment: vscode.StatusBarAlignment,
-    priority?: number,
-  ): vscode.StatusBarItem {
+  createStatusBarItem(alignment: vscode.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
     return this.ideInstance.window.createStatusBarItem(alignment, priority);
   }
 
@@ -703,9 +627,7 @@ export class VscodeAdapter
    * @param provider - Terminal link provider instance
    * @returns Disposable to unregister the provider
    */
-  registerTerminalLinkProvider<T extends vscode.TerminalLink>(
-    provider: vscode.TerminalLinkProvider<T>,
-  ): vscode.Disposable {
+  registerTerminalLinkProvider<T extends vscode.TerminalLink>(provider: vscode.TerminalLinkProvider<T>): vscode.Disposable {
     return this.ideInstance.window.registerTerminalLinkProvider(provider);
   }
 
@@ -716,10 +638,7 @@ export class VscodeAdapter
    * @param provider - Document link provider instance
    * @returns Disposable to unregister the provider
    */
-  registerDocumentLinkProvider(
-    selector: vscode.DocumentSelector,
-    provider: vscode.DocumentLinkProvider,
-  ): vscode.Disposable {
+  registerDocumentLinkProvider(selector: vscode.DocumentSelector, provider: vscode.DocumentLinkProvider): vscode.Disposable {
     return this.ideInstance.languages.registerDocumentLinkProvider(selector, provider);
   }
 
@@ -811,9 +730,7 @@ export class VscodeAdapter
    * @param listener - Callback invoked when the active terminal changes
    * @returns Disposable to unregister the listener
    */
-  onDidChangeActiveTerminal(
-    listener: (terminal: vscode.Terminal | undefined) => void,
-  ): vscode.Disposable {
+  onDidChangeActiveTerminal(listener: (terminal: vscode.Terminal | undefined) => void): vscode.Disposable {
     return this.ideInstance.window.onDidChangeActiveTerminal(listener);
   }
 
@@ -833,9 +750,7 @@ export class VscodeAdapter
    * @param listener - Callback invoked when any configuration changes
    * @returns Disposable to unregister the listener
    */
-  onDidChangeConfiguration(
-    listener: (event: vscode.ConfigurationChangeEvent) => void,
-  ): vscode.Disposable {
+  onDidChangeConfiguration(listener: (event: vscode.ConfigurationChangeEvent) => void): vscode.Disposable {
     return this.ideInstance.workspace.onDidChangeConfiguration(listener);
   }
 
@@ -865,12 +780,7 @@ export class VscodeAdapter
     ignoreDeleteEvents?: boolean,
   ): vscode.FileSystemWatcher {
     const pattern = new this.ideInstance.RelativePattern(fileUri, '*');
-    return this.ideInstance.workspace.createFileSystemWatcher(
-      pattern,
-      ignoreCreateEvents,
-      ignoreChangeEvents,
-      ignoreDeleteEvents,
-    );
+    return this.ideInstance.workspace.createFileSystemWatcher(pattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents);
   }
 
   // ============================================================================
@@ -913,10 +823,7 @@ export class VscodeAdapter
    * @returns URI of active document or undefined if no editor is active
    */
   getActiveTextEditorUri(): vscode.Uri | undefined {
-    this.logger.debug(
-      { fn: 'VscodeAdapter.getActiveTextEditorUri' },
-      'Getting active text editor URI',
-    );
+    this.logger.debug({ fn: 'VscodeAdapter.getActiveTextEditorUri' }, 'Getting active text editor URI');
     return this.activeTextEditor?.document.uri;
   }
 
@@ -945,10 +852,7 @@ export class VscodeAdapter
   getActiveTabUri(): vscode.Uri | undefined {
     const activeTab = this.ideInstance.window.tabGroups.activeTabGroup?.activeTab;
     if (!activeTab) {
-      this.logger.debug(
-        { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' },
-        'Resolving active tab URI',
-      );
+      this.logger.debug({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'none' }, 'Resolving active tab URI');
       return undefined;
     }
     // Dynamic property check: TabInputText/Custom/Notebook expose `.uri`;
@@ -957,18 +861,11 @@ export class VscodeAdapter
     const input = activeTab.input as Record<string, unknown>;
     const candidate = input.uri ?? input.modified;
     if (candidate && typeof candidate === 'object' && 'fsPath' in candidate) {
-      const inputKind =
-        (input as { constructor?: { name?: string } }).constructor?.name ?? 'unknown';
-      this.logger.debug(
-        { fn: 'VscodeAdapter.getActiveTabUri', inputKind },
-        'Resolving active tab URI',
-      );
+      const inputKind = (input as { constructor?: { name?: string } }).constructor?.name ?? 'unknown';
+      this.logger.debug({ fn: 'VscodeAdapter.getActiveTabUri', inputKind }, 'Resolving active tab URI');
       return candidate as vscode.Uri;
     }
-    this.logger.debug(
-      { fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' },
-      'No file URI on active tab input',
-    );
+    this.logger.debug({ fn: 'VscodeAdapter.getActiveTabUri', inputKind: 'unsupported' }, 'No file URI on active tab input');
     return undefined;
   }
 
@@ -1010,9 +907,7 @@ export class VscodeAdapter
    */
   hasVisibleEditorAt(uri: vscode.Uri, viewColumn: number): boolean {
     const uriString = uri.toString();
-    return this.visibleTextEditors.some(
-      (editor) => editor.document.uri.toString() === uriString && editor.viewColumn === viewColumn,
-    );
+    return this.visibleTextEditors.some((editor) => editor.document.uri.toString() === uriString && editor.viewColumn === viewColumn);
   }
 
   /**
@@ -1027,8 +922,7 @@ export class VscodeAdapter
    */
   editorHasActiveSelection(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): boolean {
     const editors = this.findVisibleEditorsByUri(uri);
-    const relevantEditors =
-      viewColumn !== undefined ? editors.filter((e) => e.viewColumn === viewColumn) : editors;
+    const relevantEditors = viewColumn !== undefined ? editors.filter((e) => e.viewColumn === viewColumn) : editors;
     return relevantEditors.length > 0 && relevantEditors.some((e) => !e.selection.isEmpty);
   }
 
@@ -1134,9 +1028,6 @@ export class VscodeAdapter
    * @returns Workspace-relative path
    */
   asRelativePath(pathOrUri: string | vscode.Uri, format: RelativePathFormat): string {
-    return this.ideInstance.workspace.asRelativePath(
-      pathOrUri,
-      format === RelativePathFormat.WithWorkspaceFolder,
-    );
+    return this.ideInstance.workspace.asRelativePath(pathOrUri, format === RelativePathFormat.WithWorkspaceFolder);
   }
 }

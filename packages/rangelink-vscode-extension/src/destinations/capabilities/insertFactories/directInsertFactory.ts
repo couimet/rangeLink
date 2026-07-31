@@ -1,9 +1,9 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { interpolateArgs } from '../../../utils';
 
 import type { InsertFactory } from './InsertFactory';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Normalized insert command entry — plain string commands are normalized
@@ -45,10 +45,7 @@ export class DirectInsertFactory implements InsertFactory<void> {
           this.logger.info({ fn, command: entry.command }, 'Direct insert succeeded');
           return true;
         } catch (error) {
-          this.logger.debug(
-            { fn, command: entry.command, error },
-            'Direct insert command failed, trying next',
-          );
+          this.logger.debug({ fn, command: entry.command, error }, 'Direct insert command failed, trying next');
         }
       }
 

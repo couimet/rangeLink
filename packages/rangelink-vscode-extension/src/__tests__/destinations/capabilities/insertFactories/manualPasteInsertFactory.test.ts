@@ -1,6 +1,6 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { ManualPasteInsertFactory } from '../../../../destinations/capabilities/insertFactories/manualPasteInsertFactory';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 const LINK_TEXT = 'src/app.ts#L10-L20';
 const LINK_TEXT_LENGTH = LINK_TEXT.length;
@@ -19,9 +19,6 @@ describe('ManualPasteInsertFactory', () => {
     const result = await insertFn(LINK_TEXT);
 
     expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'ManualPasteInsertFactory.insert', textLength: LINK_TEXT_LENGTH },
-      'Link ready for manual paste',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'ManualPasteInsertFactory.insert', textLength: LINK_TEXT_LENGTH }, 'Link ready for manual paste');
   });
 });

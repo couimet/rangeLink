@@ -1,9 +1,8 @@
-import * as path from 'node:path';
-
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
-import type { ResolvedPath, ResolveWorkspacePathResult } from '../../types/ResolvedPath';
+import { FILENAME_AMBIGUOUS, ResolvedPath, ResolveWorkspacePathResult } from '../../types/ResolvedPath';
 import { resolveWorkspacePath } from '../../utils';
 import { createMockUri, createMockWorkspaceFolder } from '../helpers';
+
+import * as path from 'node:path';
 
 const expectResolvedPath = (result: ResolveWorkspacePathResult): ResolvedPath => {
   expect(result).toBeDefined();
@@ -60,10 +59,7 @@ describe('resolveWorkspacePath', () => {
     });
 
     it('should handle platform-native absolute paths', async () => {
-      const absolutePath =
-        process.platform === 'win32'
-          ? 'C:\\Users\\name\\project\\src\\file.ts'
-          : '/Users/name/project/src/file.ts';
+      const absolutePath = process.platform === 'win32' ? 'C:\\Users\\name\\project\\src\\file.ts' : '/Users/name/project/src/file.ts';
 
       mockStat.mockResolvedValueOnce({} as any);
 
@@ -99,10 +95,7 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/auth.ts';
       const expectedPath = path.join(workspace2, relativePath);
 
-      mockVscode.workspace.workspaceFolders = [
-        createMockWorkspaceFolder(workspace1),
-        createMockWorkspaceFolder(workspace2),
-      ];
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspace1), createMockWorkspaceFolder(workspace2)];
 
       mockStat.mockImplementation((uri: any) => {
         if (uri.fsPath.includes('project1')) {
@@ -126,10 +119,7 @@ describe('resolveWorkspacePath', () => {
       const workspace2 = '/Users/name/project2';
       const relativePath = 'src/nonexistent.ts';
 
-      mockVscode.workspace.workspaceFolders = [
-        createMockWorkspaceFolder(workspace1),
-        createMockWorkspaceFolder(workspace2),
-      ];
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspace1), createMockWorkspaceFolder(workspace2)];
 
       mockStat.mockImplementation(() => Promise.reject(new Error('File not found')));
 

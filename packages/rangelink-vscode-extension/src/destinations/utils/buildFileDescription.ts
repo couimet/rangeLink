@@ -1,5 +1,4 @@
-import type { EligibleFile } from '../../types';
-import { MessageCode } from '../../types';
+import { EligibleFile, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
 
 /**
@@ -12,10 +11,7 @@ import { formatMessage } from '../../utils';
  * @param disambiguator - VSCode-style disambiguator string (e.g., '…/src', './', or '')
  * @returns Description string, or undefined if no segments to show
  */
-export const buildFileDescription = (
-  file: EligibleFile,
-  disambiguator: string,
-): string | undefined => {
+export const buildFileDescription = (file: EligibleFile, disambiguator: string): string | undefined => {
   const segments: string[] = [];
 
   if (disambiguator !== '') {

@@ -1,13 +1,12 @@
-import type { Logger, LoggingContext } from '@couimet/logger-contract';
-import { Result } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../../types/MessageCode';
 import { formatMessage } from '../../utils';
 
-import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
 import type { InsertFactory } from './insertFactories';
+
+import type { Logger, LoggingContext } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * FocusCapability for text editor destinations.
@@ -44,10 +43,10 @@ export class EditorFocusCapability implements FocusCapability {
   async focus(context: LoggingContext): Promise<FocusResult> {
     const resolvedViewColumn = this.resolveViewColumn();
     if (resolvedViewColumn === undefined) {
-      return Result.err({ reason: FocusErrorReason.EDITOR_NOT_VISIBLE });
+      return FocusResult.err({ reason: FocusErrorReason.EDITOR_NOT_VISIBLE });
     }
     if (resolvedViewColumn === 'ambiguous') {
-      return Result.err({ reason: FocusErrorReason.EDITOR_AMBIGUOUS_COLUMNS });
+      return FocusResult.err({ reason: FocusErrorReason.EDITOR_AMBIGUOUS_COLUMNS });
     }
 
     const editorUri = this.documentUri.toString();
@@ -58,22 +57,16 @@ export class EditorFocusCapability implements FocusCapability {
         viewColumn: resolvedViewColumn,
       });
     } catch (error) {
-      this.logger.warn(
-        { ...context, editorUri, viewColumn: resolvedViewColumn, error },
-        'Failed to focus editor',
-      );
-      return Result.err({
+      this.logger.warn({ ...context, editorUri, viewColumn: resolvedViewColumn, error }, 'Failed to focus editor');
+      return FocusResult.err({
         reason: FocusErrorReason.SHOW_DOCUMENT_FAILED,
         cause: error,
       });
     }
 
-    this.logger.debug(
-      { ...context, editorUri, viewColumn: resolvedViewColumn },
-      'Editor focused via showTextDocument()',
-    );
+    this.logger.debug({ ...context, editorUri, viewColumn: resolvedViewColumn }, 'Editor focused via showTextDocument()');
 
-    return Result.ok({ inserter: this.insertFactory.forTarget(freshEditor) });
+    return FocusResult.ok({ inserter: this.insertFactory.forTarget(freshEditor) });
   }
 
   /**
@@ -100,15 +93,10 @@ export class EditorFocusCapability implements FocusCapability {
           },
           'Bound editor at expected viewColumn but also found in other tab groups — ambiguous target',
         );
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS),
-        );
+        this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS));
         return 'ambiguous';
       }
-      this.logger.debug(
-        { fn, editorUri, viewColumn: this.boundViewColumn },
-        'Editor at bound viewColumn',
-      );
+      this.logger.debug({ fn, editorUri, viewColumn: this.boundViewColumn }, 'Editor at bound viewColumn');
       return this.boundViewColumn;
     }
 
@@ -118,29 +106,18 @@ export class EditorFocusCapability implements FocusCapability {
       const hiddenGroups = this.ideAdapter.findAllTabGroupsForDocument(this.documentUri);
       const matchingHiddenGroup = hiddenGroups.find((g) => g.viewColumn === this.boundViewColumn);
       if (matchingHiddenGroup) {
-        this.logger.debug(
-          { fn, editorUri, viewColumn: this.boundViewColumn },
-          'Editor hidden behind other tabs at bound viewColumn',
-        );
+        this.logger.debug({ fn, editorUri, viewColumn: this.boundViewColumn }, 'Editor hidden behind other tabs at bound viewColumn');
         return this.boundViewColumn;
       }
 
-      this.logger.warn(
-        { fn, editorUri },
-        'Bound editor not visible (defensive: auto-unbind should prevent this)',
-      );
+      this.logger.warn({ fn, editorUri }, 'Bound editor not visible (defensive: auto-unbind should prevent this)');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE));
       return undefined;
     }
 
     if (matchingEditors.length > 1) {
-      this.logger.warn(
-        { fn, editorUri, matchCount: matchingEditors.length },
-        'Bound editor moved but found in multiple tab groups — ambiguous target',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS),
-      );
+      this.logger.warn({ fn, editorUri, matchCount: matchingEditors.length }, 'Bound editor moved but found in multiple tab groups — ambiguous target');
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS));
       return 'ambiguous';
     }
 

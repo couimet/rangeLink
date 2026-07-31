@@ -1,11 +1,6 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-  SETTING_FEATURES_BOOKMARKS_ENABLED,
-} from '../constants';
-import type { PasteDestinationManager, BoundSession } from '../destinations';
+import { DEFAULT_FEATURES_BOOKMARKS_ENABLED, SETTING_FEATURES_BOOKMARKS_ENABLED } from '../constants';
+import type { BoundSession, PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -13,6 +8,8 @@ import { type ExtensionResult } from '../types';
 
 import type { BookmarksStore } from './BookmarksStore';
 import type { Bookmark, BookmarkId, BookmarkInput } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Service layer for bookmark operations.
@@ -34,14 +31,11 @@ export class BookmarkService {
 
   /**
    * Whether bookmarks UI should be displayed (feature flag gate).
-   * TODO: #366 remove when bookmarks graduates from beta
+   * TODO [2026-12-31]: #366 remove when bookmarks graduates from beta
    */
   isVisible(): boolean {
-    // TODO: #366 remove when bookmarks graduates from beta
-    return this.configReader.getBoolean(
-      SETTING_FEATURES_BOOKMARKS_ENABLED,
-      DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-    );
+    // TODO [2026-12-31]: #366 remove when bookmarks graduates from beta
+    return this.configReader.getBoolean(SETTING_FEATURES_BOOKMARKS_ENABLED, DEFAULT_FEATURES_BOOKMARKS_ENABLED);
   }
 
   /**
@@ -63,7 +57,7 @@ export class BookmarkService {
    *
    * @param input - The bookmark data (label, link, optional description/scope)
    */
-  async addBookmark(input: BookmarkInput): Promise<ExtensionResult<Bookmark>> {
+  addBookmark(input: BookmarkInput): Promise<ExtensionResult<Bookmark>> {
     return this.bookmarksStore.add(input);
   }
 
@@ -73,7 +67,7 @@ export class BookmarkService {
    * @param id - The ID of the bookmark to remove
    * @returns The deleted bookmark on success
    */
-  async removeBookmark(id: BookmarkId): Promise<ExtensionResult<Bookmark>> {
+  removeBookmark(id: BookmarkId): Promise<ExtensionResult<Bookmark>> {
     return this.bookmarksStore.remove(id);
   }
 
@@ -89,7 +83,7 @@ export class BookmarkService {
   async sendBookmark(bookmarkId: BookmarkId): Promise<void> {
     const logCtx = { fn: 'BookmarkService.sendBookmark', bookmarkId };
 
-    // TODO #385: add clipboard preservation here when bookmarks are exposed
+    // TODO [2026-12-31]: #385 add clipboard preservation here when bookmarks are exposed
     if (!this.session.isSet()) {
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,

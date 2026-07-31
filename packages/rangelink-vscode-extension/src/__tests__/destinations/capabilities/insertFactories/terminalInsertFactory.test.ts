@@ -1,9 +1,9 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { TerminalInsertFactory } from '../../../../destinations/capabilities/insertFactories/terminalInsertFactory';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../../../errors';
 import { ExtensionResult } from '../../../../types';
 import { createMockTerminal, createMockTerminalPasteService } from '../../../helpers';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('TerminalInsertFactory', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -23,10 +23,7 @@ describe('TerminalInsertFactory', () => {
 
     expect(result).toBe(true);
     expect(mockPasteService.pasteIntoTerminal).toHaveBeenCalledWith('test content', mockTerminal);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
-      'Terminal paste succeeded',
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' }, 'Terminal paste succeeded');
   });
 
   it('returns false when pasteIntoTerminal returns error', async () => {
@@ -69,28 +66,12 @@ describe('TerminalInsertFactory', () => {
     await insertFn2('content for terminal 2');
 
     expect(mockPasteService.pasteIntoTerminal).toHaveBeenCalledTimes(2);
-    expect(mockPasteService.pasteIntoTerminal).toHaveBeenNthCalledWith(
-      1,
-      'content for terminal 1',
-      terminal1,
-    );
-    expect(mockPasteService.pasteIntoTerminal).toHaveBeenNthCalledWith(
-      2,
-      'content for terminal 2',
-      terminal2,
-    );
+    expect(mockPasteService.pasteIntoTerminal).toHaveBeenNthCalledWith(1, 'content for terminal 1', terminal1);
+    expect(mockPasteService.pasteIntoTerminal).toHaveBeenNthCalledWith(2, 'content for terminal 2', terminal2);
 
     expect(mockLogger.info).toHaveBeenCalledTimes(2);
-    expect(mockLogger.info).toHaveBeenNthCalledWith(
-      1,
-      { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 1' },
-      'Terminal paste succeeded',
-    );
-    expect(mockLogger.info).toHaveBeenNthCalledWith(
-      2,
-      { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 2' },
-      'Terminal paste succeeded',
-    );
+    expect(mockLogger.info).toHaveBeenNthCalledWith(1, { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 1' }, 'Terminal paste succeeded');
+    expect(mockLogger.info).toHaveBeenNthCalledWith(2, { fn: 'TerminalInsertFactory.insert', terminalName: 'Terminal 2' }, 'Terminal paste succeeded');
 
     expect(mockLogger.error).not.toHaveBeenCalled();
   });

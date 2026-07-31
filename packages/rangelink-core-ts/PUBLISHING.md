@@ -30,11 +30,7 @@ const link = formatLink('/path/to/file.ts', {
 // => "/path/to/file.ts#L10C5-L20C15"
 
 // Generate a portable link with metadata
-const portableLink = formatPortableLink(
-  '/path/to/file.ts',
-  { start: { line: 10 }, end: { line: 20 } },
-  'Selected code snippet',
-);
+const portableLink = formatPortableLink('/path/to/file.ts', { start: { line: 10 }, end: { line: 20 } }, 'Selected code snippet');
 // => "/path/to/file.ts#L10-L20|Selected code snippet"
 ```
 

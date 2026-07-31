@@ -1,32 +1,13 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import {
-  CoreResult,
-  DelimiterConfig,
-  type FormattedLink,
-  LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  SelectionCoverage,
-  SelectionType,
-} from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import { ExtensionResult } from '../../types';
-import {
-  generateLinkFromSelections,
-  GenerateLinkFromSelectionsOptions,
-} from '../../utils/generateLinkFromSelections';
-import {
-  createMockDocument,
-  createMockFormattedLink,
-  createMockPosition,
-  createMockSelection,
-  spyOnFormatLink,
-  spyOnToInputSelection,
-} from '../helpers';
+import { generateLinkFromSelections, GenerateLinkFromSelectionsOptions } from '../../utils/generateLinkFromSelections';
+import { createMockDocument, createMockFormattedLink, createMockPosition, createMockSelection, spyOnFormatLink, spyOnToInputSelection } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { CoreResult, DelimiterConfig, LinkType, RangeLinkError, RangeLinkErrorCodes, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const DELIMITERS: DelimiterConfig = {
   line: 'L',
@@ -37,13 +18,7 @@ const DELIMITERS: DelimiterConfig = {
 
 const REFERENCE_PATH = 'src/utils/test.ts';
 
-const mockSelection = (
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number,
-  isEmpty = false,
-): vscode.Selection => {
+const mockSelection = (startLine: number, startCharacter: number, endLine: number, endCharacter: number, isEmpty = false): vscode.Selection => {
   const start = createMockPosition({ line: startLine, character: startCharacter });
   const end = createMockPosition({ line: endLine, character: endCharacter });
   return createMockSelection({
@@ -95,14 +70,11 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_NO_SELECTION', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_NO_SELECTION', {
         message: 'No selections provided',
         functionName: 'generateLinkFromSelections',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections' },
-        'No selections provided',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections' }, 'No selections provided');
     });
 
     it('returns error when all selections are empty', () => {
@@ -119,14 +91,11 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_EMPTY', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_SELECTION_EMPTY', {
         message: 'All selections are empty',
         functionName: 'generateLinkFromSelections',
       });
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections' },
-        'All selections are empty',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections' }, 'All selections are empty');
     });
   });
 
@@ -161,7 +130,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeOkWith((value: FormattedLink) => {
+      expect(result).toBeSuccessWith((value) => {
         expect(value.link).toBe('src/utils/test.ts#L1C1-C11');
         expect(value.linkType).toBe('regular');
       });
@@ -203,9 +172,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeOkWith((value: FormattedLink) => {
-        expect(value.linkType).toBe('portable');
-      });
+      expect(result).toBeSuccess(expect.objectContaining({ linkType: 'portable' }));
       expect(formatLinkSpy).toHaveBeenCalledWith(
         REFERENCE_PATH,
         {
@@ -246,7 +213,7 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+      expect(result).toHaveDetailedError('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
         message: 'Document modified during selection',
         functionName: 'generateLinkFromSelections',
         cause: conversionError,
@@ -291,14 +258,11 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('VALIDATION', {
+      expect(result).toHaveDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections', error: formatLinkError },
-        'Failed to generate link',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', error: formatLinkError }, 'Failed to generate link');
     });
 
     it('returns error with portable link type name when portable link fails', () => {
@@ -335,14 +299,11 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result).toBeDetailedError('VALIDATION', {
+      expect(result).toHaveDetailedError('VALIDATION', {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelections', error: formatLinkError },
-        'Failed to generate portable link',
-      );
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateLinkFromSelections', error: formatLinkError }, 'Failed to generate portable link');
     });
   });
 });

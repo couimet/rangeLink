@@ -1,7 +1,7 @@
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import type { Logger } from '@couimet/logger-contract';
 import type { Extension } from 'vscode';
-
-import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 export const isCursorIDEDetected = (ideAdapter: VscodeAdapter, logger: Logger): boolean => {
   const fnContext = { fn: 'isCursorIDEDetected' };
@@ -19,9 +19,7 @@ export const isCursorIDEDetected = (ideAdapter: VscodeAdapter, logger: Logger): 
     return true;
   }
 
-  const cursorExtensions = ideAdapter.extensions.filter((ext: Extension<unknown>) =>
-    ext.id.startsWith('cursor.'),
-  );
+  const cursorExtensions = ideAdapter.extensions.filter((ext: Extension<unknown>) => ext.id.startsWith('cursor.'));
   if (cursorExtensions.length > 0) {
     logger.debug(
       {

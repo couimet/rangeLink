@@ -1,10 +1,10 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockConfigGetter, createMockConfigurationProvider } from '../../__tests__/helpers';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 import { ConfigReader } from '../ConfigReader';
 import type { ConfigGetterFactory } from '../types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 let mockLogger: Logger;
 let reader: ConfigReader;
@@ -34,17 +34,13 @@ describe('ConfigReader', () => {
 
   describe('getSetting()', () => {
     it('should return configured value when present', () => {
-      const factory: ConfigGetterFactory = () =>
-        createMockConfigGetter({ myKey: 'configured-value' });
+      const factory: ConfigGetterFactory = () => createMockConfigGetter({ myKey: 'configured-value' });
       const reader = new (ConfigReader as any)(factory, mockLogger) as ConfigReader;
 
       const result = reader.getWithDefault('myKey', 'default-value');
 
       expect(result).toBe('configured-value');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ConfigReader.getSetting', key: 'myKey', value: 'configured-value' },
-        'Using configured value',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'ConfigReader.getSetting', key: 'myKey', value: 'configured-value' }, 'Using configured value');
     });
 
     it('should return default value when setting not configured', () => {
@@ -94,8 +90,7 @@ describe('ConfigReader', () => {
 
   describe('getPaddingMode()', () => {
     it('should return configured padding mode', () => {
-      const factory: ConfigGetterFactory = () =>
-        createMockConfigGetter({ 'smartPadding.pasteLink': 'before' });
+      const factory: ConfigGetterFactory = () => createMockConfigGetter({ 'smartPadding.pasteLink': 'before' });
       const reader = new (ConfigReader as any)(factory, mockLogger) as ConfigReader;
 
       const result = reader.getPaddingMode('smartPadding.pasteLink', 'both');
@@ -129,8 +124,7 @@ describe('ConfigReader', () => {
 
   describe('getBoolean()', () => {
     it('should return configured boolean value', () => {
-      const factory: ConfigGetterFactory = () =>
-        createMockConfigGetter({ warnOnDirtyBuffer: false });
+      const factory: ConfigGetterFactory = () => createMockConfigGetter({ warnOnDirtyBuffer: false });
       const reader = new (ConfigReader as any)(factory, mockLogger) as ConfigReader;
 
       const result = reader.getBoolean('warnOnDirtyBuffer', true);

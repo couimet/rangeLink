@@ -1,8 +1,8 @@
-import { Result } from 'rangelink-core-ts';
-
 import type { TerminalPasteService } from '../../services';
+
+import { DetailedResult } from '@couimet/detailed-result';
 
 export const createMockTerminalPasteService = (): jest.Mocked<TerminalPasteService> =>
   ({
-    pasteIntoTerminal: jest.fn().mockResolvedValue(Result.ok(undefined)),
+    pasteIntoTerminal: jest.fn().mockResolvedValue(DetailedResult.success(undefined)),
   }) as unknown as jest.Mocked<TerminalPasteService>;

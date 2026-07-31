@@ -32,9 +32,7 @@ export interface MockTerminalOptions {
  * @param terminalOrOptions - Optional property overrides or pre-built terminal object
  * @returns Mock Terminal object with Jest functions
  */
-export const createMockTerminal = (
-  terminalOrOptions?: Partial<vscode.Terminal> | MockTerminalOptions,
-): vscode.Terminal => {
+export const createMockTerminal = (terminalOrOptions?: Partial<vscode.Terminal> | MockTerminalOptions): vscode.Terminal => {
   // Simple check: if it has sendText, treat it as a pre-built terminal object
   if (terminalOrOptions && 'sendText' in terminalOrOptions) {
     return terminalOrOptions as vscode.Terminal;

@@ -1,43 +1,22 @@
-import * as path from 'node:path';
-
-import * as vscode from 'vscode';
-
 import type { LogCapture } from '../../LogCapture';
 
-import type { CapturingTerminal } from './capturingPtyHelpers';
-import { createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
-import {
-  createAndOpenFile,
-  createFileAt,
-  createPngFixture,
-  createWorkspaceFile,
-  openEditor,
-  type PngFixtureMode,
-} from './fileHelpers';
+import { CapturingTerminal, createAndBindCapturingTerminal, createCapturingTerminal } from './capturingPtyHelpers';
+import { createAndOpenFile, createFileAt, createPngFixture, createWorkspaceFile, openEditor, type PngFixtureMode } from './fileHelpers';
 import { getLogCapture } from './getLogCapture';
 import { SETTLE_MS, TERMINAL_READY_MS, waitForExtensionActive } from './testEnv';
-import {
-  TEST_START_MARKER,
-  TestWindowImpl,
-  type ModalDialogExpectation,
-  type TestWindow,
-  type ToastExpectation,
-} from './testWindow';
+import { type ModalDialogExpectation, TEST_START_MARKER, type TestWindow, TestWindowImpl, type ToastExpectation } from './testWindow';
 
-export type CreateTerminalOptions =
-  | Omit<vscode.TerminalOptions, 'name'>
-  | Omit<vscode.ExtensionTerminalOptions, 'name'>;
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+
+export type CreateTerminalOptions = Omit<vscode.TerminalOptions, 'name'> | Omit<vscode.ExtensionTerminalOptions, 'name'>;
 
 export interface SsContext {
   log: (msg: string) => void;
   createTerminal: (name: string, options?: CreateTerminalOptions) => Promise<vscode.Terminal>;
   createCapturingTerminal: (name: string) => Promise<CapturingTerminal>;
   createAndBindCapturingTerminal: (name: string) => Promise<CapturingTerminal>;
-  createContentFile: (
-    descriptor: string,
-    lineCount: number,
-    lineFactory: (index: number) => string,
-  ) => { uri: vscode.Uri; filename: string };
+  createContentFile: (descriptor: string, lineCount: number, lineFactory: (index: number) => string) => { uri: vscode.Uri; filename: string };
   /**
    * Create a tracked workspace file with a generated filename
    * (`__rl-test-<descriptor>-<timestamp>-<counter>.txt`).
@@ -57,11 +36,7 @@ export interface SsContext {
    * need a binary classification.
    */
   createPngFixture: (descriptor: string, mode?: PngFixtureMode) => vscode.Uri;
-  createAndOpenFile: (
-    descriptor: string,
-    content: string,
-    viewColumn?: vscode.ViewColumn,
-  ) => Promise<vscode.Uri>;
+  createAndOpenFile: (descriptor: string, content: string, viewColumn?: vscode.ViewColumn) => Promise<vscode.Uri>;
   settle: (ms?: number) => Promise<void>;
   getLogCapture: () => LogCapture;
   /**
@@ -125,13 +100,8 @@ export class SsContextImpl implements SsContext {
     this.suiteLog(msg);
   }
 
-  async createTerminal(
-    name: string,
-    options: CreateTerminalOptions = {},
-  ): Promise<vscode.Terminal> {
-    const t = vscode.window.createTerminal({ ...options, name } as
-      | vscode.TerminalOptions
-      | vscode.ExtensionTerminalOptions);
+  async createTerminal(name: string, options: CreateTerminalOptions = {}): Promise<vscode.Terminal> {
+    const t = vscode.window.createTerminal({ ...options, name } as vscode.TerminalOptions | vscode.ExtensionTerminalOptions);
     this.tmpTerminals.push(t);
     t.show(true);
     await this.settle(TERMINAL_READY_MS);
@@ -148,11 +118,7 @@ export class SsContextImpl implements SsContext {
     return capturing;
   }
 
-  createContentFile(
-    descriptor: string,
-    lineCount: number,
-    lineFactory: (index: number) => string,
-  ): { uri: vscode.Uri; filename: string } {
+  createContentFile(descriptor: string, lineCount: number, lineFactory: (index: number) => string): { uri: vscode.Uri; filename: string } {
     const lines = Array.from({ length: lineCount }, (_, i) => lineFactory(i));
     const uri = createWorkspaceFile(descriptor, lines.join('\n') + '\n');
     return { uri, filename: path.basename(uri.fsPath) };
@@ -170,11 +136,7 @@ export class SsContextImpl implements SsContext {
     return createPngFixture(descriptor, mode);
   }
 
-  async createAndOpenFile(
-    descriptor: string,
-    content: string,
-    viewColumn?: vscode.ViewColumn,
-  ): Promise<vscode.Uri> {
+  createAndOpenFile(descriptor: string, content: string, viewColumn?: vscode.ViewColumn): Promise<vscode.Uri> {
     return createAndOpenFile(descriptor, content, viewColumn);
   }
 
@@ -217,7 +179,7 @@ export class SsContextImpl implements SsContext {
     Object.assign(this.expectedContextKeys, keys);
   }
 
-  async openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {
+  openEditor(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Promise<vscode.TextEditor> {
     return openEditor(uri, viewColumn);
   }
 

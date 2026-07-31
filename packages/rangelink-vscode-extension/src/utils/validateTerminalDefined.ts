@@ -1,14 +1,12 @@
-import { Result } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import { ExtensionResult } from '../types/ExtensionResult';
 
-export const validateTerminalDefined = (
-  terminal: vscode.Terminal | undefined,
-): Result<vscode.Terminal, RangeLinkExtensionError> => {
+import type * as vscode from 'vscode';
+
+export const validateTerminalDefined = (terminal: vscode.Terminal | undefined): ExtensionResult<vscode.Terminal> => {
   if (!terminal) {
-    return Result.err(
+    return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
         message: 'Terminal reference is not defined',
@@ -16,5 +14,5 @@ export const validateTerminalDefined = (
       }),
     );
   }
-  return Result.ok(terminal);
+  return ExtensionResult.ok(terminal);
 };

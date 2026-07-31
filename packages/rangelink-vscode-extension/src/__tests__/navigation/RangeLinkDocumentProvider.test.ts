@@ -1,9 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import type { ParsedLink } from 'rangelink-core-ts';
-import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
-
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import {
@@ -18,6 +12,11 @@ import {
   spyOnFindLinksInText,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { DEFAULT_DELIMITERS, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
@@ -50,12 +49,7 @@ describe('RangeLinkDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open src/file.ts:10 \u2022 RangeLink');
-      expect(mockFindLinksInText).toHaveBeenCalledWith(
-        'Check src/file.ts#L10',
-        DEFAULT_DELIMITERS,
-        mockLogger,
-        token,
-      );
+      expect(mockFindLinksInText).toHaveBeenCalledWith('Check src/file.ts#L10', DEFAULT_DELIMITERS, mockLogger, token);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
@@ -78,13 +72,9 @@ describe('RangeLinkDocumentProvider', () => {
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
-      const expectedArgs = encodeURIComponent(
-        JSON.stringify({ linkText: detected.linkText, parsed: detected.parsed }),
-      );
+      const expectedArgs = encodeURIComponent(JSON.stringify({ linkText: detected.linkText, parsed: detected.parsed }));
       expect(links[0].target).toBeDefined();
-      expect(links[0].target!.toString()).toBe(
-        `command:rangelink.handleDocumentLinkClick?${expectedArgs}`,
-      );
+      expect(links[0].target!.toString()).toBe(`command:rangelink.handleDocumentLinkClick?${expectedArgs}`);
     });
 
     it('should map multiple detected links', () => {
@@ -158,12 +148,7 @@ describe('RangeLinkDocumentProvider', () => {
       const token = createMockCancellationToken(true);
       provider.provideDocumentLinks(document, token);
 
-      expect(mockFindLinksInText).toHaveBeenCalledWith(
-        'src/a.ts#L1',
-        DEFAULT_DELIMITERS,
-        mockLogger,
-        token,
-      );
+      expect(mockFindLinksInText).toHaveBeenCalledWith('src/a.ts#L1', DEFAULT_DELIMITERS, mockLogger, token);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
@@ -231,9 +216,7 @@ describe('RangeLinkDocumentProvider', () => {
       };
       mockHandler.navigateToLink.mockRejectedValue(new Error('Failed'));
 
-      await expect(
-        provider.handleLinkClick({ linkText: 'src/file.ts#L10', parsed: mockParsed }),
-      ).resolves.toBeUndefined();
+      await expect(provider.handleLinkClick({ linkText: 'src/file.ts#L10', parsed: mockParsed })).resolves.toBeUndefined();
     });
   });
 });

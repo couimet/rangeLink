@@ -1,6 +1,6 @@
-import type * as vscode from 'vscode';
-
 import { PathFormat } from './PathFormat';
+
+import type * as vscode from 'vscode';
 
 /**
  * Strategy used to resolve a file path to a workspace URI.

@@ -1,17 +1,14 @@
-import type * as vscode from 'vscode';
-
 import type { PasteDestination } from '../../destinations';
 import { isSameFileDestination } from '../../utils';
+
+import type * as vscode from 'vscode';
 
 const createMockUri = (path: string): vscode.Uri =>
   ({
     toString: () => `file://${path}`,
   }) as vscode.Uri;
 
-const createMockDestination = (
-  uri: vscode.Uri | undefined,
-  viewColumn?: vscode.ViewColumn,
-): PasteDestination =>
+const createMockDestination = (uri: vscode.Uri | undefined, viewColumn?: vscode.ViewColumn): PasteDestination =>
   ({
     getDestinationUri: () => uri,
     getDestinationViewColumn: () => viewColumn,

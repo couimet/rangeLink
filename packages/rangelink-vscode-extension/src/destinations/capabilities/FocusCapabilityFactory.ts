@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { TerminalPasteService } from '../../services';
@@ -10,15 +7,12 @@ import { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from './ColdRefocusConfig';
 import { EditorFocusCapability } from './EditorFocusCapability';
 import type { FocusCapability } from './FocusCapability';
-import {
-  AIAssistantInsertFactory,
-  DirectInsertFactory,
-  EditorInsertFactory,
-  ManualPasteInsertFactory,
-  TerminalInsertFactory,
-} from './insertFactories';
+import { AIAssistantInsertFactory, DirectInsertFactory, EditorInsertFactory, ManualPasteInsertFactory, TerminalInsertFactory } from './insertFactories';
 import { LazyResolvedFocusCapability } from './LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from './TerminalFocusCapability';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Factory for creating FocusCapability instances with InsertFactory injection.
@@ -34,28 +28,14 @@ export class FocusCapabilityFactory {
   ) {}
 
   createEditorCapability(uri: vscode.Uri, viewColumn: number): FocusCapability {
-    return new EditorFocusCapability(
-      this.ideAdapter,
-      uri,
-      viewColumn,
-      new EditorInsertFactory(this.ideAdapter, this.logger),
-      this.logger,
-    );
+    return new EditorFocusCapability(this.ideAdapter, uri, viewColumn, new EditorInsertFactory(this.ideAdapter, this.logger), this.logger);
   }
 
   createTerminalCapability(terminal: vscode.Terminal): FocusCapability {
-    return new TerminalFocusCapability(
-      this.ideAdapter,
-      terminal,
-      new TerminalInsertFactory(this.terminalPasteService, this.logger),
-      this.logger,
-    );
+    return new TerminalFocusCapability(this.ideAdapter, terminal, new TerminalInsertFactory(this.terminalPasteService, this.logger), this.logger);
   }
 
-  createAIAssistantCapability(
-    focusCommands: string[],
-    getColdRefocus: (() => ColdRefocusConfig) | undefined,
-  ): FocusCapability {
+  createAIAssistantCapability(focusCommands: string[], getColdRefocus: (() => ColdRefocusConfig) | undefined): FocusCapability {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
       focusCommands,
@@ -127,17 +107,7 @@ export class FocusCapabilityFactory {
    * the winning tier is cached, and all subsequent focus() calls use the
    * resolved tier directly.
    */
-  createLazyResolvedCapability(
-    tiers: readonly FocusTier[],
-    logPrefix: string,
-    fallbackTierIndex?: number,
-  ): LazyResolvedFocusCapability {
-    return new LazyResolvedFocusCapability(
-      this.ideAdapter,
-      tiers,
-      this.logger,
-      logPrefix,
-      fallbackTierIndex,
-    );
+  createLazyResolvedCapability(tiers: readonly FocusTier[], logPrefix: string, fallbackTierIndex?: number): LazyResolvedFocusCapability {
+    return new LazyResolvedFocusCapability(this.ideAdapter, tiers, this.logger, logPrefix, fallbackTierIndex);
   }
 }

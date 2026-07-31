@@ -24,12 +24,10 @@ export const createMockQuickPick = () => {
     show: jest.fn(),
     hide: jest.fn(),
     dispose: jest.fn(),
-    onDidTriggerItemButton: jest.fn(
-      (handler: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any) => {
-        handlers.onDidTriggerItemButton = handler;
-        return { dispose: jest.fn() };
-      },
-    ),
+    onDidTriggerItemButton: jest.fn((handler: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any) => {
+      handlers.onDidTriggerItemButton = handler;
+      return { dispose: jest.fn() };
+    }),
 
     onDidAccept: jest.fn((handler: () => any) => {
       handlers.onDidAccept = handler;
@@ -40,8 +38,7 @@ export const createMockQuickPick = () => {
       handlers.onDidHide = handler;
       return { dispose: jest.fn() };
     }),
-    __triggerItemButton: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) =>
-      handlers.onDidTriggerItemButton?.(event),
+    __triggerItemButton: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => handlers.onDidTriggerItemButton?.(event),
     __triggerAccept: () => handlers.onDidAccept?.(),
     __triggerHide: () => handlers.onDidHide?.(),
   };

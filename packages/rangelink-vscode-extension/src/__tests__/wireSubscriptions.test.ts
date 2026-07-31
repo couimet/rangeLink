@@ -55,11 +55,7 @@ import {
 import * as destinationBuildersModule from '../destinations/destinationBuilders';
 import { wireSubscriptions } from '../wireSubscriptions';
 
-import {
-  createMockSubscriptionRegistrar,
-  createMockUri,
-  createMockWiringServices,
-} from './helpers';
+import { createMockSubscriptionRegistrar, createMockUri, createMockWiringServices } from './helpers';
 
 const EXPECTED_COMMANDS = [
   CMD_OPEN_STATUS_BAR_MENU,
@@ -129,9 +125,7 @@ describe('wireSubscriptions', () => {
   });
 
   it('registers all expected commands', () => {
-    const registeredCommands = registrar.registerCommand.mock.calls.map(
-      (call: unknown[]) => call[0] as string,
-    );
+    const registeredCommands = registrar.registerCommand.mock.calls.map((call: unknown[]) => call[0] as string);
 
     for (const cmd of EXPECTED_COMMANDS) {
       expect(registeredCommands).toContain(cmd);
@@ -193,9 +187,7 @@ describe('wireSubscriptions', () => {
 
     it('CMD_TERMINAL_PASTE_SELECTED_TEXT delegates to terminalSelectionService', () => {
       registrar.getHandler(CMD_TERMINAL_PASTE_SELECTED_TEXT)();
-      expect(
-        services.terminalSelectionService.pasteTerminalSelectionToDestination,
-      ).toHaveBeenCalledTimes(1);
+      expect(services.terminalSelectionService.pasteTerminalSelectionToDestination).toHaveBeenCalledTimes(1);
     });
 
     it('CMD_BOOKMARK_ADD delegates to addBookmarkCommand.execute', () => {
@@ -206,42 +198,29 @@ describe('wireSubscriptions', () => {
     it('CMD_PASTE_FILE_PATH_ABSOLUTE delegates to filePathPaster with uri and Absolute', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_PASTE_FILE_PATH_ABSOLUTE)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'absolute');
     });
 
     it('CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH calls pasteFilePathToDestination when uri provided', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'absolute');
     });
 
     it('CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH calls pasteCurrentFilePathToDestination when no uri', () => {
       registrar.getHandler(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH)(undefined);
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('absolute');
     });
 
     it('CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH calls pasteFilePathToDestination when uri provided', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'workspace-relative');
     });
 
     it('CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH calls pasteCurrentFilePathToDestination when no uri', () => {
       registrar.getHandler(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH)(undefined);
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('workspace-relative');
     });
 
     it('CMD_COPY_PORTABLE_LINK_RELATIVE delegates to linkGenerator.createPortableLink', () => {
@@ -291,16 +270,12 @@ describe('wireSubscriptions', () => {
 
     it('CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE delegates to filePathPaster.pasteCurrentFilePathToDestination', () => {
       registrar.getHandler(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE)();
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('absolute');
     });
 
     it('CMD_PASTE_CURRENT_FILE_PATH_RELATIVE delegates to filePathPaster.pasteCurrentFilePathToDestination', () => {
       registrar.getHandler(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE)();
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('workspace-relative');
     });
 
     it('CMD_CONTEXT_EDITOR_COPY_LINK delegates to linkGenerator.createLink', () => {
@@ -344,9 +319,7 @@ describe('wireSubscriptions', () => {
     });
 
     it('CMD_BIND_TO_CUSTOM_AI_BY_ID resolves extensionId and delegates to destinationManager.bind', async () => {
-      const resolveSpy = jest
-        .spyOn(destinationBuildersModule, 'resolveKindByExtensionId')
-        .mockReturnValue('custom-ai:dummy-ai-extension');
+      const resolveSpy = jest.spyOn(destinationBuildersModule, 'resolveKindByExtensionId').mockReturnValue('custom-ai:dummy-ai-extension');
       await registrar.getHandler(CMD_BIND_TO_CUSTOM_AI_BY_ID)({
         extensionId: 'dummy-ai-extension',
       });
@@ -384,28 +357,19 @@ describe('wireSubscriptions', () => {
     it('CMD_PASTE_FILE_PATH_RELATIVE delegates to filePathPaster with WorkspaceRelative', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_PASTE_FILE_PATH_RELATIVE)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'workspace-relative');
     });
 
     it('CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH delegates to filePathPaster with absolute', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'absolute');
     });
 
     it('CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH delegates to filePathPaster with workspace-relative', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'workspace-relative');
     });
 
     it('CMD_CONTEXT_EXPLORER_UNBIND delegates to destinationManager.unbind', () => {
@@ -416,19 +380,13 @@ describe('wireSubscriptions', () => {
     it('CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH delegates to filePathPaster with absolute', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'absolute',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'absolute');
     });
 
     it('CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH delegates to filePathPaster with workspace-relative', () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       registrar.getHandler(CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH)(mockUri);
-      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        'workspace-relative',
-      );
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(mockUri, 'workspace-relative');
     });
 
     it('CMD_CONTEXT_EDITOR_CONTENT_UNBIND delegates to destinationManager.unbind', () => {

@@ -5,12 +5,12 @@
  * Use createMockVscodeAdapter() for all test files except VscodeAdapter.test.ts.
  */
 
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { createMockVscode, type MockVscodeOptions } from './createMockVscode';
+
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 /**
  * Extended options for createMockVscodeAdapter that includes logger.
@@ -49,9 +49,7 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * @param options - Optional configuration for environment and VSCode API overrides
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
-export const createMockVscodeAdapter = (
-  options?: MockVscodeAdapterOptions,
-): VscodeAdapterWithTestHooks => {
+export const createMockVscodeAdapter = (options?: MockVscodeAdapterOptions): VscodeAdapterWithTestHooks => {
   const vscodeInstance = createMockVscode(options);
   const logger = options?.logger ?? createMockLogger();
   const adapter = new VscodeAdapter(vscodeInstance, logger) as VscodeAdapterWithTestHooks;

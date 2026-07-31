@@ -109,8 +109,7 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
  * Single-quoted matches capture path content (without quotes) in named group `sq`.
  * All other patterns produce no named groups — match[0] is the full unquoted path.
  */
-export const extractFilePath = (match: RegExpExecArray): string =>
-  match.groups?.dq ?? match.groups?.sq ?? match[0];
+export const extractFilePath = (match: RegExpExecArray): string => match.groups?.dq ?? match.groups?.sq ?? match[0];
 
 // Quoted file-path patterns for buildFilePathPattern.
 //
@@ -178,8 +177,5 @@ export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
   const relative = `${NOT_AFTER_URL_CHAR}\\.{1,2}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
   const tilde = `${NOT_AFTER_URL_CHAR}~/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
 
-  return new RegExp(
-    `${DOUBLE_QUOTED_PATH}|${SINGLE_QUOTED_PATH}|${absolute}|${relative}|${tilde}`,
-    'g',
-  );
+  return new RegExp(`${DOUBLE_QUOTED_PATH}|${SINGLE_QUOTED_PATH}|${absolute}|${relative}|${tilde}`, 'g');
 };

@@ -1,7 +1,6 @@
-import type { ParsedLink } from 'rangelink-core-ts';
-import { LinkType, SelectionType } from 'rangelink-core-ts';
-
 import { formatLinkTooltip } from '../../utils';
+
+import { LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
 
 describe('formatLinkTooltip', () => {
   describe('Parse success with line and character', () => {
@@ -102,9 +101,7 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual(
-        'Open C:\\Users\\dev\\project\\src\\file.ts:42:10 • RangeLink',
-      );
+      expect(formatLinkTooltip(parsed)).toStrictEqual('Open C:\\Users\\dev\\project\\src\\file.ts:42:10 • RangeLink');
     });
 
     it('should handle path with hash in filename', () => {
@@ -143,9 +140,7 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual(
-        'Open /home/user/project/src/file.ts:100:25 • RangeLink',
-      );
+      expect(formatLinkTooltip(parsed)).toStrictEqual('Open /home/user/project/src/file.ts:100:25 • RangeLink');
     });
   });
 
@@ -173,9 +168,7 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual(
-        'Open bigfile.ts:9999:99-10000:1 • RangeLink',
-      );
+      expect(formatLinkTooltip(parsed)).toStrictEqual('Open bigfile.ts:9999:99-10000:1 • RangeLink');
     });
 
     it('should handle character position 0', () => {

@@ -5,11 +5,11 @@
  * contract and behavior. Reduces duplication across destination test files.
  */
 
-import type { Logger } from '@couimet/logger-contract';
-
 import type { PasteDestination } from '../../destinations';
 
 import { createMockFormattedLink } from './createMockFormattedLink';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Test logging behavior for a destination
@@ -50,11 +50,7 @@ export const testDestinationLogging = (
  * @param successScenario - Function that sets up successful paste
  * @param failureScenario - Function that sets up failed paste
  */
-export const testPasteReturnValues = (
-  destination: PasteDestination,
-  successScenario: () => Promise<void>,
-  failureScenario: () => Promise<void>,
-): void => {
+export const testPasteReturnValues = (destination: PasteDestination, successScenario: () => Promise<void>, failureScenario: () => Promise<void>): void => {
   describe('pasteLink() return values', () => {
     it('should return true on successful paste', async () => {
       await successScenario();

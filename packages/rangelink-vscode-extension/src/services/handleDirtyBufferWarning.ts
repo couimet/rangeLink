@@ -1,6 +1,3 @@
-import type { Logger } from '@couimet/logger-contract';
-import type * as vscode from 'vscode';
-
 import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_WARN_ON_DIRTY_BUFFER, SETTING_WARN_ON_DIRTY_BUFFER } from '../constants';
 import { RangeLinkExtensionError } from '../errors';
@@ -9,6 +6,9 @@ import { DirtyBufferWarningResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 import type { DirtyBufferMessageCodes } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import type * as vscode from 'vscode';
 
 /**
  * Checks whether a document has unsaved changes and, if so, shows the dirty
@@ -39,23 +39,14 @@ export const handleDirtyBufferWarning = async (
     return DirtyBufferWarningResult.Clean;
   }
 
-  const shouldWarnOnDirty = configReader.getBoolean(
-    SETTING_WARN_ON_DIRTY_BUFFER,
-    DEFAULT_WARN_ON_DIRTY_BUFFER,
-  );
+  const shouldWarnOnDirty = configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, DEFAULT_WARN_ON_DIRTY_BUFFER);
 
   if (!shouldWarnOnDirty) {
-    logger.debug(
-      { fn, documentUri: document.uri.toString() },
-      'Document has unsaved changes but warning is disabled by setting',
-    );
+    logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes but warning is disabled by setting');
     return DirtyBufferWarningResult.ContinueAnyway;
   }
 
-  logger.debug(
-    { fn, documentUri: document.uri.toString() },
-    'Document has unsaved changes, showing warning',
-  );
+  logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes, showing warning');
 
   const warningMessage = formatMessage(messageCodes.warning);
   const saveLabel = formatMessage(messageCodes.save);
@@ -87,15 +78,9 @@ export const handleDirtyBufferWarning = async (
       return result;
     case DirtyBufferWarningResult.Dismissed:
       logger.debug({ fn }, 'User dismissed warning, aborting');
-      void ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_OPERATION_ABORTED_DIRTY_BUFFER),
-      );
+      void ideAdapter.showInformationMessage(formatMessage(MessageCode.INFO_OPERATION_ABORTED_DIRTY_BUFFER));
       return result;
     default:
-      throw RangeLinkExtensionError.forUnexpectedSwitchDefault(
-        'dirty buffer warning result',
-        result,
-        'handleDirtyBufferWarning',
-      );
+      throw RangeLinkExtensionError.forUnexpectedSwitchDefault('dirty buffer warning result', result, 'handleDirtyBufferWarning');
   }
 };

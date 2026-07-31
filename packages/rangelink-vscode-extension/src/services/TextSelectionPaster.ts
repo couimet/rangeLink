@@ -1,10 +1,5 @@
-import type { Logger } from '@couimet/logger-contract';
-
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_SMART_PADDING_PASTE_CONTENT,
-  SETTING_SMART_PADDING_PASTE_CONTENT,
-} from '../constants';
+import { DEFAULT_SMART_PADDING_PASTE_CONTENT, SETTING_SMART_PADDING_PASTE_CONTENT } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { MessageCode, PasteContentType } from '../types';
 import { applySmartPadding } from '../utils';
@@ -12,6 +7,8 @@ import { applySmartPadding } from '../utils';
 import type { SelectionValidator } from './SelectionValidator';
 import type { SendRouter } from './SendRouter';
 import { toBindContext } from './toBindContext';
+
+import type { Logger } from '@couimet/logger-contract';
 
 /**
  * Pastes the current editor text selection to the bound destination.
@@ -44,10 +41,7 @@ export class TextSelectionPaster {
       `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
     );
 
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_CONTENT,
-      DEFAULT_SMART_PADDING_PASTE_CONTENT,
-    );
+    const paddingMode = this.configReader.getPaddingMode(SETTING_SMART_PADDING_PASTE_CONTENT, DEFAULT_SMART_PADDING_PASTE_CONTENT);
 
     const resolveResult = await this.sendRouter.resolveDestination(logCtx);
     if (!resolveResult.canProceed) return;

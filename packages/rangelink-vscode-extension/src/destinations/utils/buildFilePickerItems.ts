@@ -1,8 +1,7 @@
-import * as vscode from 'vscode';
-
-import type { FileBindableQuickPickItem } from '../../types';
-import { MessageCode } from '../../types';
+import { FileBindableQuickPickItem, MessageCode } from '../../types';
 import { formatMessage } from '../../utils';
+
+import * as vscode from 'vscode';
 
 const makeSeparator = (label: string): vscode.QuickPickItem => ({
   label,
@@ -22,9 +21,7 @@ const makeSeparator = (label: string): vscode.QuickPickItem => ({
  * @param items - Pre-built file picker items (from getAllFileItems())
  * @returns Interleaved array of separator items and file items
  */
-export const buildFilePickerItems = (
-  items: readonly FileBindableQuickPickItem[],
-): (FileBindableQuickPickItem | vscode.QuickPickItem)[] => {
+export const buildFilePickerItems = (items: readonly FileBindableQuickPickItem[]): (FileBindableQuickPickItem | vscode.QuickPickItem)[] => {
   const result: (FileBindableQuickPickItem | vscode.QuickPickItem)[] = [];
 
   const activeFiles = items.filter((item) => item.fileInfo.isCurrentInGroup);

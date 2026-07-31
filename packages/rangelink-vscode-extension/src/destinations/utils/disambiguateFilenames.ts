@@ -14,9 +14,7 @@
  * @param files - Array of objects with `filename` and `displayPath` (forward-slash separated)
  * @returns Array of disambiguator strings, same length and order as input
  */
-export const disambiguateFilenames = (
-  files: readonly { readonly filename: string; readonly displayPath: string }[],
-): string[] => {
+export const disambiguateFilenames = (files: readonly { readonly filename: string; readonly displayPath: string }[]): string[] => {
   const disambiguators: string[] = files.map(() => '');
 
   const groupsByFilename = new Map<string, number[]>();

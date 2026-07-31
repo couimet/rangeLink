@@ -1,17 +1,16 @@
-import type { Logger } from '@couimet/logger-contract';
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import { FilePathTerminalProvider } from '../../navigation/FilePathTerminalProvider';
 import type { FilePathTerminalLink } from '../../types';
 import { createMockFilePathNavigationHandler } from '../helpers';
 
+import type { Logger } from '@couimet/logger-contract';
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
+
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
-const createMockTerminalContext = (line: string): vscode.TerminalLinkContext =>
-  ({ line }) as vscode.TerminalLinkContext;
+const createMockTerminalContext = (line: string): vscode.TerminalLinkContext => ({ line }) as vscode.TerminalLinkContext;
 
 describe('FilePathTerminalProvider', () => {
   let provider: FilePathTerminalProvider;
@@ -26,10 +25,7 @@ describe('FilePathTerminalProvider', () => {
 
   describe('constructor', () => {
     it('should log initialization', () => {
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'FilePathTerminalProvider.constructor' },
-        'FilePathTerminalProvider initialized',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'FilePathTerminalProvider.constructor' }, 'FilePathTerminalProvider initialized');
     });
   });
 

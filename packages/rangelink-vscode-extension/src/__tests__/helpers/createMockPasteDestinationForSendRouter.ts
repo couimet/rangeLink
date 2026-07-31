@@ -1,8 +1,6 @@
 import type { PasteDestination } from '../../destinations';
 
-export const createMockPasteDestinationForSendRouter = (
-  overrides: Partial<PasteDestination> = {},
-): jest.Mocked<PasteDestination> =>
+export const createMockPasteDestinationForSendRouter = (overrides: Partial<PasteDestination> = {}): jest.Mocked<PasteDestination> =>
   ({
     id: 'terminal',
     displayName: 'Terminal ("bash")',

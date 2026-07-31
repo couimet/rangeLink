@@ -1,8 +1,8 @@
-import type { Logger } from '@couimet/logger-contract';
-import * as vscode from 'vscode';
-
 import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider } from '../ide';
+
+import type { Logger } from '@couimet/logger-contract';
+import * as vscode from 'vscode';
 
 /**
  * Auto-unbind when the last tab of the bound editor is closed.
@@ -21,9 +21,7 @@ export const createTabCloseGuard = (deps: {
   const boundUriString = deps.boundUri.toString();
 
   return deps.events.onDidChangeTabs((event) => {
-    const closedTab = event.closed.find(
-      (tab) => (tab.input as { uri?: vscode.Uri })?.uri?.toString() === boundUriString,
-    );
+    const closedTab = event.closed.find((tab) => (tab.input as { uri?: vscode.Uri })?.uri?.toString() === boundUriString);
     if (!closedTab) return;
 
     const remainingTabs = vscode.window.tabGroups.all
@@ -31,10 +29,7 @@ export const createTabCloseGuard = (deps: {
       .filter((t) => (t.input as { uri?: vscode.Uri })?.uri?.toString() === boundUriString);
     if (remainingTabs.length > 0) return;
 
-    deps.logger.info(
-      { fn: 'createTabCloseGuard', editorUri: boundUriString },
-      `Bound editor tab closed: ${deps.displayName} — auto-unbinding`,
-    );
+    deps.logger.info({ fn: 'createTabCloseGuard', editorUri: boundUriString }, `Bound editor tab closed: ${deps.displayName} — auto-unbinding`);
     deps.clearBinding();
     deps.feedback.notifyAutoUnbind(deps.displayName, 'editor-closed');
   });

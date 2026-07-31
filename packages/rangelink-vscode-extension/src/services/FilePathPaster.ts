@@ -1,27 +1,18 @@
-import type { Logger } from '@couimet/logger-contract';
-import { quotePath } from 'rangelink-core-ts';
-import type * as vscode from 'vscode';
-
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
-  SETTING_SMART_PADDING_PASTE_FILE_PATH,
-} from '../constants';
+import { DEFAULT_SMART_PADDING_PASTE_FILE_PATH, SETTING_SMART_PADDING_PASTE_FILE_PATH } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  DirtyBufferWarningResult,
-  MessageCode,
-  PasteContentType,
-  PathFormat,
-  RelativePathFormat,
-} from '../types';
+import { DirtyBufferWarningResult, MessageCode, PasteContentType, PathFormat, RelativePathFormat } from '../types';
 import { applySmartPadding, formatMessage } from '../utils';
 
 import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 import type { SendRouter } from './SendRouter';
 import { toBindContext } from './toBindContext';
 import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
+
+import type { Logger } from '@couimet/logger-contract';
+import { quotePath } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 /**
  * Resolves a file URI to a reference path based on the requested format.
@@ -32,11 +23,7 @@ import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
  *
  * Falls back to absolute fsPath otherwise.
  */
-export const getReferencePath = (
-  ideAdapter: VscodeAdapter,
-  uri: vscode.Uri,
-  pathFormat: PathFormat,
-): string => {
+export const getReferencePath = (ideAdapter: VscodeAdapter, uri: vscode.Uri, pathFormat: PathFormat): string => {
   const workspaceFolder = ideAdapter.getWorkspaceFolder(uri);
   if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
     return ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly);
@@ -68,38 +55,20 @@ export class FilePathPaster {
   private async pasteCurrentFilePath(pathFormat: PathFormat): Promise<void> {
     const uri = this.ideAdapter.getActiveTabUri();
     if (!uri) {
-      this.logger.debug(
-        { fn: 'FilePathPaster.pasteCurrentFilePath', pathFormat },
-        'No active editor',
-      );
-      await this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE),
-      );
+      this.logger.debug({ fn: 'FilePathPaster.pasteCurrentFilePath', pathFormat }, 'No active editor');
+      await this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE));
       return;
     }
     await this.pasteFilePath(uri, pathFormat, 'command-palette');
   }
 
-  private async pasteFilePath(
-    uri: vscode.Uri,
-    pathFormat: PathFormat,
-    uriSource: 'context-menu' | 'command-palette',
-  ): Promise<void> {
+  private async pasteFilePath(uri: vscode.Uri, pathFormat: PathFormat, uriSource: 'context-menu' | 'command-palette'): Promise<void> {
     const logCtx = { fn: 'FilePathPaster.pasteFilePath', pathFormat, uriSource };
 
     const document = this.ideAdapter.findOpenDocument(uri);
     if (document) {
-      const warningResult = await handleDirtyBufferWarning(
-        document,
-        this.configReader,
-        this.ideAdapter,
-        this.logger,
-        FILE_PATH_DIRTY_BUFFER_CODES,
-      );
-      if (
-        warningResult === DirtyBufferWarningResult.Dismissed ||
-        warningResult === DirtyBufferWarningResult.SaveFailed
-      ) {
+      const warningResult = await handleDirtyBufferWarning(document, this.configReader, this.ideAdapter, this.logger, FILE_PATH_DIRTY_BUFFER_CODES);
+      if (warningResult === DirtyBufferWarningResult.Dismissed || warningResult === DirtyBufferWarningResult.SaveFailed) {
         return;
       }
     }
@@ -107,10 +76,7 @@ export class FilePathPaster {
     const filePath = getReferencePath(this.ideAdapter, uri, pathFormat);
     this.logger.debug({ ...logCtx, filePath }, `Resolved file path: ${filePath}`);
 
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_FILE_PATH,
-      DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
-    );
+    const paddingMode = this.configReader.getPaddingMode(SETTING_SMART_PADDING_PASTE_FILE_PATH, DEFAULT_SMART_PADDING_PASTE_FILE_PATH);
 
     const resolveResult = await this.sendRouter.resolveDestination(logCtx);
     if (!resolveResult.canProceed) return;
@@ -121,10 +87,7 @@ export class FilePathPaster {
     const bindContext = toBindContext(resolveResult);
 
     if (destinationFilePath !== filePath) {
-      this.logger.debug(
-        { ...logCtx, before: filePath, after: destinationFilePath },
-        'Quoted path for unsafe characters',
-      );
+      this.logger.debug({ ...logCtx, before: filePath, after: destinationFilePath }, 'Quoted path for unsafe characters');
     }
 
     await this.sendRouter.sendToDestination(

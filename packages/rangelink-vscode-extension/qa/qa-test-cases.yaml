@@ -1537,48 +1537,64 @@ test_cases:
       - wrapped-links
     feature: 'link-navigation'
     scenario: 'Backtick-wrapped RangeLink in terminal is clickable and navigates correctly'
-    expected_result: 'VS Code opens src/utils/helper.ts and selects lines 5-10. Backtick wrapping did not prevent link detection.'
-    automated: true
+    expected_result: 'Cmd+click the backtick-wrapped RangeLink in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
 
   - id: wrapped-link-navigation-002
     labels:
       - wrapped-links
     feature: 'link-navigation'
     scenario: 'Single-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
-    expected_result: 'Navigates to line 5 of the file. Single quotes did not break link detection.'
-    automated: true
+    expected_result: 'Cmd+click the single-quote-wrapped RangeLink in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
 
   - id: wrapped-link-navigation-003
     labels:
       - wrapped-links
     feature: 'link-navigation'
     scenario: 'Double-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
-    expected_result: 'Navigates to line 5. Double quotes did not break link detection.'
-    automated: true
+    expected_result: 'Cmd+click the double-quote-wrapped RangeLink in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
 
   - id: wrapped-link-navigation-004
     labels:
       - wrapped-links
     feature: 'link-navigation'
     scenario: 'Angle-bracket-wrapped RangeLink in terminal is clickable and navigates correctly'
-    expected_result: 'Navigates to line 5. Angle brackets did not break link detection.'
-    automated: true
+    expected_result: 'Cmd+click the angle-bracket-wrapped RangeLink in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
+
+  - id: wrapped-link-navigation-005
+    labels:
+      - wrapped-links
+    feature: 'link-navigation'
+    scenario: 'Parenthesis-wrapped RangeLink in terminal is clickable and navigates correctly'
+    expected_result: 'Cmd+click the paren-wrapped RangeLink in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
+
+  - id: wrapped-link-navigation-006
+    labels:
+      - wrapped-links
+    feature: 'link-navigation'
+    scenario: 'Parenthesis-wrapped RangeLink followed by colon is clickable and navigates correctly'
+    expected_result: 'Cmd+click the paren-wrapped RangeLink with trailing colon in the terminal. VS Code opens the target file showing "TARGET LINE 5". Wrapping did not prevent navigation.'
+    automated: assisted
 
   - id: markdown-link-navigation-001
     labels:
       - markdown-syntax
     feature: 'link-navigation'
     scenario: 'Markdown link [label](path/to/file.ts#L10) in a document is clickable and navigates correctly'
-    expected_result: 'VS Code opens src/utils/helper.ts and navigates to line 10. The [label](path#L10) syntax is recognized as a RangeLink document link.'
-    automated: true
+    expected_result: 'Cmd+click the Markdown link [here](path#L5) in the editor. VS Code opens the target file at line 5 showing "TARGET LINE 5". Markdown syntax did not prevent navigation.'
+    automated: assisted
 
   - id: url-exclusion-001
     labels:
       - url-exclusion
     feature: 'link-navigation'
     scenario: 'https://example.com/path/file.ts#L10 in terminal is NOT captured as a RangeLink'
-    expected_result: 'RangeLink does NOT intercept the URL. No navigation to a local file occurs. The https:// prefix is correctly excluded.'
-    automated: true
+    expected_result: 'Cmd+click the HTTPS URL in the terminal. RangeLink does NOT navigate. The https:// prefix is correctly excluded.'
+    automated: assisted
 
   - id: url-exclusion-002
     labels:
@@ -1802,7 +1818,7 @@ test_cases:
   - id: clickable-file-paths-011
     feature: 'clickable-file-paths'
     scenario: 'rangelink.handleFilePathClick shows a warning for a non-existent file path'
-    expected_result: 'A warning notification appears (e.g., "Cannot open file: <path>"). No error is thrown; active editor is unchanged.'
+    expected_result: 'A warning notification appears ("File does not exist at: <path>"). No error is thrown; active editor is unchanged.'
     automated: true
 
   - id: clickable-file-paths-012

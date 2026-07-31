@@ -9,9 +9,7 @@ describe('quoteLink', () => {
 
   describe('unsafe paths (wraps entire link)', () => {
     it('should wrap entire link when path has spaces', () => {
-      expect(quoteLink('My Folder/file.ts#L10', 'My Folder/file.ts')).toBe(
-        "'My Folder/file.ts#L10'",
-      );
+      expect(quoteLink('My Folder/file.ts#L10', 'My Folder/file.ts')).toBe("'My Folder/file.ts#L10'");
     });
 
     it('should wrap entire link when path has hash', () => {
@@ -19,9 +17,7 @@ describe('quoteLink', () => {
     });
 
     it('should wrap entire link when path has parentheses', () => {
-      expect(quoteLink('src/(group)/file.ts#L10', 'src/(group)/file.ts')).toBe(
-        "'src/(group)/file.ts#L10'",
-      );
+      expect(quoteLink('src/(group)/file.ts#L10', 'src/(group)/file.ts')).toBe("'src/(group)/file.ts#L10'");
     });
   });
 

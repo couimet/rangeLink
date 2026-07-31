@@ -1,7 +1,7 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-
 import { createMockConfigReader } from '../../__tests__/helpers';
 import { parseCustomAiAssistants } from '../parseCustomAiAssistants';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('parseCustomAiAssistants', () => {
   const mockLogger = createMockLogger();
@@ -102,9 +102,7 @@ describe('parseCustomAiAssistants', () => {
           {
             extensionId: 'acme.fancy',
             extensionName: 'Fancy',
-            insertCommands: [
-              { command: 'fancy.insert', args: [{ text: '${content}', format: 'markdown' }] },
-            ],
+            insertCommands: [{ command: 'fancy.insert', args: [{ text: '${content}', format: 'markdown' }] }],
           },
         ]),
       });
@@ -116,9 +114,7 @@ describe('parseCustomAiAssistants', () => {
           kind: 'custom-ai:acme.fancy',
           extensionId: 'acme.fancy',
           extensionName: 'Fancy',
-          insertCommands: [
-            { command: 'fancy.insert', args: [{ text: '${content}', format: 'markdown' }] },
-          ],
+          insertCommands: [{ command: 'fancy.insert', args: [{ text: '${content}', format: 'markdown' }] }],
         },
       ]);
     });
@@ -222,9 +218,7 @@ describe('parseCustomAiAssistants', () => {
 
     it('skips entry with missing extensionId and logs warning', () => {
       const configReader = createMockConfigReader({
-        get: jest
-          .fn()
-          .mockReturnValue([{ extensionName: 'Missing ID', focusCommands: ['cmd.focus'] }]),
+        get: jest.fn().mockReturnValue([{ extensionName: 'Missing ID', focusCommands: ['cmd.focus'] }]),
       });
 
       const result = parseCustomAiAssistants(configReader, mockLogger);
@@ -310,19 +304,12 @@ describe('parseCustomAiAssistants', () => {
 
     it('logs loaded count with extension IDs', () => {
       const configReader = createMockConfigReader({
-        get: jest
-          .fn()
-          .mockReturnValue([
-            { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: ['acme.focus'] },
-          ]),
+        get: jest.fn().mockReturnValue([{ extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: ['acme.focus'] }]),
       });
 
       parseCustomAiAssistants(configReader, mockLogger);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'parseCustomAiAssistants', count: 1, ids: ['acme.ai'] },
-        'Loaded 1 custom AI assistant(s)',
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'parseCustomAiAssistants', count: 1, ids: ['acme.ai'] }, 'Loaded 1 custom AI assistant(s)');
     });
 
     it('trims whitespace from extensionId and extensionName', () => {
@@ -364,11 +351,7 @@ describe('parseCustomAiAssistants', () => {
 
     it('warns when focusCommands is present but malformed', () => {
       const configReader = createMockConfigReader({
-        get: jest
-          .fn()
-          .mockReturnValue([
-            { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: [123, null] },
-          ]),
+        get: jest.fn().mockReturnValue([{ extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: [123, null] }]),
       });
 
       const result = parseCustomAiAssistants(configReader, mockLogger);

@@ -14,9 +14,7 @@ import {
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance configured as Gemini Code Assist
  */
-export const createMockGeminiCodeAssistComposableDestination = (
-  overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>,
-) =>
+export const createMockGeminiCodeAssistComposableDestination = (overrides?: Omit<MockSingletonComposablePasteDestinationConfig, 'id'>) =>
   createMockSingletonComposablePasteDestination({
     id: 'gemini-code-assist',
     displayName: 'Gemini Code Assist',

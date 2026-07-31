@@ -1,8 +1,8 @@
-import { createMockLogger } from '@couimet/logger-contract-testing';
-import * as vscode from 'vscode';
-
 import { createMockOperationFeedbackProvider, createMockUri } from '../../__tests__/helpers';
 import { createFileDeleteWatcher } from '../createFileDeleteWatcher';
+
+import { createMockLogger } from '@couimet/logger-contract-testing';
+import * as vscode from 'vscode';
 
 describe('createFileDeleteWatcher', () => {
   let mockWatcherFactory: { createFileSystemWatcherForFile: jest.Mock };
@@ -39,12 +39,7 @@ describe('createFileDeleteWatcher', () => {
   it('creates a FileSystemWatcher scoped to the bound file with only delete events enabled', () => {
     createGuard();
 
-    expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledWith(
-      testUri,
-      true,
-      true,
-      false,
-    );
+    expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledWith(testUri, true, true, false);
   });
 
   it('subscribes to onDidDelete on the watcher', () => {
@@ -64,10 +59,7 @@ describe('createFileDeleteWatcher', () => {
       'Bound file deleted from disk: Text Editor ("test.ts") — auto-unbinding',
     );
     expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
-      'Text Editor ("test.ts")',
-      'file-deleted',
-    );
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'file-deleted');
   });
 
   it('does nothing when a different file is deleted', () => {
@@ -88,10 +80,7 @@ describe('createFileDeleteWatcher', () => {
     handler(testUri);
 
     expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith(
-      'Text Editor ("test.ts")',
-      'file-deleted',
-    );
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'file-deleted');
 
     guard.dispose();
   });

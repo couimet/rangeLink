@@ -1,8 +1,3 @@
-import assert from 'node:assert';
-
-import type { Context as MochaContext } from 'mocha';
-import * as vscode from 'vscode';
-
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
@@ -13,14 +8,8 @@ import {
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
-import {
-  DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
-  DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
-} from '../../constants/settingDefaults';
-import {
-  EXTENSION_ID_CLAUDE_CODE,
-  EXTENSION_ID_GEMINI_CODE_ASSIST,
-} from '../../utils/aiAssistants/builtInAiAssistants';
+import { DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS, DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS } from '../../constants/settingDefaults';
+import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_GEMINI_CODE_ASSIST } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
   assertClipboardEqualsGeneratedLink,
   assertPasteCommandSucceeded,
@@ -33,16 +22,17 @@ import {
   withClipboardSentinel,
 } from '../helpers';
 
+import type { Context as MochaContext } from 'mocha';
+import assert from 'node:assert';
+import * as vscode from 'vscode';
+
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
 const GEMINI_CODE_ASSIST_DISPLAY_NAME = 'Gemini Code Assist';
 
 standardSuite('Built-in AI Assistants', (ss) => {
   test('[assisted] claude-code-002: binding to Claude Code Chat and sending a link delivers content to chat', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Claude Code Chat',
-      '✓ RangeLink: RangeLink sent to Claude Code Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Claude Code Chat', '✓ RangeLink: RangeLink sent to Claude Code Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cc-002', 'line 1\nline 2\nline 3\n');
@@ -69,11 +59,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(sendLines);
 
-    const verdict = await waitForHumanVerdict(
-      'claude-code-002',
-      'Did the RangeLink + selected code appear in Claude Code chat?',
-      ['1. The RangeLink send was fired automatically', 'Verdict:'],
-    );
+    const verdict = await waitForHumanVerdict('claude-code-002', 'Did the RangeLink + selected code appear in Claude Code chat?', [
+      '1. The RangeLink send was fired automatically',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -84,10 +73,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] claude-code-004: cold panel paste — content arrives in Claude Code chat after first R-L since bind', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Claude Code Chat',
-      '✓ RangeLink: RangeLink sent to Claude Code Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Claude Code Chat', '✓ RangeLink: RangeLink sent to Claude Code Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cc-004', 'line 1\nline 2\nline 3\n');
@@ -109,15 +95,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(lines);
 
-    const verdict = await waitForHumanVerdict(
-      'claude-code-004',
-      'Cold paste: did the RangeLink appear in Claude Code chat?',
-      [
-        '1. Lines 1-2 of cc-004 are already selected',
-        '2. The send was fired automatically (no keypress needed)',
-        'Verdict:',
-      ],
-    );
+    const verdict = await waitForHumanVerdict('claude-code-004', 'Cold paste: did the RangeLink appear in Claude Code chat?', [
+      '1. Lines 1-2 of cc-004 are already selected',
+      '2. The send was fired automatically (no keypress needed)',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -148,16 +130,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const coldVerdict = await waitForHumanVerdict(
-      'claude-code-005-cold',
-      'Cold send: did the RangeLink appear in Claude Code chat?',
-      ['1. Lines 1-2 of cc-005 are selected; cold send was fired automatically', 'Verdict:'],
-    );
-    assert.strictEqual(
-      coldVerdict,
-      'pass',
-      'Human reported the cold-send RangeLink did not appear in Claude Code chat',
-    );
+    const coldVerdict = await waitForHumanVerdict('claude-code-005-cold', 'Cold send: did the RangeLink appear in Claude Code chat?', [
+      '1. Lines 1-2 of cc-005 are selected; cold send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(coldVerdict, 'pass', 'Human reported the cold-send RangeLink did not appear in Claude Code chat');
 
     // Select lines 3-4 for warm send. Re-focus the editor first — the cold
     // verdict dialog stole focus and the editor must be active for the send
@@ -181,20 +158,13 @@ standardSuite('Built-in AI Assistants', (ss) => {
       'Warm send: did the lines 3-4 RangeLink appear in Claude Code chat without refocus flicker?',
       ['1. Lines 3-4 of cc-005 are selected; warm send was fired automatically', 'Verdict:'],
     );
-    assert.strictEqual(
-      warmVerdict,
-      'pass',
-      'Human reported the warm-send RangeLink did not appear cleanly in Claude Code chat',
-    );
+    assert.strictEqual(warmVerdict, 'pass', 'Human reported the warm-send RangeLink did not appear cleanly in Claude Code chat');
 
     ss.log('✓ Warm paste: content delivered to Claude Code (cold + warm both PASS)');
   });
 
   test('[assisted] gemini-code-assist-002: binding to Gemini Code Assist and sending a link delivers content to chat', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Gemini Code Assist',
-      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Gemini Code Assist', '✓ RangeLink: RangeLink sent to Gemini Code Assist']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('gc-002', 'line 1\nline 2\nline 3\n');
@@ -223,11 +193,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(sendLines);
 
-    const verdict = await waitForHumanVerdict(
-      'gemini-code-assist-002',
-      'Did the RangeLink + selected code appear in Gemini Code Assist chat?',
-      ['1. The RangeLink send was fired automatically', 'Verdict:'],
-    );
+    const verdict = await waitForHumanVerdict('gemini-code-assist-002', 'Did the RangeLink + selected code appear in Gemini Code Assist chat?', [
+      '1. The RangeLink send was fired automatically',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -238,10 +207,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] gemini-code-assist-003: cold panel paste — content arrives in Gemini Code Assist chat after first R-L since bind', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Gemini Code Assist',
-      '✓ RangeLink: RangeLink sent to Gemini Code Assist',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Gemini Code Assist', '✓ RangeLink: RangeLink sent to Gemini Code Assist']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('gc-003', 'line 1\nline 2\nline 3\n');
@@ -265,15 +231,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(lines);
 
-    const verdict = await waitForHumanVerdict(
-      'gemini-code-assist-003',
-      'Cold paste: did the RangeLink appear in Gemini Code Assist chat?',
-      [
-        '1. Lines 1-2 of gc-003 are already selected',
-        '2. The send was fired automatically (no keypress needed)',
-        'Verdict:',
-      ],
-    );
+    const verdict = await waitForHumanVerdict('gemini-code-assist-003', 'Cold paste: did the RangeLink appear in Gemini Code Assist chat?', [
+      '1. Lines 1-2 of gc-003 are already selected',
+      '2. The send was fired automatically (no keypress needed)',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -306,16 +268,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const coldVerdict = await waitForHumanVerdict(
-      'gemini-code-assist-004-cold',
-      'Cold send: did the RangeLink appear in Gemini Code Assist chat?',
-      ['1. Lines 1-2 of gc-004 are selected; cold send was fired automatically', 'Verdict:'],
-    );
-    assert.strictEqual(
-      coldVerdict,
-      'pass',
-      'Human reported the cold-send RangeLink did not appear in Gemini Code Assist chat',
-    );
+    const coldVerdict = await waitForHumanVerdict('gemini-code-assist-004-cold', 'Cold send: did the RangeLink appear in Gemini Code Assist chat?', [
+      '1. Lines 1-2 of gc-004 are selected; cold send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(coldVerdict, 'pass', 'Human reported the cold-send RangeLink did not appear in Gemini Code Assist chat');
 
     // Select lines 3-4 for warm send
     await vscode.window.showTextDocument(doc);
@@ -337,20 +294,13 @@ standardSuite('Built-in AI Assistants', (ss) => {
       'Warm send: did the lines 3-4 RangeLink appear in Gemini Code Assist chat without refocus flicker?',
       ['1. Lines 3-4 of gc-004 are selected; warm send was fired automatically', 'Verdict:'],
     );
-    assert.strictEqual(
-      warmVerdict,
-      'pass',
-      'Human reported the warm-send RangeLink did not appear cleanly in Gemini Code Assist chat',
-    );
+    assert.strictEqual(warmVerdict, 'pass', 'Human reported the warm-send RangeLink did not appear cleanly in Gemini Code Assist chat');
 
     ss.log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
   });
 
   test('[assisted] github-copilot-chat-002: binding to GitHub Copilot Chat and sending a link delivers content to chat', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat', '✓ RangeLink: RangeLink sent to GitHub Copilot Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('ghc-002', 'line 1\nline 2\nline 3\n');
@@ -377,11 +327,10 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(sendLines);
 
-    const verdict = await waitForHumanVerdict(
-      'github-copilot-chat-002',
-      'Did the RangeLink + selected code appear in GitHub Copilot Chat?',
-      ['1. The RangeLink send was fired automatically', 'Verdict:'],
-    );
+    const verdict = await waitForHumanVerdict('github-copilot-chat-002', 'Did the RangeLink + selected code appear in GitHub Copilot Chat?', [
+      '1. The RangeLink send was fired automatically',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -392,10 +341,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('[assisted] github-copilot-chat-003: cold panel paste — content arrives in GitHub Copilot Chat after first R-L since bind', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat', '✓ RangeLink: RangeLink sent to GitHub Copilot Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('ghc-003', 'line 1\nline 2\nline 3\n');
@@ -417,15 +363,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(lines);
 
-    const verdict = await waitForHumanVerdict(
-      'github-copilot-chat-003',
-      'Cold paste: did the RangeLink appear in GitHub Copilot Chat?',
-      [
-        '1. Lines 1-2 of ghc-003 are already selected',
-        '2. The send was fired automatically (no keypress needed)',
-        'Verdict:',
-      ],
-    );
+    const verdict = await waitForHumanVerdict('github-copilot-chat-003', 'Cold paste: did the RangeLink appear in GitHub Copilot Chat?', [
+      '1. Lines 1-2 of ghc-003 are already selected',
+      '2. The send was fired automatically (no keypress needed)',
+      'Verdict:',
+    ]);
     assert.strictEqual(
       verdict,
       'pass',
@@ -456,16 +398,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
     await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     await ss.settle();
 
-    const coldVerdict = await waitForHumanVerdict(
-      'github-copilot-chat-004-cold',
-      'Cold send: did the RangeLink appear in GitHub Copilot Chat?',
-      ['1. Lines 1-2 of ghc-004 are selected; cold send was fired automatically', 'Verdict:'],
-    );
-    assert.strictEqual(
-      coldVerdict,
-      'pass',
-      'Human reported the cold-send RangeLink did not appear in GitHub Copilot Chat',
-    );
+    const coldVerdict = await waitForHumanVerdict('github-copilot-chat-004-cold', 'Cold send: did the RangeLink appear in GitHub Copilot Chat?', [
+      '1. Lines 1-2 of ghc-004 are selected; cold send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(coldVerdict, 'pass', 'Human reported the cold-send RangeLink did not appear in GitHub Copilot Chat');
 
     // Select lines 3-4 for warm send
     await vscode.window.showTextDocument(doc);
@@ -487,20 +424,13 @@ standardSuite('Built-in AI Assistants', (ss) => {
       'Warm send: did the lines 3-4 RangeLink appear in GitHub Copilot Chat without refocus flicker?',
       ['1. Lines 3-4 of ghc-004 are selected; warm send was fired automatically', 'Verdict:'],
     );
-    assert.strictEqual(
-      warmVerdict,
-      'pass',
-      'Human reported the warm-send RangeLink did not appear cleanly in GitHub Copilot Chat',
-    );
+    assert.strictEqual(warmVerdict, 'pass', 'Human reported the warm-send RangeLink did not appear cleanly in GitHub Copilot Chat');
 
     ss.log('✓ Warm paste: content delivered to GitHub Copilot Chat (cold + warm both PASS)');
   });
 
   test('clipboard-preservation-011: cold paste to Claude Code — prior clipboard restored', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Claude Code Chat',
-      '✓ RangeLink: RangeLink sent to Claude Code Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Claude Code Chat', '✓ RangeLink: RangeLink sent to Claude Code Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-011', 'line 1\nline 2\nline 3\n');
@@ -557,16 +487,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
   test('clipboard-preservation-013: cold paste to Cursor AI — prior clipboard restored', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension('cursor.cursor')) {
-      ss.log(
-        'Skipping clipboard-preservation-013 — Cursor AI extension not installed in this test config',
-      );
+      ss.log('Skipping clipboard-preservation-013 — Cursor AI extension not installed in this test config');
       this.skip();
     }
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Cursor AI Assistant',
-      '✓ RangeLink: RangeLink sent to Cursor AI Assistant',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cursor AI Assistant', '✓ RangeLink: RangeLink sent to Cursor AI Assistant']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const fileUri = ss.createWorkspaceFile('cp-013', 'line 1\nline 2\nline 3\n');
@@ -622,10 +547,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
   });
 
   test('clipboard-preservation-015: cold paste to Copilot Chat — prior clipboard restored', async () => {
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to GitHub Copilot Chat',
-      '✓ RangeLink: RangeLink sent to GitHub Copilot Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to GitHub Copilot Chat', '✓ RangeLink: RangeLink sent to GitHub Copilot Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
     const fileUri = ss.createWorkspaceFile('cp-015', 'line 1\nline 2\nline 3\n');
     const editor = await ss.openEditor(fileUri);
@@ -684,14 +606,9 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const editor = await ss.openEditor(fileUri);
     await ss.settle();
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Dummy AI (Focus-Fail)',
-      '✓ RangeLink: RangeLink copied to clipboard',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Dummy AI (Focus-Fail)', '✓ RangeLink: RangeLink copied to clipboard']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
-    ss.expectToastMessages([
-      { level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' },
-    ]);
+    ss.expectToastMessages([{ level: 'warning', message: 'Paste (Cmd/Ctrl+V) in Dummy AI (Focus-Fail) to use.' }]);
 
     await vscode.commands.executeCommand(CMD_BIND_TO_CUSTOM_AI_BY_ID, {
       extensionId: 'rangelink.dummy-ai-extension-focus-fail',
@@ -749,21 +666,11 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const verdict = await waitForHumanVerdict(
       'clipboard-preservation-018',
       'Two rapid R-L: did both RangeLinks appear in Claude Code chat (lines 1-2 first and then lines 3-4)?',
-      [
-        '1. Two rapid sends were fired automatically',
-        '2. Check Claude Code chat for BOTH RangeLinks (lines 1-2 and lines 3-4)',
-        'Verdict:',
-      ],
+      ['1. Two rapid sends were fired automatically', '2. Check Claude Code chat for BOTH RangeLinks (lines 1-2 and lines 3-4)', 'Verdict:'],
     );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported rapid R-L did not deliver both links or clipboard was corrupted',
-    );
+    assert.strictEqual(verdict, 'pass', 'Human reported rapid R-L did not deliver both links or clipboard was corrupted');
 
-    ss.log(
-      '✓ clipboard-preservation-018: rapid R-L — both links delivered, clipboard restored once',
-    );
+    ss.log('✓ clipboard-preservation-018: rapid R-L — both links delivered, clipboard restored once');
   });
 });
 
@@ -808,15 +715,8 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       }
     }
 
-    assert.ok(
-      aiSectionItems.length > 0,
-      `Expected at least one item under the "${AI_ASSISTANTS_GROUP_LABEL}" separator`,
-    );
-    assert.strictEqual(
-      aiSectionItems[0].displayName,
-      CLAUDE_CODE_DISPLAY_NAME,
-      `Expected "${CLAUDE_CODE_DISPLAY_NAME}" to be the first AI Assistant item`,
-    );
+    assert.ok(aiSectionItems.length > 0, `Expected at least one item under the "${AI_ASSISTANTS_GROUP_LABEL}" separator`);
+    assert.strictEqual(aiSectionItems[0].displayName, CLAUDE_CODE_DISPLAY_NAME, `Expected "${CLAUDE_CODE_DISPLAY_NAME}" to be the first AI Assistant item`);
     assert.strictEqual(aiSectionItems[0].itemKind, 'bindable');
 
     ss.log('✓ Claude Code Chat appears first in the AI Assistants group');
@@ -839,17 +739,14 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     ss.log('✓ github-copilot-chat-001 — log confirms "GitHub Copilot Chat" appears in R-D picker');
   });
 
-  test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', async function (this: MochaContext) {
+  test('claude-code-006: Cold-start default settings produce correct ColdRefocusConfig', function (this: MochaContext) {
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
     const totalMs = config.get<number>('coldStartDelayMs', 1500);
     const intervalMs = config.get<number>('coldRefocusIntervalMs', 300);
 
     assert.strictEqual(totalMs, 1500, 'Expected default coldStartDelayMs to be 1500');
     assert.strictEqual(intervalMs, 300, 'Expected default coldRefocusIntervalMs to be 300');
-    assert.ok(
-      totalMs > intervalMs,
-      `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
-    );
+    assert.ok(totalMs > intervalMs, `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`);
 
     ss.log('✓ Default cold-start config produces valid ColdRefocusConfig');
   });
@@ -860,10 +757,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       this.skip();
     }
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Claude Code Chat',
-      '✓ RangeLink: Focused Claude Code Chat',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Claude Code Chat', '✓ RangeLink: Focused Claude Code Chat']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.claudeCode');
@@ -873,11 +767,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
 
     // Set invalid config: delay (100) <= interval (400)
     await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
-    await config.update(
-      'coldRefocusIntervalMs',
-      INVALID_INTERVAL_MS,
-      vscode.ConfigurationTarget.Workspace,
-    );
+    await config.update('coldRefocusIntervalMs', INVALID_INTERVAL_MS, vscode.ConfigurationTarget.Workspace);
     await ss.settle();
 
     const logCapture = getLogCapture();
@@ -893,11 +783,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     const ccCtx = parseLogContext(
       ccLines.find((l) => {
         const c = parseLogContext(l);
-        return (
-          c?.fn === 'claudeCode.getColdRefocus' &&
-          c.totalMs === INVALID_DELAY_MS &&
-          c.intervalMs === INVALID_INTERVAL_MS
-        );
+        return c?.fn === 'claudeCode.getColdRefocus' && c.totalMs === INVALID_DELAY_MS && c.intervalMs === INVALID_INTERVAL_MS;
       }) ?? '',
     );
     assert.ok(ccCtx, 'Expected claudeCode.getColdRefocus warning with totalMs=100, intervalMs=400');
@@ -907,9 +793,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
 
   test('gemini-code-assist-001: Gemini Code Assist appears in destination picker when available', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
-      ss.log(
-        `Skipping gemini-code-assist-001 — "${EXTENSION_ID_GEMINI_CODE_ASSIST}" extension is not installed in this test config.`,
-      );
+      ss.log(`Skipping gemini-code-assist-001 — "${EXTENSION_ID_GEMINI_CODE_ASSIST}" extension is not installed in this test config.`);
       this.skip();
     }
 
@@ -925,49 +809,27 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     assert.ok(items, 'Expected showQuickPick log entry from destination picker');
 
     const geminiItem = items!.find((item) => item.displayName === GEMINI_CODE_ASSIST_DISPLAY_NAME);
-    assert.ok(
-      geminiItem,
-      `Expected "${GEMINI_CODE_ASSIST_DISPLAY_NAME}" in the destination picker items`,
-    );
+    assert.ok(geminiItem, `Expected "${GEMINI_CODE_ASSIST_DISPLAY_NAME}" in the destination picker items`);
     assert.strictEqual(geminiItem!.itemKind, 'bindable');
 
     ss.log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
   });
 
-  test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', async () => {
+  test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', () => {
     const config = vscode.workspace.getConfiguration('rangelink.destinations.gemini');
-    const totalMs = config.get<number>(
-      'coldStartDelayMs',
-      DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
-    );
-    const intervalMs = config.get<number>(
-      'coldRefocusIntervalMs',
-      DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
-    );
+    const totalMs = config.get<number>('coldStartDelayMs', DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS);
+    const intervalMs = config.get<number>('coldRefocusIntervalMs', DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS);
 
-    assert.strictEqual(
-      totalMs,
-      DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
-      'Expected default coldStartDelayMs',
-    );
-    assert.strictEqual(
-      intervalMs,
-      DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
-      'Expected default coldRefocusIntervalMs',
-    );
-    assert.ok(
-      totalMs > intervalMs,
-      `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`,
-    );
+    assert.strictEqual(totalMs, DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS, 'Expected default coldStartDelayMs');
+    assert.strictEqual(intervalMs, DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS, 'Expected default coldRefocusIntervalMs');
+    assert.ok(totalMs > intervalMs, `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`);
 
     ss.log('✓ Default Gemini cold-start config produces valid ColdRefocusConfig');
   });
 
   test('gemini-code-assist-006: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
     if (!vscode.extensions.getExtension(EXTENSION_ID_GEMINI_CODE_ASSIST)) {
-      ss.log(
-        'Skipping gemini-code-assist-006 — Gemini Code Assist extension not installed in this test config',
-      );
+      ss.log('Skipping gemini-code-assist-006 — Gemini Code Assist extension not installed in this test config');
       this.skip();
     }
 
@@ -979,19 +841,12 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     // Set delay <= interval so the validation rejects it (by default, delay >
     // interval so the config is valid; flipping that relationship makes it invalid).
     await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
-    await config.update(
-      'coldRefocusIntervalMs',
-      INVALID_INTERVAL_MS,
-      vscode.ConfigurationTarget.Workspace,
-    );
+    await config.update('coldRefocusIntervalMs', INVALID_INTERVAL_MS, vscode.ConfigurationTarget.Workspace);
     await ss.settle();
 
     await ss.waitForExtensionActive(EXTENSION_ID_GEMINI_CODE_ASSIST);
 
-    ss.expectStatusBarMessages([
-      '✓ RangeLink: Bound to Gemini Code Assist',
-      '✓ RangeLink: Focused Gemini Code Assist',
-    ]);
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Gemini Code Assist', '✓ RangeLink: Focused Gemini Code Assist']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
     const logCapture = getLogCapture();
@@ -1010,11 +865,7 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     const gcCtx = parseLogContext(
       gcLines.find((l) => {
         const c = parseLogContext(l);
-        return (
-          c?.fn === 'gemini.getColdRefocus' &&
-          c.totalMs === INVALID_DELAY_MS &&
-          c.intervalMs === INVALID_INTERVAL_MS
-        );
+        return c?.fn === 'gemini.getColdRefocus' && c.totalMs === INVALID_DELAY_MS && c.intervalMs === INVALID_INTERVAL_MS;
       }) ?? '',
     );
     assert.ok(gcCtx, 'Expected gemini.getColdRefocus warning with totalMs=100, intervalMs=400');
