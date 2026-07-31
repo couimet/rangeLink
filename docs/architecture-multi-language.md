@@ -22,7 +22,7 @@ When RangeLink grows to support multiple languages (TypeScript, Java, C/C++, Rus
 
 ### Directory Structure
 
-```
+```text
 rangeLink/
   spec/                             # The specification hub
     schema/
@@ -355,6 +355,7 @@ jobs:
    - CI fails if any implementation doesn't pass new contracts
 
 3. **Extension Selectively Exposes:**
+
    ```typescript
    // packages/rangelink-vscode-extension/src/extension.ts
    if (vscode.window.activeTextEditor.selections.length > 1) {
@@ -368,25 +369,25 @@ jobs:
 
 ## Tooling Recommendations
 
-### For TypeScript/JavaScript:
+### For TypeScript/JavaScript
 
 - **Jest** with custom JSON loader for contract tests
 - **Swagger/OpenAPI** for API documentation generation
 - **ajv** for JSON Schema validation
 
-### For Java:
+### For Java
 
 - **JUnit 5** with `@ParameterizedTest` and custom JSON source
 - **Jackson** for JSON parsing
 - **jsonschema2pojo** to generate POJOs from schemas
 
-### For C/C++:
+### For C/C++
 
 - **Catch2** or **Google Test** with custom JSON loader
 - **nlohmann/json** for JSON parsing
 - **valijson** for JSON Schema validation
 
-### Universal Tools:
+### Universal Tools
 
 - **Docker** containers for consistent test environments
 - **Makefile** for cross-language build/test commands

@@ -79,7 +79,7 @@ Message codes organized by functional area:
 
 All logged messages follow this format:
 
-```
+```text
 [LEVEL] message
 ```
 
@@ -94,7 +94,7 @@ All logged messages follow this format:
 
 **Examples:**
 
-```
+```text
 [INFO] Using default delimiter configuration: line="L", column="C", hash="#", range="-"
 [ERROR] Invalid delimiterLine value "L~" (reserved character)
 [CRITICAL] CRITICAL: Unknown validation error for delimiterLine value "L?" (error type: INVALID_ERROR_VALUE). This indicates a bug in validation logic.

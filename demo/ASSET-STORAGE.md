@@ -17,13 +17,13 @@ Demo binaries (GIFs, MP4s) are stored as **GitHub Release assets**, not in the r
 
 ### URL Format
 
-```
+```text
 https://github.com/couimet/rangeLink/releases/download/{tag}/{filename}
 ```
 
 **Example:**
 
-```
+```text
 https://github.com/couimet/rangeLink/releases/download/demo-assets-v1/basic-usage.gif
 ```
 
@@ -155,7 +155,7 @@ gh release upload demo-assets-v1 basic-usage.gif navigation-demo.gif
 
 ## Asset Naming Convention
 
-```
+```text
 {demo-name}-{variant}.{ext}
 ```
 
@@ -169,7 +169,7 @@ gh release upload demo-assets-v1 basic-usage.gif navigation-demo.gif
 
 ## Updating Assets
 
-**Option A: Replace in existing release**
+### Option A: Replace in existing release
 
 ```bash
 # Delete old asset
@@ -179,7 +179,7 @@ gh release delete-asset demo-assets-v1 basic-usage.gif
 gh release upload demo-assets-v1 basic-usage.gif
 ```
 
-**Option B: Create new release (recommended for major changes)**
+### Option B: Create new release (recommended for major changes)
 
 ```bash
 gh release create demo-assets-v2 basic-usage.gif \

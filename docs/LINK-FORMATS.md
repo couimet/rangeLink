@@ -36,13 +36,13 @@ RangeLink uses these delimiters by default (configurable):
 
 Rectangular selections use a **double hash** (`##`) to distinguish them from traditional multi-line selections:
 
-```
+```text
 path##L<start>C<col>-L<end>C<col>
 ```
 
 **Example:**
 
-```
+```text
 recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
@@ -75,7 +75,7 @@ Different editors use different terminology for this feature:
 
 **BYOD** (Bring Your Own Delimiters) links embed delimiter metadata so they work regardless of recipient's configuration:
 
-```
+```text
 recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 ```
 
@@ -83,7 +83,7 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 ### BYOD Structure
 
-```
+```text
 <standard-link>~<hash>~<line>~<range>~<position>~
 ```
 
@@ -115,7 +115,7 @@ These characters **cannot be used** as custom delimiters:
 | Character | Reason | Context |
 | --------- | ----------------------- | ------------------------------ | -------------------- |
 | `~` | BYOD separator | Fixed separator in BYOD format |
-| `        |` | Future multi-range separator | Reserved for Phase 6 |
+| `|` | Future multi-range separator | Reserved for Phase 6 |
 | `/` `\` | Path separators | File system paths |
 | `:` | Windows drive separator | `C:\path\file.txt` |
 | `,` | Future use | Reserved |
@@ -152,7 +152,7 @@ A valid RangeLink must:
 
 #### Single Position
 
-```
+```text
 recipes/baking/chickenpie.ts#L3C14
 ```
 
@@ -222,7 +222,7 @@ RangeLink's format is designed for extensibility while maintaining backward comp
 
 **Phase 6 - Multi-Range Links** (potential future feature):
 
-```
+```text
 path#L10-L20|L30-L40|L50-L60
 ```
 
@@ -231,7 +231,7 @@ path#L10-L20|L30-L40|L50-L60
 
 **Phase 8 - Cross-File Multi-Range** (potential future feature):
 
-```
+```text
 file1.ts#L10-L20|file2.ts#L30-L40
 ```
 
@@ -273,7 +273,7 @@ Invalid configurations trigger:
 
 **AI Assistant Prompts:**
 
-```
+```text
 "Check the bug in recipes/baking/chickenpie.ts#L3C14-L15C9"
 ```
 

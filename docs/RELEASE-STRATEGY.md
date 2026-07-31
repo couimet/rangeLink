@@ -32,11 +32,11 @@ Each package is versioned and released independently, allowing for different rel
 
 All git tags follow this format:
 
-```
+```text
 {package-name}-v{semver}
 ```
 
-### Examples
+### Tag Examples
 
 - `vscode-extension-v0.1.0` - VS Code extension version 0.1.0
 - `vscode-extension-v0.1.1` - VS Code extension version 0.1.1
@@ -69,7 +69,7 @@ All git tags follow this format:
 
 All packages follow [Semantic Versioning 2.0.0](https://semver.org/):
 
-```
+```text
 MAJOR.MINOR.PATCH
 ```
 
@@ -89,7 +89,7 @@ Each package maintains its own version number independently:
 
 For alpha/beta releases, use semver pre-release syntax:
 
-```
+```text
 vscode-extension-v0.2.0-alpha.1
 vscode-extension-v0.2.0-beta.1
 vscode-extension-v0.2.0-rc.1

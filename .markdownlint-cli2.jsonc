@@ -2,6 +2,18 @@
   "config": {
     "MD013": false,
     "MD033": false,
+    "MD034": false,
   },
-  "ignores": [".claude-work/**", ".history/**", "node_modules/**"],
+  "ignores": [
+    ".claude-work/**",
+    ".history/**",
+    "**/node_modules/**",
+    ".vscode-test/**",
+    "out/**",
+    "dist/**",
+    "coverage/**",
+    "media/devto-post-vscode-extension-*.md",
+    "media/vault-post-vscode-extension-*.md",
+    "packages/rangelink-vscode-extension/publishing-instructions/publish-vscode-extension-*.md",
+  ],
 }

@@ -108,7 +108,7 @@ You MUST complete all discovery phases before generating any files. Do not skip 
 
 Add all of the following questions to the questions file at once. The user will answer them, and you'll use the answers to guide phases 6-7.
 
-### Purpose & Audience
+## Purpose & Audience
 
 1. **Primary goal** - What should viewers do/feel after watching?
    - A) Awareness: "I need this extension"

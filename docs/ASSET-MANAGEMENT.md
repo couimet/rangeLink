@@ -4,7 +4,7 @@
 
 ## Directory Structure
 
-```
+```text
 rangeLink/
   assets/
     icon.png          # Extension icon (128x128)
