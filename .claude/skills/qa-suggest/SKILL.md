@@ -36,8 +36,11 @@ Find the current cycle's YAML and the previous version's snapshot:
 
 Read both YAML files in parallel.
 
-<!-- markdownlint-disable-next-line MD038 -->
+<!-- markdownlint-disable MD038 -->
+
 **YAML structure note**: TC entries are nested under `test_cases:` with indentation (`  - id: ...`). When searching for TC IDs, use `id: ` without a `^` line-start anchor — the entries are indented.
+
+<!-- markdownlint-enable MD038 -->
 
 ## Step 3: Read CHANGELOG and Integration Tests
 
@@ -119,7 +122,8 @@ The presence of `waitForHuman` / `waitForHumanVerdict` is the canonical signal b
 
 IDs are derived from the `feature:` field value using this algorithm:
 
-<!-- markdownlint-disable-next-line MD038 -->
+<!-- markdownlint-disable MD038 -->
+
 1. Strip keybinding prefix `R-[A-Z] ` if present (e.g., `R-M Status Bar Menu` → `Status Bar Menu`)
 2. Replace space-emdash-space and space-hyphen-space with a single `-`
 3. Replace `Bug Fix` with `bugfix`
@@ -128,6 +132,8 @@ IDs are derived from the `feature:` field value using this algorithm:
 6. Remove non-alphanumeric chars except hyphens
 7. Collapse multiple hyphens to one, strip leading/trailing hyphens
 8. Append `-NNN` where NNN is the next available 3-digit zero-padded number for that slug within the current YAML
+
+<!-- markdownlint-enable MD038 -->
 
 **To find the next available number**: scan the current YAML for all `id:` values that start with the derived slug prefix, extract the highest NNN, and use `max + 1`.
 

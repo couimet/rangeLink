@@ -359,9 +359,13 @@ Consult these tables only when Step 2 indicates a picker-driven scenario.
 **R-M menu inline picker:**
 
 - `RangeLinkStatusBar.openMenu()` → `buildQuickPickItems()` → `buildDestinationQuickPickItems(grouped, (name) => MENU_ITEM_INDENT + '$(arrow-right) ' + name)`.
-<!-- markdownlint-disable-next-line MD038 -->
+
+<!-- markdownlint-disable MD038 -->
+
 - Same items but label has `   $(arrow-right)` prefix.
 - Use `displayName` for assertions (raw name without prefix).
+
+<!-- markdownlint-enable MD038 -->
 
 **Secondary terminal picker:**
 
@@ -379,7 +383,8 @@ Consult this only when Step 3 indicates a picker-driven scenario.
 
 **Terminal bindable item:**
 
-<!-- markdownlint-disable-next-line MD038 -->
+<!-- markdownlint-disable MD038 -->
+
 - `label` — `Terminal ("name")` (inline) or `    $(arrow-right) Terminal ("name")` (R-M menu).
 - `displayName` — `Terminal ("name")` (always the raw name).
 - `description` — badges: `'bound'`, `'active'`, `'bound · active'`, or `undefined`.
@@ -387,15 +392,20 @@ Consult this only when Step 3 indicates a picker-driven scenario.
 - `boundState` — `'bound'` or `'not-bound'` (always present on terminal items).
 - `itemKind` — `'bindable'`.
 
+<!-- markdownlint-enable MD038 -->
+
 **File bindable item:**
 
-<!-- markdownlint-disable-next-line MD038 -->
+<!-- markdownlint-disable MD038 -->
+
 - `label` — filename (inline R-D) or `    $(arrow-right) filename` (R-M menu).
 - `displayName` — raw filename.
 - `description` — `{disambiguator} · {badges} · Tab Group {N}` for inline R-D; `{disambiguator} · {badges}` for secondary picker. Badges: `'bound'`, `'active'`. No tab group suffix in secondary picker.
 - `boundState` — `'bound'` or `'not-bound'` (always present on file items, never undefined).
 - `itemKind` — `'bindable'`.
 - Note: file items do NOT have `isActive` — active state is in description badge only.
+
+<!-- markdownlint-enable MD038 -->
 
 **Separator:**
 
