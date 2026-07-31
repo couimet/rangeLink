@@ -158,7 +158,6 @@ The following badly scoped tests have NO equivalent in utility tests:
 ---
 
 **Awaiting approval to proceed with refactoring...**
-````
 
 **STOP HERE and wait for user approval.**
 
