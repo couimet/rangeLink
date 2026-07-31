@@ -99,7 +99,7 @@ it('should process valid input', async () => {
 
 **Present the plan in this format:**
 
-````markdown
+`````markdown
 ## Test Scope Analysis Report
 
 ### Summary
@@ -208,6 +208,7 @@ jest.mock('../utils/isValidInput');
 jest.mock('../utils/processInput');
 ```
 ````
+`````
 
 ### Tests Removed (Lines)
 
