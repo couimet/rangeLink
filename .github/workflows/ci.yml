@@ -15,6 +15,19 @@ jobs:
       contents: read
       pull-requests: write
     with:
+      # Disable artifact pass-through between build and test jobs.
+      # upload-artifact@v4 strips the directory prefix from glob paths
+      # (packages/*/out/ → LCA is packages/ → artifact paths become
+      # rangelink-core-ts/out/...). download-artifact restores to the
+      # workspace root; out/ dirs end up in the wrong place. TypeScript
+      # then cannot resolve the package (types: ./out/index.d.ts) and
+      # ts-jest fails with TS2307.
+      #
+      # Instead, compile in the test job before running tests. pnpm -r
+      # runs workspace scripts in topological order, so core-ts compiles
+      # before the extension's tests run.
+      build-artifact-paths: ''
+      test-command: pnpm -r compile && pnpm test
       codecov-upload: true
       codecov-files: packages/*/coverage/lcov.info
       coverage-comment: true
