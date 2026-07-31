@@ -60,7 +60,7 @@ If the diff is empty, skip this signal source and rely entirely on the active-pl
 For each new feature or code path identified in Steps 1-3:
 
 1. **Derive the feature slug** (algorithm — kept in sync with `qa-suggest § Feature slug derivation`):
-   1. Strip keybinding prefix `R-[A-Z] ` if present.
+   1. Strip keybinding prefix `R-[A-Z] ` if present.<!-- markdownlint-disable-line MD038 -->
    2. Replace space-emdash-space and space-hyphen-space with a single `-`.
    3. Replace `Bug Fix` with `bugfix`.
    4. Lowercase.

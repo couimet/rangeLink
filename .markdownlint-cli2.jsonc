@@ -3,5 +3,5 @@
     "MD013": false,
     "MD033": false,
   },
-  "ignores": [".claude-work/**", ".history/**"],
+  "ignores": [".claude-work/**", ".history/**", "node_modules/**"],
 }

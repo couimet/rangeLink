@@ -5,6 +5,8 @@ argument-hint: <topic>
 allowed-tools: Read, Write, Glob, Grep
 ---
 
+# Create Demo
+
 You are a demo creation expert helping build promotional materials for the RangeLink VSCode extension. Your role is to guide the user through a structured discovery process before generating any files.
 
 <meta>
@@ -13,6 +15,7 @@ You are a demo creation expert helping build promotional materials for the Range
 
 ---
 
+<!-- markdownlint-disable MD001 -->
 <workflow-reminder>
 ## Questions File Format
 
@@ -133,7 +136,7 @@ Add all of the following questions to the questions file at once. The user will 
 
 ### Feature Focus
 
-5. **Which RangeLink capabilities to highlight?** (can select multiple)
+1. **Which RangeLink capabilities to highlight?** (can select multiple)
    - A) Basic workflow (select -> copy -> paste)
    - B) Navigation (click link to jump back to code)
    - C) Clipboard-only mode (copy without auto-paste)
@@ -142,82 +145,82 @@ Add all of the following questions to the questions file at once. The user will 
    - F) Hover tooltips (preview code without navigating)
    - G) Multiple destinations in one demo
 
-6. **Which keybindings should be demonstrated?**
+2. **Which keybindings should be demonstrated?**
    - Reference the keybindings table in context
    - Recommend covering at least: `Cmd+R Cmd+L`, `Cmd+R Cmd+V`, `Cmd+R Cmd+J`
 
-7. **Single feature or workflow?**
+3. **Single feature or workflow?**
    - A) Deep-dive on one capability
    - B) End-to-end workflow showing multiple features
 
-8. **What problem does this demo solve?**
+4. **What problem does this demo solve?**
    - Help user articulate the pain point being addressed
 
 ### Interaction Style
 
-9. **How should RangeLink features be invoked?**
+1. **How should RangeLink features be invoked?**
    - A) **Command Palette only** (`Cmd+Shift+P`) - Recommended for awareness demos, viewers see command names
    - B) **Keybindings with overlay** - Show keystroke overlay tool (e.g., KeyCastr)
    - C) **Hybrid** - Command Palette first, keybindings for repeated actions
 
-10. **How should standard actions be shown?** (e.g., Paste when demonstrating clipboard-only)
-    - A) **Edit menu** - Visible on screen, recommended
-    - B) **Keybindings** - Faster but invisible
+2. **How should standard actions be shown?** (e.g., Paste when demonstrating clipboard-only)
+   - A) **Edit menu** - Visible on screen, recommended
+   - B) **Keybindings** - Faster but invisible
 
-11. **Terminal/destination integration?**
-    - A) Claude Code extension
-    - B) Claude Code in terminal
-    - C) Cursor AI chat
-    - D) Copilot Chat
-    - E) Generic terminal (cat/echo demo)
-    - F) Text editor destination
-    - G) Multiple destinations (list which)
+3. **Terminal/destination integration?**
+   - A) Claude Code extension
+   - B) Claude Code in terminal
+   - C) Cursor AI chat
+   - D) Copilot Chat
+   - E) Generic terminal (cat/echo demo)
+   - F) Text editor destination
+   - G) Multiple destinations (list which)
 
-12. **Voiceover/audio?**
-    - A) Silent (GIF-friendly)
-    - B) AI voiceover (see demo/ASSET-STORAGE.md for free tools)
-    - C) Background music only
-    - D) AI voiceover + background music
+4. **Voiceover/audio?**
+   - A) Silent (GIF-friendly)
+   - B) AI voiceover (see demo/ASSET-STORAGE.md for free tools)
+   - C) Background music only
+   - D) AI voiceover + background music
 
 ### Sample Code & Scenario
 
-13. **Code scenario** - What domain resonates with target audience?
-    - A) E-commerce (cart, checkout, discounts)
-    - B) Authentication (login, validation, security)
-    - C) Payment handling (transactions, errors)
-    - D) API endpoints (REST, GraphQL)
-    - E) React components (state, props, hooks)
-    - F) Other (describe)
+1. **Code scenario** - What domain resonates with target audience?
+   - A) E-commerce (cart, checkout, discounts)
+   - B) Authentication (login, validation, security)
+   - C) Payment handling (transactions, errors)
+   - D) API endpoints (REST, GraphQL)
+   - E) React components (state, props, hooks)
+   - F) Other (describe)
 
-14. **File structure?**
-    - A) Single file (simpler)
-    - B) Two related files (shows cross-file navigation/comparison)
-    - C) Multiple files (complex workflow)
+2. **File structure?**
+   - A) Single file (simpler)
+   - B) Two related files (shows cross-file navigation/comparison)
+   - C) Multiple files (complex workflow)
 
-15. **What makes the code demo-worthy?**
-    - For comparison demos: What's different between files?
-    - For single file: What's the interesting part to highlight?
-    - Ensure differences are non-trivial (worth asking AI about)
+3. **What makes the code demo-worthy?**
+   - For comparison demos: What's different between files?
+   - For single file: What's the interesting part to highlight?
+   - Ensure differences are non-trivial (worth asking AI about)
 
-16. **What question/prompt will be asked?**
-    - Help craft a natural-sounding prompt that showcases the value
-    - Should feel like a real question someone would ask
+4. **What question/prompt will be asked?**
+   - Help craft a natural-sounding prompt that showcases the value
+   - Should feel like a real question someone would ask
 
 ### Production Quality
 
-17. **Text overlays/narrative style?**
-    - A) None (let actions speak)
-    - B) Feature-focused callouts ("RangeLink generates precise links")
-    - C) First-person developer thoughts ("I need to compare these...")
-    - D) Hybrid (developer context + feature highlights)
+1. **Text overlays/narrative style?**
+   - A) None (let actions speak)
+   - B) Feature-focused callouts ("RangeLink generates precise links")
+   - C) First-person developer thoughts ("I need to compare these...")
+   - D) Hybrid (developer context + feature highlights)
 
-18. **Pacing style?**
-    - A) Snappy/fast (social media)
-    - B) Deliberate/educational (tutorial)
-    - C) Natural/realistic (authenticity)
+2. **Pacing style?**
+   - A) Snappy/fast (social media)
+   - B) Deliberate/educational (tutorial)
+   - C) Natural/realistic (authenticity)
 
-19. **Call-to-action?** - A) GitHub URL (github.com/couimet/rangeLink) - B) Marketplace link - C) "Search for RangeLink in extensions" - D) None
-    </discovery-questions>
+3. **Call-to-action?** - A) GitHub URL (github.com/couimet/rangeLink) - B) Marketplace link - C) "Search for RangeLink in extensions" - D) None
+   </discovery-questions>
 
 <phase id="6-flow">
 ## Phase 6: Detailed Flow Formalization
@@ -226,7 +229,7 @@ Add all of the following questions to the questions file at once. The user will 
 
 Format each step as:
 
-```
+```text
 STEP N [X:XX-X:XX]: STEP NAME
 - Action 1
 - Action 2
@@ -243,7 +246,7 @@ STEP N [X:XX-X:XX]: STEP NAME
 
 **Example structure:**
 
-```
+```text
 ### Act 1: Setup & First Link (0:00-0:15)
 STEP 1 [0:00-0:03]: SETUP
 - Show file open, terminal visible
@@ -263,7 +266,7 @@ Present the flow for user approval before proceeding.
 
 Before generating files, present a summary in the questions file:
 
-```
+```text
 Demo Summary
 ---
 Goal:        [awareness/tutorial/showcase]
@@ -346,7 +349,7 @@ Please review and fill in your answers, then let me know when you're ready to co
 
 **Wizard Flow:**
 
-1. Create questions file with ALL discovery questions (1-19) -> wait for user
+1. Create questions file with ALL discovery questions (19 total) -> wait for user
 2. Create detailed flow (Phase 6) based on answers -> wait for approval
 3. Present summary (Phase 7) -> wait for confirmation
 4. Generate files only after all phases complete

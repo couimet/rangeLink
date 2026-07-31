@@ -30,7 +30,7 @@ When the TC entries depend on implementation-defined details (schema, exact outp
 
 The `/tcs-definition` step body should read:
 
-```
+```text
 Invoke /tcs-definition to draft QA test cases for the new/changed behavior.
 Once TCs are approved and inserted into qa-test-cases.yaml, implement them
 one at a time with the tc-implement agent.

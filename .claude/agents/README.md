@@ -12,7 +12,7 @@ This directory contains custom subagents for the RangeLink project.
 
 **Usage**:
 
-```
+```text
 Task(subagent_type="test-scope-fixer", prompt="Analyze <test-file-path>")
 ```
 
@@ -40,7 +40,7 @@ Task(subagent_type="test-scope-fixer", prompt="Analyze <test-file-path>")
 
 **Usage**:
 
-```
+```text
 Task(subagent_type="tc-implement", prompt="bind-to-destination-013")
 ```
 

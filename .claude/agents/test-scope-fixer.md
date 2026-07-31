@@ -133,7 +133,6 @@ it('should process valid input', async () => {
 jest.mock('../utils/isValidInput');
 jest.mock('../utils/processInput');
 ```
-````
 
 #### 2. Remove badly scoped tests
 
@@ -159,7 +158,6 @@ The following badly scoped tests have NO equivalent in utility tests:
 ---
 
 **Awaiting approval to proceed with refactoring...**
-
 ````
 
 **STOP HERE and wait for user approval.**
@@ -169,10 +167,11 @@ The following badly scoped tests have NO equivalent in utility tests:
 Once the user approves, proceed with:
 
 1. **Add mock setup** at the top of the test file:
+
    ```typescript
    jest.mock('../utils/utilityFunction');
    import { utilityFunction } from '../utils/utilityFunction';
-````
+   ```
 
 2. **Remove badly scoped tests** completely
 
@@ -228,14 +227,12 @@ jest.mock('../utils/processInput');
 
 ### Test Results
 
-```
+```text
 PASS  src/__tests__/SomeClass.test.ts
   ✓ should return false when isValidInput returns false (2ms)
   ✓ should call processInput with input when valid (1ms)
   ...
 ```
-
-````
 
 ## Key Principles
 
@@ -258,7 +255,7 @@ When refactoring tests for classes that use facade patterns:
 
    // ❌ Don't mock vscode directly
    jest.mock('vscode'); // Wrong - bypasses facade
-````
+   ```
 
 2. **Allow direct imports of external constants/enums**:
 
