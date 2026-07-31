@@ -267,7 +267,6 @@ EOF
 
 [Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
 [1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
-## [Unreleased]
 EOF
   write_readme <<'EOF'
 # My Extension
