@@ -18,8 +18,9 @@ jobs:
       build-command: pnpm compile
       codecov-upload: true
       codecov-files: packages/*/coverage/lcov.info
-      codecov-token: ${{ secrets.CODECOV_TOKEN }}
       coverage-comment: true
+    secrets:
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   shell-tests:
     name: Shell Tests
