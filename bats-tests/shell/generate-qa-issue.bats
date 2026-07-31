@@ -5,7 +5,7 @@ load test_helper
 REAL_SCRIPT="$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/generate-qa-issue.sh"
 
 setup_fixture() {
-  FIXTURE_ROOT="$TEST_TEMP_DIR"
+  export FIXTURE_ROOT="$TEST_TEMP_DIR"
   mkdir -p "$FIXTURE_ROOT/scripts"
   mkdir -p "$FIXTURE_ROOT/qa"
 
@@ -104,6 +104,6 @@ EOF
 
   local out
   out=$(ls "$FIXTURE_ROOT/qa/output/qa-checklist-v9.9.9-"*.md)
-  ! grep -q 'Auto' "$out"
-  grep -q 'Assist' "$out"
+  ! grep -q 'auto-001' "$out"
+  grep -q '"assist"' "$out"
 }

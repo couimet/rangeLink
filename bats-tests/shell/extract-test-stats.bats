@@ -3,7 +3,7 @@
 load test_helper
 
 SCRIPT="$PROJECT_ROOT/.github/scripts/ci/extract-test-stats.sh"
-FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
+FIXTURES="$PROJECT_ROOT/bats-tests/shell/fixtures"
 
 # --- Argument validation ---
 
@@ -79,6 +79,7 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "int-passing=175" ]
   [ "${lines[1]}" = "int-failed=0" ]
+  [ "${lines[2]}" = "int-total=175" ]
 }
 
 @test "mocha: extracts failed count when failures exist" {
@@ -86,6 +87,7 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "int-passing=170" ]
   [ "${lines[1]}" = "int-failed=5" ]
+  [ "${lines[2]}" = "int-total=175" ]
 }
 
 @test "mocha: outputs 0 when no passing line exists" {
@@ -93,6 +95,7 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "int-passing=0" ]
   [ "${lines[1]}" = "int-failed=5" ]
+  [ "${lines[2]}" = "int-total=5" ]
 }
 
 @test "mocha: outputs 0 for all stats when 0 passing and 0 failing" {
@@ -110,4 +113,5 @@ FIXTURES="$PROJECT_ROOT/tests/shell/fixtures"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "int-passing=0" ]
   [ "${lines[1]}" = "int-failed=0" ]
+  [ "${lines[2]}" = "int-total=0" ]
 }

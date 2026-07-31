@@ -69,6 +69,7 @@ ENDOFSTUB
 
 @test "works without RED/YELLOW/NC color variables" {
   setup_fixture
+  unset RED YELLOW NC
   export GIT_DIRTY_LEVEL=2
   run bash -c "source '${FIXTURE_ROOT}/check-dirty-tree.sh'; check_dirty_tree '${FIXTURE_ROOT}'"
   [[ "$status" -eq 0 ]]

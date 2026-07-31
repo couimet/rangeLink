@@ -201,8 +201,17 @@ EOF
 test_cases:
   - id: foo-001
 EOF
-  # Partial state: CHANGELOG not updated but README not updated.
+  # Partial state: CHANGELOG already has [Unreleased] header (done in prior run),
+  # README still needs the [!IMPORTANT] banner.
   write_changelog <<'EOF'
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [2.0.0] - 2026-05-26
 EOF
   write_readme <<'EOF'

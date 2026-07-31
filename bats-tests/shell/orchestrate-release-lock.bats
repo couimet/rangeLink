@@ -23,6 +23,7 @@ setup_fixture() {
 
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
+#!/usr/bin/env bash
 echo "git $*" >> "$GIT_CALL_LOG"
 case "$*" in
   *--show-toplevel*) echo "$FIXTURE_ROOT_FOR_GIT" ;;
@@ -55,7 +56,7 @@ ENDOFSTUB
 
   # gh stub that logs each call so tests can assert on the workflow comment body.
   # Set EXISTING_PR_URL to make `gh pr list --head` return a PR URL.
-  cat > "$STUB_DIR/gh" <<'GHSTUB'
+  make_stub "gh" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 echo "gh $*" >> "$GH_CALL_LOG"
 case "$*" in
@@ -66,8 +67,7 @@ case "$*" in
     ;;
 esac
 exit 0
-GHSTUB
-  chmod +x "$STUB_DIR/gh"
+ENDOFSTUB
   export GH_CALL_LOG="$FIXTURE_ROOT/gh-calls.log"
   : > "$GH_CALL_LOG"
 
