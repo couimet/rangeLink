@@ -99,7 +99,7 @@ it('should process valid input', async () => {
 
 **Present the plan in this format:**
 
-`````markdown
+````markdown
 ## Test Scope Analysis Report
 
 ### Summary
@@ -160,6 +160,7 @@ The following badly scoped tests have NO equivalent in utility tests:
 **Awaiting approval to proceed with refactoring...**
 
 **STOP HERE and wait for user approval.**
+````
 
 ### Phase 2: Refactoring (After Approval)
 
@@ -191,6 +192,7 @@ Once the user approves, proceed with:
 
 ### Phase 3: Final Report
 
+`````markdown
 ````markdown
 ## Refactoring Complete
 

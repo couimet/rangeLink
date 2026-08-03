@@ -108,7 +108,9 @@ You MUST complete all discovery phases before generating any files. Do not skip 
 
 Add all of the following questions to the questions file at once. The user will answer them, and you'll use the answers to guide phases 6-7.
 
-## Purpose & Audience
+<!-- markdownlint-disable MD001 -->
+
+### Purpose & Audience
 
 1. **Primary goal** - What should viewers do/feel after watching?
    - A) Awareness: "I need this extension"
@@ -219,6 +221,8 @@ Add all of the following questions to the questions file at once. The user will 
    - C) Natural/realistic (authenticity)
 
 3. **Call-to-action?** - A) GitHub URL (github.com/couimet/rangeLink) - B) Marketplace link - C) "Search for RangeLink in extensions" - D) None
+
+<!-- markdownlint-enable MD001 -->
    </discovery-questions>
 
 <phase id="6-flow">
