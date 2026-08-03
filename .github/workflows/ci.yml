@@ -1,42 +1,51 @@
 name: CI
 
 on:
-  # Trigger on pull requests to any branch
   pull_request:
 
-  # Trigger on pushes to main branch
   push:
     branches:
       - main
 
 jobs:
-  test:
-    name: Test & Validate
-    runs-on: ubuntu-latest
+  ci:
+    name: CI Checks
+    uses: couimet/github-actions/.github/workflows/typescript-ci-checks.yml@main
     permissions:
       contents: read
       pull-requests: write
+    with:
+      # Disable artifact pass-through between build and test jobs.
+      # upload-artifact@v4 strips the directory prefix from glob paths
+      # (packages/*/out/ → LCA is packages/ → artifact paths become
+      # rangelink-core-ts/out/...). download-artifact restores to the
+      # workspace root; out/ dirs end up in the wrong place. TypeScript
+      # then cannot resolve the package (types: ./out/index.d.ts) and
+      # ts-jest fails with TS2307.
+      #
+      # Instead, compile in the test job before running tests. pnpm -r
+      # runs workspace scripts in topological order, so core-ts compiles
+      # before the extension's tests run.
+      build-artifact-paths: ''
+      test-command: pnpm -r compile && pnpm test
+      codecov-upload: true
+      codecov-files: packages/*/coverage/lcov.info
+      coverage-comment: true
+    secrets:
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
+  shell-tests:
+    name: Shell Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Fetch more history for TODO comparison in PRs
-          fetch-depth: 0
           persist-credentials: false
-
-      - name: Test & Validate
-        uses: couimet/github-actions/typescript-ci@main
-
-      - name: Check no prerelease deps
-        uses: couimet/github-actions/check-no-prerelease-deps@main
-
-      - name: Check TODOs/FIXMEs
-        uses: ./.github/actions/check-todos
+      - uses: couimet/github-actions/bats-test@main
         with:
-          # For PRs: compare with base branch
-          # For pushes to main: just count current TODOs
-          base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}
+          publish-comment: false
 
   integration-tests:
     name: Integration Tests (${{ matrix.mode }})
@@ -67,8 +76,7 @@ jobs:
       - name: Record start time
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 

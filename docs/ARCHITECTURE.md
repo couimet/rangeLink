@@ -19,7 +19,7 @@ For details on the monorepo structure and package organization, see **[packages/
 
 ### Package Relationship
 
-```
+```text
 ┌─────────────────────────────────┐
 │ rangelink-vscode-extension      │
 │                                 │
@@ -122,7 +122,7 @@ export function formatLink(selection: Selection): string {
 
 **Test organization:**
 
-```
+```text
 tests/
   unit/                       # Unit tests (isolated)
   integration/                # Integration tests (multi-component)
@@ -368,7 +368,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md) for complete validation specificati
 
 **Format:**
 
-```
+```text
 path#L10C5-L20C10~#~L~-~C~
                  └─┬──┘ Metadata
                    └── Separators: ~ (fixed)
@@ -533,7 +533,7 @@ When RangeLink expands to support multiple languages (TypeScript, Java, C/C++, R
 
 ### Specification-Driven Architecture
 
-```
+```text
 rangeLink/
   spec/                           # Specification hub
     schema/

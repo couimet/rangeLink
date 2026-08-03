@@ -7,8 +7,11 @@ SCRIPT="$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/run-integratio
 setup_mocks() {
   stub_dir
 
-  rm -rf "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output"
-  mkdir -p "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output"
+  mkdir -p "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/scripts"
+  mkdir -p "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output"
+
+  cp "$SCRIPT" "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/scripts/run-integration-tests.sh"
+  SCRIPT="$TEST_TEMP_DIR/packages/rangelink-vscode-extension/scripts/run-integration-tests.sh"
 
   export STUB_RESOLVED_IDS=""
   export STUB_NODE_EXIT=0
@@ -20,7 +23,7 @@ setup_mocks() {
 
   # pnpm: handles test:release:prepare (must succeed) and validate:qa-coverage.
   # Records args for later assertions.
-  make_stub "pnpm" "PNPM_EXIT" "PNPM_OUTPUT" <<'ENDOFSTUB'
+  make_stub "pnpm" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 echo "$@" >> "$TEST_TEMP_DIR/pnpm-args"
 if [[ "$1" == "validate:qa-coverage" ]]; then
@@ -35,7 +38,7 @@ ENDOFSTUB
 
   # node: handles resolve-qa-labels.js and setup-integration-test-settings.js.
   # Records args for later assertions.
-  make_stub "node" "NODE_EXIT" "NODE_OUTPUT" <<'ENDOFSTUB'
+  make_stub "node" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 echo "$@" >> "$TEST_TEMP_DIR/node-args"
 if [[ "$*" == *"resolve-qa-labels.js"* ]]; then
@@ -63,7 +66,7 @@ ENDOFSTUB
 
   # npx vscode-test: the actual test runner. Output goes to stdout (which gets
   # captured to the report file via tee).
-  make_stub "npx" "VSCODE_EXIT" "VSCODE_OUTPUT" <<'ENDOFSTUB'
+  make_stub "npx" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 echo "$@" >> "$TEST_TEMP_DIR/npx-args"
 if [[ "$*" == *"vscode-test"* ]]; then
@@ -74,10 +77,10 @@ exit 0
 ENDOFSTUB
 
   # git: returns a stable repo root.
-  make_stub "git" "GIT_EXIT" "GIT_OUTPUT" <<'ENDOFSTUB'
+  make_stub "git" <<'ENDOFSTUB'
 #!/usr/bin/env bash
 if [[ "$1" == "rev-parse" && "$2" == "--show-toplevel" ]]; then
-  echo "$PROJECT_ROOT"
+  echo "$TEST_TEMP_DIR"
   exit 0
 fi
 exit 0
@@ -188,7 +191,7 @@ ENDOFSTUB
   [ "$status" -eq 0 ]
 
   # Report header
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      all" "$REPORT"
 
@@ -203,7 +206,7 @@ ENDOFSTUB
   run "$SCRIPT" --automated
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      automated" "$REPORT"
 
@@ -222,7 +225,7 @@ ENDOFSTUB
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      with-extensions" "$REPORT"
 
@@ -241,7 +244,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "status-bar-menu-002"
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
   grep -q "Mode:      grep" "$REPORT"
   grep -q "Grep:      status-bar-menu-002" "$REPORT"
@@ -259,7 +262,7 @@ ENDOFSTUB
   run "$SCRIPT" --label clipboard
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
   [ -n "$REPORT" ]
 
   # resolve-qa-labels.js called with --label clipboard
@@ -482,7 +485,7 @@ ENDOFSTUB
   run "$SCRIPT"
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | grep -q .
 }
 
 @test "report file: --automated creates test-run-*-automated-grep-*.txt" {
@@ -492,7 +495,7 @@ ENDOFSTUB
   run "$SCRIPT" --automated
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | grep -q .
 }
 
 @test "report file: --with-extensions creates test-run-*-with-extensions-grep-*.txt" {
@@ -502,7 +505,7 @@ ENDOFSTUB
   run "$SCRIPT" --with-extensions
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-with-extensions-grep-*.txt" | grep -q .
 }
 
 @test "report file: --grep creates test-run-*-grep-<slug>.txt" {
@@ -512,7 +515,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "Foo Bar"
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-foo-bar.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-foo-bar.txt" | grep -q .
 }
 
 @test "report file: --grep with special chars creates sanitized slug" {
@@ -522,7 +525,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "Hello! World? Test_[assisted]"
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-hello-world-test-assisted.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-hello-world-test-assisted.txt" | grep -q .
 }
 
 @test "report file: --automated --grep creates test-run-*-automated-grep-<slug>.txt" {
@@ -533,7 +536,7 @@ ENDOFSTUB
   run "$SCRIPT" --automated --grep "foo"
   [ "$status" -eq 0 ]
 
-  find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*foo*.txt" | grep -q .
+  find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*foo*.txt" | grep -q .
 }
 
 # ── Report header content ─────────────────────────────────────────────────────
@@ -544,7 +547,7 @@ ENDOFSTUB
   run "$SCRIPT"
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   grep -q "Test Run Report" "$REPORT"
   grep -q "Generated:" "$REPORT"
   grep -q "UTC" "$REPORT"
@@ -559,7 +562,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "specific-tc"
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
   grep -q "Grep:" "$REPORT"
   grep -q "specific-tc" "$REPORT"
 }
@@ -683,7 +686,7 @@ ENDOFSTUB
   run "$SCRIPT"
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   # No ANSI escape chars in report
   ! grep -q $'\x1b' "$REPORT"
   grep -q "42 passing" "$REPORT"
@@ -700,7 +703,7 @@ ENDOFSTUB
   run "$SCRIPT"
   [ "$status" -eq 1 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   grep -q "Re-run failed tests:" "$REPORT"
   grep -q "bind-to-destination-005|clipboard-preservation-001" "$REPORT"
 }
@@ -714,7 +717,7 @@ ENDOFSTUB
   run "$SCRIPT" --automated
   [ "$status" -eq 1 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
   grep -q "Re-run failed tests:" "$REPORT"
   grep -q "\-\-automated" "$REPORT"
 }
@@ -727,7 +730,7 @@ ENDOFSTUB
   run "$SCRIPT"
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-all.txt" | head -1)
   # No "Re-run failed tests" block
   ! grep -q "Re-run failed tests:" "$REPORT"
 }
@@ -741,7 +744,7 @@ ENDOFSTUB
   run "$SCRIPT" --feature context-menus --exclude-feature link-generation
   [ "$status" -eq 1 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-grep-*.txt" | head -1)
   grep -q "Re-run failed tests:" "$REPORT"
   grep -q "\-\-feature" "$REPORT"
   grep -q "context-menus" "$REPORT"
@@ -782,7 +785,7 @@ ENDOFSTUB
   run "$SCRIPT" --grep "foo" --automated
   [ "$status" -eq 0 ]
 
-  REPORT=$(find "$PROJECT_ROOT/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
+  REPORT=$(find "$TEST_TEMP_DIR/packages/rangelink-vscode-extension/qa/output" -name "test-run-*-automated-grep-*.txt" | head -1)
   grep -q "Args:.*--grep foo --automated" "$REPORT"
 }
 

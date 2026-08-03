@@ -17,7 +17,7 @@ RangeLink uses **structured logging** with stable message codes to enable:
 
 All logged messages follow this format:
 
-```
+```text
 [LEVEL] [CODE] message
 ```
 
@@ -29,7 +29,7 @@ All logged messages follow this format:
 
 ### Examples
 
-```
+```text
 [INFO] [MSG_1001] Configuration loaded: line="L", column="C", hash="#", range="-"
 [WARN] [WARN_2001] Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.
 [ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
@@ -266,7 +266,7 @@ logger.critical(
 
 **Good examples:**
 
-```
+```text
 Invalid delimiterLine value "L~" (reserved character '~')
 Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.
 Configuration loaded: line="L", column="C", hash="#", range="-"
@@ -274,7 +274,7 @@ Configuration loaded: line="L", column="C", hash="#", range="-"
 
 **Bad examples:**
 
-```
+```text
 Invalid delimiter  ← Too vague
 delimiterLine failed validation  ← Missing value and reason
 Error  ← No context
@@ -284,25 +284,25 @@ Error  ← No context
 
 **Configuration validation errors:**
 
-```
+```text
 Invalid <fieldName> value "<value>" (<reason>)
 ```
 
 **BYOD parsing errors:**
 
-```
+```text
 <operation> failed: <reason>
 ```
 
 **Recovery warnings:**
 
-```
+```text
 <issue>. <recovery-action>.
 ```
 
 **Critical errors:**
 
-```
+```text
 CRITICAL: <unexpected-condition>. This indicates a bug in <component>.
 ```
 
@@ -533,19 +533,19 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 - **[BYOD.md](./BYOD.md)** - BYOD format specification and parsing logic
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Core library design including logger interface
 
-## Examples
+## Logging Examples
 
 ### Configuration Loading
 
 **Success:**
 
-```
+```text
 [INFO] [MSG_1001] Configuration loaded: line="L", column="C", hash="#", range="-"
 ```
 
 **Fallback to defaults:**
 
-```
+```text
 [ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
 [ERROR] [ERR_1003] Invalid delimiterPosition value "C1" (cannot contain digits)
 [INFO] [MSG_1002] Using default delimiter configuration: line="L", column="C", hash="#", range="-"
@@ -555,19 +555,19 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 
 **Missing position delimiter (recovery):**
 
-```
+```text
 [WARN] [WARN_2001] Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.
 ```
 
 **Invalid delimiter (error):**
 
-```
+```text
 [ERROR] [ERR_2003] Invalid BYOD line delimiter "L1" (cannot contain digits)
 ```
 
 **Format mismatch (error):**
 
-```
+```text
 [ERROR] [ERR_2004] BYOD format mismatch: link has columns but metadata missing position delimiter
 ```
 
@@ -575,7 +575,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 
 **Unknown validation error:**
 
-```
+```text
 [CRITICAL] [ERR_1099] CRITICAL: Unknown validation error for delimiterLine value "L?" (error type: INVALID_ERROR_VALUE). This indicates a bug in validation logic.
 ```
 

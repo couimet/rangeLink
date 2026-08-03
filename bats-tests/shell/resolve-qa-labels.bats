@@ -347,6 +347,7 @@ test_cases:
     automated: true
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   // Group has 0 assisted, 0 manual → excluded from output
@@ -388,6 +389,7 @@ test_cases:
     automated: false
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   echo "$output" | grep -q '"unspecified"'
 }
 
@@ -423,6 +425,7 @@ test_cases:
       - requires-extensions
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   echo "$output" | grep -q '"requires_extensions":true'
 }
 
@@ -440,6 +443,7 @@ test_cases:
       - cursor
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   if (d.cursor_tcs.length !== 0) process.exit(1);  // NOT extracted (automated:true)
@@ -482,6 +486,7 @@ test_cases:
       - ubuntu
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   // group (prefix 'group') should have 2 non-automated TCs (manual + assisted)
@@ -522,6 +527,7 @@ test_cases:
       - cursor
 EOF
   run node "$REAL_SCRIPT" --yaml "$yml" --json
+  [[ "$status" -eq 0 ]]
   node -e "
 const d = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
   if (d.cursor_tcs.length !== 1) process.exit(1);

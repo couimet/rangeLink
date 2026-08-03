@@ -17,7 +17,7 @@ cd rangelink
 
 RangeLink uses pnpm workspaces with two packages:
 
-```
+```text
 rangeLink/
   packages/
     rangelink-core-ts/            # Pure TypeScript core library

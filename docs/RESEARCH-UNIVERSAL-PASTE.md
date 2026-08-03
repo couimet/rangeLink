@@ -137,7 +137,7 @@ Paste links as markdown to leverage VSCode's built-in markdown renderer:
 
 Use custom URI scheme that VSCode already handles:
 
-```
+```text
 rangelink://src/auth.ts#L42C10
 ```
 

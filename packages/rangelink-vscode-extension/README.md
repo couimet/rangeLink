@@ -1,4 +1,4 @@
-# RangeLink - One Keybinding. Precise References. Any AI assistant or tool.
+# RangeLink - One Keybinding. Precise References. Any AI assistant or tool
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/couimet/rangelink/main/assets/icon.png" alt="RangeLink Logo" width="128" />
@@ -10,6 +10,8 @@
 
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
 > **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
+
+<!-- Keep separate: GitHub renders [!IMPORTANT] alerts only when the marker is the first line of its own blockquote -->
 
 > [!IMPORTANT]
 > This documentation is for the `main` branch and may include unreleased features marked with <sup>Unreleased</sup>.
@@ -67,7 +69,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 
 **Example output:**
 
-```
+```text
 recipes/baking/chickenpie.ts#L3C14-L15C9
 ```
 
@@ -451,7 +453,7 @@ Here `insertCommands` is tried first (Tier 1). If `myPlugin.sendToCopilot` isn't
 **How availability works:** A custom assistant appears in the destination picker when either the extension is installed and active (matched by `extensionId`), or at least one command from any tier is registered as a VS Code command. Both conditions are checked — an extension that registers commands without activating still works.
 
 > **Finding extension and command IDs:** Open the Extensions panel, click on the extension, and find the identifier shown as `publisher.name` below the title (e.g., `github.copilot-chat`). To discover command IDs, check the extension's documentation or run **Developer: Toggle Developer Tools** and use `await vscode.commands.getCommands(true)` in the console.
-
+>
 > **Duplicate entries:** If two entries use the same `extensionId`, only the first is used — duplicates are skipped with a warning in the RangeLink output channel.
 
 Run **Developer: Reload Window** (or restart VS Code) after changing this setting.

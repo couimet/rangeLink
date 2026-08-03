@@ -211,6 +211,29 @@ EOF
   ! [[ "$content" =~ "stale content" ]]
 }
 
+@test "re-run regenerates instructions when file is missing despite matching version" {
+  setup_fixture
+  write_package_json <<'EOF'
+{
+  "version": "2.0.0"
+}
+EOF
+
+  # No versioned instructions file — simulates a partial/incomplete prior run.
+
+  run "$SCRIPT" 2.0.0
+  [[ "$status" -eq 0 ]]
+
+  # Versioned instructions regenerated.
+  [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md" ]]
+  local content
+  content=$(cat "$FIXTURE_ROOT/qa/release-testing-instructions-v2.0.0.md")
+  [[ "$content" =~ "Release Testing" ]]
+
+  # Not the "Already locked" path.
+  ! [[ "$output" =~ "Already locked" ]]
+}
+
 # ── Error paths ─────────────────────────────────────────────────────────────────
 
 @test "missing version argument exits 1" {

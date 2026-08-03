@@ -8,7 +8,7 @@ BYOD (Bring Your Own Delimiters, aka BYODELI 🥪) solves a critical collaborati
 
 **The problem:**
 
-```
+```text
 Alice: delimiterHash="#", delimiterLine="L"
 Bob:   delimiterHash="@", delimiterLine="line"
 
@@ -18,7 +18,7 @@ Bob sees:     src/file.ts# L10-L20  ← Parsing fails!
 
 **The solution:**
 
-```
+```text
 Alice shares: src/file.ts#L10-L20~#~L~-~
 Bob receives: Parsed correctly with embedded delimiters (#, L, -)
 ```
@@ -45,13 +45,13 @@ Recipients don't need to configure anything. Links parse automatically using emb
 
 ### Line-Only Format
 
-```
+```text
 path#L10-L20~#~L~-~
 ```
 
 **Structure:**
 
-```
+```text
 <standard-link>~<hash>~<line>~<range>~
 ```
 
@@ -66,13 +66,13 @@ path#L10-L20~#~L~-~
 
 ### Line and Position Format
 
-```
+```text
 path#L10C5-L20C10~#~L~-~C~
 ```
 
 **Structure:**
 
-```
+```text
 <standard-link>~<hash>~<line>~<range>~<position>~
 ```
 
@@ -88,13 +88,13 @@ path#L10C5-L20C10~#~L~-~C~
 
 ### Rectangular Mode Format
 
-```
+```text
 path##L10C5-L20C10~#~L~-~C~
 ```
 
 **Structure:**
 
-```
+```text
 <standard-link-with-double-hash>~<hash>~<line>~<range>~<position>~
 ```
 
@@ -119,7 +119,7 @@ path##L10C5-L20C10~#~L~-~C~
 
 **Portable link:**
 
-```
+```text
 path>>line10pos5thruline20pos10~>>~line~thru~pos~
 ```
 
@@ -146,7 +146,7 @@ path>>line10pos5thruline20pos10~>>~line~thru~pos~
 
 **Portable link:**
 
-```
+```text
 path@l10p5:l20p10~@~l~:~p~
 ```
 
@@ -165,7 +165,7 @@ path@l10p5:l20p10~@~l~:~p~
 
 **Portable link:**
 
-```
+```text
 path#L10C5-L20C10~#~L~-~C~
 ```
 
@@ -209,7 +209,7 @@ All embedded delimiters must satisfy:
 
 **Link:**
 
-```
+```text
 path#L10-L20~#~L~-~C~
 ```
 
@@ -227,7 +227,7 @@ path#L10-L20~#~L~-~C~
 
 **Link:**
 
-```
+```text
 path#L10C5-L20C10~#~L~-~
 ```
 
@@ -255,7 +255,7 @@ path#L10C5-L20C10~#~L~-~
 
 **Invalid links:**
 
-```
+```text
 # Wrong delimiter order
 path#L10-L20~L~#~-~
 
@@ -324,9 +324,11 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
    - "View Details" → Opens RangeLink output channel
    - "Copy Link" → Copies malformed link to clipboard (for debugging)
 2. **Output channel log** with detailed error message:
-   ```
+
+   ```text
    [ERROR] [ERR_2003] Invalid BYOD line delimiter "L1" (cannot contain digits)
    ```
+
 3. **Status bar** shows error icon with extended display time (2× normal)
 
 ### Recovery Strategy
@@ -481,7 +483,7 @@ When you receive a portable RangeLink:
 
 - Reserved: `~`, `|`, `/`, `\`, `:`, `,`, `@`
 - Digits: `L1`, `C2` (confuses parsing)
-- Whitespace: `L `, `-` (breaks parsing)
+- Whitespace: `L` plus a trailing space (breaks parsing)
 - Substrings: `L` + `LINE` (parsing ambiguity)
 
 ## Testing Strategy
@@ -532,7 +534,7 @@ Portable links only work with tools that support RangeLink format. If recipient 
 
 **For human readers:** The link is still human-readable:
 
-```
+```text
 src/file.ts#L10C5-L20C10~#~L~-~C~
 → src/file.ts, lines 10-20, columns 5-10
 ```
@@ -574,11 +576,11 @@ No. The `~` separator is fixed and cannot be configured. This ensures all portab
 
 ### Real-World Scenarios
 
-**Scenario 1: Cross-Team Collaboration**
+#### Scenario 1: Cross-Team Collaboration
 
 Alice (Team A) uses default delimiters. Bob (Team B) uses custom delimiters `@l:p`.
 
-```
+```text
 # Alice shares portable link:
 recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 
@@ -586,7 +588,7 @@ recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 # Even though his local config is: @l10p5:l20p10
 ```
 
-**Scenario 2: Documentation**
+#### Scenario 2: Documentation
 
 Tech writer creates docs with portable links. Future readers parse correctly regardless of their config:
 
@@ -594,7 +596,7 @@ Tech writer creates docs with portable links. Future readers parse correctly reg
 See the implementation in [chickenpie.ts#L3C14-L15C9~#~L~-~C~](recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~)
 ```
 
-**Scenario 3: AI Assistant**
+#### Scenario 3: AI Assistant
 
 Developer shares code location with claude-code using portable link. AI parses correctly regardless of delimiter expectations:
 
@@ -602,7 +604,7 @@ Developer shares code location with claude-code using portable link. AI parses c
 "Check the bug in recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~"
 ```
 
-**Scenario 4: Issue Tracker**
+#### Scenario 4: Issue Tracker
 
 Bug report includes portable link. Link works months later even if team changes delimiter configuration:
 

@@ -1,7 +1,7 @@
 # The Feature Cemetery 🪦
 
-_"Where good ideas come to rest in peace"_
-
+> _"Where good ideas come to rest in peace"_
+>
 > Looking for a feature that didn't make it? It might be here. We honor these fallen friends — rejected not from cruelty, but from wisdom.
 >
 > This document also archives features and code that were implemented but ultimately abandoned, along with the rationale for their removal.
@@ -16,7 +16,7 @@ _"Where good ideas come to rest in peace"_
 
 ### Epitaph
 
-_"I wanted to remember your links, but Alfred already does."_
+> _"I wanted to remember your links, but Alfred already does."_
 
 ### The Dream
 

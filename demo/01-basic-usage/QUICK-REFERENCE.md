@@ -74,19 +74,19 @@ Use this as a cheat sheet while recording.
 
 **In Untitled-1 (Step 2):**
 
-```
+```text
 Compare the error handling in these two versions:
 ```
 
 **In Claude Code (Step 6):**
 
-```
+```text
 Which approach handles edge cases better?
 ```
 
 **In Terminal (Step 8):**
 
-```
+```bash
 echo "
 ```
 
@@ -127,7 +127,7 @@ echo "
 | 4   | 0:45-0:55 | Smart Binding with 2 terminals         |
 | 5   | 0:55-1:02 | Jump feature + close                   |
 
-**Total: ~62 seconds**
+### Total: ~62 seconds
 
 ---
 

@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 -->
+
 # Changelog
 
 All notable changes to the RangeLink VS Code extension will be documented in this file.
@@ -20,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
 - **RangeLinks inside parentheses now navigate correctly** — `(path#Lx-Ly)` no longer includes the leading `(` in the file path, so navigation works instead of failing with "Cannot find file: (path...". Also applies to `[]`, `{}`, `<>` wrappers, and trailing sentence terminators. (#661, #666)
 - **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
+
+<!-- markdownlint-disable MD038 -->
 
 ## [2.0.0]
 
@@ -232,6 +236,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Whitespace-only content no longer silently dropped** - Selecting whitespace (spaces, tabs, newlines) from terminal output or code indentation now reaches the bound destination. Previously the eligibility check rejected it, showing "copied to clipboard" while nothing arrived. (#362)
 - **Unbind active when no destination bound** — The Unbind command (`R-U`) and its context menu entries were active even with no destination bound. Unlike send/paste commands that show a destination picker when unbound, unbind has no useful unbound flow — binding just to immediately unbind is pointless. Now disabled via `rangelink.isBound` context key. (#114)
 - **Binding survives language-mode changes** — Changing a bound file's language mode (manually or via auto-detection) no longer silently breaks the binding. Previously the binding was lost with no notification, requiring a re-bind. (#472)
+
+<!-- markdownlint-enable MD038 -->
 
 ## [1.0.0]
 

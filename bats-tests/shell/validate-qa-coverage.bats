@@ -19,15 +19,16 @@ setup_fixture() {
   SCRIPT="$FIXTURE_ROOT/scripts/validate-qa-coverage.sh"
 
   stub_dir
-  make_stub "git" "STUB_GIT_EXIT" "STUB_GIT_OUTPUT" <<'ENDOFSTUB'
+  make_stub "git" <<'ENDOFSTUB'
 echo "${STUB_GIT_OUTPUT:-/fake/repo}"
+exit "${STUB_GIT_EXIT:-0}"
 ENDOFSTUB
   export STUB_GIT_EXIT=0
   export STUB_GIT_OUTPUT="$FIXTURE_ROOT"
 
   # Node stub outputs separate ID sets based on the flag.
   # Piped through sort so output ordering matches comm expectations.
-  make_stub "node" "STUB_NODE_EXIT" "STUB_NODE_OUTPUT" <<'ENDOFSTUB'
+  make_stub "node" <<'ENDOFSTUB'
 case "$*" in
   *--automated-only*)
     printf '%s' "${STUB_AUTOMATED_IDS:-}" | sort ;;
@@ -36,6 +37,7 @@ case "$*" in
   *)
     printf '%s' "${STUB_NODE_OUTPUT:-}" ;;
 esac
+exit "${STUB_NODE_EXIT:-0}"
 ENDOFSTUB
   export STUB_NODE_EXIT=0
   export STUB_NODE_OUTPUT=""

@@ -309,7 +309,7 @@ These are SHOULD. They are strong defaults grounded in concrete past incidents. 
 
 ### Convention A — Default-empty framework expectations
 
-Source: https://github.com/couimet/rangeLink/issues/650#issuecomment-4707814556
+Source: <https://github.com/couimet/rangeLink/issues/650#issuecomment-4707814556>
 
 The `standardSuite` framework already asserts "no unexpected toast / status bar message / modal dialog / context key" by default. `ssContext.ts` lines 180-194 (`expectStatusBarMessages`, `expectToastMessages`, `expectModalDialogs`, `expectContextKeys`) track empty lists by default; the assertion harness fails the test if anything appears that was not registered.
 
@@ -324,7 +324,7 @@ Register affirmatives only — `ss.expectToastMessages([...])`, `ss.expectStatus
 
 ### Convention B — Prefer end-to-end assertions over log-scraping the middle layer
 
-Source: https://github.com/couimet/rangeLink/issues/650#issuecomment-4707992191
+Source: <https://github.com/couimet/rangeLink/issues/650#issuecomment-4707992191>
 
 When precondition is asserted directly via the VS Code API (`activeTextEditor`, `tabGroups.activeTabGroup`, `window.activeTerminal`, etc.) AND output is asserted directly (terminal buffer via `assertTerminalBufferEquals`, clipboard, file content, status bar via `ss.expectStatusBarMessages`), do NOT add log-scraping in between.
 
@@ -359,8 +359,13 @@ Consult these tables only when Step 2 indicates a picker-driven scenario.
 **R-M menu inline picker:**
 
 - `RangeLinkStatusBar.openMenu()` → `buildQuickPickItems()` → `buildDestinationQuickPickItems(grouped, (name) => MENU_ITEM_INDENT + '$(arrow-right) ' + name)`.
+
+<!-- markdownlint-disable MD038 -->
+
 - Same items but label has `   $(arrow-right)` prefix.
 - Use `displayName` for assertions (raw name without prefix).
+
+<!-- markdownlint-enable MD038 -->
 
 **Secondary terminal picker:**
 
@@ -378,6 +383,8 @@ Consult this only when Step 3 indicates a picker-driven scenario.
 
 **Terminal bindable item:**
 
+<!-- markdownlint-disable MD038 -->
+
 - `label` — `Terminal ("name")` (inline) or `    $(arrow-right) Terminal ("name")` (R-M menu).
 - `displayName` — `Terminal ("name")` (always the raw name).
 - `description` — badges: `'bound'`, `'active'`, `'bound · active'`, or `undefined`.
@@ -385,7 +392,11 @@ Consult this only when Step 3 indicates a picker-driven scenario.
 - `boundState` — `'bound'` or `'not-bound'` (always present on terminal items).
 - `itemKind` — `'bindable'`.
 
+<!-- markdownlint-enable MD038 -->
+
 **File bindable item:**
+
+<!-- markdownlint-disable MD038 -->
 
 - `label` — filename (inline R-D) or `    $(arrow-right) filename` (R-M menu).
 - `displayName` — raw filename.
@@ -393,6 +404,8 @@ Consult this only when Step 3 indicates a picker-driven scenario.
 - `boundState` — `'bound'` or `'not-bound'` (always present on file items, never undefined).
 - `itemKind` — `'bindable'`.
 - Note: file items do NOT have `isActive` — active state is in description badge only.
+
+<!-- markdownlint-enable MD038 -->
 
 **Separator:**
 

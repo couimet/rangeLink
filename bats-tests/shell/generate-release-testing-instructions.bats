@@ -125,13 +125,15 @@ EOF
   setup_fixture
   write_package_json <<'EOF'
 {
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "nextTargetVersion": "9.9.9"
 }
 EOF
 
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
   [[ -f "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md" ]]
+  ! grep -q "9.9.9" "$FIXTURE_ROOT/qa/release-testing-instructions-unreleased.md"
 }
 
 # ── Overwrite ─────────────────────────────────────────────────────────────────────

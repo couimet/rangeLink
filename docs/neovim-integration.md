@@ -61,7 +61,7 @@ Example CLI contract (Node side):
 
 ## Suggested Neovim Plugin Structure
 
-```
+```text
 rangelink-neovim-plugin/
   lua/rangelink/
     init.lua          # Plugin entry point
