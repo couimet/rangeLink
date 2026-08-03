@@ -115,7 +115,7 @@ These characters **cannot be used** as custom delimiters:
 | Character | Reason | Context |
 | --------- | ----------------------- | ------------------------------ | -------------------- |
 | `~` | BYOD separator | Fixed separator in BYOD format |
-| `|` | Future multi-range separator | Reserved for Phase 6 |
+| `\|` | Future multi-range separator | Reserved for Phase 6 |
 | `/` `\` | Path separators | File system paths |
 | `:` | Windows drive separator | `C:\path\file.txt` |
 | `,` | Future use | Reserved |

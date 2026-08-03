@@ -39,14 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: couimet/github-actions/bats-test@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          publish-comment: false
 
   integration-tests:
     name: Integration Tests (${{ matrix.mode }})

@@ -21,6 +21,7 @@ setup_fixture() {
   stub_dir
   make_stub "git" <<'ENDOFSTUB'
 echo "${STUB_GIT_OUTPUT:-/fake/repo}"
+exit "${STUB_GIT_EXIT:-0}"
 ENDOFSTUB
   export STUB_GIT_EXIT=0
   export STUB_GIT_OUTPUT="$FIXTURE_ROOT"
@@ -36,6 +37,7 @@ case "$*" in
   *)
     printf '%s' "${STUB_NODE_OUTPUT:-}" ;;
 esac
+exit "${STUB_NODE_EXIT:-0}"
 ENDOFSTUB
   export STUB_NODE_EXIT=0
   export STUB_NODE_OUTPUT=""
