@@ -1,3 +1,4 @@
+import { getUniqueRelativePath } from '../../external-deps/couimet/dynamic-testing/uniqueFilePath';
 import { formatLink } from '../../formatting/formatLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { InputSelection } from '../../types/InputSelection';
@@ -26,12 +27,14 @@ describe('formatLink', () => {
   let endLine: number;
   let startPosition: number;
   let endPosition: number;
+  let filePath: string;
 
   beforeEach(() => {
     startLine = getUniqueInt();
     endLine = getUniqueInt();
     startPosition = getUniqueInt();
     endPosition = getUniqueInt();
+    filePath = getUniqueRelativePath();
   });
 
   it('should format a simple multi-line selection', () => {
@@ -50,11 +53,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
-      rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
+      link: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
+      rawLink: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
@@ -84,11 +87,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
-      rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
+      link: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
+      rawLink: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine}C${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
@@ -117,11 +120,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}`,
-      rawLink: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}`,
+      link: `${filePath}#L${expectedStartLine}-L${expectedEndLine}`,
+      rawLink: `${filePath}#L${expectedStartLine}-L${expectedEndLine}`,
       linkType: 'regular',
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
@@ -147,11 +150,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}`,
-      rawLink: `src/file.ts#L${expectedStartLine}`,
+      link: `${filePath}#L${expectedStartLine}`,
+      rawLink: `${filePath}#L${expectedStartLine}`,
       linkType: 'regular',
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
@@ -177,13 +180,13 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
       notation: RangeNotation.EnforceFullLine,
     });
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}`,
-      rawLink: `src/file.ts#L${expectedStartLine}`,
+      link: `${filePath}#L${expectedStartLine}`,
+      rawLink: `${filePath}#L${expectedStartLine}`,
       linkType: 'regular',
       rangeFormat: 'LineOnly',
       selectionType: 'Normal',
@@ -202,7 +205,7 @@ describe('formatLink', () => {
       selectionType: SelectionType.Normal,
     };
 
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
     expect(result).toHaveDetailedError('SELECTION_EMPTY', {
       message: 'Selections array must not be empty',
       functionName: 'validateInputSelection',
@@ -232,11 +235,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('path/to/file.ts', inputSelection, customDelimiters);
+    const result = formatLink(filePath, inputSelection, customDelimiters);
 
     expect(result).toBeSuccess({
-      link: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
-      rawLink: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
+      link: `${filePath}>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
+      rawLink: `${filePath}>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
@@ -276,11 +279,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Rectangular,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
-      rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
+      link: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
+      rawLink: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Rectangular',
@@ -326,11 +329,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Rectangular,
     };
-    const result = formatLink('src/file.ts', inputSelection, customDelimiters);
+    const result = formatLink(filePath, inputSelection, customDelimiters);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
-      rawLink: `src/file.ts@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
+      link: `${filePath}@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
+      rawLink: `${filePath}@@X${expectedStartLine}Y${expectedStartPosition}..X${expectedStartLine + 2}Y${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Rectangular',
@@ -376,11 +379,11 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Rectangular,
     };
-    const result = formatLink('src/file.ts', inputSelection, customDelimiters);
+    const result = formatLink(filePath, inputSelection, customDelimiters);
 
     expect(result).toBeSuccess({
-      link: `src/file.ts####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
-      rawLink: `src/file.ts####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
+      link: `${filePath}####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
+      rawLink: `${filePath}####LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Rectangular',
@@ -409,13 +412,13 @@ describe('formatLink', () => {
       ],
       selectionType: SelectionType.Normal,
     };
-    const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+    const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
       notation: RangeNotation.EnforcePositions,
     });
 
     expect(result).toBeSuccess({
-      link: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1`,
-      rawLink: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1`,
+      link: `${filePath}#L${expectedStartLine}C1-L${expectedEndLine}C1`,
+      rawLink: `${filePath}#L${expectedStartLine}C1-L${expectedEndLine}C1`,
       linkType: 'regular',
       rangeFormat: 'WithPositions',
       selectionType: 'Normal',
@@ -444,13 +447,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
-        rawLink: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        link: `${filePath}#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        rawLink: `${filePath}#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
         linkType: 'portable',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -477,13 +480,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
-        rawLink: `src/file.ts#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        link: `${filePath}#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        rawLink: `${filePath}#L${expectedStartLine}-L${expectedEndLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
         linkType: 'portable',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -512,13 +515,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
-        rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        link: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        rawLink: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
         linkType: 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -558,13 +561,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Rectangular,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
-        rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        link: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        rawLink: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 2}C${expectedEndPosition}${byodSuffix(DEFAULT_DELIMITERS, true)}`,
         linkType: 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -610,13 +613,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Rectangular,
       };
-      const result = formatLink('src/file.ts', inputSelection, customDelimiters, {
+      const result = formatLink(filePath, inputSelection, customDelimiters, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
-        rawLink: `src/file.ts##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+        link: `${filePath}##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+        rawLink: `${filePath}##LINE${expectedStartLine}COL${expectedStartPosition}TOLINE${expectedStartLine + 2}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
         linkType: 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -651,13 +654,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('path/to/file.ts', inputSelection, customDelimiters, {
+      const result = formatLink(filePath, inputSelection, customDelimiters, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `path/to/file.ts>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
-        rawLink: `path/to/file.ts>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
+        link: `${filePath}>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
+        rawLink: `${filePath}>>LINE${expectedStartLine}thruLINE${expectedEndLine}${byodSuffix(customDelimiters, false)}`,
         linkType: 'portable',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -692,13 +695,13 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('path/to/file.ts', inputSelection, customDelimiters, {
+      const result = formatLink(filePath, inputSelection, customDelimiters, {
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
-        rawLink: `path/to/file.ts>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+        link: `${filePath}>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
+        rawLink: `${filePath}>>LINE${expectedStartLine}COL${expectedStartPosition}thruLINE${expectedEndLine}COL${expectedEndPosition}${byodSuffix(customDelimiters, true)}`,
         linkType: 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -726,14 +729,14 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         notation: RangeNotation.EnforceFullLine,
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
-        rawLink: `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        link: `${filePath}#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
+        rawLink: `${filePath}#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`,
         linkType: 'portable',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -760,14 +763,14 @@ describe('formatLink', () => {
         ],
         selectionType: SelectionType.Normal,
       };
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         notation: RangeNotation.EnforcePositions,
         linkType: LinkType.Portable,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
-        rawLink: `src/file.ts#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        link: `${filePath}#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
+        rawLink: `${filePath}#L${expectedStartLine}C1-L${expectedEndLine}C1${byodSuffix(DEFAULT_DELIMITERS, true)}`,
         linkType: 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -804,13 +807,13 @@ describe('formatLink', () => {
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
-        rawLink: `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
+        link: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
+        rawLink: `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}${suffix}`,
         linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -849,13 +852,13 @@ describe('formatLink', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType,
       });
 
       expect(result).toBeSuccess({
-        link: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
-        rawLink: `src/file.ts##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
+        link: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
+        rawLink: `${filePath}##L${expectedStartLine}C${expectedStartPosition}-L${expectedStartLine + 1}C${expectedEndPosition}${suffix}`,
         linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -876,7 +879,7 @@ describe('formatLink', () => {
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType,
       });
 
@@ -970,11 +973,11 @@ describe('formatLink', () => {
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
       expect(result).toBeSuccessWith((value) => {
-        expect(value.link).toBe(`src/file.ts#L${expectedStartLine}`);
-        expect(value.rawLink).toBe(`src/file.ts#L${expectedStartLine}`);
+        expect(value.link).toBe(`${filePath}#L${expectedStartLine}`);
+        expect(value.rawLink).toBe(`${filePath}#L${expectedStartLine}`);
       });
     });
   });
@@ -1000,9 +1003,9 @@ describe('formatLink', () => {
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS);
 
-      const expectedLink = `src/file.ts#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`;
+      const expectedLink = `${filePath}#L${expectedStartLine}C${expectedStartPosition}-L${expectedEndLine}C${expectedEndPosition}`;
       expect(result).toBeSuccess({
         link: expectedLink,
         rawLink: expectedLink,
@@ -1051,11 +1054,11 @@ describe('formatLink', () => {
         selectionType: SelectionType.Normal,
       };
 
-      const result = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS, {
+      const result = formatLink(filePath, inputSelection, DEFAULT_DELIMITERS, {
         linkType: LinkType.Portable,
       });
 
-      const expectedLink = `src/file.ts#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`;
+      const expectedLink = `${filePath}#L${expectedStartLine}${byodSuffix(DEFAULT_DELIMITERS, false)}`;
       expect(result).toBeSuccess({
         link: expectedLink,
         rawLink: expectedLink,
