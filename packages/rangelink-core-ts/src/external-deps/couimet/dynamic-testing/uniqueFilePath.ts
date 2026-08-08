@@ -85,7 +85,12 @@ const buildFilename = (
   const ext = extension !== undefined ? normalizeExtension(extension) : getUniqueFileExtension();
 
   if (!unique) {
-    const len = maxLength !== undefined ? Math.max(1, maxLength - ext.length) : 6;
+    if (maxLength !== undefined && maxLength <= ext.length) {
+      throw new Error(
+        `${MAXLENGTH_TOO_SMALL}: maxLength (${maxLength}) too small for filename (extension alone = ${ext.length} chars)`,
+      );
+    }
+    const len = maxLength !== undefined ? maxLength - ext.length : 6;
     return { value: `${getRandomAlphaString(len)}${ext}`, isExplicit: false };
   }
 
@@ -157,7 +162,7 @@ export const getUniqueAbsolutePath = (options: UniqueFilePathOptions = {}): stri
 
 /** Returns `count` unique relative file paths. */
 export const getUniqueRelativePaths = (count: number, options?: UniqueFilePathOptions): string[] => {
-  if (count < 1) {
+  if (count < 1 || !Number.isInteger(count)) {
     throw new Error(`COUNT_NOT_POSITIVE_INTEGER: count must be a positive integer, received ${count}`);
   }
   return Array.from({ length: count }, () => getUniqueRelativePath(options));
@@ -173,7 +178,7 @@ export const getUniqueRelativePathsNamed = <K extends string>(keys: readonly K[]
 
 /** Returns `count` unique absolute file paths. */
 export const getUniqueAbsolutePaths = (count: number, options?: UniqueFilePathOptions): string[] => {
-  if (count < 1) {
+  if (count < 1 || !Number.isInteger(count)) {
     throw new Error(`COUNT_NOT_POSITIVE_INTEGER: count must be a positive integer, received ${count}`);
   }
   return Array.from({ length: count }, () => getUniqueAbsolutePath(options));

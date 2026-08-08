@@ -4,6 +4,8 @@ import { SelectionCoverage } from '../../types/SelectionCoverage';
 
 import { getUniqueInt } from '@couimet/dynamic-testing';
 
+const COORDINATE_OFFSET = 10;
+
 describe('validateNormalMode', () => {
   let startLine: number;
   let endLine: number;
@@ -12,9 +14,9 @@ describe('validateNormalMode', () => {
 
   beforeEach(() => {
     startLine = getUniqueInt();
-    endLine = startLine + 10;
+    endLine = startLine + COORDINATE_OFFSET;
     startChar = getUniqueInt();
-    endChar = startChar + 10;
+    endChar = startChar + COORDINATE_OFFSET;
   });
 
   describe('Multiple selections not allowed', () => {

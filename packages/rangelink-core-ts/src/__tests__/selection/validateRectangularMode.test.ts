@@ -4,6 +4,8 @@ import { SelectionCoverage } from '../../types/SelectionCoverage';
 
 import { getUniqueInt } from '@couimet/dynamic-testing';
 
+const COORDINATE_OFFSET = 10;
+
 describe('validateRectangularMode', () => {
   let startLine: number;
   let startChar: number;
@@ -12,7 +14,7 @@ describe('validateRectangularMode', () => {
   beforeEach(() => {
     startLine = getUniqueInt();
     startChar = getUniqueInt();
-    endChar = startChar + 10;
+    endChar = startChar + COORDINATE_OFFSET;
   });
 
   describe('Empty selections array (defensive guard)', () => {

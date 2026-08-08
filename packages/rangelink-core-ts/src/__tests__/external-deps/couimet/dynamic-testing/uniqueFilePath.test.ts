@@ -8,6 +8,8 @@ import {
   getUniqueRelativePathsNamed,
 } from '../../../../external-deps/couimet/dynamic-testing/uniqueFilePath';
 
+const EXTENSION_SAMPLE_SIZE = 50;
+
 describe('getUniqueFileExtension', () => {
   it('returns a string starting with a dot', () => {
     const ext = getUniqueFileExtension();
@@ -18,7 +20,7 @@ describe('getUniqueFileExtension', () => {
   it('returns from the curated list', () => {
     const CURATED = ['ts', 'js', 'json', 'tsx', 'jsx', 'css', 'html', 'md', 'txt'];
     // Sample many calls; every result must be in the curated set.
-    const results = Array.from({ length: 50 }, () => getUniqueFileExtension().slice(1));
+    const results = Array.from({ length: EXTENSION_SAMPLE_SIZE }, () => getUniqueFileExtension().slice(1));
     for (const r of results) {
       expect(CURATED).toContain(r);
     }
@@ -51,15 +53,15 @@ describe('getUniqueRelativePath', () => {
 
     it('does NOT throw when depth is 0, filename explicit, but folders: [] is provided', () => {
       // folders: [] is explicit — we inject a unique folder.
-      expect(() => getUniqueRelativePath({ depth: 0, folders: [], filename: 'config.ts' })).not.toThrow();
+      getUniqueRelativePath({ depth: 0, folders: [], filename: 'config.ts' });
     });
 
     it('does NOT throw when depth is 0 and filename is auto-generated', () => {
-      expect(() => getUniqueRelativePath({ depth: 0 })).not.toThrow();
+      getUniqueRelativePath({ depth: 0 });
     });
 
     it('does NOT throw when depth is 0, filename explicit, but unique: false', () => {
-      expect(() => getUniqueRelativePath({ depth: 0, filename: 'config.ts', unique: false })).not.toThrow();
+      getUniqueRelativePath({ depth: 0, filename: 'config.ts', unique: false });
     });
   });
 
@@ -67,6 +69,16 @@ describe('getUniqueRelativePath', () => {
     it('throws when maxLength is too small for minimum filename', () => {
       // Minimum: "-N.ext" where N is counter (at least 5 chars with suffix)
       expect(() => getUniqueRelativePath({ maxLength: 1 })).toThrow('MAXLENGTH_TOO_SMALL');
+    });
+
+    it('throws when maxLength is too small for non-unique filename (extension alone)', () => {
+      expect(() => getUniqueRelativePath({ depth: 0, unique: false, maxLength: 2, extension: 'ts' })).toThrow('MAXLENGTH_TOO_SMALL');
+    });
+
+    it('allows maxLength exactly one char above extension length', () => {
+      const path = getUniqueRelativePath({ depth: 0, unique: false, maxLength: 4, extension: 'ts' });
+      expect(path.length).toBe(4);
+      expect(path.endsWith('.ts')).toBe(true);
     });
   });
 
@@ -311,6 +323,10 @@ describe('getUniqueRelativePaths', () => {
     expect(() => getUniqueRelativePaths(-1)).toThrow('COUNT_NOT_POSITIVE_INTEGER');
   });
 
+  it('throws when count is not an integer', () => {
+    expect(() => getUniqueRelativePaths(2.5)).toThrow('COUNT_NOT_POSITIVE_INTEGER');
+  });
+
   it('returns array of requested length', () => {
     const paths = getUniqueRelativePaths(3);
     expect(paths).toHaveLength(3);
@@ -356,6 +372,10 @@ describe('getUniqueRelativePathsNamed', () => {
 describe('getUniqueAbsolutePaths', () => {
   it('throws when count is 0', () => {
     expect(() => getUniqueAbsolutePaths(0)).toThrow('COUNT_NOT_POSITIVE_INTEGER');
+  });
+
+  it('throws when count is not an integer', () => {
+    expect(() => getUniqueAbsolutePaths(2.5)).toThrow('COUNT_NOT_POSITIVE_INTEGER');
   });
 
   it('returns array of requested length', () => {
