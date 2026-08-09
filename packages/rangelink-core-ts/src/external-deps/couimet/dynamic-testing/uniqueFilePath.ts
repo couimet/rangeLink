@@ -86,9 +86,7 @@ const buildFilename = (
 
   if (!unique) {
     if (maxLength !== undefined && maxLength <= ext.length) {
-      throw new Error(
-        `${MAXLENGTH_TOO_SMALL}: maxLength (${maxLength}) too small for filename (extension alone = ${ext.length} chars)`,
-      );
+      throw new Error(`${MAXLENGTH_TOO_SMALL}: maxLength (${maxLength}) too small for filename (extension alone = ${ext.length} chars)`);
     }
     const len = maxLength !== undefined ? maxLength - ext.length : 6;
     return { value: `${getRandomAlphaString(len)}${ext}`, isExplicit: false };
