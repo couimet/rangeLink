@@ -4,10 +4,11 @@
  * - `file` - Regular file system files
  * - `untitled` - New unsaved files
  * - `vscode-remote` - Files opened via a remote connection (e.g. devcontainers, SSH)
+ * - `vscode-vfs` - Files opened via a virtual filesystem (e.g. GitHub web editor)
  *
  * All other schemes (git, output, vscode-settings, etc.) are read-only.
  */
-const WRITABLE_SCHEMES = ['file', 'untitled', 'vscode-remote'];
+const WRITABLE_SCHEMES = ['file', 'untitled', 'vscode-remote', 'vscode-vfs'];
 
 /**
  * Check if a URI scheme supports text editing.

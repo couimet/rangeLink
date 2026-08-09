@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
 - **RangeLinks inside parentheses now navigate correctly** — `(path#Lx-Ly)` no longer includes the leading `(` in the file path, so navigation works instead of failing with "Cannot find file: (path...". Also applies to `[]`, `{}`, `<>` wrappers, and trailing sentence terminators. (#661, #666)
 - **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
-- **RangeLink context menu items now appear in devcontainers and other remote workspaces.** (#679)
+- **RangeLink context menu items now appear in remote and virtual workspaces** — devcontainers, SSH remotes, WSL, Codespaces (`vscode-remote://`), and GitHub's web editor (`vscode-vfs://`). These URI schemes are now recognized as writable, so link-generation, paste-file-path, and bind commands appear in context menus where they were previously hidden. (#679) — Contributed by [@lourot](https://github.com/lourot). 🎉 First open-source contribution on the project!
 
 <!-- markdownlint-disable MD038 -->
 

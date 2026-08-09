@@ -13,6 +13,10 @@ describe('isWritableScheme', () => {
     it('returns true for vscode-remote scheme', () => {
       expect(isWritableScheme('vscode-remote')).toBe(true);
     });
+
+    it('returns true for vscode-vfs scheme', () => {
+      expect(isWritableScheme('vscode-vfs')).toBe(true);
+    });
   });
 
   describe('read-only schemes', () => {
