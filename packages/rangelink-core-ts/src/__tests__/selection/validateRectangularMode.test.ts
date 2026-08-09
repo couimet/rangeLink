@@ -2,7 +2,7 @@ import { validateRectangularMode } from '../../selection/validateRectangularMode
 import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 
-import { getUniqueInt } from '@couimet/dynamic-testing';
+import { getRandomInt, getUniqueInt } from '@couimet/dynamic-testing';
 
 const COORDINATE_OFFSET = 10;
 
@@ -27,7 +27,7 @@ describe('validateRectangularMode', () => {
 
   describe('Single-line requirement', () => {
     it('should throw error when selection spans multiple lines', () => {
-      const endLine = startLine + 2;
+      const endLine = startLine + getRandomInt(2, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -49,7 +49,7 @@ describe('validateRectangularMode', () => {
 
     it('should throw error for second selection spanning multiple lines', () => {
       const badStartLine = startLine + 1;
-      const badEndLine = startLine + 3;
+      const badEndLine = badStartLine + getRandomInt(2, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -89,7 +89,7 @@ describe('validateRectangularMode', () => {
 
   describe('Consistent column range requirement', () => {
     it('should throw error for mismatched startCharacter', () => {
-      const mismatchedStartChar = startChar + 2;
+      const mismatchedStartChar = startChar + getRandomInt(1, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -117,7 +117,7 @@ describe('validateRectangularMode', () => {
     });
 
     it('should throw error for mismatched endCharacter', () => {
-      const mismatchedEndChar = endChar + 2;
+      const mismatchedEndChar = endChar + getRandomInt(1, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -145,8 +145,8 @@ describe('validateRectangularMode', () => {
     });
 
     it('should throw error for both startCharacter and endCharacter mismatched', () => {
-      const mismatchedStartChar = startChar - 2;
-      const mismatchedEndChar = endChar + 5;
+      const mismatchedStartChar = startChar - getRandomInt(1, 5);
+      const mismatchedEndChar = endChar + getRandomInt(1, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -198,7 +198,7 @@ describe('validateRectangularMode', () => {
 
   describe('Sorted by line number requirement', () => {
     it('should throw error for unsorted selections', () => {
-      const outOfOrderLine = startLine - 2;
+      const outOfOrderLine = startLine - getRandomInt(2, 5);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -224,8 +224,9 @@ describe('validateRectangularMode', () => {
     });
 
     it('should throw error when middle selection is out of order', () => {
-      const jumpAheadLine = startLine + 5;
-      const outOfOrderLine = startLine + 2;
+      const outOfOrderDelta = getRandomInt(1, 5);
+      const jumpAheadLine = startLine + getRandomInt(outOfOrderDelta + 1, outOfOrderDelta + 5);
+      const outOfOrderLine = startLine + outOfOrderDelta;
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -280,7 +281,8 @@ describe('validateRectangularMode', () => {
 
   describe('Contiguous lines requirement', () => {
     it('should throw error for non-contiguous lines (gap of 1)', () => {
-      const skippedLine = startLine + 2;
+      const gap = getRandomInt(1, 5);
+      const skippedLine = startLine + gap + 1;
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -301,13 +303,14 @@ describe('validateRectangularMode', () => {
           selectionIndex: 1,
           previousLine: startLine,
           currentLine: skippedLine,
-          gap: 1,
+          gap,
         },
       });
     });
 
     it('should throw error for non-contiguous lines (gap of 5)', () => {
-      const skippedLine = startLine + 6;
+      const gap = getRandomInt(5, 10);
+      const skippedLine = startLine + gap + 1;
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -328,7 +331,7 @@ describe('validateRectangularMode', () => {
           selectionIndex: 1,
           previousLine: startLine,
           currentLine: skippedLine,
-          gap: 5,
+          gap,
         },
       });
     });

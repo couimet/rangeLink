@@ -2,7 +2,7 @@ import { validateNormalMode } from '../../selection/validateNormalMode';
 import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 
-import { getUniqueInt } from '@couimet/dynamic-testing';
+import { getRandomInt, getUniqueInt } from '@couimet/dynamic-testing';
 
 const COORDINATE_OFFSET = 10;
 
@@ -42,6 +42,7 @@ describe('validateNormalMode', () => {
     });
 
     it('should throw error for 3 selections', () => {
+      const additionalLineOffset = getRandomInt(2, 10);
       const selections: InputSelection['selections'] = [
         {
           start: { line: startLine, character: startChar },
@@ -54,8 +55,8 @@ describe('validateNormalMode', () => {
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: endLine + 5, character: 0 },
-          end: { line: endLine + 5, character: startChar },
+          start: { line: endLine + additionalLineOffset, character: 0 },
+          end: { line: endLine + additionalLineOffset, character: startChar },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -68,9 +69,10 @@ describe('validateNormalMode', () => {
     });
 
     it('should throw error for 10 selections', () => {
+      const lineSpacing = getRandomInt(2, 10);
       const selections: InputSelection['selections'] = Array.from({ length: 10 }, (_, i) => ({
-        start: { line: startLine + i * 5, character: 0 },
-        end: { line: startLine + i * 5, character: endChar },
+        start: { line: startLine + i * lineSpacing, character: 0 },
+        end: { line: startLine + i * lineSpacing, character: endChar },
         coverage: SelectionCoverage.PartialLine,
       }));
 

@@ -9,6 +9,8 @@ const MAXLENGTH_TOO_SMALL = 'MAXLENGTH_TOO_SMALL';
 const DEFAULT_DEPTH = 3;
 const DEFAULT_SEPARATOR = '/';
 const DEFAULT_ROOT = '/home/user/project';
+const DEFAULT_SUFFIX_PREFIX_LENGTH = 6;
+const DEFAULT_FILENAME_PREFIX_LENGTH = 6;
 
 const CURATED_FOLDERS = [
   'src',
@@ -58,7 +60,7 @@ const normalizeExtension = (ext: string): string => (ext.startsWith('.') ? ext :
 
 const pickRandom = <T>(arr: readonly T[]): T => arr[getRandomInt(0, arr.length - 1)];
 
-const generateUniqueSuffix = (): string => `${getRandomAlphaString(6)}-${getUniqueInt()}`;
+const generateUniqueSuffix = (): string => `${getRandomAlphaString(DEFAULT_SUFFIX_PREFIX_LENGTH)}-${getUniqueInt()}`;
 
 const buildFolders = (explicit: string[] | undefined, depth: number): string[] => {
   if (explicit !== undefined) return explicit;
@@ -88,12 +90,12 @@ const buildFilename = (
     if (maxLength !== undefined && maxLength <= ext.length) {
       throw new Error(`${MAXLENGTH_TOO_SMALL}: maxLength (${maxLength}) too small for filename (extension alone = ${ext.length} chars)`);
     }
-    const len = maxLength !== undefined ? maxLength - ext.length : 6;
+    const len = maxLength !== undefined ? maxLength - ext.length : DEFAULT_FILENAME_PREFIX_LENGTH;
     return { value: `${getRandomAlphaString(len)}${ext}`, isExplicit: false };
   }
 
   const suffix = `-${getUniqueInt()}`;
-  const maxPrefixLen = maxLength !== undefined ? maxLength - suffix.length - ext.length : 6;
+  const maxPrefixLen = maxLength !== undefined ? maxLength - suffix.length - ext.length : DEFAULT_FILENAME_PREFIX_LENGTH;
   if (maxLength !== undefined && maxPrefixLen < 1) {
     throw new Error(
       `${MAXLENGTH_TOO_SMALL}: maxLength (${maxLength}) too small for minimum filename (suffix + extension = ${suffix.length + ext.length} chars)`,

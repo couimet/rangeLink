@@ -233,8 +233,11 @@
 
 <rule id="T013" priority="critical">
   <title>Named constants for test thresholds</title>
-  <do>Overflow thresholds, item counts, and setup sizes in tests must use SCREAMING_SNAKE_CASE constants</do>
-  <rationale>Cross-references P003. Prevents magic numbers in test loops and assertions from drifting when thresholds change.</rationale>
+  <scope>Module-level only — values shared across multiple tests or between beforeEach/setup and assertions. Local test-function plumbing uses camelCase or dynamic values; do not hoist single-test offsets to module-level SCREAMING_SNAKE_CASE.</scope>
+  <do>Use SCREAMING_SNAKE_CASE for module-level constants shared between setup and assertions</do>
+  <do>Prefer `getUniqueInt()` or `getUniqueString()` from `@couimet/dynamic-testing` for arbitrary plumbing offsets that only need to be consistent within a single test — dynamic values prove the value passes through rather than matching a hardcoded default at the destination</do>
+  <never>Use SCREAMING_SNAKE_CASE for `const` variables declared inside `it()` blocks — those are local variables and use camelCase</never>
+  <rationale>SCREAMING_SNAKE_CASE signals "this value is a frozen contract" (cross-references P003). Test-internal plumbing values are arbitrary — a `getUniqueInt()` offset proves the value passes through rather than matching a hardcoded default. Module-level constants are the exception: values shared between beforeEach and assertions must be the same, so a single frozen constant at module level is correct.</rationale>
 </rule>
 
 <rule id="T014" priority="critical">
@@ -329,6 +332,7 @@
 
 <rule id="P003" priority="critical">
   <title>No magic numbers</title>
+  <scope>Production code only. Test code follows T013.</scope>
   <do>Define named constants for all numeric literals with semantic meaning</do>
   <do>Use SCREAMING_SNAKE_CASE for constant names</do>
 </rule>

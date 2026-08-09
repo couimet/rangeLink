@@ -9,6 +9,7 @@ import {
 } from '../../../../external-deps/couimet/dynamic-testing/uniqueFilePath';
 
 const EXTENSION_SAMPLE_SIZE = 50;
+const REQUESTED_COUNT = 3;
 
 describe('getUniqueFileExtension', () => {
   it('returns a string starting with a dot', () => {
@@ -328,8 +329,12 @@ describe('getUniqueRelativePaths', () => {
   });
 
   it('returns array of requested length', () => {
-    const paths = getUniqueRelativePaths(3);
-    expect(paths).toHaveLength(3);
+    const paths = getUniqueRelativePaths(REQUESTED_COUNT);
+    expect(paths).toHaveLength(REQUESTED_COUNT);
+    for (const p of paths) {
+      expect(p.startsWith('/')).toBe(false);
+      expect(p).not.toContain('://');
+    }
   });
 
   it('each path is unique', () => {
