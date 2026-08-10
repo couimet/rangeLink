@@ -1499,6 +1499,7 @@ test_cases:
       - 'RangeLink extension installed in the devcontainer'
       - 'A writable source file open in the editor'
     steps:
+      - 'Select some text in the open source file'
       - 'Right-click in the editor to open the context menu'
       - 'Right-click on the editor tab to open the tab context menu'
     expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" all appear in the editor context menu for a writable file opened in a devcontainer. In the editor tab context menu, "Send File Path" and "Send Relative File Path" also appear. The when-clauses now match resourceScheme == vscode-remote.'
@@ -1526,9 +1527,10 @@ test_cases:
       - 'RangeLink extension installed in github.dev'
       - 'A source file open in the editor'
     steps:
+      - 'Select some text in the open source file'
       - 'Right-click in the editor to open the context menu'
       - 'Right-click on the editor tab to open the tab context menu'
-    expected_result: 'Open a repository in github.dev (press "." on any GitHub repo page). "Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" all appear in the editor context menu for a writable file. The when-clauses now match resourceScheme == vscode-vfs.'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" all appear in the editor context menu for a writable file opened in github.dev. In the editor tab context menu, "Send File Path" and "Send Relative File Path" also appear. The when-clauses now match resourceScheme == vscode-vfs.'
     automated: false
     non_automatable_reason: workspace-specific
 
