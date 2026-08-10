@@ -49,8 +49,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(@couimet/detailed-error@1.0.0)
       '@couimet/logger-contract-testing':
-        specifier: ^1.0.0
-        version: 1.0.1(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.19.130))
+        specifier: ^1.0.2
+        version: 1.0.2(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.19.130))
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -95,8 +95,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(@couimet/detailed-error@1.0.0)
       '@couimet/logger-contract-testing':
-        specifier: ^1.0.0
-        version: 1.0.1(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.19.43))
+        specifier: ^1.0.2
+        version: 1.0.2(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.19.43))
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -416,11 +416,11 @@ packages:
     peerDependencies:
       eslint: '>=10.4.0'
 
-  '@couimet/logger-contract-testing@1.0.1':
-    resolution: {integrity: sha512-+omIjwVUism+RIsbl8a9C6lmwzb2tSY2XKEO3n2kJn2a9USQ7W1E+38k7fSE04gzMLY1Vs/75CotbLzBJI5TtA==}
+  '@couimet/logger-contract-testing@1.0.2':
+    resolution: {integrity: sha512-hJcH4GNm7HcjrX7xCga6H3EZD10xAItcq0DDhtgYZWHnAdBDQYdEPtMiyyqL/Fz2/IqF6+2dxkMuXOlQXJmfOw==}
     peerDependencies:
       '@couimet/logger-contract': 1.0.0
-      '@jest/globals': '>=30.0.0'
+      '@jest/globals': '>=29.0.0'
       jest: '>=29.0.0'
 
   '@couimet/logger-contract@1.0.0':
@@ -3553,13 +3553,13 @@ snapshots:
     dependencies:
       eslint: 10.8.0
 
-  '@couimet/logger-contract-testing@1.0.1(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.19.130))':
+  '@couimet/logger-contract-testing@1.0.2(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.19.130))':
     dependencies:
       '@couimet/logger-contract': 1.0.0
       '@jest/globals': 29.7.0
       jest: 29.7.0(@types/node@18.19.130)
 
-  '@couimet/logger-contract-testing@1.0.1(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.19.43))':
+  '@couimet/logger-contract-testing@1.0.2(@couimet/logger-contract@1.0.0)(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.19.43))':
     dependencies:
       '@couimet/logger-contract': 1.0.0
       '@jest/globals': 29.7.0

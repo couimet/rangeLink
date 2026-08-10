@@ -9,6 +9,9 @@ updates:
       timezone: 'America/Toronto'
     versioning-strategy: increase
     groups:
+      couimet:
+        patterns:
+          - '@couimet/*'
       deps:
         patterns:
           - '*'
