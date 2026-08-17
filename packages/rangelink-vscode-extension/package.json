@@ -964,7 +964,7 @@
     "@couimet/detailed-error": "^1.0.0",
     "@couimet/detailed-result": "^0.1.1",
     "@couimet/logger-contract": "^1.0.0",
-    "nanoid": "^5.1.6",
+    "nanoid": "^6.0.1",
     "rangelink-core-ts": "workspace:*"
   },
   "devDependencies": {
@@ -972,17 +972,17 @@
     "@couimet/detailed-result-testing": "^0.2.1",
     "@couimet/dynamic-testing": "^1.0.0",
     "@couimet/logger-contract-testing": "^1.0.2",
-    "@types/jest": "^29.5.0",
+    "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^20.0.0",
+    "@types/node": "^26.2.0",
     "@types/vscode": "^1.49.0",
-    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.6.2",
-    "esbuild": "^0.25.12",
-    "jest": "^29.7.0",
+    "esbuild": "^0.28.2",
+    "jest": "^30.4.2",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.1.6"
+    "typescript": "^7.0.2"
   },
   "packageManager": "pnpm@10.19.0",
   "engines": {
