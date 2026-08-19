@@ -1496,7 +1496,7 @@ test_cases:
     scenario: 'Devcontainer: context menu items appear for writable files in a remote workspace (vscode-remote)'
     preconditions:
       - 'VS Code connected to a devcontainer (install Dev Containers extension + Docker; open the packages/rangelink-vscode-extension/qa/ folder via File → Open Folder…, then run "Dev Containers: Reopen in Container")'
-      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix' or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
+      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix` or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
       - 'After installing, run Developer: Reload Window so the extension activates'
       - 'A writable source file open in the editor'
     steps:
@@ -1512,7 +1512,7 @@ test_cases:
     scenario: 'Devcontainer: context menu items still hidden for non-writable schemes in a remote workspace'
     preconditions:
       - 'VS Code connected to a devcontainer (install Dev Containers extension + Docker; open the packages/rangelink-vscode-extension/qa/ folder via File → Open Folder…, then run "Dev Containers: Reopen in Container")'
-      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix' or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
+      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix` or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
       - 'After installing, run Developer: Reload Window so the extension activates'
     steps:
       - 'Open a search results panel (Cmd+Shift+F, search for anything) and right-click in the search results editor'
