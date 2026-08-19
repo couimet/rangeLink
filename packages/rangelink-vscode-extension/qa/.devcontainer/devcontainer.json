@@ -1,0 +1,13 @@
+{
+  "name": "RangeLink QA",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspaces/rangeLink,type=bind",
+  "workspaceFolder": "/workspaces/rangeLink",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "extensions.verifySignature": false
+      }
+    }
+  }
+}

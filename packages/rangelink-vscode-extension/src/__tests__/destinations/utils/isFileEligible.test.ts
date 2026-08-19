@@ -13,6 +13,14 @@ describe('isFileEligible', () => {
     it('returns true for untitled even with binary-like path', () => {
       expect(isFileEligible('untitled', 'image.png')).toBe(true);
     });
+
+    it('returns true for vscode-remote scheme with text file', () => {
+      expect(isFileEligible('vscode-remote', '/workspace/src/app.ts')).toBe(true);
+    });
+
+    it('returns true for vscode-vfs scheme with text file', () => {
+      expect(isFileEligible('vscode-vfs', '/workspace/src/app.ts')).toBe(true);
+    });
   });
 
   describe('read-only schemes', () => {
@@ -30,8 +38,12 @@ describe('isFileEligible', () => {
   });
 
   describe('binary files', () => {
-    it('returns false for png file', () => {
+    it('returns false for png file with file scheme', () => {
       expect(isFileEligible('file', '/workspace/assets/logo.png')).toBe(false);
+    });
+
+    it('returns false for png file with vscode-remote scheme', () => {
+      expect(isFileEligible('vscode-remote', '/workspace/assets/logo.png')).toBe(false);
     });
 
     it('returns false for pdf file', () => {

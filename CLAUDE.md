@@ -620,6 +620,15 @@
   <do>Add new entries to [Unreleased] section only</do>
   <never>Edit content under versioned headers like `## [1.0.0]` or `## [0.5.0]`</never>
   <rationale>Past releases document what shipped; rewriting history misleads users</rationale>
+
+  <rule id="CH001" priority="critical">
+    <title>Credit external contributors in CHANGELOG entries</title>
+    <do>When a change was contributed by someone other than the maintainer (Charles Ouimet), append a trailing attribution: ` — Contributed by [@handle](https://github.com/handle).`</do>
+    <do>For milestone contributions (1st, 10th, etc.), append a celebratory suffix after the attribution: ` — Contributed by [@handle](https://github.com/handle). 🎉 First open-source contribution on the project!`</do>
+    <do>Use `Contributed by` for code/PR contributions; use `Thanks to [@handle] for reporting.` for issue reporters who don't submit code</do>
+    <never>Add attribution for maintainer-authored changes</never>
+    <rationale>External contributions are a gift — visible, permanent attribution in the CHANGELOG is the minimum recognition</rationale>
+  </rule>
 </changelog>
 
 <unreleased-markers>

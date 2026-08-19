@@ -834,22 +834,22 @@
       ],
       "editor/context": [
         {
-          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
           "command": "rangelink.editorContext.copyLink",
           "group": "8_rangelink@0"
         },
         {
-          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
           "command": "rangelink.editorContext.copyLinkAbsolute",
           "group": "8_rangelink@1"
         },
         {
-          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
           "command": "rangelink.editorContext.copyPortableLink",
           "group": "8_rangelink@2"
         },
         {
-          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
           "command": "rangelink.editorContext.copyPortableLinkAbsolute",
           "group": "8_rangelink@3"
         },
@@ -864,19 +864,19 @@
           "group": "8_rangelink@5"
         },
         {
-          "when": "resourceScheme == file || resourceScheme == untitled",
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs",
           "command": "rangelink.editorContent.pasteFilePath",
           "group": "8_rangelink_files@0"
         },
         {
-          "when": "resourceScheme == file || resourceScheme == untitled",
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs",
           "command": "rangelink.editorContent.pasteRelativeFilePath",
           "group": "8_rangelink_files@1"
         },
         {
           "command": "rangelink.editorContent.bind",
           "group": "8_rangelink_files@2",
-          "when": "resourceScheme == file || resourceScheme == untitled"
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs"
         },
         {
           "when": "rangelink.isBound",
@@ -886,19 +886,19 @@
       ],
       "editor/title/context": [
         {
-          "when": "resourceScheme == file || resourceScheme == untitled",
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs",
           "command": "rangelink.editorTab.pasteFilePath",
           "group": "3_rangelink@1"
         },
         {
-          "when": "resourceScheme == file || resourceScheme == untitled",
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs",
           "command": "rangelink.editorTab.pasteRelativeFilePath",
           "group": "3_rangelink@2"
         },
         {
           "command": "rangelink.editorContent.bind",
           "group": "3_rangelink@3",
-          "when": "resourceScheme == file || resourceScheme == untitled"
+          "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs"
         },
         {
           "when": "rangelink.isBound",

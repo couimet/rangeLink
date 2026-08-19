@@ -18,8 +18,11 @@
 #                      false    — fully manual; preconditions and steps are required
 #   non_automatable_reason: Required when `automated: false`. Why this TC cannot be
 #                           automated (even assisted):
-#                             platform-specific — requires Win/Linux; CI runs on macOS
-#                             ide-specific      — requires Cursor IDE; not in VS Code host
+#                             platform-specific  — requires Win/Linux; CI runs on macOS
+#                             ide-specific       — requires Cursor IDE; not in VS Code host
+#                             workspace-specific — requires devcontainer, github.dev, or
+#                                                   Remote-SSH; CI cannot provision these
+#                                                   workspace environments
 
 test_cases:
   # ---------------------------------------------------------------------------
@@ -1461,13 +1464,13 @@ test_cases:
   - id: editor-binding-validation-001
     feature: 'editor-binding-validation'
     scenario: 'Search editor content area hides link-generation and bind commands'
-    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" do NOT appear. "Send Selected Text" and "Unbind" are acceptable if present. The when-clauses restrict link-generation commands to resourceScheme == file || resourceScheme == untitled; the bind command carries the same restriction.'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" do NOT appear. "Send Selected Text" and "Unbind" are acceptable if present. The when-clauses restrict link-generation commands to writable URI schemes (see isWritableScheme.ts); the bind command carries the same restriction.'
     automated: assisted
 
   - id: editor-binding-validation-002
     feature: 'editor-binding-validation'
     scenario: 'Output panel hides file path and bind commands in its context menu'
-    expected_result: 'No "Send This File''s Path" or "RangeLink: Bind Here" appears. "Unbind" is acceptable. The when-clauses restrict editorContent.pasteFilePath and editorContent.bind to resourceScheme == file || resourceScheme == untitled.'
+    expected_result: 'No "Send This File''s Path" or "RangeLink: Bind Here" appears. "Unbind" is acceptable. The when-clauses restrict editorContent.pasteFilePath and editorContent.bind to writable URI schemes (see isWritableScheme.ts).'
     automated: assisted
 
   - id: editor-binding-validation-003
@@ -1485,8 +1488,53 @@ test_cases:
   - id: editor-binding-validation-005
     feature: 'editor-binding-validation'
     scenario: 'Search editor TAB hides file path commands in the tab context menu'
-    expected_result: 'No "Send File Path" or "Send Relative File Path" appears. "Unbind" is acceptable. The when-clause on editorTab.pasteFilePath and editorTab.pasteRelativeFilePath restricts them to resourceScheme == file || resourceScheme == untitled.'
+    expected_result: 'No "Send File Path" or "Send Relative File Path" appears. "Unbind" is acceptable. The when-clause on editorTab.pasteFilePath and editorTab.pasteRelativeFilePath restricts them to writable URI schemes (see isWritableScheme.ts).'
     automated: assisted
+
+  - id: editor-binding-validation-006
+    feature: 'editor-binding-validation'
+    scenario: 'Devcontainer: context menu items appear for writable files in a remote workspace (vscode-remote)'
+    preconditions:
+      - 'VS Code connected to a devcontainer (install Dev Containers extension + Docker; open the packages/rangelink-vscode-extension/qa/ folder via File → Open Folder…, then run "Dev Containers: Reopen in Container")'
+      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix` or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
+      - 'After installing, run Developer: Reload Window so the extension activates'
+      - 'A writable source file open in the editor'
+    steps:
+      - 'Select some text in the open source file'
+      - 'Right-click in the editor to open the context menu'
+      - 'Right-click on the editor tab to open the tab context menu'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" all appear in the editor context menu for a writable file opened in a devcontainer. In the editor tab context menu, "Send File Path" and "Send Relative File Path" also appear. The when-clauses now match resourceScheme == vscode-remote.'
+    automated: false
+    non_automatable_reason: workspace-specific
+
+  - id: editor-binding-validation-007
+    feature: 'editor-binding-validation'
+    scenario: 'Devcontainer: context menu items still hidden for non-writable schemes in a remote workspace'
+    preconditions:
+      - 'VS Code connected to a devcontainer (install Dev Containers extension + Docker; open the packages/rangelink-vscode-extension/qa/ folder via File → Open Folder…, then run "Dev Containers: Reopen in Container")'
+      - 'RangeLink extension installed in the devcontainer: `code --install-extension --force /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix` or `cursor --install-extension /workspaces/rangeLink/rangelink-vscode-extension/rangelink-vscode-extension-*.vsix`'
+      - 'After installing, run Developer: Reload Window so the extension activates'
+    steps:
+      - 'Open a search results panel (Cmd+Shift+F, search for anything) and right-click in the search results editor'
+      - 'Open the Output panel (View → Output) and right-click in the output area'
+    expected_result: 'In a devcontainer, open a search results panel or output panel. "Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" do NOT appear in the context menu for these non-writable schemes, even inside a devcontainer. The when-clauses still exclude read-only schemes like search, output, settings.'
+    automated: false
+    non_automatable_reason: workspace-specific
+
+  - id: editor-binding-validation-008
+    feature: 'editor-binding-validation'
+    scenario: 'GitHub Virtual Workspace: context menu items appear for writable files opened via vscode-vfs (github.dev)'
+    preconditions:
+      - 'A GitHub repository opened in github.dev (press "." on any GitHub repo page)'
+      - 'RangeLink extension installed in github.dev'
+      - 'A source file open in the editor'
+    steps:
+      - 'Select some text in the open source file'
+      - 'Right-click in the editor to open the context menu'
+      - 'Right-click on the editor tab to open the tab context menu'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" all appear in the editor context menu for a writable file opened in github.dev. In the editor tab context menu, "Send File Path" and "Send Relative File Path" also appear. The when-clauses now match resourceScheme == vscode-vfs.'
+    automated: false
+    non_automatable_reason: workspace-specific
 
   # ---------------------------------------------------------------------------
   # Section 13 — Bug Fix Regressions
