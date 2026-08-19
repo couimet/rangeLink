@@ -62,7 +62,7 @@ Run:
 packages/rangelink-vscode-extension/scripts/add-issue-to-release-board.sh <cross-repo issue URL>
 ```
 
-The script resolves the `RangeLink vX.Y.Z release` board for the version in package.json, adds the issue, and sets Status to Ready when the board has a Ready option (warn and skip otherwise, matching the release lock script's rule). Pass `--dry-run` to preview without GitHub calls.
+The script resolves the `RangeLink vX.Y.Z release` board for the version in package.json, adds the issue, and sets Status to Ready when the board has a Ready option (warn and skip otherwise, matching the release lock script's rule). Pass `--dry-run` to preview without GitHub calls. Capture the `Board URL:` value printed in the script's final output, for use in the Step 6 report.
 
 ## Step 6: Report
 
@@ -75,7 +75,7 @@ Cross-repo:    <cross-repo issue URL>
 Board:         <board URL>
 ```
 
-If an existing cross-repo issue was reused, mark it in the report so the reader knows no new issue was created.
+The board URL is the `Board URL:` value captured in Step 5. If an existing cross-repo issue was reused, mark it in the report so the reader knows no new issue was created.
 
 ## Output Format
 

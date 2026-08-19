@@ -68,6 +68,7 @@ write_happy_projects() {
   {
     "id": "PVT_kwBOARD",
     "number": 12,
+    "url": "https://github.com/users/couimet/projects/12",
     "title": "RangeLink v9.9.9 release",
     "fields": {"nodes": [
       {
@@ -83,6 +84,7 @@ write_happy_projects() {
   {
     "id": "PVT_kbOTHER",
     "number": 3,
+    "url": "https://github.com/users/couimet/projects/3",
     "title": "RangeLink v9.8.0 release",
     "fields": {"nodes": []}
   }
@@ -100,6 +102,7 @@ EOF
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Resolved release board: RangeLink v9.9.9 release (project #12)" ]]
   [[ "$output" =~ "Added: https://github.com/couimet/couimet.github.io/issues/12 to RangeLink v9.9.9 release (project #12), status: Ready" ]]
+  [[ "$output" =~ "Board URL: https://github.com/users/couimet/projects/12" ]]
 
   # The board listing query.
   grep -q 'projectsV2' "$GH_CALL_LOG"
@@ -121,8 +124,8 @@ EOF
   setup_fixture
   cat > "$PROJECTS_RESPONSE_FILE" <<'EOF'
 {"data": {"viewer": {"projectsV2": {"nodes": [
-  {"id": "PVT_1", "number": 3, "title": "RangeLink v9.8.0 release", "fields": {"nodes": []}},
-  {"id": "PVT_2", "number": 7, "title": "Backlog board", "fields": {"nodes": []}}
+  {"id": "PVT_1", "number": 3, "url": "https://github.com/users/couimet/projects/3", "title": "RangeLink v9.8.0 release", "fields": {"nodes": []}},
+  {"id": "PVT_2", "number": 7, "url": "https://github.com/users/couimet/projects/7", "title": "Backlog board", "fields": {"nodes": []}}
 ]}}}}
 EOF
 
@@ -143,6 +146,7 @@ EOF
   {
     "id": "PVT_kwBOARD",
     "number": 12,
+    "url": "https://github.com/users/couimet/projects/12",
     "title": "RangeLink v9.9.9 release",
     "fields": {"nodes": [
       {
@@ -159,6 +163,7 @@ EOF
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "no 'Status' field with a 'Ready' option" ]]
   [[ "$output" =~ "status: unset" ]]
+  [[ "$output" =~ "Board URL: https://github.com/users/couimet/projects/12" ]]
 
   # Item is still added to the board, but no status mutation runs.
   grep -Fq 'addProjectV2ItemById' "$GH_CALL_LOG"

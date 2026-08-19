@@ -11,8 +11,10 @@ set -euo pipefail
 # The next version defaults to a minor bump of .version in package.json;
 # pass an explicit SemVer to override for pivots.
 #
-# Idempotent: if the next project already exists, prints a skip message and
-# exits 0. The old project is left open.
+# Idempotent and recoverable: if the next project already exists it is reused
+# as the migration destination without re-copying; a re-run after a partial
+# migration continues moving the remaining non-Done items, and a completed
+# re-run finds nothing left to move. The old project is left open.
 #
 # Requires:
 #   jq   — reads .version from package.json, builds GraphQL payloads, parses responses
@@ -101,31 +103,6 @@ COPY_QUERY='mutation ($input: CopyProjectV2Input!) {
   }
 }'
 
-ITEMS_QUERY='query ($id: ID!) {
-  node(id: $id) {
-    ... on ProjectV2 {
-      items(first: 100) {
-        nodes {
-          id
-          content {
-            ... on Issue { id }
-            ... on PullRequest { id }
-            ... on DraftIssue { id }
-          }
-          fieldValues(first: 40) {
-            nodes {
-              ... on ProjectV2ItemFieldSingleSelectValue {
-                name
-                field { name }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}'
-
 FIELDS_QUERY='query ($id: ID!) {
   node(id: $id) {
     ... on ProjectV2 {
@@ -145,12 +122,6 @@ FIELDS_QUERY='query ($id: ID!) {
   }
 }'
 
-DELETE_ITEM_QUERY='mutation ($input: DeleteProjectV2ItemInput!) {
-  deleteProjectV2Item(input: $input) {
-    deletedItemId
-  }
-}'
-
 # --- Step 1: Resolve the current project ---
 
 PROJECTS_JSON=$(list_release_projects)
@@ -167,42 +138,51 @@ if [[ -z "$OLD_PROJECT_ID" ]]; then
   exit 1
 fi
 
+OWNER_ID=$(echo "$PROJECTS_JSON" | jq -r --arg title "$CURRENT_PROJECT_TITLE" \
+  '.data.viewer.projectsV2.nodes[]? | select(.title == $title) | .owner.id // empty')
+if [[ -z "$OWNER_ID" ]]; then
+  echo -e "${RED}Error: could not resolve owner id for project '$CURRENT_PROJECT_TITLE'${NC}" >&2
+  exit 1
+fi
+
 echo -e "${GREEN}Found current project: $CURRENT_PROJECT_TITLE${NC}"
 
-# --- Step 2: Idempotency — skip when the next project already exists ---
+# --- Step 2: Recovery — reuse the next project when it already exists ---
 
 NEXT_PROJECT_ID=$(echo "$PROJECTS_JSON" | jq -r --arg title "$NEXT_PROJECT_TITLE" \
   '.data.viewer.projectsV2.nodes[]? | select(.title == $title) | .id // empty')
 if [[ -n "$NEXT_PROJECT_ID" ]]; then
-  echo -e "${YELLOW}Project '$NEXT_PROJECT_TITLE' already exists — skipping rotation.${NC}"
-  exit 0
-fi
+  echo -e "${YELLOW}Project '$NEXT_PROJECT_TITLE' already exists — reusing it as the migration destination.${NC}"
+  NEW_PROJECT_ID="$NEXT_PROJECT_ID"
+  NEW_PROJECT_URL=$(echo "$PROJECTS_JSON" | jq -r --arg title "$NEXT_PROJECT_TITLE" \
+    '.data.viewer.projectsV2.nodes[]? | select(.title == $title) | .url // empty')
+else
+  # --- Step 3: Create the next project (copying fields and views) ---
+  # Draft issues are not copied (includeDraftIssues: false) — every non-Done
+  # item, drafts included, is moved explicitly in Step 6.
+  COPY_JSON=$(graphql_call "$(jq -n --arg query "$COPY_QUERY" \
+    --arg projectId "$OLD_PROJECT_ID" \
+    --arg title "$NEXT_PROJECT_TITLE" \
+    --arg ownerId "$OWNER_ID" \
+    '{query: $query, variables: {input: {projectId: $projectId, title: $title, ownerId: $ownerId, includeDraftIssues: false}}}')")
 
-# --- Step 3: Create the next project (copying fields and views) ---
-# Draft issues are not copied (includeDraftIssues: false) — every non-Done
-# item, drafts included, is moved explicitly in Step 6.
-COPY_JSON=$(graphql_call "$(jq -n --arg query "$COPY_QUERY" \
-  --arg projectId "$OLD_PROJECT_ID" \
-  --arg title "$NEXT_PROJECT_TITLE" \
-  '{query: $query, variables: {input: {projectId: $projectId, title: $title, includeDraftIssues: false}}}')")
-
-NEW_PROJECT_ID=$(echo "$COPY_JSON" | jq -r '.data.copyProjectV2.projectV2.id // empty')
-if [[ -z "$NEW_PROJECT_ID" ]]; then
-  echo -e "${RED}Error: copyProjectV2 did not return a project id${NC}" >&2
-  exit 1
+  NEW_PROJECT_ID=$(echo "$COPY_JSON" | jq -r '.data.copyProjectV2.projectV2.id // empty')
+  if [[ -z "$NEW_PROJECT_ID" ]]; then
+    echo -e "${RED}Error: copyProjectV2 did not return a project id${NC}" >&2
+    exit 1
+  fi
+  NEW_PROJECT_URL=$(echo "$COPY_JSON" | jq -r '.data.copyProjectV2.projectV2.url // empty')
+  echo -e "${GREEN}Created project: $NEXT_PROJECT_TITLE ($NEW_PROJECT_URL)${NC}"
 fi
-NEW_PROJECT_URL=$(echo "$COPY_JSON" | jq -r '.data.copyProjectV2.projectV2.url // empty')
-echo -e "${GREEN}Created project: $NEXT_PROJECT_TITLE ($NEW_PROJECT_URL)${NC}"
 
 # --- Step 4: Enumerate the old project's items with their field values ---
 
-ITEMS_JSON=$(graphql_call "$(jq -n --arg query "$ITEMS_QUERY" --arg id "$OLD_PROJECT_ID" \
-  '{query: $query, variables: {id: $id}}')")
+ITEMS_JSON=$(fetch_project_items "$OLD_PROJECT_ID")
 
-# Each row: <item id> <content id> <status> <priority> <size> (tab-separated)
+# Each row: <item id> <content id> <content type> <status> <priority> <size> (tab-separated)
 ITEM_ROWS=$(echo "$ITEMS_JSON" | jq -r '
   .data.node.items.nodes[]?
-  | [.id, .content.id,
+  | [.id, .content.id, .content.__typename,
      ([.fieldValues.nodes[]? | select(.field.name == "Status") | .name] | first // ""),
      ([.fieldValues.nodes[]? | select(.field.name == "Priority") | .name] | first // ""),
      ([.fieldValues.nodes[]? | select(.field.name == "Size") | .name] | first // "")]
@@ -240,15 +220,27 @@ MOVED=0
 # A herestring always ends in a newline, so an empty ITEM_ROWS would run the
 # loop once with empty fields — guard the loop instead.
 if [[ -n "$ITEM_ROWS" ]]; then
-  while IFS=$'\t' read -r ITEM_ID CONTENT_ID STATUS PRIORITY SIZE; do
+  while IFS=$'\t' read -r ITEM_ID CONTENT_ID CONTENT_TYPE STATUS PRIORITY SIZE; do
     if [[ "$STATUS" == "Done" ]]; then
       continue
     fi
 
-    NEW_ITEM_ID=$(add_board_item "$NEW_PROJECT_ID" "$CONTENT_ID")
-    if [[ -z "$NEW_ITEM_ID" ]]; then
-      echo -e "${RED}Error: addProjectV2ItemById did not return an item id${NC}" >&2
-      exit 1
+    if [[ "$CONTENT_TYPE" == "DraftIssue" ]]; then
+      DRAFT_TITLE=$(echo "$ITEMS_JSON" | jq -r --arg itemId "$ITEM_ID" \
+        '.data.node.items.nodes[]? | select(.id == $itemId) | .content.title // ""')
+      DRAFT_BODY=$(echo "$ITEMS_JSON" | jq -r --arg itemId "$ITEM_ID" \
+        '.data.node.items.nodes[]? | select(.id == $itemId) | .content.body // ""')
+      NEW_ITEM_ID=$(add_board_draft "$NEW_PROJECT_ID" "$DRAFT_TITLE" "$DRAFT_BODY")
+      if [[ -z "$NEW_ITEM_ID" ]]; then
+        echo -e "${RED}Error: addProjectV2DraftIssue did not return an item id${NC}" >&2
+        exit 1
+      fi
+    else
+      NEW_ITEM_ID=$(add_board_item "$NEW_PROJECT_ID" "$CONTENT_ID")
+      if [[ -z "$NEW_ITEM_ID" ]]; then
+        echo -e "${RED}Error: addProjectV2ItemById did not return an item id${NC}" >&2
+        exit 1
+      fi
     fi
 
     if [[ -n "$STATUS" ]]; then
@@ -261,10 +253,7 @@ if [[ -n "$ITEM_ROWS" ]]; then
       update_single_select_field "Size" "$SIZE" "$NEW_ITEM_ID"
     fi
 
-    graphql_call "$(jq -n --arg query "$DELETE_ITEM_QUERY" \
-      --arg projectId "$OLD_PROJECT_ID" \
-      --arg itemId "$ITEM_ID" \
-      '{query: $query, variables: {input: {projectId: $projectId, itemId: $itemId}}}')" > /dev/null
+    delete_board_item "$OLD_PROJECT_ID" "$ITEM_ID"
 
     if [[ -n "$STATUS" ]]; then
       echo "  Moved item (Status: $STATUS)"

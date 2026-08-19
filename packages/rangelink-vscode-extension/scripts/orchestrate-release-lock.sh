@@ -45,6 +45,7 @@ INSTRUCTIONS_FILE="$PACKAGE_DIR/qa/release-testing-instructions-v${VERSION}.md"
 # --- Working tree must be clean (except for the release instructions artifact) ---
 
 source "$SCRIPT_DIR/check-dirty-tree.sh"
+source "$SCRIPT_DIR/release-board-lib.sh"
 check_dirty_tree "$REPO_ROOT"
 
 # --- Create or re-enter release branch ---
@@ -167,10 +168,53 @@ if [[ -z "$DEVTO_ISSUE_URL" ]]; then
   exit 1
 fi
 
+# Best-effort retirement of a superseded issue's board item: marks it Done
+# when the board has a Done option, otherwise deletes it. Every failure warns
+# and returns early — never a non-zero exit.
+retire_superseded_board_item() {
+  # $1 = issue URL
+  local issue_url="$1"
+  local board_title="RangeLink v${VERSION} release"
+  local projects_json board_resolved board_id node_id item_id status_done
+  local done_field_id done_option_id
+
+  projects_json=$(list_release_projects)
+  if ! board_resolved=$(resolve_release_board "$board_title"); then
+    echo -e "${YELLOW}board '$board_title' not found — board cleanup skipped for $issue_url${NC}"
+    return
+  fi
+  board_id=$(echo "$board_resolved" | cut -f1)
+
+  node_id=$(gh issue view "$issue_url" --json id --jq .id 2>/dev/null || true)
+  if [[ -z "$node_id" || "$node_id" == "null" ]]; then
+    echo -e "${YELLOW}could not resolve node id for $issue_url — board cleanup skipped${NC}"
+    return
+  fi
+
+  item_id=$(find_board_item_id "$board_id" "$node_id")
+  if [[ -z "$item_id" ]]; then
+    echo -e "${YELLOW}$issue_url is not on the board — nothing to clean up${NC}"
+    return
+  fi
+
+  status_done=$(resolve_status_done "$projects_json" "$board_id")
+  done_field_id=$(echo "$status_done" | cut -f1)
+  done_option_id=$(echo "$status_done" | cut -f2)
+
+  if [[ -n "$done_field_id" && -n "$done_option_id" ]]; then
+    set_board_field_value "$board_id" "$item_id" "$done_field_id" "$done_option_id"
+    echo -e "${GREEN}Marked superseded board item Done for $issue_url.${NC}"
+  else
+    delete_board_item "$board_id" "$item_id"
+    echo -e "${GREEN}Removed superseded board item for $issue_url (board has no Done option).${NC}"
+  fi
+}
+
 # --- Step 5: Supersede prior issues and update instructions ---
 
 if [[ -n "$PRIOR_ISSUE_URL" ]]; then
   echo -e "${YELLOW}Prior QA issue found: $PRIOR_ISSUE_URL${NC}"
+  retire_superseded_board_item "$PRIOR_ISSUE_URL"
   gh issue comment "$PRIOR_ISSUE_URL" --body "Superseded by $QA_ISSUE_URL (release:lock re-run)."
   gh issue close "$PRIOR_ISSUE_URL"
   gh issue comment "$QA_ISSUE_URL" --body "Supersedes $PRIOR_ISSUE_URL."
@@ -179,6 +223,7 @@ fi
 
 if [[ -n "$PRIOR_DEVTO_ISSUE_URL" ]]; then
   echo -e "${YELLOW}Prior dev.to issue found: $PRIOR_DEVTO_ISSUE_URL${NC}"
+  retire_superseded_board_item "$PRIOR_DEVTO_ISSUE_URL"
   gh issue comment "$PRIOR_DEVTO_ISSUE_URL" --body "Superseded by $DEVTO_ISSUE_URL (release:lock re-run)."
   gh issue close "$PRIOR_DEVTO_ISSUE_URL"
   gh issue comment "$DEVTO_ISSUE_URL" --body "Supersedes $PRIOR_DEVTO_ISSUE_URL."

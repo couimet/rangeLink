@@ -6,7 +6,8 @@ set -euo pipefail
 # Adds an existing GitHub issue (any repository) to the release project board
 # for the version in package.json, with Status set to Ready where the board
 # has a Ready option. Used by the release-prep skill for the cross-repo
-# couimet.github.io article-registration issue.
+# couimet.github.io article-registration issue; prints the board URL for the
+# skill's final report.
 #
 # The release board is resolved by exact title match on the current user's
 # projectsV2; candidates are listed when no exact match exists. With
@@ -91,6 +92,7 @@ PROJECTS_RESPONSE=$(list_release_projects)
 BOARD_RESOLVED=$(resolve_release_board "$BOARD_TITLE")
 BOARD_ID=$(echo "$BOARD_RESOLVED" | cut -f1)
 BOARD_NUMBER=$(echo "$BOARD_RESOLVED" | cut -f2)
+BOARD_URL=$(echo "$BOARD_RESOLVED" | cut -f3)
 
 STATUS_READY=$(resolve_status_ready "$PROJECTS_RESPONSE" "$BOARD_ID")
 STATUS_FIELD_ID=$(echo "$STATUS_READY" | cut -f1)
@@ -127,3 +129,4 @@ fi
 echo ""
 echo -e "${GREEN}Done.${NC}"
 echo "Added: $ISSUE_URL to $BOARD_TITLE (project #$BOARD_NUMBER), status: $STATUS_VALUE"
+echo "Board URL: $BOARD_URL"

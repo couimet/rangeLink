@@ -28,7 +28,14 @@ done
 if [[ -z "$FILE" ]]; then
   exit 0
 fi
-if grep -q 'addProjectV2ItemById' "$FILE"; then
+if grep -q 'addProjectV2DraftIssue' "$FILE"; then
+  TITLE=$(jq -r '.variables.input.title' "$FILE")
+  BODY=$(jq -r '.variables.input.body' "$FILE")
+  COUNT=$(( $(grep -c '^add ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
+  NEW_ID="PVTI_NEW_${COUNT}"
+  echo "draft $TITLE $BODY" >> "$MOVE_LOG"
+  echo "{\"data\": {\"addProjectV2DraftIssue\": {\"projectV2Item\": {\"id\": \"$NEW_ID\"}}}}"
+elif grep -q 'addProjectV2ItemById' "$FILE"; then
   CONTENT_ID=$(jq -r '.variables.input.contentId' "$FILE")
   COUNT=$(( $(grep -c '^add ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
   NEW_ID="PVTI_NEW_${COUNT}"
@@ -46,11 +53,17 @@ elif grep -q 'deleteProjectV2Item' "$FILE"; then
   echo '{"data": {"deleteProjectV2Item": {"deletedItemId": "'"$ITEM_ID"'"}}}'
 elif grep -q 'copyProjectV2' "$FILE"; then
   TITLE=$(jq -r '.variables.input.title' "$FILE")
-  echo "copy $TITLE" >> "$MOVE_LOG"
+  OWNER_ID=$(jq -r '.variables.input.ownerId' "$FILE")
+  echo "copy $TITLE $OWNER_ID" >> "$MOVE_LOG"
   jq -n --arg title "$TITLE" \
     '{data: {copyProjectV2: {projectV2: {id: "PVT_NEW", title: $title, url: "https://github.com/users/couimet/projects/2"}}}}'
 elif grep -q 'items(first' "$FILE"; then
-  cat "$GH_ITEMS_RESPONSE"
+  CURSOR=$(jq -r '.variables.cursor // ""' "$FILE")
+  if [[ -n "$CURSOR" ]]; then
+    cat "$GH_ITEMS_RESPONSE_2"
+  else
+    cat "$GH_ITEMS_RESPONSE"
+  fi
 elif grep -q 'projectsV2' "$FILE"; then
   cat "$GH_PROJECTS_RESPONSE"
 elif grep -q 'SingleSelectField' "$FILE"; then
@@ -62,20 +75,20 @@ ENDOFSTUB
 
   cat > "$FIXTURE_ROOT/gh-projects.json" <<'EOF'
 {"data": {"viewer": {"projectsV2": {"nodes": [
-  {"id": "PVT_OLD", "title": "RangeLink v2.1.0 release", "url": "https://github.com/users/couimet/projects/1"}
+  {"id": "PVT_OLD", "title": "RangeLink v2.1.0 release", "url": "https://github.com/users/couimet/projects/1", "owner": {"id": "U_couimet"}}
 ]}}}}
 EOF
 
   cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
-{"data": {"node": {"items": {"nodes": [
-  {"id": "PVTI_1", "content": {"id": "I_1"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_2", "content": {"id": "I_2"}, "fieldValues": {"nodes": [
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
+  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}},
+  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "fieldValues": {"nodes": [
     {"name": "Blocked", "field": {"name": "Status"}},
     {"name": "High", "field": {"name": "Priority"}},
     {"name": "Large", "field": {"name": "Size"}}
   ]}},
-  {"id": "PVTI_3", "content": {"id": "I_3"}, "fieldValues": {"nodes": [{"name": "Done", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_4", "content": {"id": "I_4"}, "fieldValues": {"nodes": []}}
+  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "fieldValues": {"nodes": [{"name": "Done", "field": {"name": "Status"}}]}},
+  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}, "fieldValues": {"nodes": []}}
 ]}}}}
 EOF
 
@@ -91,6 +104,7 @@ EOF
   export MOVE_LOG="$FIXTURE_ROOT/move-ops.log"
   export GH_PROJECTS_RESPONSE="$FIXTURE_ROOT/gh-projects.json"
   export GH_ITEMS_RESPONSE="$FIXTURE_ROOT/gh-items.json"
+  export GH_ITEMS_RESPONSE_2="$FIXTURE_ROOT/gh-items-2.json"
   export GH_FIELDS_RESPONSE="$FIXTURE_ROOT/gh-fields.json"
   : > "$GH_CALL_LOG"
   : > "$MOVE_LOG"
@@ -110,7 +124,7 @@ EOF
   # fields → delete. The Done item (I_3) is untouched; the item without a
   # Status (I_4) is moved with no field restores.
   cat > "$FIXTURE_ROOT/expected-moves.log" <<'EOF'
-copy RangeLink v2.2.0 release
+copy RangeLink v2.2.0 release U_couimet
 add I_1 PVTI_NEW_1
 update PVTI_NEW_1 PVTF_s_new PVTO_ip
 delete PVTI_1
@@ -131,20 +145,81 @@ EOF
 
 # ── Idempotency ────────────────────────────────────────────────────────────────
 
-@test "skips when the next project already exists" {
+@test "reuses the existing next project as the migration destination" {
   setup_fixture
   cat > "$FIXTURE_ROOT/gh-projects.json" <<'EOF'
 {"data": {"viewer": {"projectsV2": {"nodes": [
-  {"id": "PVT_OLD", "title": "RangeLink v2.1.0 release", "url": "https://github.com/users/couimet/projects/1"},
-  {"id": "PVT_NEXT", "title": "RangeLink v2.2.0 release", "url": "https://github.com/users/couimet/projects/2"}
+  {"id": "PVT_OLD", "title": "RangeLink v2.1.0 release", "url": "https://github.com/users/couimet/projects/1", "owner": {"id": "U_couimet"}},
+  {"id": "PVT_NEXT", "title": "RangeLink v2.2.0 release", "url": "https://github.com/users/couimet/projects/2", "owner": {"id": "U_couimet"}}
 ]}}}}
 EOF
 
   run "$SCRIPT"
   [[ "$status" -eq 0 ]]
   [[ "$output" == *"already exists"* ]]
-  [[ "$output" == *"skipping rotation"* ]]
-  [[ ! -s "$MOVE_LOG" ]]
+  [[ "$output" == *"reusing it as the migration destination"* ]]
+  [[ "$output" == *"Moved 3 item(s)"* ]]
+  [[ "$output" == *"Next project: https://github.com/users/couimet/projects/2"* ]]
+  ! grep -q '^copy ' "$MOVE_LOG"
+  cat > "$FIXTURE_ROOT/expected-moves.log" <<'EOF'
+add I_1 PVTI_NEW_1
+update PVTI_NEW_1 PVTF_s_new PVTO_ip
+delete PVTI_1
+add I_2 PVTI_NEW_2
+update PVTI_NEW_2 PVTF_s_new PVTO_blocked
+update PVTI_NEW_2 PVTF_p_new PVTO_high
+update PVTI_NEW_2 PVTF_sz_new PVTO_large
+delete PVTI_2
+add I_4 PVTI_NEW_3
+delete PVTI_4
+EOF
+  diff -u "$FIXTURE_ROOT/expected-moves.log" "$MOVE_LOG"
+}
+
+@test "migrates items beyond the first page" {
+  setup_fixture
+  cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": true, "endCursor": "CUR1"}, "nodes": [
+  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}},
+  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "fieldValues": {"nodes": [
+    {"name": "Blocked", "field": {"name": "Status"}},
+    {"name": "High", "field": {"name": "Priority"}},
+    {"name": "Large", "field": {"name": "Size"}}
+  ]}},
+  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "fieldValues": {"nodes": [{"name": "Done", "field": {"name": "Status"}}]}},
+  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}, "fieldValues": {"nodes": []}}
+]}}}}
+EOF
+  cat > "$FIXTURE_ROOT/gh-items-2.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
+  {"id": "PVTI_5", "content": {"__typename": "Issue", "id": "I_5"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+]}}}}
+EOF
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+
+  grep -q '^add I_5 PVTI_NEW_4$' "$MOVE_LOG"
+  grep -q '^update PVTI_NEW_4 PVTF_s_new PVTO_ip$' "$MOVE_LOG"
+  grep -q '^delete PVTI_5$' "$MOVE_LOG"
+  [[ "$output" == *"Moved 4 item(s)"* ]]
+}
+
+@test "migrates DraftIssue items via addProjectV2DraftIssue" {
+  setup_fixture
+  cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
+  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+]}}}}
+EOF
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+
+  grep -q '^draft Draft title Draft body$' "$MOVE_LOG"
+  grep -q '^update PVTI_NEW_1 PVTF_s_new PVTO_ip$' "$MOVE_LOG"
+  grep -q '^delete PVTI_1$' "$MOVE_LOG"
+  [[ "$output" == *"Moved 1 item(s)"* ]]
 }
 
 # ── Error paths ────────────────────────────────────────────────────────────────
@@ -153,7 +228,7 @@ EOF
   setup_fixture
   cat > "$FIXTURE_ROOT/gh-projects.json" <<'EOF'
 {"data": {"viewer": {"projectsV2": {"nodes": [
-  {"id": "PVT_PREV", "title": "RangeLink v2.0.0 release", "url": "https://github.com/users/couimet/projects/1"}
+  {"id": "PVT_PREV", "title": "RangeLink v2.0.0 release", "url": "https://github.com/users/couimet/projects/1", "owner": {"id": "U_couimet"}}
 ]}}}}
 EOF
 
@@ -172,7 +247,7 @@ EOF
 
   run "$SCRIPT" "3.0.0"
   [[ "$status" -eq 0 ]]
-  head -1 "$MOVE_LOG" | grep -q '^copy RangeLink v3.0.0 release$'
+  head -1 "$MOVE_LOG" | grep -q '^copy RangeLink v3.0.0 release U_couimet$'
 }
 
 @test "invalid next version exits 1" {

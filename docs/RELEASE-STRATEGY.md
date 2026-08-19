@@ -153,7 +153,7 @@ Releasing a package involves these phases:
 5. **Publish** - Deploy to marketplace(s) and create GitHub release
 6. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
 7. **Verify** - Confirm publication and test installation
-8. **Next cycle** — `pnpm release:start:vscode-extension` to begin the next development cycle. Also rotates the release project board: creates the next "RangeLink vX.Y.0 release" project and moves non-Done items with status preserved
+8. **Next cycle** — `pnpm release:start:vscode-extension` to begin the next development cycle. Also rotates the release project board: creates the next "RangeLink vA.B.C release" project and moves non-Done items with status preserved
 
 ### Package-Specific Instructions
 
