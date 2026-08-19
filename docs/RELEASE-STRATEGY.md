@@ -146,14 +146,14 @@ Three verbs, three phases: **lock** (freeze the version for QA), **prepare** (ma
 
 Releasing a package involves these phases:
 
-1. **Lock** — `pnpm release:lock:vscode-extension X.Y.Z` — soft-lock the version for QA
+1. **Lock** — `pnpm release:lock:vscode-extension X.Y.Z` — soft-lock the version for QA and create the release tracking issues. The script ends with the exact `/release-prep` skill prompt to run for the cross-repo article-registration issue.
 2. **QA Pass** — manual + automated TCs against the versioned YAML
 3. **Prepare** — `pnpm release:prepare:vscode-extension` — date-stamp CHANGELOG, strip `<sup>Unreleased</sup>` markers, remove `[!IMPORTANT]` banner, generate publishing instructions
 4. **Build & Test** - Package and validate locally
 5. **Publish** - Deploy to marketplace(s) and create GitHub release
 6. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
 7. **Verify** - Confirm publication and test installation
-8. **Next cycle** — `pnpm release:start:vscode-extension` to begin the next development cycle
+8. **Next cycle** — `pnpm release:start:vscode-extension` to begin the next development cycle. Also rotates the release project board: creates the next "RangeLink vX.Y.0 release" project and moves non-Done items with status preserved
 
 ### Package-Specific Instructions
 

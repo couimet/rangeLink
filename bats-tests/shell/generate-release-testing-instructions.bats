@@ -64,11 +64,13 @@ EOF
   # Frontmatter present.
   head -1 "$out" | grep -q "^---$"
   grep -q "qa_issue_url:" "$out"
+  grep -q "devto_issue_url:" "$out"
   grep -q "generated:" "$out"
   # Scope line correct.
   grep -q "Changes from v1.0.0 → Unreleased" "$out"
-  # QA tracker placeholder and next steps section.
+  # QA tracker and Dev.to post placeholders, next steps section.
   grep -q "QA tracker:" "$out"
+  grep -q "Dev.to post:" "$out"
   grep -q "## Next steps" "$out"
 }
 

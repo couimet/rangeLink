@@ -7,12 +7,14 @@ set -euo pipefail
 #   1. Create a release/vX.Y.Z branch from main
 #   2. Run lock-version.sh (bump .version, regenerate instructions)
 #   3. Run generate-qa-issue.sh (create GitHub QA issue tracker)
-#   4. Inject the QA issue URL into the instructions file frontmatter
-#   5. Generate a commit message file
+#   4. Run generate-release-issues.sh (create the dev.to issue, add issues to the release board)
+#   5. Inject QA + dev.to issue URLs into the instructions file frontmatter
+#   6. Validate QA coverage
+#   7. Generate a commit message file
 #
 # Idempotent: safe to re-run after adding bug-fix TCs. On re-run,
-# detects the prior QA issue from the instructions frontmatter, closes it
-# with a "Superseded by #NEW" comment, and creates a fresh issue.
+# detects the prior QA and dev.to issues from the instructions frontmatter,
+# closes them with a "Superseded by #NEW" comment, and creates fresh issues.
 #
 # Tolerates uncommitted release-testing-instructions-vX.Y.Z.md so the
 # supersession logic can read its frontmatter on re-run. Any other dirty
@@ -63,9 +65,11 @@ if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; the
     case "$REPLY" in
       [dD])
         echo -e "${YELLOW}Deleting $RELEASE_BRANCH...${NC}"
-        # Snapshot the prior QA issue before the instructions file is destroyed.
+        # Snapshot the prior issues before the instructions file is destroyed.
         if [[ -f "$INSTRUCTIONS_FILE" ]]; then
           PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed "s/qa_issue_url: *['\"]*//;s/['\"]$//")
+          # || true: devto_issue_url may be absent (pre-dev.to-template instructions files).
+          PRIOR_DEVTO_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'devto_issue_url:' | sed "s/devto_issue_url: *['\"]*//;s/['\"]$//" || true)
         fi
         git -C "$REPO_ROOT" branch -D "$RELEASE_BRANCH"
         if [[ "$CURRENT_BRANCH" != "main" ]]; then
@@ -117,12 +121,16 @@ fi
 "$SCRIPT_DIR/lock-version.sh" "$VERSION"
 echo ""
 
-# --- Step 2: Detect prior QA issue (idempotency re-run) ---
+# --- Step 2: Detect prior issues (idempotency re-run) ---
 
 # Only discover from the current instructions file if the "d"elete path
 # didn't already snapshot it before destroying the old branch.
 if [[ -z "${PRIOR_ISSUE_URL:-}" ]] && [[ -f "$INSTRUCTIONS_FILE" ]]; then
   PRIOR_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'qa_issue_url:' | sed "s/qa_issue_url: *['\"]*//;s/['\"]$//")
+fi
+# || true: devto_issue_url may be absent (pre-dev.to-template instructions files).
+if [[ -z "${PRIOR_DEVTO_ISSUE_URL:-}" ]] && [[ -f "$INSTRUCTIONS_FILE" ]]; then
+  PRIOR_DEVTO_ISSUE_URL=$(sed -n '/^---$/,/^---$/p' "$INSTRUCTIONS_FILE" | grep 'devto_issue_url:' | sed "s/devto_issue_url: *['\"]*//;s/['\"]$//" || true)
 fi
 
 # --- Step 3: Generate QA issue ---
@@ -142,7 +150,24 @@ if [[ -z "$QA_ISSUE_URL" ]]; then
   exit 1
 fi
 
-# --- Step 4: Supersede prior issue and update instructions ---
+# --- Step 4: Generate dev.to issue ---
+
+echo -e "${GREEN}Step 4: Generating dev.to issue...${NC}"
+
+DEVTO_OUTPUT=$("$SCRIPT_DIR/generate-release-issues.sh" "$QA_ISSUE_URL") || {
+  echo -e "${RED}Error: generate-release-issues.sh failed${NC}" >&2
+  exit 1
+}
+echo "$DEVTO_OUTPUT"
+echo ""
+
+DEVTO_ISSUE_URL=$(echo "$DEVTO_OUTPUT" | grep '^Created' | grep -o 'https://github\.com/[^ ]*issues/[0-9]*' || true)
+if [[ -z "$DEVTO_ISSUE_URL" ]]; then
+  echo -e "${RED}Error: could not extract dev.to issue URL from generate-release-issues.sh output${NC}" >&2
+  exit 1
+fi
+
+# --- Step 5: Supersede prior issues and update instructions ---
 
 if [[ -n "$PRIOR_ISSUE_URL" ]]; then
   echo -e "${YELLOW}Prior QA issue found: $PRIOR_ISSUE_URL${NC}"
@@ -152,17 +177,27 @@ if [[ -n "$PRIOR_ISSUE_URL" ]]; then
   echo -e "${GREEN}Closed prior issue; new issue has backref.${NC}"
 fi
 
-# Inject the QA issue URL into the instructions file.
+if [[ -n "$PRIOR_DEVTO_ISSUE_URL" ]]; then
+  echo -e "${YELLOW}Prior dev.to issue found: $PRIOR_DEVTO_ISSUE_URL${NC}"
+  gh issue comment "$PRIOR_DEVTO_ISSUE_URL" --body "Superseded by $DEVTO_ISSUE_URL (release:lock re-run)."
+  gh issue close "$PRIOR_DEVTO_ISSUE_URL"
+  gh issue comment "$DEVTO_ISSUE_URL" --body "Supersedes $PRIOR_DEVTO_ISSUE_URL."
+  echo -e "${GREEN}Closed prior dev.to issue; new issue has backref.${NC}"
+fi
+
+# Inject the QA and dev.to issue URLs into the instructions file.
 sed -i.bak \
   -e "s|qa_issue_url: ['\"].*['\"]|qa_issue_url: '$QA_ISSUE_URL'|" \
   -e "s|\*\*QA tracker:\*\* .*|\*\*QA tracker:\*\* $QA_ISSUE_URL|" \
+  -e "s|devto_issue_url: ['\"].*['\"]|devto_issue_url: '$DEVTO_ISSUE_URL'|" \
+  -e "s|\*\*Dev.to post:\*\* .*|\*\*Dev.to post:\*\* $DEVTO_ISSUE_URL|" \
   "$INSTRUCTIONS_FILE" && rm -f "${INSTRUCTIONS_FILE}.bak"
 
-echo -e "${GREEN}QA issue URL injected into instructions file.${NC}"
+echo -e "${GREEN}QA and dev.to issue URLs injected into instructions file.${NC}"
 
-# --- Step 5: Validate QA coverage ---
+# --- Step 6: Validate QA coverage ---
 
-echo -e "${GREEN}Step 5: Validating QA coverage...${NC}"
+echo -e "${GREEN}Step 6: Validating QA coverage...${NC}"
 
 if "$SCRIPT_DIR/validate-qa-coverage.sh" > /dev/null 2>&1; then
   echo -e "${GREEN}QA coverage validation passed.${NC}"
@@ -171,7 +206,7 @@ else
   exit 1
 fi
 
-# --- Step 6: Generate commit message ---
+# --- Step 7: Generate commit message ---
 
 COMMIT_MSGS_DIR="$REPO_ROOT/.commit-msgs"
 mkdir -p "$COMMIT_MSGS_DIR"
@@ -188,6 +223,7 @@ Soft-lock the deferred "Unreleased" version for QA.
 - Bumped package.json .version → ${VERSION}
 - Regenerated release testing instructions
 - Generated QA issue tracker: ${QA_ISSUE_URL}
+- Generated dev.to issue: ${DEVTO_ISSUE_URL}
 
 EOF
 
@@ -224,12 +260,15 @@ All steps below run on the \`$RELEASE_BRANCH\` branch. When QA is clean, \`pnpm 
   \`\`\`
 ${PR_COMMENT_STEP}
 - [ ] Work through the checkboxes above — each row has the exact pnpm command
+- [ ] Dev.to issue: ${DEVTO_ISSUE_URL}
 - [ ] When all checkboxes pass: \`pnpm release:prepare:vscode-extension\`"
 
 # --- Summary ---
 
 echo ""
 echo -e "${GREEN}Release v${VERSION} locked on branch $RELEASE_BRANCH.${NC}"
+echo ""
+echo -e "${YELLOW}Cross-repo tracking: run /release-prep ${VERSION} in Claude Code to create the couimet.github.io article-registration issue and add it to the release board.${NC}"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"

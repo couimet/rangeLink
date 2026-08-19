@@ -82,6 +82,7 @@ if [[ ! -f "$INSTRUCTIONS_FILE" ]]; then
 ---
 version: PLACEHOLDER
 qa_issue_url: ''
+devto_issue_url: ''
 generated: 2026-01-01T00:00:00Z
 ---
 
@@ -89,6 +90,7 @@ generated: 2026-01-01T00:00:00Z
 
 **Scope:** Changes from v1.0.0 → vPLACEHOLDER
 **QA tracker:** <to be filled by release:lock>
+**Dev.to post:** <to be filled by release:lock>
 INSTEOF
 fi
 STUBEOF
@@ -100,6 +102,16 @@ STUBEOF
 echo "Created QA issue: https://github.com/couimet/rangeLink/issues/999"
 STUBEOF
   chmod +x "$FIXTURE_ROOT/scripts/generate-qa-issue.sh"
+
+  # Stub generate-release-issues.sh (logs its args so tests can assert the QA URL was passed).
+  cat > "$FIXTURE_ROOT/scripts/generate-release-issues.sh" <<'STUBEOF'
+#!/usr/bin/env bash
+echo "generate-release-issues.sh $*" >> "$GEN_ISSUES_CALL_LOG"
+echo "Created dev.to issue: https://github.com/couimet/rangeLink/issues/1000"
+STUBEOF
+  chmod +x "$FIXTURE_ROOT/scripts/generate-release-issues.sh"
+  export GEN_ISSUES_CALL_LOG="$FIXTURE_ROOT/generate-issues-calls.log"
+  : > "$GEN_ISSUES_CALL_LOG"
 
   # Stub validate-qa-coverage.sh (exits with QA_VALIDATE_EXIT).
   cat > "$FIXTURE_ROOT/scripts/validate-qa-coverage.sh" <<'STUBEOF'
@@ -124,7 +136,7 @@ STUBEOF
   [[ -f "$FIXTURE_ROOT/.commit-msgs/0001-lock-version-v1.0.0.txt" ]]
 }
 
-@test "first run: sed injects QA issue URL into instructions frontmatter" {
+@test "first run: sed injects QA and dev.to issue URLs into instructions frontmatter" {
   setup_fixture
   export GIT_BRANCH_EXISTS=1
 
@@ -135,6 +147,18 @@ STUBEOF
   [[ -f "$ins" ]]
   grep -q "qa_issue_url: 'https://github.com/couimet/rangeLink/issues/999'" "$ins"
   grep -q '\*\*QA tracker:\*\* https://github.com/couimet/rangeLink/issues/999' "$ins"
+  grep -q "devto_issue_url: 'https://github.com/couimet/rangeLink/issues/1000'" "$ins"
+  grep -q '\*\*Dev.to post:\*\* https://github.com/couimet/rangeLink/issues/1000' "$ins"
+}
+
+@test "first run: generate-release-issues.sh receives the QA issue URL" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  grep -q 'https://github.com/couimet/rangeLink/issues/999' "$GEN_ISSUES_CALL_LOG"
 }
 
 # ── Re-run (branch exists, already on it) ──────────────────────────────────────────
@@ -176,6 +200,44 @@ INSTEOF
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Prior QA issue found" ]]
   [[ "$output" =~ "Closed prior issue" ]]
+}
+
+@test "re-run: dev.to supersession closes prior dev.to issue" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="release/v1.0.0"
+
+  # Write instructions with a prior devto_issue_url to simulate first run.
+  local ins="$FIXTURE_ROOT/qa/release-testing-instructions-v1.0.0.md"
+  mkdir -p "$(dirname "$ins")"
+  cat > "$ins" <<'INSTEOF'
+---
+version: 1.0.0
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
+devto_issue_url: 'https://github.com/couimet/rangeLink/issues/777'
+generated: 2026-01-01T00:00:00Z
+---
+
+# Release Testing: Placeholder
+
+**Scope:** Changes from v1.0.0 → v1.0.0
+**QA tracker:** https://github.com/couimet/rangeLink/issues/888
+**Dev.to post:** https://github.com/couimet/rangeLink/issues/777
+INSTEOF
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Prior dev.to issue found" ]]
+  [[ "$output" =~ "Closed prior dev.to issue" ]]
+
+  # Prior issue closed with supersession comment, new issue gets the backref.
+  grep -q 'issue close https://github.com/couimet/rangeLink/issues/777' "$GH_CALL_LOG"
+  grep -q 'Superseded by https://github.com/couimet/rangeLink/issues/1000 (release:lock re-run).' "$GH_CALL_LOG"
+  grep -q 'Supersedes https://github.com/couimet/rangeLink/issues/777.' "$GH_CALL_LOG"
+
+  # Old URL replaced with new URL in the instructions file.
+  grep -q "devto_issue_url: 'https://github.com/couimet/rangeLink/issues/1000'" "$ins"
+  ! grep -q 'issues/777' "$ins"
 }
 
 @test "re-run: sed replaces existing qa_issue_url (not just empty placeholder)" {
@@ -386,6 +448,44 @@ INSTEOF
   [[ "$body" =~ "pnpm release:prepare:vscode-extension" ]]
 }
 
+@test "workflow comment includes dev.to issue row" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  # The workflow comment body contains the dev.to issue row linking the issue.
+  grep -q 'Dev.to issue: https://github.com/couimet/rangeLink/issues/1000' "$GH_CALL_LOG"
+}
+
+@test "commit message contains dev.to issue bullet" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+
+  local msg="$FIXTURE_ROOT/.commit-msgs/0001-lock-version-v1.0.0.txt"
+  grep -q "Generated dev.to issue: https://github.com/couimet/rangeLink/issues/1000" "$msg"
+}
+
+@test "fails when dev.to issue URL is missing from generate-release-issues.sh output" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  # Override the stub to produce output without an issue URL.
+  cat > "$FIXTURE_ROOT/scripts/generate-release-issues.sh" <<'STUBEOF'
+#!/usr/bin/env bash
+echo "Board: https://github.com/users/couimet/projects/42"
+STUBEOF
+  chmod +x "$FIXTURE_ROOT/scripts/generate-release-issues.sh"
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 1 ]]
+  [[ "$output" =~ "could not extract dev.to issue URL" ]]
+}
+
 @test "workflow comment shows existing PR when PR exists" {
   setup_fixture
   export GIT_BRANCH_EXISTS=1
@@ -421,6 +521,16 @@ INSTEOF
   [[ "$output" =~ "3. Push: git push" ]]
   [[ "$output" =~ "4. Create PR: gh pr create --title \"[release] Lock version v1.0.0\"" ]]
   ! [[ "$output" =~ "Push and create PR" ]]
+}
+
+@test "console summary instructs running the release-prep skill for cross-repo tracking" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=1
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "/release-prep 1.0.0" ]]
+  [[ "$output" =~ "couimet.github.io article-registration issue" ]]
 }
 
 @test "validate-qa-coverage passes: script continues" {
