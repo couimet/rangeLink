@@ -7,7 +7,7 @@
 [![Open VSX / Cursor Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX%20%2F%20Cursor&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension) [![Open VSX / Cursor Downloads](https://img.shields.io/open-vsx/dt/couimet/rangelink-vscode-extension?label=Open%20VSX%20%2F%20Cursor%20Downloads&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 [![VS Code Marketplace Version](https://vsmarketplacebadges.dev/version/couimet.rangelink-vscode-extension.svg)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) [![VS Code Marketplace Installs](https://vsmarketplacebadges.dev/downloads-short/couimet.rangelink-vscode-extension.svg)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/couimet/rangeLink?label=CodeRabbit+Reviews)
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/couimet/rangeLink?label=CodeRabbit+Reviews)](https://coderabbit.ai)
 
 **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."** <br />
 **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
