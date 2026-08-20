@@ -13,6 +13,7 @@ export * from './getUntitledDisplayName';
 export * from './interpolateArgs';
 export * from './isBinaryFile';
 export * from './isEligibleForPaste';
+export * from './isFileUri';
 export * from './isSameFileDestination';
 export * from './isSelectableQuickPickItem';
 export * from './isWritableScheme';

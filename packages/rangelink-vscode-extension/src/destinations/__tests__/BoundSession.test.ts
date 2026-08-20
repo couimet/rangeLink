@@ -14,6 +14,7 @@ describe('BoundSession', () => {
   let mockEvents: {
     onDidCloseTerminal: jest.Mock;
     onDidCloseTextDocument: jest.Mock;
+    onDidRenameFiles: jest.Mock;
     onDidChangeTabs: jest.Mock;
   };
   let mockEditors: { findVisibleEditorsByUri: jest.Mock };
@@ -35,6 +36,7 @@ describe('BoundSession', () => {
     mockEvents = {
       onDidCloseTerminal: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidCloseTextDocument: jest.fn().mockReturnValue({ dispose: jest.fn() }),
+      onDidRenameFiles: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidChangeTabs: jest.fn().mockReturnValue({ dispose: jest.fn() }),
     };
     mockEditors = { findVisibleEditorsByUri: jest.fn().mockReturnValue([]) };
@@ -56,6 +58,7 @@ describe('BoundSession', () => {
 
       expect(mockEvents.onDidCloseTerminal).toHaveBeenCalledTimes(1);
       expect(mockEvents.onDidCloseTextDocument).toHaveBeenCalledTimes(1);
+      expect(mockEvents.onDidRenameFiles).toHaveBeenCalledTimes(1);
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(0);
     });
   });
@@ -391,14 +394,17 @@ describe('BoundSession', () => {
     it('disposes session-lifetime listener subscriptions', () => {
       const terminalDispose = jest.fn();
       const documentDispose = jest.fn();
+      const renameDispose = jest.fn();
       mockEvents.onDidCloseTerminal.mockReturnValue({ dispose: terminalDispose });
       mockEvents.onDidCloseTextDocument.mockReturnValue({ dispose: documentDispose });
+      mockEvents.onDidRenameFiles.mockReturnValue({ dispose: renameDispose });
 
       const session = createSession();
       session.dispose();
 
       expect(terminalDispose).toHaveBeenCalledTimes(1);
       expect(documentDispose).toHaveBeenCalledTimes(1);
+      expect(renameDispose).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -422,7 +428,7 @@ describe('BoundSession', () => {
         { fn: 'BoundSession.setupTerminalCloseListener', terminalName: 'bash' },
         'Bound terminal closed: bash - auto-unbinding',
       );
-      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Terminal ("bash")', 'terminal-closed');
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Terminal ("bash")', { reason: 'terminal-closed' });
     });
 
     it('does not unbind when a different terminal closes', () => {
@@ -509,7 +515,7 @@ describe('BoundSession', () => {
         },
         'Bound document closed (isClosed=true): Text Editor ("test.ts") — auto-unbinding',
       );
-      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'editor-closed');
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'editor-closed' });
     });
 
     it('falls back to Unknown in log when editor displayName is empty', () => {
@@ -582,6 +588,129 @@ describe('BoundSession', () => {
 
       expect(session.isSet()).toBe(true);
       expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── File rename auto-unbind ───────────────────────────────────────
+
+  describe('file rename lifecycle', () => {
+    it('unbinds when a rename matches the bound oldUri', () => {
+      const oldUri = createMockUri('/test.ts');
+      const newUri = createMockUri('/renamed.ts');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: oldUri,
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri, newUri }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupFileRenameListener',
+          displayName: 'Text Editor ("test.ts")',
+          oldUri: 'file:///test.ts',
+          newUri: 'file:///renamed.ts',
+        },
+        'Bound file renamed: Text Editor ("test.ts") — auto-unbinding',
+      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'file-renamed', oldUri, newUri });
+    });
+
+    it('does not unbind when the event only matches the newUri', () => {
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("renamed.ts")',
+        uri: createMockUri('/renamed.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri: createMockUri('/test.ts'), newUri: createMockUri('/renamed.ts') }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(true);
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('does not unbind when the oldUri differs from the bound uri', () => {
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: createMockUri('/test.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri: createMockUri('/other.ts'), newUri: createMockUri('/other2.ts') }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(true);
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('does not unbind when bound destination is not an editor', () => {
+      const dest = createMockSingletonComposablePasteDestination({
+        id: 'cursor-ai',
+        displayName: 'Cursor AI',
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri: createMockUri('/test.ts'), newUri: createMockUri('/renamed.ts') }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(true);
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('does not unbind when nothing is bound', () => {
+      createSession();
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri: createMockUri('/test.ts'), newUri: createMockUri('/renamed.ts') }] } as vscode.FileRenameEvent);
+
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('unbinds with the matching pair when only one pair matches in a multi-file event', () => {
+      const oldUri = createMockUri('/test.ts');
+      const newUri = createMockUri('/renamed.ts');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: oldUri,
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({
+        files: [
+          { oldUri: createMockUri('/a.ts'), newUri: createMockUri('/a2.ts') },
+          { oldUri, newUri },
+        ],
+      } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupFileRenameListener',
+          displayName: 'Text Editor ("test.ts")',
+          oldUri: 'file:///test.ts',
+          newUri: 'file:///renamed.ts',
+        },
+        'Bound file renamed: Text Editor ("test.ts") — auto-unbinding',
+      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'file-renamed', oldUri, newUri });
     });
   });
 });

@@ -2046,6 +2046,28 @@ test_cases:
     automated: true
 
   # ---------------------------------------------------------------------------
+  # Section — Text Editor Lifecycle: Auto-Unbind on File Rename
+  # ---------------------------------------------------------------------------
+
+  - id: file-rename-auto-unbind-001
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a bound file in the Explorer triggers auto-unbind with status bar message and warning toast showing old and new paths'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file renamed". A warning toast appears: "Unbound from Text Editor (<file>) — file renamed: <oldPath> → <newPath>" with workspace-relative paths. The rangelink.isBound context key is false.'
+    automated: true
+
+  - id: file-rename-auto-unbind-002
+    feature: 'text-editor-destination'
+    scenario: 'Renaming an unrelated file does not unbind the bound text editor destination'
+    expected_result: 'No status bar message and no warning toast appear. The rangelink.isBound context key remains true.'
+    automated: true
+
+  - id: file-rename-auto-unbind-003
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a bound file outside VS Code (external disk rename) triggers auto-unbind via the file-deleted fallback'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file deleted". A warning toast appears: "Unbound from Text Editor (<file>) — file was deleted from disk". No file-renamed message appears. The rangelink.isBound context key is false.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
   # Section — Navigation Clamping Feedback (#47)
   # ---------------------------------------------------------------------------
 

@@ -56,6 +56,33 @@ export const createFileAt = (filename: string, content: string): vscode.Uri => {
   return uri;
 };
 
+/**
+ * Rename a workspace file via vscode.workspace.applyEdit — the only rename path
+ * that fires onDidRenameFiles (workspace.fs.rename does not). Registers the new
+ * URI for cleanup since cleanupTrackedFiles only knows registered URIs.
+ */
+export const renameWorkspaceFile = async (oldUri: vscode.Uri, newBasename: string): Promise<vscode.Uri> => {
+  const newUri = vscode.Uri.file(path.join(path.dirname(oldUri.fsPath), newBasename));
+  const edit = new vscode.WorkspaceEdit();
+  edit.renameFile(oldUri, newUri);
+  await vscode.workspace.applyEdit(edit);
+  registerFileForCleanup(newUri);
+  return newUri;
+};
+
+/**
+ * Rename a workspace file directly on disk (fs.renameSync). External renames
+ * never fire onDidRenameFiles — the binding auto-unbinds via the file-delete
+ * watcher fallback instead. Registers the new URI for cleanup since
+ * cleanupTrackedFiles only knows registered URIs.
+ */
+export const renameWorkspaceFileOnDisk = (oldUri: vscode.Uri, newBasename: string): vscode.Uri => {
+  const newUri = vscode.Uri.file(path.join(path.dirname(oldUri.fsPath), newBasename));
+  fs.renameSync(oldUri.fsPath, newUri.fsPath);
+  registerFileForCleanup(newUri);
+  return newUri;
+};
+
 const PNG_MAGIC_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 export type PngFixtureMode = 'real-image' | 'magic-only';

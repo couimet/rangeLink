@@ -745,6 +745,16 @@ export class VscodeAdapter
   }
 
   /**
+   * Register event listener for file renames.
+   *
+   * @param listener - Callback invoked when files are renamed
+   * @returns Disposable to unregister the listener
+   */
+  onDidRenameFiles(listener: (event: vscode.FileRenameEvent) => void): vscode.Disposable {
+    return this.ideInstance.workspace.onDidRenameFiles(listener);
+  }
+
+  /**
    * Register event listener for configuration changes.
    *
    * @param listener - Callback invoked when any configuration changes
