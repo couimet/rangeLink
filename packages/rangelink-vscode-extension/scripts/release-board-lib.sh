@@ -14,7 +14,10 @@ graphql_call() {
   local tmp
   tmp="$(mktemp)"
   echo "$1" > "$tmp"
-  gh api graphql --input "$tmp"
+  if ! gh api graphql --input "$tmp"; then
+    rm -f "$tmp"
+    return 1
+  fi
   rm -f "$tmp"
 }
 

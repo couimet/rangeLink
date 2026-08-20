@@ -216,6 +216,8 @@ update_single_select_field() {
 
 # --- Step 6: Move every non-Done item ---
 
+SOURCE_ITEM_MARKER="rangelink-source-item"
+DEST_ITEMS_JSON=""
 MOVED=0
 # A herestring always ends in a newline, so an empty ITEM_ROWS would run the
 # loop once with empty fields — guard the loop instead.
@@ -230,7 +232,19 @@ if [[ -n "$ITEM_ROWS" ]]; then
         '.data.node.items.nodes[]? | select(.id == $itemId) | .content.title // ""')
       DRAFT_BODY=$(echo "$ITEMS_JSON" | jq -r --arg itemId "$ITEM_ID" \
         '.data.node.items.nodes[]? | select(.id == $itemId) | .content.body // ""')
-      NEW_ITEM_ID=$(add_board_draft "$NEW_PROJECT_ID" "$DRAFT_TITLE" "$DRAFT_BODY")
+      # A draft body is the only payload we fully control, so the source item id
+      # is stashed in an HTML comment marker to make a rerun after a partial
+      # migration reuse the already-created destination draft instead of
+      # duplicating it.
+      MARKER="<!-- ${SOURCE_ITEM_MARKER}: ${ITEM_ID} -->"
+      if [[ -z "$DEST_ITEMS_JSON" ]]; then
+        DEST_ITEMS_JSON=$(fetch_project_items "$NEW_PROJECT_ID")
+      fi
+      NEW_ITEM_ID=$(echo "$DEST_ITEMS_JSON" | jq -r --arg marker "$MARKER" \
+        '.data.node.items.nodes[]? | select(.content.__typename == "DraftIssue") | select(.content.body | contains($marker)) | .id' | head -1)
+      if [[ -z "$NEW_ITEM_ID" ]]; then
+        NEW_ITEM_ID=$(add_board_draft "$NEW_PROJECT_ID" "$DRAFT_TITLE" "$DRAFT_BODY"$'\n'"$MARKER")
+      fi
       if [[ -z "$NEW_ITEM_ID" ]]; then
         echo -e "${RED}Error: addProjectV2DraftIssue did not return an item id${NC}" >&2
         exit 1

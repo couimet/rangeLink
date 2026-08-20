@@ -202,10 +202,16 @@ retire_superseded_board_item() {
   done_option_id=$(echo "$status_done" | cut -f2)
 
   if [[ -n "$done_field_id" && -n "$done_option_id" ]]; then
-    set_board_field_value "$board_id" "$item_id" "$done_field_id" "$done_option_id"
+    if ! set_board_field_value "$board_id" "$item_id" "$done_field_id" "$done_option_id"; then
+      echo -e "${YELLOW}could not mark superseded board item Done for $issue_url — cleanup skipped${NC}"
+      return
+    fi
     echo -e "${GREEN}Marked superseded board item Done for $issue_url.${NC}"
   else
-    delete_board_item "$board_id" "$item_id"
+    if ! delete_board_item "$board_id" "$item_id"; then
+      echo -e "${YELLOW}could not remove superseded board item for $issue_url — cleanup skipped${NC}"
+      return
+    fi
     echo -e "${GREEN}Removed superseded board item for $issue_url (board has no Done option).${NC}"
   fi
 }

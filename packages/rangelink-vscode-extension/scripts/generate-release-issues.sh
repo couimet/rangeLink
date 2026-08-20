@@ -122,7 +122,7 @@ echo ""
 # --- Create the dev.to issue ---
 
 echo -e "${GREEN}Creating dev.to post issue...${NC}"
-DEVTO_URL=$(gh issue create --title "$DEVTO_TITLE" --body "$DEVTO_BODY")
+DEVTO_URL=$(gh issue create --title "$DEVTO_TITLE" --body "$DEVTO_BODY" --repo "$REPO_OWNER/$REPO_NAME")
 echo "Created: $DEVTO_URL"
 echo ""
 

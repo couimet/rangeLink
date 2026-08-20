@@ -58,6 +58,7 @@ case "${1:-}" in
   issue)
     if [[ "${2:-}" == "create" ]]; then
       echo "issue create title=$4" >> "$GH_CALL_LOG"
+      echo "issue create repo=${8:-}" >> "$GH_CALL_LOG"
       echo "$6" > "$ISSUE_BODY_LOG"
       echo "$ISSUE_CREATE_URL"
       exit 0
@@ -117,8 +118,9 @@ EOF
   # The board listing query.
   grep -q 'projectsV2' "$GH_CALL_LOG"
 
-  # Issue create: title and body.
+  # Issue create: title, body, and pinned repo (must match the GraphQL lookup repo).
   grep -Fq 'issue create title=Prepare dev.to post for v9.9.9 release' "$GH_CALL_LOG"
+  grep -Fq 'issue create repo=couimet/rangeLink' "$GH_CALL_LOG"
   grep -Fq 'Draft article written (after feature freeze)' "$ISSUE_BODY_LOG"
 
   # GraphQL node id resolution for both issues.

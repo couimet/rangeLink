@@ -31,13 +31,13 @@ fi
 if grep -q 'addProjectV2DraftIssue' "$FILE"; then
   TITLE=$(jq -r '.variables.input.title' "$FILE")
   BODY=$(jq -r '.variables.input.body' "$FILE")
-  COUNT=$(( $(grep -c '^add ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
+  COUNT=$(( $(grep -Ec '^(add|draft) ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
   NEW_ID="PVTI_NEW_${COUNT}"
   echo "draft $TITLE $BODY" >> "$MOVE_LOG"
   echo "{\"data\": {\"addProjectV2DraftIssue\": {\"projectV2Item\": {\"id\": \"$NEW_ID\"}}}}"
 elif grep -q 'addProjectV2ItemById' "$FILE"; then
   CONTENT_ID=$(jq -r '.variables.input.contentId' "$FILE")
-  COUNT=$(( $(grep -c '^add ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
+  COUNT=$(( $(grep -Ec '^(add|draft) ' "$MOVE_LOG" 2>/dev/null || true) + 1 ))
   NEW_ID="PVTI_NEW_${COUNT}"
   echo "add $CONTENT_ID $NEW_ID" >> "$MOVE_LOG"
   echo "{\"data\": {\"addProjectV2ItemById\": {\"item\": {\"id\": \"$NEW_ID\"}}}}"
@@ -61,6 +61,8 @@ elif grep -q 'items(first' "$FILE"; then
   CURSOR=$(jq -r '.variables.cursor // ""' "$FILE")
   if [[ -n "$CURSOR" ]]; then
     cat "$GH_ITEMS_RESPONSE_2"
+  elif [[ "$(jq -r '.variables.id // ""' "$FILE")" == "PVT_NEW" ]]; then
+    cat "$GH_ITEMS_RESPONSE_NEW"
   else
     cat "$GH_ITEMS_RESPONSE"
   fi
@@ -92,6 +94,12 @@ EOF
 ]}}}}
 EOF
 
+  # A fresh copied project has no items (copyProjectV2 excludes draft issues);
+  # tests override this fixture when they need a populated destination.
+  cat > "$FIXTURE_ROOT/gh-items-new.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}
+EOF
+
   cat > "$FIXTURE_ROOT/gh-fields.json" <<'EOF'
 {"data": {"node": {"fields": {"nodes": [
   {"id": "PVTF_s_new", "name": "Status", "options": [{"id": "PVTO_done", "name": "Done"}, {"id": "PVTO_ip", "name": "In Progress"}, {"id": "PVTO_blocked", "name": "Blocked"}]},
@@ -105,6 +113,7 @@ EOF
   export GH_PROJECTS_RESPONSE="$FIXTURE_ROOT/gh-projects.json"
   export GH_ITEMS_RESPONSE="$FIXTURE_ROOT/gh-items.json"
   export GH_ITEMS_RESPONSE_2="$FIXTURE_ROOT/gh-items-2.json"
+  export GH_ITEMS_RESPONSE_NEW="$FIXTURE_ROOT/gh-items-new.json"
   export GH_FIELDS_RESPONSE="$FIXTURE_ROOT/gh-fields.json"
   : > "$GH_CALL_LOG"
   : > "$MOVE_LOG"
@@ -218,6 +227,28 @@ EOF
 
   grep -q '^draft Draft title Draft body$' "$MOVE_LOG"
   grep -q '^update PVTI_NEW_1 PVTF_s_new PVTO_ip$' "$MOVE_LOG"
+  grep -q '^delete PVTI_1$' "$MOVE_LOG"
+  [[ "$output" == *"Moved 1 item(s)"* ]]
+}
+
+@test "reuses a destination draft already carrying the source item marker on rerun" {
+  setup_fixture
+  cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
+  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+]}}}}
+EOF
+  cat > "$FIXTURE_ROOT/gh-items-new.json" <<'EOF'
+{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
+  {"id": "PVTI_NEW_D", "content": {"__typename": "DraftIssue", "id": "D_NEW", "title": "Draft title", "body": "Draft body\n<!-- rangelink-source-item: PVTI_1 -->"}, "fieldValues": {"nodes": []}}
+]}}}}
+EOF
+
+  run "$SCRIPT"
+  [[ "$status" -eq 0 ]]
+
+  ! grep -q '^draft ' "$MOVE_LOG"
+  grep -q '^update PVTI_NEW_D PVTF_s_new PVTO_ip$' "$MOVE_LOG"
   grep -q '^delete PVTI_1$' "$MOVE_LOG"
   [[ "$output" == *"Moved 1 item(s)"* ]]
 }
