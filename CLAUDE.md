@@ -363,11 +363,12 @@
   <rationale>Logger is a cross-cutting concern, not a domain parameter. Placing it last keeps the primary parameters grouped together and makes the signature easier to read.</rationale>
 </rule>
 
-<rule id="CI001" priority="critical">
-  <title>couimet/github-actions actions always use @main, never a commit SHA</title>
-  <do>Reference all `couimet/github-actions/*` actions with `@main`: `uses: couimet/github-actions/typescript-ci@main`</do>
-  <never>Pin to a commit SHA for `couimet/github-actions` actions</never>
-  <rationale>`@main` is the rolling release channel for our own actions. We control the repo, so breaking changes are intentional and versioned. SHAs add pin-update churn with no benefit for first-party actions.</rationale>
+<!-- rule-id: couimet-actions-main -->
+<rule id="couimet-actions-main" priority="critical">
+  <title>couimet/* GitHub Actions always use @main</title>
+  <never>Pin a `couimet/*` GitHub Action to a commit SHA in CI workflows</never>
+  <do>Always reference `couimet/*` actions with `@main` to get the latest version</do>
+  <rationale>The author wants these actions to auto-update across all repos</rationale>
 </rule>
 
 </critical-rules>
