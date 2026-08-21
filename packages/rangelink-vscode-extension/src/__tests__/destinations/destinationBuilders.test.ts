@@ -24,6 +24,7 @@ import {
   spyOnIsGitHubCopilotChatAvailable,
 } from '../helpers';
 
+import { getUniqueInt } from '@couimet/dynamic-testing';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import type * as vscode from 'vscode';
 
@@ -185,6 +186,20 @@ describe('destinationBuilders', () => {
 
       expect(await destination.equals(otherDestination)).toBe(false);
       expect(await destination.equals(destination)).toBe(true);
+    });
+
+    it('delegates editorHasActiveSelection to the IDE adapter with uri and viewColumn', () => {
+      const mockUri = createMockUri('/workspace/src/auth.ts');
+      const viewColumn = getUniqueInt();
+      const context = createMockContext();
+      context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
+      const editorHasActiveSelectionSpy = jest.spyOn(context.ideAdapter, 'editorHasActiveSelection').mockReturnValue(true);
+
+      const destination = buildTextEditorDestination({ kind: 'text-editor', uri: mockUri, viewColumn }, context);
+
+      // editorHasActiveSelection is optional on PasteDestination but always provided by this builder
+      expect(destination.editorHasActiveSelection!()).toBe(true);
+      expect(editorHasActiveSelectionSpy).toHaveBeenCalledWith(mockUri, viewColumn);
     });
 
     it('throws RangeLinkExtensionError when called with wrong kind', () => {

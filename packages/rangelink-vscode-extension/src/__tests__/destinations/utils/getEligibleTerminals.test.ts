@@ -132,6 +132,24 @@ describe('getEligibleTerminals', () => {
 
       expect(result[0].processId).toBeUndefined();
     });
+
+    it('resolves processId as undefined when terminal.processId rejects', async () => {
+      const terminal = createMockTerminal({
+        name: 'zsh',
+        exitStatus: undefined,
+        processId: Promise.reject(new Error('pid unavailable')),
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [terminal],
+          activeTerminal: terminal,
+        },
+      });
+
+      const result = await getEligibleTerminals(ideAdapter);
+
+      expect(result[0].processId).toBeUndefined();
+    });
   });
 
   describe('filtering terminated terminals', () => {

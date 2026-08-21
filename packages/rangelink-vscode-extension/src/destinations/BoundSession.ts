@@ -2,7 +2,7 @@ import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
 import { AutoPasteResult, BoundDestinationInfo } from '../types';
-import { isEditorDestination, isTerminalDestination } from '../utils';
+import { isEditorDestination, isTerminalDestination, isUriWithinDir } from '../utils';
 
 import { createFileDeleteWatcher } from './createFileDeleteWatcher';
 import { createMultiColumnGuard } from './createMultiColumnGuard';
@@ -19,6 +19,7 @@ import * as vscode from 'vscode';
  * lifecycle listeners that protect the bound destination:
  * - Terminal close auto-unbind (session-lifetime)
  * - Document close auto-unbind (session-lifetime; + language-mode detection)
+ * - File rename auto-unbind (session-lifetime)
  * - Tab close auto-unbind (per-binding)
  * - Multi-column duplicate-tab guard (per-binding)
  *
@@ -42,6 +43,7 @@ export class BoundSession implements vscode.Disposable {
   ) {
     this.setupTerminalCloseListener();
     this.setupDocumentCloseListener();
+    this.setupFileRenameListener();
   }
 
   get(): PasteDestination | undefined {
@@ -77,6 +79,10 @@ export class BoundSession implements vscode.Disposable {
           feedback: this.feedback,
           displayName: destination.displayName,
           clearBinding: () => this.clear(),
+          getBoundUri: () => {
+            const current = this.bound;
+            return isEditorDestination(current) ? current.resource.uri : undefined;
+          },
           logger: this.logger,
         }),
       );
@@ -143,7 +149,7 @@ export class BoundSession implements vscode.Disposable {
         const terminalName = closedTerminal.name || 'Unnamed Terminal'; // log-only, no i18n needed
         this.logger.info({ fn: 'BoundSession.setupTerminalCloseListener', terminalName }, `Bound terminal closed: ${terminalName} - auto-unbinding`);
         this.clear();
-        this.feedback.notifyAutoUnbind(destinationName, 'terminal-closed');
+        this.feedback.notifyAutoUnbind(destinationName, { reason: 'terminal-closed' });
       }
     });
 
@@ -189,7 +195,38 @@ export class BoundSession implements vscode.Disposable {
       this.logger.info(logCtx, `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`);
       const destinationName = this.bound.displayName;
       this.clear();
-      this.feedback.notifyAutoUnbind(destinationName, 'editor-closed');
+      this.feedback.notifyAutoUnbind(destinationName, { reason: 'editor-closed' });
+    });
+
+    this.disposables.push(disposable);
+  }
+
+  private setupFileRenameListener(): void {
+    const disposable = this.events.onDidRenameFiles((event) => {
+      if (!isEditorDestination(this.bound)) {
+        return;
+      }
+
+      for (const file of event.files) {
+        if (!isUriWithinDir(this.bound.resource.uri, file.oldUri)) {
+          continue;
+        }
+
+        this.logger.info(
+          {
+            fn: 'BoundSession.setupFileRenameListener',
+            displayName: this.bound.displayName,
+            oldUri: file.oldUri.toString(),
+            newUri: file.newUri.toString(),
+          },
+          `Bound file renamed: ${this.bound.displayName} — auto-unbinding`,
+        );
+
+        const destinationName = this.bound.displayName;
+        this.clear();
+        this.feedback.notifyAutoUnbind(destinationName, { reason: 'file-renamed', oldUri: file.oldUri, newUri: file.newUri });
+        return;
+      }
     });
 
     this.disposables.push(disposable);

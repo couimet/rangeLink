@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Auto-unbind when a bound file is renamed**, matching the file-deleted behavior. Renaming a bound file in the Explorer now auto-unbinds with a status bar message and warning toast showing the before/after paths. (#613)
+
 ### Changed
 
 - **Single status bar message when binding and sending in one step via the destination picker**, instead of two back-to-back messages. The merged message reads "Bound to &lt;destination&gt; — &lt;link&gt; sent". (#621)

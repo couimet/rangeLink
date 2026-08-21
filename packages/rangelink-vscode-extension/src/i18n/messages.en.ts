@@ -149,6 +149,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: 'Unbound from {destinationName}',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED]: 'Unbound from {destinationName} — editor closed',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED]: 'Unbound from {destinationName} — file deleted',
+  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_RENAMED]: 'Unbound from {destinationName} — file renamed',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED]: 'Unbound from {destinationName} — terminal closed',
   [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
   [MessageCode.STATUS_BAR_ITEM_TOOLTIP_BOUND]: 'RangeLink — {destinationName}',
@@ -189,6 +190,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_CLIPBOARD_PRESERVATION_FAILED]: 'Clipboard preservation failed. Content was not sent.',
 
   [MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED]: 'Unbound from {destinationName} — file was deleted from disk',
+  [MessageCode.WARN_DESTINATION_UNBOUND_FILE_RENAMED]: 'Unbound from {destinationName} — file renamed: {oldPath} → {newPath}',
 
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER]: 'File has unsaved changes. The AI tool may read stale content from disk.',
   [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_CONTINUE]: 'Send Anyway',

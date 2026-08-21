@@ -9,6 +9,7 @@ describe('createFileDeleteWatcher', () => {
   let mockFeedback: ReturnType<typeof createMockOperationFeedbackProvider>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let clearBinding: jest.Mock;
+  let getBoundUri: jest.Mock;
   let testUri: vscode.Uri;
   let mockWatcher: { onDidDelete: jest.Mock; dispose: jest.Mock };
 
@@ -19,6 +20,7 @@ describe('createFileDeleteWatcher', () => {
       feedback: mockFeedback,
       displayName: 'Text Editor ("test.ts")',
       clearBinding,
+      getBoundUri: () => getBoundUri(),
       logger: mockLogger,
     });
 
@@ -33,6 +35,7 @@ describe('createFileDeleteWatcher', () => {
     mockFeedback = createMockOperationFeedbackProvider();
     mockLogger = createMockLogger();
     clearBinding = jest.fn();
+    getBoundUri = jest.fn().mockReturnValue(testUri);
     testUri = createMockUri('/test.ts');
   });
 
@@ -59,7 +62,7 @@ describe('createFileDeleteWatcher', () => {
       'Bound file deleted from disk: Text Editor ("test.ts") — auto-unbinding',
     );
     expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'file-deleted');
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'file-deleted', oldUri: testUri });
   });
 
   it('does nothing when a different file is deleted', () => {
@@ -72,15 +75,16 @@ describe('createFileDeleteWatcher', () => {
     expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
   });
 
-  it('does nothing when nothing is bound (clearBinding is a no-op at construction)', () => {
-    clearBinding.mockImplementation(() => {});
+  it('does nothing when the binding was already cleared (getBoundUri returns undefined)', () => {
+    getBoundUri.mockReturnValue(undefined);
     const guard = createGuard();
 
     const handler = mockWatcher.onDidDelete.mock.calls[0][0];
     handler(testUri);
 
-    expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'file-deleted');
+    expect(clearBinding).not.toHaveBeenCalled();
+    expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+    expect(mockLogger.info).not.toHaveBeenCalled();
 
     guard.dispose();
   });
