@@ -2,7 +2,7 @@ import type { LifecycleFeedbackProvider } from '../feedback';
 import type { EventSubscriptionProvider, VisibleEditorProvider } from '../ide';
 import type { FileSystemWatcherFactory } from '../ide/FileSystemWatcherFactory';
 import { AutoPasteResult, BoundDestinationInfo } from '../types';
-import { isEditorDestination, isTerminalDestination } from '../utils';
+import { isEditorDestination, isTerminalDestination, isUriWithinDir } from '../utils';
 
 import { createFileDeleteWatcher } from './createFileDeleteWatcher';
 import { createMultiColumnGuard } from './createMultiColumnGuard';
@@ -207,10 +207,8 @@ export class BoundSession implements vscode.Disposable {
         return;
       }
 
-      const boundUriString = this.bound.resource.uri.toString();
-
       for (const file of event.files) {
-        if (file.oldUri.toString() !== boundUriString) {
+        if (!isUriWithinDir(this.bound.resource.uri, file.oldUri)) {
           continue;
         }
 

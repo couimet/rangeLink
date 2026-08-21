@@ -2067,6 +2067,18 @@ test_cases:
     expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file deleted". A warning toast appears: "Unbound from Text Editor (<file>) — file was deleted from disk". No file-renamed message appears. The rangelink.isBound context key is false.'
     automated: true
 
+  - id: file-rename-auto-unbind-004
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a folder that contains the bound file triggers auto-unbind with status bar message and warning toast showing old and new folder paths'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file renamed". A warning toast appears: "Unbound from Text Editor (<file>) — file renamed: <oldFolder> → <newFolder>" with workspace-relative folder paths. The rangelink.isBound context key is false.'
+    automated: true
+
+  - id: file-rename-auto-unbind-005
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a folder that is a path prefix of the bound file does not unbind the bound text editor destination'
+    expected_result: 'No status bar message and no warning toast appear. The rangelink.isBound context key remains true.'
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section — Navigation Clamping Feedback (#47)
   # ---------------------------------------------------------------------------

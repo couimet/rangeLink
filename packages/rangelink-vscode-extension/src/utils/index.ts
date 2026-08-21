@@ -16,6 +16,7 @@ export * from './isEligibleForPaste';
 export * from './isFileUri';
 export * from './isSameFileDestination';
 export * from './isSelectableQuickPickItem';
+export * from './isUriWithinDir';
 export * from './isWritableScheme';
 export * from './registerWithLogging';
 export * from './resolveWorkspacePath';

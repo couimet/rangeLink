@@ -82,4 +82,59 @@ standardSuite('File Rename Auto-Unbind', (ss) => {
 
     ss.log('✓ External rename — file-deleted fallback auto-unbind verified');
   });
+
+  test('file-rename-auto-unbind-004: renaming a folder containing the bound file auto-unbinds via ancestor match', async () => {
+    const boundUri = ss.createTrackedFile('__rl-test-fra-004/folder/bound.ts', 'line 1\nline 2\n');
+    await ss.settle();
+    await ss.openEditor(boundUri, vscode.ViewColumn.One);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    // Mirrors getResourceName in destinationBuilders.ts — a freshly-created nested
+    // folder may not yet resolve via getWorkspaceFolder in the test host.
+    const destBasename = vscode.workspace.getWorkspaceFolder(boundUri) ? vscode.workspace.asRelativePath(boundUri, false) : path.basename(boundUri.fsPath);
+    const folderUri = vscode.Uri.file(path.dirname(boundUri.fsPath));
+    const newFolderBasename = `${path.basename(folderUri.fsPath)}-renamed`;
+    const newFolderUri = vscode.Uri.file(path.join(path.dirname(folderUri.fsPath), newFolderBasename));
+
+    ss.expectStatusBarMessages([
+      `✓ RangeLink: Bound to Text Editor ("${destBasename}")`,
+      `RangeLink: Unbound from Text Editor ("${destBasename}") — file renamed`,
+    ]);
+    ss.expectToastMessages([
+      {
+        level: 'warning',
+        message: `Unbound from Text Editor ("${destBasename}") — file renamed: ${vscode.workspace.asRelativePath(folderUri, false)} → ${vscode.workspace.asRelativePath(newFolderUri, false)}`,
+      },
+    ]);
+    ss.expectContextKeys({ 'rangelink.isBound': false });
+
+    await renameWorkspaceFile(folderUri, newFolderBasename);
+    await ss.settle();
+
+    ss.log('✓ Folder renamed via applyEdit — ancestor auto-unbind status bar and toast verified');
+  });
+
+  test('file-rename-auto-unbind-005: renaming a prefix-overlapping sibling folder keeps the binding', async () => {
+    const boundUri = ss.createTrackedFile('__rl-test-fra-005x.ts', 'line 1\nline 2\n');
+    ss.createTrackedFile('__rl-test-fra-005/dummy.ts', 'dummy\n');
+    await ss.openEditor(boundUri, vscode.ViewColumn.One);
+    await ss.settle();
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await ss.settle();
+
+    const boundBasename = path.basename(boundUri.fsPath);
+    const siblingFolderUri = vscode.Uri.file(path.join(path.dirname(boundUri.fsPath), '__rl-test-fra-005'));
+
+    ss.expectStatusBarMessages([`✓ RangeLink: Bound to Text Editor ("${boundBasename}")`]);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    await renameWorkspaceFile(siblingFolderUri, '__rl-test-fra-005-folder');
+    await ss.settle();
+
+    ss.log('✓ Prefix-overlapping folder renamed — binding retained, no unbind messages');
+  });
 });

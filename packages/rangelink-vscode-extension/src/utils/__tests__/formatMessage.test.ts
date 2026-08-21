@@ -376,6 +376,8 @@ describe('formatMessage', () => {
       });
 
       expect(result).toBe('Unbound from Text Editor ("server.ts") — file renamed');
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should format WARN_DESTINATION_UNBOUND_FILE_RENAMED with destinationName, oldPath and newPath params', () => {
@@ -386,6 +388,8 @@ describe('formatMessage', () => {
       });
 
       expect(result).toBe('Unbound from Text Editor ("server.ts") — file renamed: src/old.ts → src/new.ts');
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {

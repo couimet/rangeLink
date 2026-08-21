@@ -1,5 +1,5 @@
 import { OperationFeedbackProvider } from '../../feedback/OperationFeedbackProvider';
-import { MessageCode, RelativePathFormat } from '../../types';
+import { MessageCode } from '../../types';
 import { spyOnFormatMessage } from '../helpers';
 
 import * as vscode from 'vscode';
@@ -325,8 +325,8 @@ describe('OperationFeedbackProvider', () => {
         destinationName: 'Text Editor ("server.ts")',
       });
       expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file renamed');
-      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(oldUri, RelativePathFormat.PathOnly);
-      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(newUri, RelativePathFormat.PathOnly);
+      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(oldUri, 'PathOnly');
+      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(newUri, 'PathOnly');
       expect(formatMessageSpy).toHaveBeenCalledWith('WARN_DESTINATION_UNBOUND_FILE_RENAMED', {
         destinationName: 'Text Editor ("server.ts")',
         oldPath: 'src/old.ts',

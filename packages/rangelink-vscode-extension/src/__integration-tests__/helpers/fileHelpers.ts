@@ -112,7 +112,8 @@ export const openEditor = async (uri: vscode.Uri, viewColumn?: vscode.ViewColumn
 export const cleanupFiles = (uris: vscode.Uri[]): void => {
   for (const uri of uris) {
     try {
-      fs.unlinkSync(uri.fsPath);
+      // recursive + force so renamed-folder URIs (registered by renameWorkspaceFile) are removed too
+      fs.rmSync(uri.fsPath, { recursive: true, force: true });
     } catch {
       // best-effort cleanup
     }

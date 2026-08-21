@@ -712,5 +712,122 @@ describe('BoundSession', () => {
       );
       expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'file-renamed', oldUri, newUri });
     });
+
+    it("unbinds when the bound file's parent folder is renamed", () => {
+      const oldUri = createMockUri('/src/folder');
+      const newUri = createMockUri('/src/renamed-folder');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("bound.ts")',
+        uri: createMockUri('/src/folder/bound.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri, newUri }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupFileRenameListener',
+          displayName: 'Text Editor ("bound.ts")',
+          oldUri: 'file:///src/folder',
+          newUri: 'file:///src/renamed-folder',
+        },
+        'Bound file renamed: Text Editor ("bound.ts") — auto-unbinding',
+      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("bound.ts")', {
+        reason: 'file-renamed',
+        oldUri,
+        newUri,
+      });
+    });
+
+    it('does not unbind on a partial-name prefix match', () => {
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("bound.ts")',
+        uri: createMockUri('/src/foobar/bound.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({
+        files: [{ oldUri: createMockUri('/src/foo'), newUri: createMockUri('/src/foo2') }],
+      } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(true);
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('unbinds when a rename matches an ancestor two levels up', () => {
+      const oldUri = createMockUri('/src/folder');
+      const newUri = createMockUri('/src/renamed-folder');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("bound.ts")',
+        uri: createMockUri('/src/folder/sub/bound.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({ files: [{ oldUri, newUri }] } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupFileRenameListener',
+          displayName: 'Text Editor ("bound.ts")',
+          oldUri: 'file:///src/folder',
+          newUri: 'file:///src/renamed-folder',
+        },
+        'Bound file renamed: Text Editor ("bound.ts") — auto-unbinding',
+      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("bound.ts")', {
+        reason: 'file-renamed',
+        oldUri,
+        newUri,
+      });
+    });
+
+    it('unbinds with the matching pair when a folder rename precedes the matching ancestor in a multi-file event', () => {
+      const oldUri = createMockUri('/src/folder');
+      const newUri = createMockUri('/src/renamed-folder');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("bound.ts")',
+        uri: createMockUri('/src/folder/bound.ts'),
+        viewColumn: 1,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = mockEvents.onDidRenameFiles.mock.calls[0][0];
+      handler({
+        files: [
+          { oldUri: createMockUri('/src/other'), newUri: createMockUri('/src/other2') },
+          { oldUri, newUri },
+        ],
+      } as vscode.FileRenameEvent);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'BoundSession.setupFileRenameListener',
+          displayName: 'Text Editor ("bound.ts")',
+          oldUri: 'file:///src/folder',
+          newUri: 'file:///src/renamed-folder',
+        },
+        'Bound file renamed: Text Editor ("bound.ts") — auto-unbinding',
+      );
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("bound.ts")', {
+        reason: 'file-renamed',
+        oldUri,
+        newUri,
+      });
+    });
   });
 });
