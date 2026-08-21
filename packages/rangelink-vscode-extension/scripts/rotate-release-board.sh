@@ -183,9 +183,9 @@ ITEMS_JSON=$(fetch_project_items "$OLD_PROJECT_ID")
 ITEM_ROWS=$(echo "$ITEMS_JSON" | jq -r '
   .data.node.items.nodes[]?
   | [.id, .content.id, .content.__typename,
-     ([.fieldValues.nodes[]? | select(.field.name == "Status") | .name] | first // ""),
-     ([.fieldValues.nodes[]? | select(.field.name == "Priority") | .name] | first // ""),
-     ([.fieldValues.nodes[]? | select(.field.name == "Size") | .name] | first // "")]
+     (.statusValue.name // ""),
+     (.priorityValue.name // ""),
+     (.sizeValue.name // "")]
   | @tsv')
 
 # --- Step 5: Resolve the new project's single-select field and option ids ---

@@ -83,14 +83,10 @@ EOF
 
   cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
 {"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
-  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "fieldValues": {"nodes": [
-    {"name": "Blocked", "field": {"name": "Status"}},
-    {"name": "High", "field": {"name": "Priority"}},
-    {"name": "Large", "field": {"name": "Size"}}
-  ]}},
-  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "fieldValues": {"nodes": [{"name": "Done", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}, "fieldValues": {"nodes": []}}
+  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "statusValue": {"name": "In Progress"}},
+  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "statusValue": {"name": "Blocked"}, "priorityValue": {"name": "High"}, "sizeValue": {"name": "Large"}},
+  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "statusValue": {"name": "Done"}},
+  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}}
 ]}}}}
 EOF
 
@@ -189,19 +185,15 @@ EOF
   setup_fixture
   cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
 {"data": {"node": {"items": {"pageInfo": {"hasNextPage": true, "endCursor": "CUR1"}, "nodes": [
-  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "fieldValues": {"nodes": [
-    {"name": "Blocked", "field": {"name": "Status"}},
-    {"name": "High", "field": {"name": "Priority"}},
-    {"name": "Large", "field": {"name": "Size"}}
-  ]}},
-  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "fieldValues": {"nodes": [{"name": "Done", "field": {"name": "Status"}}]}},
-  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}, "fieldValues": {"nodes": []}}
+  {"id": "PVTI_1", "content": {"__typename": "Issue", "id": "I_1"}, "statusValue": {"name": "In Progress"}},
+  {"id": "PVTI_2", "content": {"__typename": "Issue", "id": "I_2"}, "statusValue": {"name": "Blocked"}, "priorityValue": {"name": "High"}, "sizeValue": {"name": "Large"}},
+  {"id": "PVTI_3", "content": {"__typename": "Issue", "id": "I_3"}, "statusValue": {"name": "Done"}},
+  {"id": "PVTI_4", "content": {"__typename": "Issue", "id": "I_4"}}
 ]}}}}
 EOF
   cat > "$FIXTURE_ROOT/gh-items-2.json" <<'EOF'
 {"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
-  {"id": "PVTI_5", "content": {"__typename": "Issue", "id": "I_5"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+  {"id": "PVTI_5", "content": {"__typename": "Issue", "id": "I_5"}, "statusValue": {"name": "In Progress"}}
 ]}}}}
 EOF
 
@@ -218,7 +210,7 @@ EOF
   setup_fixture
   cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
 {"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
-  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "statusValue": {"name": "In Progress"}}
 ]}}}}
 EOF
 
@@ -226,6 +218,7 @@ EOF
   [[ "$status" -eq 0 ]]
 
   grep -q '^draft Draft title Draft body$' "$MOVE_LOG"
+  grep -Fx '<!-- rangelink-source-item: PVTI_1 -->' "$MOVE_LOG"
   grep -q '^update PVTI_NEW_1 PVTF_s_new PVTO_ip$' "$MOVE_LOG"
   grep -q '^delete PVTI_1$' "$MOVE_LOG"
   [[ "$output" == *"Moved 1 item(s)"* ]]
@@ -235,7 +228,7 @@ EOF
   setup_fixture
   cat > "$FIXTURE_ROOT/gh-items.json" <<'EOF'
 {"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [
-  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "fieldValues": {"nodes": [{"name": "In Progress", "field": {"name": "Status"}}]}}
+  {"id": "PVTI_1", "content": {"__typename": "DraftIssue", "id": "D_1", "title": "Draft title", "body": "Draft body"}, "statusValue": {"name": "In Progress"}}
 ]}}}}
 EOF
   cat > "$FIXTURE_ROOT/gh-items-new.json" <<'EOF'

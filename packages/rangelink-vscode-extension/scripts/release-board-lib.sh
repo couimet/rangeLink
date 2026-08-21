@@ -76,7 +76,10 @@ set_board_field_value() {
 fetch_project_items() {
   # $1 = project id. Prints the project's items JSON as
   # {"data": {"node": {"items": {"nodes": [ ...all item nodes across all pages... ]}}}};
-  # pages through the items(first: 100) connection until hasNextPage is false.
+  # each item node carries statusValue/priorityValue/sizeValue — the single-select
+  # option names for Status/Priority/Size read via fieldValueByName so they survive
+  # items with more than 40 field values; pages through the items(first: 100)
+  # connection until hasNextPage is false.
   local query='query ($id: ID!, $cursor: String) {
     node(id: $id) {
       ... on ProjectV2 {
@@ -90,13 +93,14 @@ fetch_project_items() {
               ... on PullRequest { id }
               ... on DraftIssue { id title body }
             }
-            fieldValues(first: 40) {
-              nodes {
-                ... on ProjectV2ItemFieldSingleSelectValue {
-                  name
-                  field { name }
-                }
-              }
+            statusValue: fieldValueByName(name: "Status") {
+              ... on ProjectV2ItemFieldSingleSelectValue { name }
+            }
+            priorityValue: fieldValueByName(name: "Priority") {
+              ... on ProjectV2ItemFieldSingleSelectValue { name }
+            }
+            sizeValue: fieldValueByName(name: "Size") {
+              ... on ProjectV2ItemFieldSingleSelectValue { name }
             }
           }
         }
@@ -153,7 +157,14 @@ resolve_status_done() {
 find_board_item_id() {
   # $1 = project id; $2 = content node id (Issue/PullRequest/DraftIssue).
   # Prints the project item id whose content matches, or nothing when absent.
-  local items_json
+  # fetch_project_items yields nodes: null when the items GraphQL call failed;
+  # treat that as a lookup error so callers can distinguish it from an item
+  # that is genuinely not on the board.
+  local items_json nodes_missing
   items_json=$(fetch_project_items "$1")
+  nodes_missing=$(printf '%s' "$items_json" | jq -r '.data.node.items.nodes == null')
+  if [[ "$nodes_missing" == "true" ]]; then
+    return 1
+  fi
   echo "$items_json" | jq -r --arg cid "$2" '.data.node.items.nodes[]? | select(.content.id == $cid) | .id' | head -1
 }

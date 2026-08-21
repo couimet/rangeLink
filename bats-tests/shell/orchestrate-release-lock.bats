@@ -80,8 +80,16 @@ case "$*" in
     elif grep -q 'deleteProjectV2Item' "$PAYLOAD"; then
       echo '{"data": {"deleteProjectV2Item": {"deletedItemId": "PVTI_X"}}}'
     elif grep -q 'items(first' "$PAYLOAD"; then
+      if [[ "${ITEMS_API_EXIT:-0}" -ne 0 ]]; then
+        echo "items API failed (exit ${ITEMS_API_EXIT})" >&2
+        exit "$ITEMS_API_EXIT"
+      fi
       cat "$ITEMS_RESPONSE_FILE"
     elif grep -q 'projectsV2' "$PAYLOAD"; then
+      if [[ "${PROJECTS_API_EXIT:-0}" -ne 0 ]]; then
+        echo "projects API failed (exit ${PROJECTS_API_EXIT})" >&2
+        exit "$PROJECTS_API_EXIT"
+      fi
       cat "$PROJECTS_RESPONSE_FILE"
     fi
     ;;
@@ -390,6 +398,66 @@ INSTEOF
   [[ "$output" =~ "no project board titled 'RangeLink v1.0.0 release'" ]]
 
   # Best-effort: the prior issue is still closed despite the missing board.
+  grep -q 'issue close https://github.com/couimet/rangeLink/issues/888' "$GH_CALL_LOG"
+}
+
+@test "re-run: board cleanup warns and continues when the project lookup fails" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="release/v1.0.0"
+  export PROJECTS_API_EXIT=1
+
+  # Write an instructions file with a prior qa_issue_url to simulate first run.
+  local ins="$FIXTURE_ROOT/qa/release-testing-instructions-v1.0.0.md"
+  mkdir -p "$(dirname "$ins")"
+  cat > "$ins" <<'INSTEOF'
+---
+version: 1.0.0
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
+generated: 2026-01-01T00:00:00Z
+---
+
+# Release Testing: Placeholder
+
+**Scope:** Changes from v1.0.0 → v1.0.0
+**QA tracker:** https://github.com/couimet/rangeLink/issues/888
+INSTEOF
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "could not list release projects" ]]
+
+  # Best-effort: the prior issue is still closed despite the failed lookup.
+  grep -q 'issue close https://github.com/couimet/rangeLink/issues/888' "$GH_CALL_LOG"
+}
+
+@test "re-run: board cleanup warns and continues when the board item lookup fails" {
+  setup_fixture
+  export GIT_BRANCH_EXISTS=0
+  export GIT_CURRENT_BRANCH="release/v1.0.0"
+  export ITEMS_API_EXIT=1
+
+  # Write an instructions file with a prior qa_issue_url to simulate first run.
+  local ins="$FIXTURE_ROOT/qa/release-testing-instructions-v1.0.0.md"
+  mkdir -p "$(dirname "$ins")"
+  cat > "$ins" <<'INSTEOF'
+---
+version: 1.0.0
+qa_issue_url: 'https://github.com/couimet/rangeLink/issues/888'
+generated: 2026-01-01T00:00:00Z
+---
+
+# Release Testing: Placeholder
+
+**Scope:** Changes from v1.0.0 → v1.0.0
+**QA tracker:** https://github.com/couimet/rangeLink/issues/888
+INSTEOF
+
+  run "$SCRIPT" "1.0.0"
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "could not look up board item" ]]
+
+  # Best-effort: the prior issue is still closed despite the failed lookup.
   grep -q 'issue close https://github.com/couimet/rangeLink/issues/888' "$GH_CALL_LOG"
 }
 

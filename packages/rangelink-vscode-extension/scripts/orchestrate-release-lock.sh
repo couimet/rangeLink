@@ -178,7 +178,10 @@ retire_superseded_board_item() {
   local projects_json board_resolved board_id node_id item_id status_done
   local done_field_id done_option_id
 
-  projects_json=$(list_release_projects)
+  if ! projects_json=$(list_release_projects); then
+    echo -e "${YELLOW}could not list release projects — board cleanup skipped for $issue_url${NC}"
+    return
+  fi
   if ! board_resolved=$(resolve_release_board "$board_title"); then
     echo -e "${YELLOW}board '$board_title' not found — board cleanup skipped for $issue_url${NC}"
     return
@@ -191,7 +194,10 @@ retire_superseded_board_item() {
     return
   fi
 
-  item_id=$(find_board_item_id "$board_id" "$node_id")
+  if ! item_id=$(find_board_item_id "$board_id" "$node_id"); then
+    echo -e "${YELLOW}could not look up board item for $issue_url — board cleanup skipped${NC}"
+    return
+  fi
   if [[ -z "$item_id" ]]; then
     echo -e "${YELLOW}$issue_url is not on the board — nothing to clean up${NC}"
     return

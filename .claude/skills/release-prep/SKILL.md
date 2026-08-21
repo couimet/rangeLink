@@ -31,17 +31,23 @@ These are the issues the lock script created and already added to the release bo
 
 ## Step 3: Check for an existing cross-repo issue
 
-The article-registration issue lives in couimet/couimet.github.io. Check for an existing open issue before creating a new one:
+The article-registration issue lives in couimet/couimet.github.io. Check for an existing open issue with an exact title match before creating a new one, capturing the URL when one exists:
 
 ```text
-gh issue list --repo couimet/couimet.github.io --state open --search "Register RangeLink X.Y.Z article on the site in:title"
+EXISTING_ISSUE_URL=$(gh issue list \
+  --repo couimet/couimet.github.io \
+  --state open \
+  --search "Register RangeLink X.Y.Z article on the site in:title" \
+  --json title,url --limit 100 \
+  --jq '.[] | select(.title == "Register RangeLink X.Y.Z article on the site") | .url' \
+  | head -1)
 ```
 
-If an open issue with that title is returned, reuse its URL for the board step and skip creation. This makes the skill re-runnable.
+The `--jq` filter selects only an issue whose title EXACTLY matches `Register RangeLink X.Y.Z article on the site`, and `--limit 100` covers the full expected result set; together they guard against an older open issue with a similar title being misidentified as this release's registration issue. If `$EXISTING_ISSUE_URL` is non-empty, reuse that exact URL for the Step 5 board step and the Step 6 report and skip creation, preserving the skill's re-runnability. Step 4 (creation) runs only when no exact match was found.
 
 ## Step 4: Create the cross-repo issue
 
-Write a draft body with the Write tool to a temporary file (e.g., `/tmp/release-prep-2.1.0.md`), then invoke the /create-github-issue skill, passing the draft file path as its argument.
+Run this step only when Step 3 found no exact match (`$EXISTING_ISSUE_URL` is empty). Write a draft body with the Write tool to a temporary file (e.g., `/tmp/release-prep-2.1.0.md`), then invoke the /create-github-issue skill, passing the draft file path as its argument.
 
 The draft needs these elements:
 
@@ -62,7 +68,7 @@ Run:
 packages/rangelink-vscode-extension/scripts/add-issue-to-release-board.sh <cross-repo issue URL>
 ```
 
-The script resolves the `RangeLink vX.Y.Z release` board for the version in package.json, adds the issue, and sets Status to Ready when the board has a Ready option (warn and skip otherwise, matching the release lock script's rule). Pass `--dry-run` to preview without GitHub calls. Capture the `Board URL:` value printed in the script's final output, for use in the Step 6 report.
+The script resolves the `RangeLink vX.Y.Z release` board for the version in package.json, adds the issue, and sets Status to Ready when the board has a Ready option (warn and skip otherwise, matching the release lock script's rule). When Step 3 found an existing issue, pass `$EXISTING_ISSUE_URL` as the `<cross-repo issue URL>`. Pass `--dry-run` to preview without GitHub calls. Capture the `Board URL:` value printed in the script's final output, for use in the Step 6 report.
 
 ## Step 6: Report
 
