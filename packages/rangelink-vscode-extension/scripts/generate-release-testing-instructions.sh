@@ -5,7 +5,7 @@ set -euo pipefail
 #
 # Outputs a minimal markdown file that points at the QA GitHub issue — the issue
 # is the canonical source for the per-feature pnpm test:release:grep commands.
-# Frontmatter tracks version, QA issue URL, and generation timestamp.
+# Frontmatter tracks version, QA issue URL, dev.to issue URL, and generation timestamp.
 #
 # Usage:
 #   ./scripts/generate-release-testing-instructions.sh             → trunk-based dev (Unreleased)
@@ -51,6 +51,7 @@ cat > "$OUTPUT_FILE" <<EOF
 ---
 version: ${VERSION_ARG:-$PUBLISHED_VERSION}
 qa_issue_url: ''
+devto_issue_url: ''
 generated: ${GENERATED_TS}
 ---
 
@@ -58,6 +59,7 @@ generated: ${GENERATED_TS}
 
 **Scope:** ${SCOPE_LINE}
 **QA tracker:** <to be filled by release:lock>
+**Dev.to post:** <to be filled by release:lock>
 
 ## Next steps
 

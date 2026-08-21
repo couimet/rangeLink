@@ -10,6 +10,10 @@ setup_fixture() {
   mkdir -p "$FIXTURE_ROOT/qa"
 
   cp "$REAL_SCRIPT" "$FIXTURE_ROOT/scripts/start-release.sh"
+  cp "$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/rotate-release-board.sh" \
+     "$FIXTURE_ROOT/scripts/rotate-release-board.sh"
+  cp "$PROJECT_ROOT/packages/rangelink-vscode-extension/scripts/release-board-lib.sh" \
+     "$FIXTURE_ROOT/scripts/"
   SCRIPT="$FIXTURE_ROOT/scripts/start-release.sh"
 
   stub_dir
@@ -22,6 +26,38 @@ ENDOFSTUB
   export FIXTURE_ROOT_FOR_GIT="$FIXTURE_ROOT"
 
   make_passive_stub "npx"
+
+  # Step 3 runs rotate-release-board.sh, which queries the GitHub projects
+  # API. Respond with the just-released project (title from fixture
+  # package.json) and an empty item list so the rotation completes.
+  make_stub "gh" <<'ENDOFSTUB'
+#!/usr/bin/env bash
+VERSION=$(jq -r '.version // "2.0.0"' "$PWD/package.json" 2>/dev/null || echo "2.0.0")
+FILE=""
+for arg in "$@"; do
+  [[ -f "$arg" ]] && FILE="$arg" && break
+done
+[[ -z "$FILE" ]] && exit 0
+if grep -q 'copyProjectV2' "$FILE"; then
+  TITLE=$(jq -r '.variables.input.title' "$FILE")
+  OWNER_ID=$(jq -r '.variables.input.ownerId' "$FILE")
+  echo "copy $TITLE $OWNER_ID" >> "$GH_CALL_LOG"
+  jq -n --arg title "$TITLE" \
+    '{data: {copyProjectV2: {projectV2: {id: "PVT_NEW", title: $title, url: "https://github.com/users/couimet/projects/2"}}}}'
+elif grep -q 'items(first' "$FILE"; then
+  echo '{"data": {"node": {"items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}'
+elif grep -q 'projectsV2' "$FILE"; then
+  jq -n --arg v "$VERSION" \
+    '{data: {viewer: {projectsV2: {nodes: [{id: "PVT_OLD", title: ("RangeLink v" + $v + " release"), url: "https://github.com/users/couimet/projects/1", owner: {id: "U_couimet"}}]}}}}'
+elif grep -q 'SingleSelectField' "$FILE"; then
+  echo '{"data": {"node": {"fields": {"nodes": []}}}}'
+else
+  jq -n --arg v "$VERSION" \
+    '{data: {viewer: {projectsV2: {nodes: [{id: "PVT_OLD", title: ("RangeLink v" + $v + " release"), url: "https://github.com/users/couimet/projects/1", owner: {id: "U_couimet"}}]}}}}'
+fi
+ENDOFSTUB
+  export GH_CALL_LOG="$FIXTURE_ROOT/gh-calls.log"
+  : > "$GH_CALL_LOG"
 
   write_package_json() {
     cat > "$FIXTURE_ROOT/package.json"
@@ -89,6 +125,10 @@ EOF
   banner_line=$(grep -n '\[!IMPORTANT\]' "$FIXTURE_ROOT/README.md" | cut -d: -f1)
   first_section_line=$(grep -n '^## ' "$FIXTURE_ROOT/README.md" | head -1 | cut -d: -f1)
   [[ "$banner_line" -lt "$first_section_line" ]]
+
+  # Step 3: release board rotation ran (next version 2.1.0 = minor bump of 2.0.0).
+  [[ "$output" == *"Step 3: Rotating release project board"* ]]
+  grep -q '^copy RangeLink v2.1.0 release U_couimet$' "$GH_CALL_LOG"
 }
 
 @test "CHANGELOG: [Unreleased] has empty sections and existing content preserved below" {
