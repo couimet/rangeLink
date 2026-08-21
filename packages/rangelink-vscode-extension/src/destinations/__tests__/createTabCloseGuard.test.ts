@@ -109,6 +109,28 @@ describe('createTabCloseGuard', () => {
     expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
   });
 
+  it('falls back to fs.existsSync when no fileExists function is injected (missing file defers to rename/delete listeners)', () => {
+    const missingUri = createMockUri('/__rangelink_missing__/file.ts');
+    createTabCloseGuard({
+      boundUri: missingUri,
+      events: mockEvents,
+      feedback: mockFeedback,
+      displayName: 'Text Editor ("file.ts")',
+      clearBinding,
+      logger: mockLogger,
+    });
+
+    const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+    handler(createClosedEvent(missingUri));
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'createTabCloseGuard', editorUri: 'file:///__rangelink_missing__/file.ts' },
+      'Bound editor tab closed while file no longer exists — deferring to rename/delete listeners for Text Editor ("file.ts")',
+    );
+    expect(clearBinding).not.toHaveBeenCalled();
+    expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+  });
+
   it('subscribes to onDidChangeTabs', () => {
     createGuard();
     expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(1);

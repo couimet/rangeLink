@@ -8,7 +8,7 @@ import { AutoPasteResult } from '../../types';
 import { BoundSession } from '../BoundSession';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 
 describe('BoundSession', () => {
   let mockEvents: {
@@ -242,6 +242,25 @@ describe('BoundSession', () => {
       expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(0);
     });
 
+    it('unbinds via the tab-close guard when the last bound tab closes', () => {
+      (vscode.window.tabGroups as unknown as { all: unknown[] }).all = [];
+      // __filename is a real file on disk, so the guard's fs.existsSync check passes
+      const boundUri = createMockUri(__filename);
+      const session = createSession();
+      session.set(
+        createMockEditorComposablePasteDestination({
+          displayName: 'Text Editor ("test.ts")',
+          uri: boundUri,
+        }),
+      );
+
+      const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+      handler({ closed: [{ input: { uri: boundUri } }] });
+
+      expect(session.isSet()).toBe(false);
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'editor-closed' });
+    });
+
     it('disposes guards and re-creates them on rebind', () => {
       const dispose1 = jest.fn();
       const dispose2 = jest.fn();
@@ -285,6 +304,56 @@ describe('BoundSession', () => {
       session.set(newDest);
       expect(mockEvents.onDidChangeTabs).toHaveBeenCalledTimes(4);
       expect(mockWatcherFactory.createFileSystemWatcherForFile).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('file delete lifecycle', () => {
+    const captureDeleteHandler = (): ((uri: vscode.Uri) => void) => {
+      const watcher = mockWatcherFactory.createFileSystemWatcherForFile.mock.results[0].value as {
+        onDidDelete: jest.Mock;
+      };
+      return watcher.onDidDelete.mock.calls[0][0];
+    };
+
+    it('unbinds when the bound file is deleted from disk', () => {
+      const boundUri = createMockUri('/test.ts');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: boundUri,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = captureDeleteHandler();
+      handler(boundUri);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', {
+        reason: 'file-deleted',
+        oldUri: boundUri,
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'createFileDeleteWatcher', fileUri: 'file:///test.ts' },
+        'Bound file deleted from disk: Text Editor ("test.ts") — auto-unbinding',
+      );
+    });
+
+    it('does nothing for a stale delete after the binding was cleared (live getBoundUri returns undefined)', () => {
+      const boundUri = createMockUri('/test.ts');
+      const dest = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("test.ts")',
+        uri: boundUri,
+      });
+      const session = createSession();
+      session.set(dest);
+
+      const handler = captureDeleteHandler();
+      session.clear();
+      handler(boundUri);
+
+      expect(session.isSet()).toBe(false);
+      expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
     });
   });
 
@@ -405,6 +474,23 @@ describe('BoundSession', () => {
       expect(terminalDispose).toHaveBeenCalledTimes(1);
       expect(documentDispose).toHaveBeenCalledTimes(1);
       expect(renameDispose).toHaveBeenCalledTimes(1);
+    });
+
+    it('disposes per-binding guard disposables when an editor is bound', () => {
+      const tabsDispose = jest.fn();
+      mockEvents.onDidChangeTabs.mockReturnValue({ dispose: tabsDispose });
+
+      const session = createSession();
+      session.set(
+        createMockEditorComposablePasteDestination({
+          displayName: 'Text Editor ("test.ts")',
+          uri: createMockUri('/test.ts'),
+        }),
+      );
+
+      session.dispose();
+
+      expect(tabsDispose).toHaveBeenCalledTimes(2); // tab-close + multi-column guards
     });
   });
 

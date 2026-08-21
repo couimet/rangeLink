@@ -1,9 +1,11 @@
 import { TextSelectionPaster } from '../../services/TextSelectionPaster';
 import {
+  captureSendStrategies,
   createMockConfigReader,
   createMockDestinationManager,
   createMockDocument,
   createMockEditor,
+  createMockPasteDestinationForSendRouter,
   createMockSelection,
   createMockText,
   createMockUri,
@@ -141,6 +143,31 @@ describe('TextSelectionPaster', () => {
       },
       'Extracted 11 chars from 2 selection(s)',
     );
+  });
+
+  it('wires sendFn to sendTextToDestination and isEligibleFn to content eligibility', async () => {
+    const mockDoc = createMockDocument({
+      uri: createMockUri('/workspace/file.ts'),
+      getText: createMockText('selected text'),
+    });
+    const sel = createMockSelection({ isEmpty: false });
+    const mockEditor = createMockEditor({ document: mockDoc, selections: [sel] });
+    mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue({
+      editor: mockEditor,
+      selections: [sel],
+    });
+    mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: true, bindPerformed: false });
+    mockConfigReader.getPaddingMode.mockReturnValue('both');
+    const strategies = captureSendStrategies<string>(mockSendRouter.sendToDestination);
+
+    await paster.pasteSelectedTextToDestination();
+
+    const destination = createMockPasteDestinationForSendRouter();
+    await strategies.get().sendFn(' selected text ');
+    await strategies.get().isEligibleFn(destination, ' selected text ');
+
+    expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(' selected text ');
+    expect(destination.isEligibleForPasteContent).toHaveBeenCalledWith(' selected text ');
   });
 
   it('returns early when picker is cancelled', async () => {
