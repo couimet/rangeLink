@@ -11,6 +11,11 @@
 
 check_dirty_tree() {
   local repo_root="$1"
+  # In-place test runs carry uncommitted guard scripts, so relax the check.
+  if [[ -n "${RELEASE_LOCK_INPLACE:-}" ]]; then
+    echo -e "${YELLOW:-}RELEASE_LOCK_INPLACE set — skipping dirty-tree check.${NC:-}"
+    return 0
+  fi
   local artifact_glob='packages/rangelink-vscode-extension/qa/release-testing-instructions-v*.md'
   local dirty
   dirty=$(git -C "$repo_root" status --porcelain -- ":(exclude)$artifact_glob")

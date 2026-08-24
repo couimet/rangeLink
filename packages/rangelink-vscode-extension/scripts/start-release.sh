@@ -10,8 +10,9 @@ set -euo pipefail
 #   0. If on main, create a post-release-v<VERSION> branch (otherwise apply in-place)
 #   1. Prepend [Unreleased] header with empty sections to CHANGELOG
 #   2. Re-add [!IMPORTANT] banner to README
+#   3. Rotate the release project board (rotate-release-board.sh)
 #
-# Requires: jq
+# Requires: jq, gh CLI (authenticated for project board rotation)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -133,6 +134,12 @@ fi
 cd "$REPO_ROOT"
 npx prettier --write "$README" "$CHANGELOG" > /dev/null 2>&1
 cd "$PACKAGE_DIR"
+
+# --- Step 3: Rotate the release project board ---
+
+echo ""
+echo -e "${GREEN}Step 3: Rotating release project board...${NC}"
+"$SCRIPT_DIR/rotate-release-board.sh"
 
 # --- Summary ---
 
