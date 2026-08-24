@@ -3,9 +3,9 @@ import { ASSISTED_TIMEOUT_MS, BASE_CONFIG, userDataDir } from './.vscode-test.ba
 import { defineConfig } from '@vscode/test-cli';
 
 // Marketplace extensions installed before tests run. With these present,
-// isGeminiCodeAssistAvailable() and isClaudeCodeAvailable() return true,
-// enabling tests that verify real focus + paste behavior.
-const MARKETPLACE_EXTENSIONS = ['google.geminicodeassist', 'anthropic.claude-code'];
+// isGeminiCodeAssistAvailable(), isClaudeCodeAvailable() and isClineAvailable()
+// return true, enabling tests that verify real focus + paste behavior.
+const MARKETPLACE_EXTENSIONS = ['google.geminicodeassist', 'anthropic.claude-code', 'saoudrizwan.claude-dev'];
 
 export default defineConfig([
   {

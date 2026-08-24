@@ -14,6 +14,7 @@ describe('buildDestinationQuickPickItems', () => {
     it('defines the correct order of destination kinds', () => {
       expect(DESTINATION_PICKER_SEQUENCE).toStrictEqual([
         'claude-code',
+        'cline',
         'gemini-code-assist',
         'cursor-ai',
         'github-copilot-chat',
@@ -28,7 +29,7 @@ describe('buildDestinationQuickPickItems', () => {
   describe('BUILTIN_AI_COUNT', () => {
     it('equals AI_ASSISTANT_KINDS.length — update this test and the behavioral test below when adding a new built-in AI assistant', () => {
       expect(BUILTIN_AI_COUNT).toBe(AI_ASSISTANT_KINDS.length);
-      expect(BUILTIN_AI_COUNT).toBe(4);
+      expect(BUILTIN_AI_COUNT).toBe(5);
     });
 
     it('places custom AI assistants between built-in AI assistants and non-AI destinations', () => {

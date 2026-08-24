@@ -14,6 +14,25 @@ import type { InsertFactory } from '../capabilities/insertFactories';
 export type FocusTierProbeMode = 'execute' | 'none';
 
 /**
+ * A single sequence of focus commands that must ALL run, in order.
+ *
+ * Stages express an AND group: the commands in one stage are a prerequisite
+ * plus action (e.g., Cline needs `claude-dev.SidebarProvider.focus` to ensure
+ * the panel exists, then `cline.focusChatInput` to focus the input). A stage
+ * succeeds only when every command in it resolves; any throw fails the stage.
+ */
+export type FocusStage = readonly string[];
+
+/**
+ * Ordered fallback of focus stages — an OR of ANDs.
+ *
+ * Focus strategies try each stage in order and stop at the first stage whose
+ * commands all resolve. The flat fallback-chain behavior is the degenerate
+ * case where every stage holds a single command.
+ */
+export type FocusStages = readonly FocusStage[];
+
+/**
  * Known tier labels assigned in FocusCapabilityFactory.
  *
  * Used to make tier-dependent decisions type-safe (e.g., clipboard
@@ -24,11 +43,11 @@ export type FocusTierLabel = 'insertCommands' | 'focusAndPasteCommands' | 'focus
 /**
  * A tier in the tiered focus strategy.
  *
- * Each tier pairs a set of VS Code commands with an InsertFactory that
+ * Each tier pairs a set of VS Code focus stages with an InsertFactory that
  * determines how text is delivered after focus succeeds.
  */
 export interface FocusTier {
-  readonly commands: readonly string[];
+  readonly commands: FocusStages;
   readonly insertFactory: InsertFactory<void>;
   readonly label: FocusTierLabel;
   readonly probeMode: FocusTierProbeMode;

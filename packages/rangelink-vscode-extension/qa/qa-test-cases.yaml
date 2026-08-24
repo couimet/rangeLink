@@ -2580,6 +2580,66 @@ test_cases:
     command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-006"'
     automated: true
 
+  - id: cline-001
+    labels:
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cline appears in destination picker when extension is active'
+    expected_result: '"Cline" is listed in the AI Assistants group of the destination picker'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-001"'
+    automated: true
+
+  - id: cline-002
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Binding to Cline and sending a link delivers content to chat'
+    expected_result: 'Cline chat opens and contains the RangeLink and selected code snippet'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-002"'
+    automated: assisted
+
+  - id: cline-003
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cold panel paste verification — content arrives in Cline chat input after a single R-L since bind'
+    expected_result: 'Content arrives in Cline chat input. Logs show paste command succeeded.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-003"'
+    automated: assisted
+
+  - id: cline-004
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Warm panel paste verification — content arrives in Cline chat input on second R-L without cold-start refocus signals'
+    expected_result: 'Content arrives in Cline chat input. Logs show no cold-start refocus signals.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-004"'
+    automated: assisted
+
+  - id: cline-005
+    labels:
+      - requires-extensions
+      - cold-start
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cold-start default settings produce a valid ColdRefocusConfig where totalMs > intervalMs'
+    expected_result: 'Default settings produce a valid ColdRefocusConfig. coldStartDelayMs is greater than coldRefocusIntervalMs.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-005"'
+    automated: true
+
+  - id: cline-006
+    labels:
+      - requires-extensions
+      - cold-start
+      - validation
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cold-start validation rejects invalid config (totalMs <= intervalMs) and falls back to defaults with a warning'
+    expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-006"'
+    automated: true
+
   # ---------------------------------------------------------------------------
   # Section — Release Notifier
   # ---------------------------------------------------------------------------

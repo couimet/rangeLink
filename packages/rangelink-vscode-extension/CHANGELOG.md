@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cline Integration** - Paste destination for Cline, a popular community-driven AI coding assistant (formerly Claude Dev) (#551)
+  - Automatically inserts links and selected text directly into Cline's chat
+  - Requires the [Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) extension (`saoudrizwan.claude-dev`)
+  - Configurable cold-start timing: `rangelink.destinations.cline.coldStartDelayMs` (default: `1500`) and `rangelink.destinations.cline.coldRefocusIntervalMs` (default: `300`)
+  - Focus handling now supports running a sequence of commands, so jump-to-destination (R-J) lands directly in Cline's chat input rather than just its panel, even on a cold start
+
 ### Changed
 
 - **Single status bar message when binding and sending in one step via the destination picker**, instead of two back-to-back messages. The merged message reads "Bound to &lt;destination&gt; — &lt;link&gt; sent". (#621)

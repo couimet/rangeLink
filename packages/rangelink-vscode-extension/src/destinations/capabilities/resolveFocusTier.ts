@@ -36,11 +36,12 @@ export const resolveFocusTier = (
   const commandSet = new Set(registeredCommands);
 
   for (const [index, tier] of tiers.entries()) {
-    if (tier.commands.length === 0) {
+    const commands = tier.commands.flat();
+    if (commands.length === 0) {
       continue;
     }
 
-    const registeredCommand = tier.commands.find((cmd) => commandSet.has(cmd));
+    const registeredCommand = commands.find((cmd) => commandSet.has(cmd));
 
     if (registeredCommand) {
       const isFallback = index >= fallbackTierIndex;
@@ -53,10 +54,7 @@ export const resolveFocusTier = (
       return { resolvedTier: tier, isFallback };
     }
 
-    logger.debug(
-      { fn, tier: tier.label, checkedCommands: tier.commands, logPrefix },
-      `${logPrefix}: no registered commands for ${tier.label}, trying next tier`,
-    );
+    logger.debug({ fn, tier: tier.label, checkedCommands: commands, logPrefix }, `${logPrefix}: no registered commands for ${tier.label}, trying next tier`);
   }
 
   logger.warn({ fn, logPrefix, tierCount: tiers.length }, `${logPrefix}: no tiers have registered commands — resolution failed`);

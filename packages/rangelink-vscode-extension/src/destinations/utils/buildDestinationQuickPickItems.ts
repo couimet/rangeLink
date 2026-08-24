@@ -35,6 +35,7 @@ type PickerSequenceKey = DestinationKind | 'file-more' | 'terminal-more';
  */
 export const DESTINATION_PICKER_SEQUENCE: readonly PickerSequenceKey[] = [
   'claude-code',
+  'cline',
   'gemini-code-assist',
   'cursor-ai',
   'github-copilot-chat',
@@ -48,6 +49,7 @@ type DestinationGroup = 'ai' | 'terminal' | 'file';
 
 const DESTINATION_GROUP_MAP: Record<PickerSequenceKey, DestinationGroup> = {
   'claude-code': 'ai',
+  cline: 'ai',
   'cursor-ai': 'ai',
   'gemini-code-assist': 'ai',
   'github-copilot-chat': 'ai',

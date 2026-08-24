@@ -9,7 +9,7 @@ export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';
 
 export const isGitHubCopilotChatAvailable = async (ideAdapter: VscodeAdapter, logger: Logger): Promise<boolean> => {
   const commands = await ideAdapter.getCommands();
-  const chatCommand = GITHUB_COPILOT_CHAT_FOCUS_COMMANDS.find((command) => commands.includes(command));
+  const chatCommand = GITHUB_COPILOT_CHAT_FOCUS_COMMANDS.flat().find((command) => commands.includes(command));
   const commandExists = chatCommand !== undefined;
 
   if (commandExists) {

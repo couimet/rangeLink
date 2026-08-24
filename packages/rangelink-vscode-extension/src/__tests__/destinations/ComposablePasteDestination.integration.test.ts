@@ -131,7 +131,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
 
       const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new AIAssistantFocusCapability(mockAdapter, ['ai.assistant.focus'], undefined, insertFactory, mockLogger);
+      const focusCapability = new AIAssistantFocusCapability(mockAdapter, [['ai.assistant.focus']], undefined, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
@@ -173,7 +173,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new AIAssistantFocusCapability(
         mockAdapter,
-        ['command.first', 'command.second', 'command.third'],
+        [['command.first'], ['command.second'], ['command.third']],
         undefined,
         insertFactory,
         mockLogger,
@@ -217,7 +217,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
 
       const insertFactory = new AIAssistantInsertFactory(mockAdapter, mockLogger);
-      const focusCapability = new AIAssistantFocusCapability(mockAdapter, ['command.first', 'command.second'], undefined, insertFactory, mockLogger);
+      const focusCapability = new AIAssistantFocusCapability(mockAdapter, [['command.first'], ['command.second']], undefined, insertFactory, mockLogger);
       const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First failed')).mockRejectedValueOnce(new Error('Second failed'));

@@ -165,6 +165,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToCline",
+        "title": "Bind to Cline",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToCustomAiById",
         "title": "Bind to Custom AI by ID",
         "category": "RangeLink",
@@ -576,6 +582,22 @@
           "maximum": 5000,
           "description": "Interval (ms) between successive focus-command re-sends during the Claude Code cold-start window.",
           "title": "Claude Code Cold Re-focus Interval"
+        },
+        "rangelink.destinations.cline.coldStartDelayMs": {
+          "type": "number",
+          "default": 1500,
+          "minimum": 500,
+          "maximum": 15000,
+          "description": "Total duration (ms) of the cold-start re-focus window for Cline. During this window, focus commands are re-sent at the coldRefocusIntervalMs cadence to ensure the chat panel is ready before paste dispatch.",
+          "title": "Cline Cold Start Delay"
+        },
+        "rangelink.destinations.cline.coldRefocusIntervalMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 100,
+          "maximum": 5000,
+          "description": "Interval (ms) between successive focus-command re-sends during the Cline cold-start window.",
+          "title": "Cline Cold Re-focus Interval"
         },
         "rangelink.destinations.gemini.coldStartDelayMs": {
           "type": "number",

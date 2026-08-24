@@ -63,6 +63,7 @@ export class PasteDestinationManager implements DestinationBinder, DestinationFo
       case 'text-editor':
         return this.bindTextEditor(options, statusBarOptions);
       case 'cursor-ai':
+      case 'cline':
       case 'gemini-code-assist':
       case 'github-copilot-chat':
       case 'claude-code':

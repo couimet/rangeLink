@@ -42,19 +42,26 @@ export class ResolvedFocusCapability implements FocusCapability {
       });
     }
 
-    for (const command of resolvedTier.commands) {
-      try {
-        await this.ideAdapter.executeCommand(command);
-        this.logger.debug({ ...context, command, tier: resolvedTier.label }, `Focus command succeeded (${resolvedTier.label})`);
+    for (const stage of resolvedTier.commands) {
+      let stageSucceeded = true;
+      for (const command of stage) {
+        try {
+          await this.ideAdapter.executeCommand(command);
+          this.logger.debug({ ...context, command, tier: resolvedTier.label }, `Focus command succeeded (${resolvedTier.label})`);
+        } catch (error) {
+          this.logger.debug({ ...context, command, tier: resolvedTier.label, error }, 'Focus command failed, trying next stage');
+          stageSucceeded = false;
+          break;
+        }
+      }
+      if (stageSucceeded) {
         return FocusResult.ok({
           inserter: resolvedTier.insertFactory.forTarget(),
         });
-      } catch (error) {
-        this.logger.debug({ ...context, command, tier: resolvedTier.label, error }, 'Focus command failed, trying next');
       }
     }
 
-    this.logger.warn({ ...context, tier: resolvedTier.label, allCommandsFailed: true }, `All focus commands failed for resolved tier ${resolvedTier.label}`);
+    this.logger.warn({ ...context, tier: resolvedTier.label, allStagesFailed: true }, `All focus stages failed for resolved tier ${resolvedTier.label}`);
     return FocusResult.err({
       reason: FocusErrorReason.COMMAND_FOCUS_FAILED,
     });

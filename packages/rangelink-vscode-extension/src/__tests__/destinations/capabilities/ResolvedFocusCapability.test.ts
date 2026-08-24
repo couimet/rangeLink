@@ -24,7 +24,7 @@ describe('ResolvedFocusCapability', () => {
 
     const factory = createMockInsertFactory();
     const tier: FocusTier = {
-      commands: ['tier1.cmd'],
+      commands: [['tier1.cmd']],
       insertFactory: factory,
       label: 'insertCommands',
       probeMode: 'none',
@@ -46,7 +46,7 @@ describe('ResolvedFocusCapability', () => {
 
     const factory = createMockInsertFactory();
     const tier: FocusTier = {
-      commands: ['focus.cmd'],
+      commands: [['focus.cmd']],
       insertFactory: factory,
       label: 'focusAndPasteCommands',
       probeMode: 'execute',
@@ -60,13 +60,13 @@ describe('ResolvedFocusCapability', () => {
     expect(capability.resolvedTierLabel).toBe('focusAndPasteCommands');
   });
 
-  it('tries multiple commands within the resolved tier', async () => {
+  it('advances to the next stage when a stage command throws', async () => {
     const mockAdapter = createMockVscodeAdapter();
     const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('First cmd failed')).mockResolvedValueOnce(undefined);
 
     const factory = createMockInsertFactory();
     const tier: FocusTier = {
-      commands: ['tier.primary', 'tier.fallback'],
+      commands: [['tier.primary'], ['tier.fallback']],
       insertFactory: factory,
       label: 'focusAndPasteCommands',
       probeMode: 'execute',
@@ -86,7 +86,7 @@ describe('ResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Failed'));
 
     const tier: FocusTier = {
-      commands: ['a.cmd', 'b.cmd'],
+      commands: [['a.cmd'], ['b.cmd']],
       insertFactory: createMockInsertFactory(),
       label: 'focusAndPasteCommands',
       probeMode: 'execute',
@@ -97,8 +97,8 @@ describe('ResolvedFocusCapability', () => {
 
     expect(result).toBeFailure({ reason: 'COMMAND_FOCUS_FAILED' });
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      { ...CONTEXT, tier: 'focusAndPasteCommands', allCommandsFailed: true },
-      'All focus commands failed for resolved tier focusAndPasteCommands',
+      { ...CONTEXT, tier: 'focusAndPasteCommands', allStagesFailed: true },
+      'All focus stages failed for resolved tier focusAndPasteCommands',
     );
   });
 });

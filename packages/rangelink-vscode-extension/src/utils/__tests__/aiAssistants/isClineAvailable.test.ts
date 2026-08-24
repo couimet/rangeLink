@@ -1,11 +1,11 @@
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
-import { GEMINI_CODE_ASSIST_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
-import { EXTENSION_ID_GEMINI_CODE_ASSIST } from '../../aiAssistants/builtInAiAssistants';
-import { isGeminiCodeAssistAvailable } from '../../aiAssistants/isGeminiCodeAssistAvailable';
+import { CLINE_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
+import { EXTENSION_ID_CLINE } from '../../aiAssistants/builtInAiAssistants';
+import { isClineAvailable } from '../../aiAssistants/isClineAvailable';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
-describe('isGeminiCodeAssistAvailable', () => {
+describe('isClineAvailable', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: ReturnType<typeof createMockLogger>;
 
@@ -16,39 +16,39 @@ describe('isGeminiCodeAssistAvailable', () => {
   describe('extension detection', () => {
     it('should return true when extension is installed and active', async () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: EXTENSION_ID_GEMINI_CODE_ASSIST, isActive: true }],
+        extensionsOptions: [{ id: EXTENSION_ID_CLINE, isActive: true }],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: true,
           extensionActive: true,
         },
-        'Gemini Code Assist detected and active',
+        'Cline extension detected and active',
       );
     });
 
     it('should return false when extension is installed but inactive', async () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: EXTENSION_ID_GEMINI_CODE_ASSIST, isActive: false }],
+        extensionsOptions: [{ id: EXTENSION_ID_CLINE, isActive: false }],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: true,
           extensionActive: false,
         },
-        'Gemini Code Assist not available (not installed or not active)',
+        'Cline extension not available (not installed or not active)',
       );
     });
 
@@ -57,38 +57,38 @@ describe('isGeminiCodeAssistAvailable', () => {
         extensionsOptions: [],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: false,
           extensionActive: false,
         },
-        'Gemini Code Assist not available (not installed or not active)',
+        'Cline extension not available (not installed or not active)',
       );
     });
   });
 
   describe('edge cases', () => {
-    it('should not match other Google extensions', async () => {
+    it('should not match other assistant extensions', async () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: 'GoogleCloudTools.cloudcode', isActive: true }],
+        extensionsOptions: [{ id: 'anthropic.claude-code', isActive: true }],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: false,
           extensionActive: false,
         },
-        'Gemini Code Assist not available (not installed or not active)',
+        'Cline extension not available (not installed or not active)',
       );
     });
 
@@ -96,48 +96,48 @@ describe('isGeminiCodeAssistAvailable', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [
           { id: 'other.extension', isActive: true },
-          { id: EXTENSION_ID_GEMINI_CODE_ASSIST, isActive: true },
+          { id: EXTENSION_ID_CLINE, isActive: true },
           { id: 'another.extension', isActive: false },
         ],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: true,
           extensionActive: true,
         },
-        'Gemini Code Assist detected and active',
+        'Cline extension detected and active',
       );
     });
 
     it('should use exact extension ID match', async () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [{ id: 'google.geminicodeassist-preview', isActive: true }],
+        extensionsOptions: [{ id: 'saoudrizwan.claude-dev-preview', isActive: true }],
       });
 
-      const result = await isGeminiCodeAssistAvailable(mockAdapter, mockLogger);
+      const result = await isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'isGeminiCodeAssistAvailable',
-          extensionId: 'google.geminicodeassist',
+          fn: 'isClineAvailable',
+          extensionId: 'saoudrizwan.claude-dev',
           extensionFound: false,
           extensionActive: false,
         },
-        'Gemini Code Assist not available (not installed or not active)',
+        'Cline extension not available (not installed or not active)',
       );
     });
   });
 });
 
-describe('GEMINI_CODE_ASSIST_FOCUS_COMMANDS', () => {
+describe('CLINE_FOCUS_COMMANDS', () => {
   it('should export focus commands array', () => {
-    expect(GEMINI_CODE_ASSIST_FOCUS_COMMANDS).toStrictEqual([['cloudcode.gemini.chatView.focus']]);
+    expect(CLINE_FOCUS_COMMANDS).toStrictEqual([['claude-dev.SidebarProvider.focus', 'cline.focusChatInput'], ['claude-dev.SidebarProvider.focus']]);
   });
 });

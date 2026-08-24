@@ -33,7 +33,7 @@ describe('FocusCapabilityFactory', () => {
   });
 
   it('creates AIAssistantFocusCapability', () => {
-    const capability = factory.createAIAssistantCapability(['workbench.action.chat.open'], undefined);
+    const capability = factory.createAIAssistantCapability([['workbench.action.chat.open']], undefined);
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });
@@ -92,13 +92,13 @@ describe('FocusCapabilityFactory', () => {
 
   describe('buildBuiltinFallbackTier', () => {
     it('creates tier with builtinFallback label and execute probeMode', () => {
-      const FOCUS_COMMANDS = ['cursorAi.focus', 'cursorAi.sidebar.open'];
+      const FOCUS_STAGES = [['cursorAi.focus'], ['cursorAi.sidebar.open']];
 
-      const tier = factory.buildBuiltinFallbackTier(FOCUS_COMMANDS);
+      const tier = factory.buildBuiltinFallbackTier(FOCUS_STAGES);
 
       expect(tier.label).toBe('builtinFallback');
       expect(tier.probeMode).toBe('execute');
-      expect(tier.commands).toStrictEqual(FOCUS_COMMANDS);
+      expect(tier.commands).toStrictEqual(FOCUS_STAGES);
     });
   });
 

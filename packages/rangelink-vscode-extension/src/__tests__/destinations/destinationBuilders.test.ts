@@ -19,6 +19,7 @@ import {
   createMockUri,
   createMockVscodeAdapter,
   spyOnIsClaudeCodeAvailable,
+  spyOnIsClineAvailable,
   spyOnIsCursorIDEDetected,
   spyOnIsGeminiCodeAssistAvailable,
   spyOnIsGitHubCopilotChatAvailable,
@@ -276,6 +277,44 @@ describe('destinationBuilders', () => {
       const destination = builder({ kind: 'claude-code' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Claude Code chat to use.');
+    });
+
+    it('creates cline destination with correct id and displayName', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+
+      const destination = builder({ kind: 'cline' }, context);
+
+      expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
+        id: 'cline',
+        displayName: 'Cline',
+      });
+    });
+
+    it('cline isAvailable delegates to isClineAvailable', async () => {
+      const spy = spyOnIsClineAvailable().mockReturnValue(false);
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      const destination = builder({ kind: 'cline' }, context);
+
+      expect(await destination.isAvailable()).toBe(false);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('cline getUserInstruction returns undefined on auto-paste success', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      const destination = builder({ kind: 'cline' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('cline getUserInstruction returns instruction message on auto-paste failure', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      const destination = builder({ kind: 'cline' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe('Paste (Cmd/Ctrl+V) in Cline to use.');
     });
 
     it('creates gemini-code-assist destination with correct id and displayName', () => {
@@ -651,7 +690,7 @@ describe('destinationBuilders', () => {
 
       registerAllDestinationBuilders(mockRegistry);
 
-      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'cursor-ai', 'claude-code', 'gemini-code-assist', 'github-copilot-chat']);
+      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'cursor-ai', 'claude-code', 'cline', 'gemini-code-assist', 'github-copilot-chat']);
     });
 
     it('registers custom AI assistants when provided', () => {
@@ -677,6 +716,7 @@ describe('destinationBuilders', () => {
         'custom-ai:acme.spark-ai',
         'cursor-ai',
         'claude-code',
+        'cline',
         'gemini-code-assist',
         'github-copilot-chat',
       ]);
@@ -699,7 +739,7 @@ describe('destinationBuilders', () => {
         },
       ]);
 
-      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'claude-code', 'cursor-ai', 'gemini-code-assist', 'github-copilot-chat']);
+      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'claude-code', 'cursor-ai', 'cline', 'gemini-code-assist', 'github-copilot-chat']);
     });
 
     it('overridden built-in uses built-in kind, not custom-ai prefix', () => {
@@ -732,7 +772,7 @@ describe('destinationBuilders', () => {
 
       const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
       expect(createCapabilityMock).toHaveBeenCalledWith(
-        ['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open'],
+        [['claude-vscode.focus'], ['claude-vscode.sidebar.open'], ['claude-vscode.editor.open']],
         expect.any(Function),
       );
 
@@ -809,7 +849,7 @@ describe('destinationBuilders', () => {
       builder({ kind: 'gemini-code-assist' }, context);
 
       const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
-      expect(createCapabilityMock).toHaveBeenCalledWith(['cloudcode.gemini.chatView.focus'], expect.any(Function));
+      expect(createCapabilityMock).toHaveBeenCalledWith([['cloudcode.gemini.chatView.focus']], expect.any(Function));
 
       const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (...args: unknown[]) => unknown;
       expect(typeof getColdRefocusArg).toBe('function');
@@ -868,9 +908,79 @@ describe('destinationBuilders', () => {
     });
   });
 
+  describe('getColdRefocus', () => {
+    it('provides a getColdRefocus function for Cline', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      builder({ kind: 'cline' }, context);
+
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledWith(
+        [['claude-dev.SidebarProvider.focus', 'cline.focusChatInput'], ['claude-dev.SidebarProvider.focus']],
+        expect.any(Function),
+      );
+
+      const getColdRefocusArg = createCapabilityMock.mock.calls[0][1] as (...args: unknown[]) => unknown;
+      expect(typeof getColdRefocusArg).toBe('function');
+
+      const result = getColdRefocusArg();
+      expect(result).toStrictEqual({
+        totalMs: 1500,
+        intervalMs: 300,
+      });
+    });
+
+    it('uses config values from settings when valid', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.cline.coldStartDelayMs') return 5000;
+        if (_key === 'destinations.cline.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'cline' }, context);
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 5000,
+        intervalMs: 500,
+      });
+    });
+
+    it('falls back to defaults when config values are invalid (totalMs <= intervalMs)', () => {
+      const builder = getBuiltinBuilder('cline');
+      const context = createMockContext();
+      context.configReader.getWithDefault = jest.fn().mockImplementation((_key: string) => {
+        if (_key === 'destinations.cline.coldStartDelayMs') return 100;
+        if (_key === 'destinations.cline.coldRefocusIntervalMs') return 500;
+        return undefined;
+      });
+
+      builder({ kind: 'cline' }, context);
+      const createCapabilityMock = context.factories.focusCapability.createAIAssistantCapability as jest.Mock;
+      expect(createCapabilityMock).toHaveBeenCalledTimes(1);
+      const [, getColdRefocusFn] = createCapabilityMock.mock.calls[0];
+
+      const result = getColdRefocusFn();
+      expect(result).toStrictEqual({
+        totalMs: 1500,
+        intervalMs: 300,
+      });
+      expect(context.logger.warn).toHaveBeenCalledWith(
+        { fn: 'cline.getColdRefocus', totalMs: 100, intervalMs: 500 },
+        'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults',
+      );
+    });
+  });
+
   describe('resolveKindByExtensionId', () => {
     it('returns built-in kind when extensionId matches a BUILTIN_AI_ASSISTANTS key', () => {
       expect(resolveKindByExtensionId('anthropic.claude-code', [])).toBe('claude-code');
+      expect(resolveKindByExtensionId('saoudrizwan.claude-dev', [])).toBe('cline');
       expect(resolveKindByExtensionId('google.geminicodeassist', [])).toBe('gemini-code-assist');
       expect(resolveKindByExtensionId('github.copilot-chat', [])).toBe('github-copilot-chat');
     });
