@@ -53,7 +53,13 @@ check_dirty_tree "$REPO_ROOT"
 RELEASE_BRANCH="release/v${VERSION}"
 CURRENT_BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
 
-if git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
+# Temporary local-testing escape hatch: run the whole flow on the current
+# branch without creating/switching to a release branch. Lets the feature
+# branch's scripts (e.g. generate-release-issues.sh) stay in the working tree.
+if [[ -n "${RELEASE_LOCK_INPLACE:-}" ]]; then
+  echo -e "${YELLOW}RELEASE_LOCK_INPLACE set — skipping release branch dance; running on $CURRENT_BRANCH${NC}"
+  RELEASE_BRANCH="$CURRENT_BRANCH"
+elif git -C "$REPO_ROOT" rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
   if [[ "$CURRENT_BRANCH" != "$RELEASE_BRANCH" ]]; then
     echo -e "${YELLOW}Branch $RELEASE_BRANCH already exists (current: $CURRENT_BRANCH).${NC}"
     echo ""
