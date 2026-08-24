@@ -27,14 +27,7 @@ standardSuite('Link Generation', (ss) => {
     assert.ok(!generatedLink.includes('#L21'), `Expected no #L21 in link but got: ${generatedLink}`);
   });
 
-  const runWrappedNavigationTest = async (
-    tcId: string,
-    label: string,
-    wrapperDesc: string,
-    open: string,
-    close: string,
-    suffix: string,
-  ): Promise<void> => {
+  const runWrappedNavigationTest = async (tcId: string, label: string, wrapperDesc: string, open: string, close: string, suffix: string): Promise<void> => {
     const targetUri = ss.createWorkspaceFile(`wln-${tcId}-target`, 'line 1\nline 2\nline 3\nline 4\nTARGET LINE 5\nline 6\n');
     const relativePath = vscode.workspace.asRelativePath(targetUri, false);
     const displayLink = `${open}${relativePath}#L5${close}${suffix}`;
