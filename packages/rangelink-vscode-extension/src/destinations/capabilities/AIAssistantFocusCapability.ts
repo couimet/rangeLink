@@ -60,6 +60,10 @@ export class AIAssistantFocusCapability implements FocusCapability {
 
   private async tryRunStages(context: LoggingContext): Promise<boolean> {
     for (const stage of this.focusStages) {
+      if (stage.length === 0) {
+        // An empty stage must not count as success (skips later fallback stages).
+        continue;
+      }
       let stageSucceeded = true;
       for (const command of stage) {
         try {

@@ -349,7 +349,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     ss.log('✓ Bind status confirmed + content delivered to Cline chat');
   });
 
-  test('[assisted] cline-003: cold panel paste — content arrives in Cline chat after first R-L since bind', async () => {
+  test('[assisted] cline-003: first send after re-bind — content arrives in Cline chat via the cold-start refocus path', async () => {
     ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline']);
     ss.expectContextKeys({ 'rangelink.isBound': true });
 
@@ -374,18 +374,19 @@ standardSuite('Built-in AI Assistants', (ss) => {
 
     assertPasteCommandSucceeded(lines);
 
-    const verdict = await waitForHumanVerdict('cline-003', 'Cold paste: did the RangeLink appear in Cline chat?', [
+    const verdict = await waitForHumanVerdict('cline-003', 'First-send-after-rebind: did the RangeLink appear in Cline chat?', [
       '1. Lines 1-2 of cline-003 are already selected',
       '2. The send was fired automatically (no keypress needed)',
+      '3. This is the first send since re-binding, so the cold-start refocus loop runs to keep the panel open while Cline initializes; the webview may already be warm from an earlier test, which is expected',
       'Verdict:',
     ]);
     assert.strictEqual(
       verdict,
       'pass',
-      'Human reported the RangeLink did not appear in Cline chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+      'Human reported the RangeLink did not appear in Cline chat on the first send after re-bind (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
     );
 
-    ss.log('✓ Cold paste: content delivered to Cline (verdict PASS)');
+    ss.log('✓ First-send-after-rebind: content delivered to Cline (verdict PASS)');
   });
 
   test('[assisted] cline-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
@@ -1057,39 +1058,46 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     const INVALID_INTERVAL_MS = 400;
 
     const config = vscode.workspace.getConfiguration('rangelink.destinations.cline');
+    const previousDelayMs = config.get<number>('coldStartDelayMs');
+    const previousIntervalMs = config.get<number>('coldRefocusIntervalMs');
 
-    // Set delay <= interval so the validation rejects it (by default, delay >
-    // interval so the config is valid; flipping that relationship makes it invalid).
-    await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
-    await config.update('coldRefocusIntervalMs', INVALID_INTERVAL_MS, vscode.ConfigurationTarget.Workspace);
-    await ss.settle();
+    try {
+      // Set delay <= interval so the validation rejects it (by default, delay >
+      // interval so the config is valid; flipping that relationship makes it invalid).
+      await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+      await config.update('coldRefocusIntervalMs', INVALID_INTERVAL_MS, vscode.ConfigurationTarget.Workspace);
+      await ss.settle();
 
-    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+      await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
 
-    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: Focused Cline']);
-    ss.expectContextKeys({ 'rangelink.isBound': true });
+      ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: Focused Cline']);
+      ss.expectContextKeys({ 'rangelink.isBound': true });
 
-    const logCapture = getLogCapture();
-    logCapture.mark('before-cline-006');
+      const logCapture = getLogCapture();
+      logCapture.mark('before-cline-006');
 
-    // Validation lives inside getColdRefocus, which is a thunk only invoked
-    // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
-    // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
-    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
-    await ss.settle();
+      // Validation lives inside getColdRefocus, which is a thunk only invoked
+      // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
+      // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
+      await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+      await ss.settle();
 
-    await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
-    await ss.settle();
+      await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
+      await ss.settle();
 
-    const clineLines = getLogCapture().getLinesSince('before-cline-006');
-    const clineCtx = parseLogContext(
-      clineLines.find((l) => {
-        const c = parseLogContext(l);
-        return c?.fn === 'cline.getColdRefocus' && c.totalMs === INVALID_DELAY_MS && c.intervalMs === INVALID_INTERVAL_MS;
-      }) ?? '',
-    );
-    assert.ok(clineCtx, 'Expected cline.getColdRefocus warning with totalMs=100, intervalMs=400');
+      const clineLines = getLogCapture().getLinesSince('before-cline-006');
+      const clineCtx = parseLogContext(
+        clineLines.find((l) => {
+          const c = parseLogContext(l);
+          return c?.fn === 'cline.getColdRefocus' && c.totalMs === INVALID_DELAY_MS && c.intervalMs === INVALID_INTERVAL_MS;
+        }) ?? '',
+      );
+      assert.ok(clineCtx, 'Expected cline.getColdRefocus warning with totalMs=100, intervalMs=400');
 
-    ss.log('✓ cline-006 — invalid config triggers fallback to defaults');
+      ss.log('✓ cline-006 — invalid config triggers fallback to defaults');
+    } finally {
+      await config.update('coldStartDelayMs', previousDelayMs, vscode.ConfigurationTarget.Workspace);
+      await config.update('coldRefocusIntervalMs', previousIntervalMs, vscode.ConfigurationTarget.Workspace);
+    }
   });
 });

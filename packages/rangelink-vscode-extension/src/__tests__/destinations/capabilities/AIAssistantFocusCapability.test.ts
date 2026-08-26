@@ -1,12 +1,14 @@
+import { FOCUS_TO_PASTE_DELAY_MS } from '../../../constants/aiAssistantPasteConstants';
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from '../../../destinations/capabilities/ColdRefocusConfig';
 import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
+import type { FocusStage, FocusStages } from '../../../destinations/types';
 import { createMockVscodeAdapter } from '../../helpers';
 
 import type { LoggingContext } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
-const FOCUS_STAGES = [['ai.focus']];
+const FOCUS_STAGES: FocusStages = [['ai.focus']];
 const CTX: LoggingContext = { fn: 'test' };
 
 const createMockInsertFactory = (): jest.Mocked<InsertFactory<void>> => ({
@@ -29,14 +31,14 @@ describe('AIAssistantFocusCapability', () => {
     jest.useRealTimers();
   });
 
-  const createCapability = (stages: string[][] = FOCUS_STAGES, getColdRefocus?: () => ColdRefocusConfig): AIAssistantFocusCapability =>
+  const createCapability = (stages: FocusStages = FOCUS_STAGES, getColdRefocus?: () => ColdRefocusConfig): AIAssistantFocusCapability =>
     new AIAssistantFocusCapability(mockAdapter, stages, getColdRefocus, mockInsertFactory, mockLogger);
 
   it('succeeds when the single stage command resolves and returns inserter', async () => {
     jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
     const capability = createCapability();
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
@@ -50,7 +52,7 @@ describe('AIAssistantFocusCapability', () => {
     jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('first failed')).mockResolvedValueOnce(undefined);
     const capability = createCapability([['cmd.a'], ['cmd.b'], ['cmd.c']]);
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
@@ -65,35 +67,54 @@ describe('AIAssistantFocusCapability', () => {
     jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
     const capability = createCapability([['open.panel', 'focus.input']]);
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
-      expect(value.inserter).toBeUndefined();
+      expect(value).toStrictEqual({ inserter: undefined });
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(2);
     expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(1, 'open.panel');
     expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(2, 'focus.input');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', command: 'open.panel', stage: ['open.panel', 'focus.input'] }, 'Focus command succeeded');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', command: 'focus.input', stage: ['open.panel', 'focus.input'] }, 'Focus command succeeded');
   });
 
   it('fails the stage when a later command in the stage throws and advances to the next stage', async () => {
-    jest
-      .spyOn(mockAdapter, 'executeCommand')
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error('focus.input failed'))
-      .mockResolvedValueOnce(undefined);
+    const stageError = new Error('focus.input failed');
+    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValueOnce(undefined).mockRejectedValueOnce(stageError).mockResolvedValueOnce(undefined);
     const capability = createCapability([['open.panel', 'focus.input'], ['fallback.open']]);
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
-      expect(value.inserter).toBeUndefined();
+      expect(value).toStrictEqual({ inserter: undefined });
     });
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(3);
     expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(1, 'open.panel');
     expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(2, 'focus.input');
     expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(3, 'fallback.open');
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', command: 'open.panel', stage: ['open.panel', 'focus.input'] }, 'Focus command succeeded');
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'test', command: 'focus.input', stage: ['open.panel', 'focus.input'], error: stageError },
+      'Focus command failed, trying next stage',
+    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test', command: 'fallback.open', stage: ['fallback.open'] }, 'Focus command succeeded');
+  });
+
+  it('skips an empty stage and advances to the next stage', async () => {
+    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+    const capability = createCapability([[] as unknown as FocusStage, ['fallback.cmd']]);
+    const focusPromise = capability.focus(CTX);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
+    const result = await focusPromise;
+
+    expect(result).toBeSuccessWith((value) => {
+      expect(value).toStrictEqual({ inserter: undefined });
+    });
+    expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
+    expect(mockAdapter.executeCommand).toHaveBeenCalledWith('fallback.cmd');
   });
 
   it('returns error when all focus stages fail', async () => {
@@ -112,7 +133,7 @@ describe('AIAssistantFocusCapability', () => {
     const capability = createCapability();
 
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
@@ -130,7 +151,7 @@ describe('AIAssistantFocusCapability', () => {
     await firstFocus;
 
     const secondFocus = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await secondFocus;
 
     expect(result).toBeSuccessWith((value) => {
@@ -166,7 +187,7 @@ describe('AIAssistantFocusCapability', () => {
     (mockAdapter.executeCommand as jest.Mock).mockClear();
 
     const secondFocus = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     await secondFocus;
 
     expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(1);
@@ -190,7 +211,7 @@ describe('AIAssistantFocusCapability', () => {
     const capability = createCapability(FOCUS_STAGES, coldRefocus);
 
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
@@ -206,7 +227,7 @@ describe('AIAssistantFocusCapability', () => {
     const capability = createCapability(FOCUS_STAGES, coldRefocus);
 
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {
@@ -221,7 +242,7 @@ describe('AIAssistantFocusCapability', () => {
     const capability = createCapability(FOCUS_STAGES, coldRefocus);
 
     const focusPromise = capability.focus(CTX);
-    await jest.advanceTimersByTimeAsync(200);
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
     const result = await focusPromise;
 
     expect(result).toBeSuccessWith((value) => {

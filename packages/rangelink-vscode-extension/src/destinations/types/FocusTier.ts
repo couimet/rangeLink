@@ -14,14 +14,16 @@ import type { InsertFactory } from '../capabilities/insertFactories';
 export type FocusTierProbeMode = 'execute' | 'none';
 
 /**
- * A single sequence of focus commands that must ALL run, in order.
+ * A non-empty sequence of focus commands that must ALL run, in order.
  *
  * Stages express an AND group: the commands in one stage are a prerequisite
  * plus action (e.g., Cline needs `claude-dev.SidebarProvider.focus` to ensure
  * the panel exists, then `cline.focusChatInput` to focus the input). A stage
  * succeeds only when every command in it resolves; any throw fails the stage.
+ * The tuple type forbids an empty stage, which would otherwise report success
+ * without running a command and silently skip the remaining fallback stages.
  */
-export type FocusStage = readonly string[];
+export type FocusStage = readonly [string, ...string[]];
 
 /**
  * Ordered fallback of focus stages — an OR of ANDs.

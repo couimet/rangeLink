@@ -43,6 +43,10 @@ export class ResolvedFocusCapability implements FocusCapability {
     }
 
     for (const stage of resolvedTier.commands) {
+      if (stage.length === 0) {
+        // An empty stage must not count as success (skips later fallback stages).
+        continue;
+      }
       let stageSucceeded = true;
       for (const command of stage) {
         try {

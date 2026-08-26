@@ -11,18 +11,20 @@
  * clipboard paste.
  */
 
-export const CURSOR_AI_FOCUS_COMMANDS = [
+import type { FocusStages } from './types';
+
+export const CURSOR_AI_FOCUS_COMMANDS: FocusStages = [
   ['aichat.newchataction'], // Primary: Cursor-specific command (Cmd+L / Ctrl+L)
   ['workbench.action.toggleAuxiliaryBar'], // Fallback: Toggle secondary sidebar
 ];
 
-export const CLAUDE_CODE_FOCUS_COMMANDS = [
+export const CLAUDE_CODE_FOCUS_COMMANDS: FocusStages = [
   ['claude-vscode.focus'], // Primary: Direct input focus (Cmd+Escape)
   ['claude-vscode.sidebar.open'], // Fallback: Open sidebar
   ['claude-vscode.editor.open'], // Fallback: Open in new tab
 ];
 
-export const CLINE_FOCUS_COMMANDS = [
+export const CLINE_FOCUS_COMMANDS: FocusStages = [
   // Primary: open the sidebar (ensures the webview exists) then focus its input.
   // focusChatInput only lands once the webview is present; the cold-refocus
   // loop re-fires this stage so a still-loading webview gets focused on retry.
@@ -31,11 +33,11 @@ export const CLINE_FOCUS_COMMANDS = [
   ['claude-dev.SidebarProvider.focus'],
 ];
 
-export const GEMINI_CODE_ASSIST_FOCUS_COMMANDS = [
+export const GEMINI_CODE_ASSIST_FOCUS_COMMANDS: FocusStages = [
   ['cloudcode.gemini.chatView.focus'], // google.geminicodeassist extension ≥ 2.79
 ];
 
-export const GITHUB_COPILOT_CHAT_FOCUS_COMMANDS = [
+export const GITHUB_COPILOT_CHAT_FOCUS_COMMANDS: FocusStages = [
   ['workbench.action.chat.open'], // Primary: Opens/focuses the chat view
   ['workbench.panel.chat.view.copilot.focus'], // Fallback: Direct panel focus
 ];

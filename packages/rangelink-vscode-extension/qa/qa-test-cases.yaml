@@ -2604,8 +2604,8 @@ test_cases:
       - clipboard
       - requires-extensions
     feature: 'built-in-ai-assistants'
-    scenario: 'Cold panel paste verification — content arrives in Cline chat input after a single R-L since bind'
-    expected_result: 'Content arrives in Cline chat input. Logs show paste command succeeded.'
+    scenario: 'First send after re-bind — content arrives in Cline chat via the cold-start refocus path (panel may already be warm from cline-002; genuinely-absent webview covered by manual release testing)'
+    expected_result: 'Content arrives in Cline chat on the first send after re-bind. Logs show paste command succeeded.'
     command_to_run: 'pnpm test:release:with-extensions --grep "cline-003"'
     automated: assisted
 

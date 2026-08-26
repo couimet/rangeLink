@@ -4,6 +4,7 @@ import { EditorFocusCapability } from '../../../destinations/capabilities/Editor
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
+import type { FocusStages } from '../../../destinations/types';
 import { createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
@@ -92,7 +93,7 @@ describe('FocusCapabilityFactory', () => {
 
   describe('buildBuiltinFallbackTier', () => {
     it('creates tier with builtinFallback label and execute probeMode', () => {
-      const FOCUS_STAGES = [['cursorAi.focus'], ['cursorAi.sidebar.open']];
+      const FOCUS_STAGES: FocusStages = [['cursorAi.focus'], ['cursorAi.sidebar.open']];
 
       const tier = factory.buildBuiltinFallbackTier(FOCUS_STAGES);
 

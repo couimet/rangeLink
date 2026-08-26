@@ -299,6 +299,7 @@ describe('destinationBuilders', () => {
 
       expect(await destination.isAvailable()).toBe(false);
       expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(context.ideAdapter, context.logger);
     });
 
     it('cline getUserInstruction returns undefined on auto-paste success', () => {
