@@ -2640,6 +2640,16 @@ test_cases:
     command_to_run: 'pnpm test:release:with-extensions --grep "cline-006"'
     automated: true
 
+  - id: cline-007
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'First send after closing Cline — cold-refocus loop recreates an absent webview and delivers content'
+    expected_result: 'Content arrives in Cline chat after the webview is recreated. Logs show the cold-start refocus loop ran (Cold refocus loop completed).'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-007"'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section — Release Notifier
   # ---------------------------------------------------------------------------

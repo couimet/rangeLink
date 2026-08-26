@@ -428,6 +428,7 @@ standardSuite('Built-in AI Assistants', (ss) => {
     const lines = logCapture.getLinesSince('before-cline-004-warm');
 
     assertPasteCommandSucceeded(lines);
+    assert.ok(!lines.some((line) => line.includes('Cold refocus loop completed')), 'Warm send must not run the cold-refocus loop');
 
     const warmVerdict = await waitForHumanVerdict('cline-004-warm', 'Warm send: did the lines 3-4 RangeLink appear in Cline chat without refocus flicker?', [
       '1. Lines 3-4 of cline-004 are selected; warm send was fired automatically',
@@ -1099,5 +1100,56 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
       await config.update('coldStartDelayMs', previousDelayMs, vscode.ConfigurationTarget.Workspace);
       await config.update('coldRefocusIntervalMs', previousIntervalMs, vscode.ConfigurationTarget.Workspace);
     }
+  });
+
+  test('[assisted] cline-007: first send after closing Cline — cold-refocus loop recreates an absent webview and delivers content', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    const fileUri = ss.createWorkspaceFile('cline-007', 'line 1\nline 2\nline 3\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+    await ss.settle();
+
+    // Close the sidebar so Cline's webview is destroyed — the first send must
+    // cold-start it again (the genuinely-absent-webview path cline-003 concedes
+    // it does not cover).
+    await vscode.commands.executeCommand('workbench.action.closeSidebar');
+    await ss.settle();
+
+    const resetVerdict = await waitForHumanVerdict('cline-007-reset', 'Is the Cline panel closed and its webview gone (sidebar hidden)?', [
+      '1. The test just hid the sidebar; Cline should no longer be visible',
+      '2. The first send relies on the cold-refocus loop to reopen and refocus Cline',
+    ]);
+    assert.strictEqual(resetVerdict, 'pass', 'Cline webview was not absent before the first send — the cold-refocus recreation premise did not hold');
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-007');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-cline-007');
+
+    assertPasteCommandSucceeded(lines);
+    assert.ok(
+      lines.some((line) => line.includes('Cold refocus loop completed')),
+      'First send after closing Cline must run the cold-refocus loop',
+    );
+
+    const verdict = await waitForHumanVerdict('cline-007', 'Did the RangeLink appear in Cline chat after Cline was reopened and focused?', [
+      '1. Lines 1-2 of cline-007 are selected; the send was fired automatically',
+      '2. The cold-start refocus loop should have reopened Cline and focused its input',
+      'Verdict:',
+    ]);
+    assert.strictEqual(verdict, 'pass', 'Human reported the RangeLink did not appear in Cline chat after the webview was recreated');
+
+    ss.log('✓ cline-007 — absent-webview cold start: content delivered (verdict PASS)');
   });
 });

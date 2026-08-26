@@ -481,10 +481,10 @@ On first use after binding, Gemini Code Assist's webview panel needs time to ini
 
 ### Destination Settings — Cline <sup>Unreleased</sup>
 
-| Setting                                                                    | Default | Description                                                                                 |
-| -------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
-| `rangelink.destinations.cline.coldStartDelayMs` <sup>Unreleased</sup>      | `1500`  | Total duration (ms) RangeLink waits for the Cline panel to become ready on first use        |
-| `rangelink.destinations.cline.coldRefocusIntervalMs` <sup>Unreleased</sup> | `300`   | Interval (ms) at which RangeLink re-sends the Cline focus signal during the cold-start wait |
+| Setting                                              | Default | Description                                                                                 |
+| ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `rangelink.destinations.cline.coldStartDelayMs`      | `1500`  | Total duration (ms) RangeLink waits for the Cline panel to become ready on first use        |
+| `rangelink.destinations.cline.coldRefocusIntervalMs` | `300`   | Interval (ms) at which RangeLink re-sends the Cline focus signal during the cold-start wait |
 
 On first use after binding, Cline's webview panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
 

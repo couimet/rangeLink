@@ -14,12 +14,12 @@ describe('isClineAvailable', () => {
   });
 
   describe('extension detection', () => {
-    it('should return true when extension is installed and active', async () => {
+    it('should return true when extension is installed and active', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [{ id: EXTENSION_ID_CLINE, isActive: true }],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -33,12 +33,12 @@ describe('isClineAvailable', () => {
       );
     });
 
-    it('should return false when extension is installed but inactive', async () => {
+    it('should return false when extension is installed but inactive', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [{ id: EXTENSION_ID_CLINE, isActive: false }],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -52,12 +52,12 @@ describe('isClineAvailable', () => {
       );
     });
 
-    it('should return false when extension is not installed', async () => {
+    it('should return false when extension is not installed', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -73,12 +73,12 @@ describe('isClineAvailable', () => {
   });
 
   describe('edge cases', () => {
-    it('should not match other assistant extensions', async () => {
+    it('should not match other assistant extensions', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [{ id: 'anthropic.claude-code', isActive: true }],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -92,7 +92,7 @@ describe('isClineAvailable', () => {
       );
     });
 
-    it('should handle mixed extensions list', async () => {
+    it('should handle mixed extensions list', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [
           { id: 'other.extension', isActive: true },
@@ -101,7 +101,7 @@ describe('isClineAvailable', () => {
         ],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(true);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -115,12 +115,12 @@ describe('isClineAvailable', () => {
       );
     });
 
-    it('should use exact extension ID match', async () => {
+    it('should use exact extension ID match', () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: [{ id: 'saoudrizwan.claude-dev-preview', isActive: true }],
       });
 
-      const result = await isClineAvailable(mockAdapter, mockLogger);
+      const result = isClineAvailable(mockAdapter, mockLogger);
 
       expect(result).toBe(false);
       expect(mockLogger.debug).toHaveBeenCalledWith(

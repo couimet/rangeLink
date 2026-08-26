@@ -35,6 +35,9 @@ interface MenuContribution {
   group: string;
 }
 
+const EXPECTED_AI_ASSISTANT_KIND_COUNT = 5;
+const EXPECTED_COMMAND_COUNT = 50;
+
 /**
  * Contract tests for package.json contributions.
  *
@@ -230,7 +233,7 @@ describe('package.json contributions', () => {
           'github-copilot-chat': 'rangelink.bindToGitHubCopilotChat',
         };
 
-        expect(AI_ASSISTANT_KINDS).toHaveLength(5);
+        expect(AI_ASSISTANT_KINDS).toHaveLength(EXPECTED_AI_ASSISTANT_KIND_COUNT);
 
         for (const kind of AI_ASSISTANT_KINDS) {
           const commandId = kindToCommandId[kind];
@@ -523,7 +526,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(50);
+      expect(commands).toHaveLength(EXPECTED_COMMAND_COUNT);
     });
   });
 

@@ -28,6 +28,16 @@ import {
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import type * as vscode from 'vscode';
 
+const BUILTIN_DESTINATION_KINDS: DestinationKind[] = [
+  'terminal',
+  'text-editor',
+  'cursor-ai',
+  'claude-code',
+  'cline',
+  'gemini-code-assist',
+  'github-copilot-chat',
+];
+
 describe('destinationBuilders', () => {
   const mockLogger = createMockLogger();
 
@@ -681,7 +691,7 @@ describe('destinationBuilders', () => {
   });
 
   describe('registerAllDestinationBuilders', () => {
-    it('registers all six built-in destination kinds', () => {
+    it('registers all built-in destination kinds', () => {
       const registeredKinds: DestinationKind[] = [];
       const mockRegistry = {
         register: (kind: DestinationKind, _builder: DestinationBuilder) => {
@@ -691,7 +701,7 @@ describe('destinationBuilders', () => {
 
       registerAllDestinationBuilders(mockRegistry);
 
-      expect(registeredKinds).toStrictEqual(['terminal', 'text-editor', 'cursor-ai', 'claude-code', 'cline', 'gemini-code-assist', 'github-copilot-chat']);
+      expect(registeredKinds).toStrictEqual(BUILTIN_DESTINATION_KINDS);
     });
 
     it('registers custom AI assistants when provided', () => {
@@ -711,16 +721,7 @@ describe('destinationBuilders', () => {
         },
       ]);
 
-      expect(registeredKinds).toStrictEqual([
-        'terminal',
-        'text-editor',
-        'custom-ai:acme.spark-ai',
-        'cursor-ai',
-        'claude-code',
-        'cline',
-        'gemini-code-assist',
-        'github-copilot-chat',
-      ]);
+      expect(registeredKinds).toStrictEqual([...BUILTIN_DESTINATION_KINDS.slice(0, 2), 'custom-ai:acme.spark-ai', ...BUILTIN_DESTINATION_KINDS.slice(2)]);
     });
 
     it('overrides built-in when custom assistant extensionId matches', () => {

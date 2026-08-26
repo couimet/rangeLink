@@ -1,3 +1,4 @@
+import type { ClipboardService } from '../../clipboard/ClipboardService';
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { TerminalPasteService } from '../../services';
@@ -24,6 +25,7 @@ export class FocusCapabilityFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly terminalPasteService: TerminalPasteService,
+    private readonly clipboardService: ClipboardService,
     private readonly logger: Logger,
   ) {}
 
@@ -40,7 +42,7 @@ export class FocusCapabilityFactory {
       this.ideAdapter,
       focusStages,
       getColdRefocus,
-      new AIAssistantInsertFactory(this.ideAdapter, this.logger),
+      new AIAssistantInsertFactory(this.ideAdapter, this.clipboardService, this.logger),
       this.logger,
     );
   }
@@ -97,7 +99,7 @@ export class FocusCapabilityFactory {
   }
 
   private createStandardAIAssistantInsertFactory(): AIAssistantInsertFactory {
-    return new AIAssistantInsertFactory(this.ideAdapter, this.logger);
+    return new AIAssistantInsertFactory(this.ideAdapter, this.clipboardService, this.logger);
   }
 
   /**

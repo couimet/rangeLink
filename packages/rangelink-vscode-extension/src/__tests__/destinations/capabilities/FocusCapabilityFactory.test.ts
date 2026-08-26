@@ -5,7 +5,7 @@ import { FocusCapabilityFactory } from '../../../destinations/capabilities/Focus
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
 import type { FocusStages } from '../../../destinations/types';
-import { createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
+import { createMockClipboardService, createMockTerminal, createMockTerminalPasteService, createMockUri, createMockVscodeAdapter } from '../../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
@@ -16,7 +16,7 @@ describe('FocusCapabilityFactory', () => {
     const mockLogger = createMockLogger();
     const mockAdapter = createMockVscodeAdapter();
     const mockTerminalPasteService = createMockTerminalPasteService();
-    factory = new FocusCapabilityFactory(mockAdapter, mockTerminalPasteService, mockLogger);
+    factory = new FocusCapabilityFactory(mockAdapter, mockTerminalPasteService, createMockClipboardService(), mockLogger);
   });
 
   it('creates EditorFocusCapability', () => {
@@ -52,13 +52,12 @@ describe('FocusCapabilityFactory', () => {
 
       const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(tiers).toHaveLength(3);
-      expect(tiers[0].label).toBe('insertCommands');
-      expect(tiers[0].probeMode).toBe('none');
-      expect(tiers[1].label).toBe('focusAndPasteCommands');
-      expect(tiers[1].probeMode).toBe('execute');
-      expect(tiers[2].label).toBe('focusCommands');
-      expect(tiers[2].probeMode).toBe('execute');
+      // Each tier also carries an insertFactory instance; assert the deterministic tier fields
+      expect(tiers.map((tier) => ({ label: tier.label, probeMode: tier.probeMode, commands: tier.commands }))).toStrictEqual([
+        { label: 'insertCommands', probeMode: 'none', commands: [['sparkAi.insertText']] },
+        { label: 'focusAndPasteCommands', probeMode: 'execute', commands: [['sparkAi.openChat']] },
+        { label: 'focusCommands', probeMode: 'execute', commands: [['sparkAi.chatView.focus']] },
+      ]);
     });
 
     it('builds tiers for only focusCommands', () => {
@@ -71,8 +70,9 @@ describe('FocusCapabilityFactory', () => {
 
       const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(tiers).toHaveLength(1);
-      expect(tiers[0].label).toBe('focusCommands');
+      expect(tiers.map((tier) => ({ label: tier.label, probeMode: tier.probeMode, commands: tier.commands }))).toStrictEqual([
+        { label: 'focusCommands', probeMode: 'execute', commands: [['sparkAi.chatView.focus']] },
+      ]);
     });
 
     it('builds tiers for only insertCommands', () => {
@@ -85,9 +85,9 @@ describe('FocusCapabilityFactory', () => {
 
       const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(tiers).toHaveLength(1);
-      expect(tiers[0].label).toBe('insertCommands');
-      expect(tiers[0].probeMode).toBe('none');
+      expect(tiers.map((tier) => ({ label: tier.label, probeMode: tier.probeMode, commands: tier.commands }))).toStrictEqual([
+        { label: 'insertCommands', probeMode: 'none', commands: [['sparkAi.insertText']] },
+      ]);
     });
   });
 
@@ -97,9 +97,11 @@ describe('FocusCapabilityFactory', () => {
 
       const tier = factory.buildBuiltinFallbackTier(FOCUS_STAGES);
 
-      expect(tier.label).toBe('builtinFallback');
-      expect(tier.probeMode).toBe('execute');
-      expect(tier.commands).toStrictEqual(FOCUS_STAGES);
+      expect({ label: tier.label, probeMode: tier.probeMode, commands: tier.commands }).toStrictEqual({
+        label: 'builtinFallback',
+        probeMode: 'execute',
+        commands: FOCUS_STAGES,
+      });
     });
   });
 
