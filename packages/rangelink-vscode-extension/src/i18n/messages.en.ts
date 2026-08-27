@@ -37,6 +37,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
 
   [MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE]: 'Claude Code Chat',
+  [MessageCode.DESTINATION_DISPLAY_NAME_CLINE]: 'Cline',
   [MessageCode.DESTINATION_DISPLAY_NAME_CURSOR_AI]: 'Cursor AI Assistant',
   [MessageCode.DESTINATION_DISPLAY_NAME_GEMINI_CODE_ASSIST]: 'Gemini Code Assist',
   [MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT]: 'GitHub Copilot Chat',
@@ -59,6 +60,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]: 'Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
   [MessageCode.ERROR_BIND_FAILED]: 'Failed to bind destination',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]: 'Cannot bind Claude Code - extension not installed or not active',
+  [MessageCode.ERROR_CLINE_NOT_AVAILABLE]: 'Cannot bind Cline - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]: 'Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE]: 'Cannot bind {extensionName} - extension not installed or not active',
   [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'Failed to open file {path}: {error}',
@@ -102,6 +104,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
   [MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+  [MessageCode.INFO_CLINE_NOT_AVAILABLE]:
+    'RangeLink can seamlessly integrate with Cline for faster context sharing of precise code ranges.\n\nInstall and activate the Cline extension to use it as a paste destination.',
+  [MessageCode.INFO_CLINE_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in Cline to use.',
   [MessageCode.INFO_COMMIT_HASH_COPIED]: 'Commit hash copied to clipboard',
   [MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in {extensionName} to use.',
   [MessageCode.INFO_CURSOR_AI_NOT_AVAILABLE]:
@@ -154,6 +159,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_ITEM_TOOLTIP_BOUND]: 'RangeLink — {destinationName}',
   [MessageCode.STATUS_BAR_ITEM_TOOLTIP_UNBOUND]: 'RangeLink — no destination bound',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: 'Focused Claude Code Chat',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLINE]: 'Focused Cline',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: 'Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: 'Focused {extensionName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: 'Focused Editor: "{resourceName}"',

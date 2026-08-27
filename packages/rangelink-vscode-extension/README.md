@@ -150,6 +150,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 **Built-in AI assistants:**
 
 - **[Claude Code Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)** — Anthropic's official extension (works in VSCode and Cursor)
+- **[Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev)** <sup>Unreleased</sup> — autonomous AI coding assistant (formerly Claude Dev)
 - **[Gemini Code Assist](https://marketplace.visualstudio.com/items?itemName=Google.geminicodeassist)** — Google's AI coding assistant
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
@@ -162,7 +163,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-**One destination at a time:** Bind to Claude Code, Gemini Code Assist, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
+**One destination at a time:** Bind to Claude Code, Cline, Gemini Code Assist, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
 
 ---
 
@@ -276,29 +277,30 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "RangeLink".
 
-| Command                           | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                                  |
-| --------------------------------- | ------------------- | --------------------- | ------------------------------------------------------------ |
-| Open Menu                         | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                      |
-| Send RangeLink                    | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                               |
-| Send RangeLink (Absolute)         | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination                 |
-| Send Portable Link                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination                 |
-| Send Portable Link (Absolute)     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
-| Copy RangeLink                    | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                    |
-| Copy RangeLink (Absolute)         | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)      |
-| Send Selected Text                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination             |
-| Send Current File Path            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination               |
-| Send Current File Path (Absolute) | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
-| Bind to Destination               | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
-| Bind to Claude Code               | —                   | —                     | Auto-send links to Claude Code chat                          |
-| Bind to Gemini Code Assist        | —                   | —                     | Auto-send links to Gemini Code Assist chat                   |
-| Bind to Cursor AI                 | —                   | —                     | Auto-send links to Cursor AI chat                            |
-| Bind to GitHub Copilot Chat       | —                   | —                     | Auto-send links to Copilot Chat                              |
-| Bind to Terminal                  | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
-| Bind to Text Editor               | —                   | —                     | Auto-paste links at insertion point in bound text editor     |
-| Jump to Bound Destination         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                       |
-| Go to Link                        | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location           |
-| Unbind                            | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination                 |
-| Show Version Info                 | —                   | —                     | Display version and build info                               |
+| Command                             | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                                  |
+| ----------------------------------- | ------------------- | --------------------- | ------------------------------------------------------------ |
+| Open Menu                           | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                      |
+| Send RangeLink                      | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                               |
+| Send RangeLink (Absolute)           | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination                 |
+| Send Portable Link                  | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination                 |
+| Send Portable Link (Absolute)       | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
+| Copy RangeLink                      | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                    |
+| Copy RangeLink (Absolute)           | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)      |
+| Send Selected Text                  | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination             |
+| Send Current File Path              | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination               |
+| Send Current File Path (Absolute)   | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
+| Bind to Destination                 | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
+| Bind to Claude Code                 | —                   | —                     | Auto-send links to Claude Code chat                          |
+| Bind to Cline <sup>Unreleased</sup> | —                   | —                     | Auto-send links to Cline chat                                |
+| Bind to Gemini Code Assist          | —                   | —                     | Auto-send links to Gemini Code Assist chat                   |
+| Bind to Cursor AI                   | —                   | —                     | Auto-send links to Cursor AI chat                            |
+| Bind to GitHub Copilot Chat         | —                   | —                     | Auto-send links to Copilot Chat                              |
+| Bind to Terminal                    | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
+| Bind to Text Editor                 | —                   | —                     | Auto-paste links at insertion point in bound text editor     |
+| Jump to Bound Destination           | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                       |
+| Go to Link                          | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location           |
+| Unbind                              | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination                 |
+| Show Version Info                   | —                   | —                     | Display version and build info                               |
 
 <!-- TODO: #366 unhide when bookmarks graduates from beta — re-add these rows to the Commands table above
 | Save Selection as Bookmark <sup>Unreleased</sup>         | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
@@ -383,7 +385,7 @@ Customize settings in VSCode (Preferences > Settings > search "rangelink").
 | ------------------------------ | ------- | ---------------------------------------------------- |
 | `rangelink.customAiAssistants` | `[]`    | Array of custom AI assistant definitions (see below) |
 
-Define custom AI assistants to extend RangeLink beyond the four built-in AI tools. Each entry has two required fields and three optional command arrays:
+Define custom AI assistants to extend RangeLink beyond the built-in AI tools. Each entry has two required fields and three optional command arrays:
 
 | Field                   | Type                   | Required | Description                                                                                                                                                                                          |
 | ----------------------- | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -426,7 +428,7 @@ At least one of the three command arrays must be present. RangeLink tries them i
 
 When `sparkAi.insertText` is registered (extension supports it), RangeLink uses direct insertion — no clipboard involved. If the command isn't available (older extension version), RangeLink falls back to the focus + manual paste flow automatically.
 
-**Overriding built-in assistants:** You can customize the built-in AI assistants (Claude Code, Gemini Code Assist, Cursor, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
+**Overriding built-in assistants:** You can customize the built-in AI assistants by adding an entry with the same `extensionId` as the built-in. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
 
 ```json
 {
@@ -476,6 +478,15 @@ On first use after binding, the Claude Code chat panel needs time to initialize.
 | `rangelink.destinations.gemini.coldRefocusIntervalMs` | `300`   | Interval (ms) at which RangeLink re-sends the Gemini focus signal during the cold-start wait |
 
 On first use after binding, Gemini Code Assist's webview panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
+
+### Destination Settings — Cline <sup>Unreleased</sup>
+
+| Setting                                              | Default | Description                                                                                 |
+| ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `rangelink.destinations.cline.coldStartDelayMs`      | `1500`  | Total duration (ms) RangeLink waits for the Cline panel to become ready on first use        |
+| `rangelink.destinations.cline.coldRefocusIntervalMs` | `300`   | Interval (ms) at which RangeLink re-sends the Cline focus signal during the cold-start wait |
+
+On first use after binding, Cline's webview panel needs time to initialize. During the cold-start period, RangeLink periodically re-focuses the panel so it receives keyboard focus once ready. After the first successful paste, subsequent operations use a faster warm-start path. Increase `coldStartDelayMs` on slower machines; decrease `coldRefocusIntervalMs` for more aggressive re-focusing. `coldStartDelayMs` must be greater than `coldRefocusIntervalMs` — if violated, defaults are used.
 
 ### Clipboard Settings
 

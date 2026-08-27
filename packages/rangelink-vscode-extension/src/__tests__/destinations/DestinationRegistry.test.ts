@@ -213,14 +213,14 @@ describe('DestinationRegistry', () => {
 
       let capturedCapability: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedCapability = context.factories.focusCapability.createAIAssistantCapability(['focus'], undefined);
+        capturedCapability = context.factories.focusCapability.createAIAssistantCapability([['focus']], undefined);
         return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
       registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(capturedCapability).toBe(mockCapability);
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(['focus'], undefined);
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith([['focus']], undefined);
     });
 
     it('should allow mocking EligibilityCheckerFactory methods in builder', () => {
@@ -274,6 +274,7 @@ describe('DestinationRegistry', () => {
         terminal: 'Terminal',
         'text-editor': 'Text Editor',
         'claude-code': 'Claude Code Chat',
+        cline: 'Cline',
         'cursor-ai': 'Cursor AI Assistant',
         'gemini-code-assist': 'Gemini Code Assist',
         'github-copilot-chat': 'GitHub Copilot Chat',
@@ -293,7 +294,7 @@ describe('DestinationRegistry', () => {
       const registry = createRegistry(factories);
 
       const builder: DestinationBuilder = (_options, context) => {
-        const capability = context.factories.focusCapability.createAIAssistantCapability(['focus.cmd'], undefined);
+        const capability = context.factories.focusCapability.createAIAssistantCapability([['focus.cmd']], undefined);
         const checker = context.factories.eligibilityChecker.createContentEligibilityChecker();
 
         expect(capability).toBe(mockCapability);
@@ -306,7 +307,7 @@ describe('DestinationRegistry', () => {
       const destination = registry.create({ kind: 'cursor-ai' });
 
       expect(destination).toBeDefined();
-      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(['focus.cmd'], undefined);
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith([['focus.cmd']], undefined);
       expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
     });
   });

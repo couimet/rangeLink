@@ -442,7 +442,7 @@ Notes:
 
 ### Extensions: `pnpm test:release:with-extensions --grep "<TC-ID-or-pattern>"`
 
-Runs tests that require marketplace extensions (Claude Code, Gemini Code Assist, Copilot Chat, Cursor AI, custom AI assistants).
+Runs tests that require marketplace extensions (Claude Code, Cline, Gemini Code Assist, Copilot Chat, Cursor AI, custom AI assistants).
 
 USE THIS instead of `:grep` when the target TC has `requires-extensions` in its `labels:` field (see the per-TC label in the YAML — not a feature-group flag). Check the TC's `labels:` list before choosing the command.
 

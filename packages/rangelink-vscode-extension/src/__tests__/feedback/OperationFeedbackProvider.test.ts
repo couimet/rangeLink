@@ -355,6 +355,14 @@ describe('OperationFeedbackProvider', () => {
       });
     });
 
+    it('throws for cline chat assistant destination', () => {
+      expect(() => (provider as any).buildPasteFailureMessage('cline')).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+        message: "Chat assistant destination 'cline' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+        functionName: 'OperationFeedbackProvider.buildPasteFailureMessage',
+        details: { unexpectedValue: 'cline' },
+      });
+    });
+
     it('throws for custom AI assistant destination', () => {
       expect(() => (provider as any).buildPasteFailureMessage('custom-ai:my-extension')).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
         message: "AI assistant destination 'custom-ai:my-extension' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
@@ -429,6 +437,14 @@ describe('OperationFeedbackProvider', () => {
 
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLAUDE_CODE_NOT_AVAILABLE');
       expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith('Cannot bind Claude Code - extension not installed or not active');
+      expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
+    });
+
+    it('shows specific error for cline', () => {
+      provider.notifyBindFailedNotAvailable('Cline', 'cline');
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLINE_NOT_AVAILABLE');
+      expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith('Cannot bind Cline - extension not installed or not active');
       expect(mockAdapter.setSuccessfulStatusBarMessage).not.toHaveBeenCalled();
     });
 

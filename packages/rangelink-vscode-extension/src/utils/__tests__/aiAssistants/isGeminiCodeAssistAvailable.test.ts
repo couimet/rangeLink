@@ -138,6 +138,6 @@ describe('isGeminiCodeAssistAvailable', () => {
 
 describe('GEMINI_CODE_ASSIST_FOCUS_COMMANDS', () => {
   it('should export focus commands array', () => {
-    expect(GEMINI_CODE_ASSIST_FOCUS_COMMANDS).toStrictEqual(['cloudcode.gemini.chatView.focus']);
+    expect(GEMINI_CODE_ASSIST_FOCUS_COMMANDS).toStrictEqual([['cloudcode.gemini.chatView.focus']]);
   });
 });

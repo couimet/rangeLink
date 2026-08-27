@@ -49,6 +49,14 @@ export interface ClaudeCodeBindOptions extends WithDestinationKind {
 }
 
 /**
+ * Bind to Cline chat panel.
+ * Future: may include panel reference for specific instance targeting.
+ */
+export interface ClineBindOptions extends WithDestinationKind {
+  readonly kind: Extract<DestinationKind, 'cline'>;
+}
+
+/**
  * Bind to Gemini Code Assist chat panel.
  * Future: may include panel reference for specific instance targeting.
  */
@@ -81,5 +89,6 @@ export type BindOptions =
   | CursorAIBindOptions
   | CopilotChatBindOptions
   | ClaudeCodeBindOptions
+  | ClineBindOptions
   | GeminiCodeAssistBindOptions
   | CustomAiAssistantBindOptions;

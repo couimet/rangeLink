@@ -35,6 +35,9 @@ interface MenuContribution {
   group: string;
 }
 
+const EXPECTED_AI_ASSISTANT_KIND_COUNT = 5;
+const EXPECTED_COMMAND_COUNT = 50;
+
 /**
  * Contract tests for package.json contributions.
  *
@@ -185,6 +188,15 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.bindToCline', () => {
+        expect(findCommand('rangelink.bindToCline')).toStrictEqual({
+          command: 'rangelink.bindToCline',
+          title: 'Bind to Cline',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToCustomAiById', () => {
         expect(findCommand('rangelink.bindToCustomAiById')).toStrictEqual({
           command: 'rangelink.bindToCustomAiById',
@@ -215,12 +227,13 @@ describe('package.json contributions', () => {
       it('has a bind command for every AI_ASSISTANT_KIND — add a new it() above when extending AI_ASSISTANT_KINDS', () => {
         const kindToCommandId: Record<string, string> = {
           'claude-code': 'rangelink.bindToClaudeCode',
+          cline: 'rangelink.bindToCline',
           'cursor-ai': 'rangelink.bindToCursorAI',
           'gemini-code-assist': 'rangelink.bindToGeminiCodeAssist',
           'github-copilot-chat': 'rangelink.bindToGitHubCopilotChat',
         };
 
-        expect(AI_ASSISTANT_KINDS).toHaveLength(4);
+        expect(AI_ASSISTANT_KINDS).toHaveLength(EXPECTED_AI_ASSISTANT_KIND_COUNT);
 
         for (const kind of AI_ASSISTANT_KINDS) {
           const commandId = kindToCommandId[kind];
@@ -513,7 +526,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(49);
+      expect(commands).toHaveLength(EXPECTED_COMMAND_COUNT);
     });
   });
 
@@ -785,6 +798,29 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.destinations.cline.coldStartDelayMs', () => {
+        expect(properties['rangelink.destinations.cline.coldStartDelayMs']).toStrictEqual({
+          type: 'number',
+          default: 1500,
+          minimum: 500,
+          maximum: 15000,
+          description:
+            'Total duration (ms) of the cold-start re-focus window for Cline. During this window, focus commands are re-sent at the coldRefocusIntervalMs cadence to ensure the chat panel is ready before paste dispatch.',
+          title: 'Cline Cold Start Delay',
+        });
+      });
+
+      it('rangelink.destinations.cline.coldRefocusIntervalMs', () => {
+        expect(properties['rangelink.destinations.cline.coldRefocusIntervalMs']).toStrictEqual({
+          type: 'number',
+          default: 300,
+          minimum: 100,
+          maximum: 5000,
+          description: 'Interval (ms) between successive focus-command re-sends during the Cline cold-start window.',
+          title: 'Cline Cold Re-focus Interval',
+        });
+      });
+
       it('rangelink.destinations.gemini.coldStartDelayMs', () => {
         expect(properties['rangelink.destinations.gemini.coldStartDelayMs']).toStrictEqual({
           type: 'number',
@@ -819,6 +855,8 @@ describe('package.json contributions', () => {
         'rangelink.delimiterRange',
         'rangelink.destinations.claudeCode.coldRefocusIntervalMs',
         'rangelink.destinations.claudeCode.coldStartDelayMs',
+        'rangelink.destinations.cline.coldRefocusIntervalMs',
+        'rangelink.destinations.cline.coldStartDelayMs',
         'rangelink.destinations.gemini.coldRefocusIntervalMs',
         'rangelink.destinations.gemini.coldStartDelayMs',
         'rangelink.features.bookmarks.enabled',

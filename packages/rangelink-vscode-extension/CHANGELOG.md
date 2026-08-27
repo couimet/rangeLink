@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cline Integration** - Paste destination for Cline, a popular community-driven AI coding assistant (formerly Claude Dev) (#551)
+  - Automatically inserts links and selected text directly into Cline's chat
+  - Requires the [Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) extension (`saoudrizwan.claude-dev`)
+  - Configurable cold-start timing: `rangelink.destinations.cline.coldStartDelayMs` (default: `1500`) and `rangelink.destinations.cline.coldRefocusIntervalMs` (default: `300`)
+  - Focus handling now supports running a sequence of commands, so jump-to-destination (R-J) lands directly in Cline's chat input rather than just its panel, even on a cold start
+
 ### Changed
 
 - **Single status bar message when binding and sending in one step via the destination picker**, instead of two back-to-back messages. The merged message reads "Bound to &lt;destination&gt; — &lt;link&gt; sent". (#621)
@@ -18,10 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Auto-unbind when a bound file is deleted from disk**, matching the existing terminal-close behavior. Deleting a bound file now triggers an auto-unbind with a status bar message and warning toast. Previously the binding survived and subsequent paste attempts would target a non-existent file. (#611)
+- **Smart padding now applies when sending links to AI assistant chats** (Claude Code, Cursor, GitHub Copilot, Gemini, Cline) — the padded link is staged on the clipboard for the assistant's paste, then the raw link is restored. Previously AI assistant paste received the unpadded clipboard, so the spacing around the RangeLink was dropped. (#551)
 - **R-F (paste current file path) now works for any active tab that maps to a file** — image previews, notebooks, and diff views — not just text editors. (#643)
 - **RangeLinks inside parentheses now navigate correctly** — `(path#Lx-Ly)` no longer includes the leading `(` in the file path, so navigation works instead of failing with "Cannot find file: (path...". Also applies to `[]`, `{}`, `<>` wrappers, and trailing sentence terminators. (#661, #666)
 - **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
+- **Auto-unbind when a bound file is deleted from disk**, matching the existing terminal-close behavior. Deleting a bound file now triggers an auto-unbind with a status bar message and warning toast. Previously the binding survived and subsequent paste attempts would target a non-existent file. (#611)
 - **RangeLink context menu items now appear in remote and virtual workspaces** — devcontainers, SSH remotes, WSL, Codespaces (`vscode-remote://`), and GitHub's web editor (`vscode-vfs://`). These URI schemes are now recognized as writable, so link-generation, paste-file-path, and bind commands appear in context menus where they were previously hidden. (#679) — Contributed by [@lourot](https://github.com/lourot). 🎉 First open-source contribution on the project!
 
 <!-- markdownlint-disable MD038 -->

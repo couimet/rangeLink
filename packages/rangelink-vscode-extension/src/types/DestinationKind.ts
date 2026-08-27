@@ -4,7 +4,7 @@
  * Single source of truth - DestinationKind is derived from this array.
  * Keep in alphabetical order for maintainability.
  */
-export const DESTINATION_KINDS = ['claude-code', 'cursor-ai', 'gemini-code-assist', 'github-copilot-chat', 'terminal', 'text-editor'] as const;
+export const DESTINATION_KINDS = ['claude-code', 'cline', 'cursor-ai', 'gemini-code-assist', 'github-copilot-chat', 'terminal', 'text-editor'] as const;
 
 /**
  * Built-in paste destination kinds (derived from DESTINATION_KINDS array)
@@ -35,6 +35,7 @@ export const isCustomAiAssistantKind = (kind: string): kind is CustomAiAssistant
  */
 export const AI_ASSISTANT_KINDS = [
   'claude-code',
+  'cline',
   'cursor-ai',
   'gemini-code-assist',
   'github-copilot-chat',

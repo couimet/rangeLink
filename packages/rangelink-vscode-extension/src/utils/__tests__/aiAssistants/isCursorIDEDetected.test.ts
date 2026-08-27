@@ -251,6 +251,6 @@ describe('isCursorIDEDetected', () => {
 
 describe('CURSOR_AI_FOCUS_COMMANDS', () => {
   it('should export focus commands array with primary and fallback commands', () => {
-    expect(CURSOR_AI_FOCUS_COMMANDS).toStrictEqual(['aichat.newchataction', 'workbench.action.toggleAuxiliaryBar']);
+    expect(CURSOR_AI_FOCUS_COMMANDS).toStrictEqual([['aichat.newchataction'], ['workbench.action.toggleAuxiliaryBar']]);
   });
 });

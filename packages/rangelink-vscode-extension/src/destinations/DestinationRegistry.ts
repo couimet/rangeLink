@@ -22,6 +22,7 @@ const DISPLAY_NAME_CODES: Record<DestinationKind, MessageCode> = {
   'gemini-code-assist': MessageCode.DESTINATION_DISPLAY_NAME_GEMINI_CODE_ASSIST,
   'github-copilot-chat': MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT,
   'claude-code': MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE,
+  cline: MessageCode.DESTINATION_DISPLAY_NAME_CLINE,
 };
 
 /**

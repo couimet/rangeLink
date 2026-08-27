@@ -25,6 +25,8 @@ export const SETTINGS_DESTINATIONS_PREFIX = 'destinations.';
 
 export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS = 'destinations.claudeCode.coldRefocusIntervalMs';
 export const SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS = 'destinations.claudeCode.coldStartDelayMs';
+export const SETTING_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS = 'destinations.cline.coldRefocusIntervalMs';
+export const SETTING_DESTINATIONS_CLINE_COLD_START_DELAY_MS = 'destinations.cline.coldStartDelayMs';
 export const SETTING_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS = 'destinations.gemini.coldRefocusIntervalMs';
 export const SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS = 'destinations.gemini.coldStartDelayMs';
 

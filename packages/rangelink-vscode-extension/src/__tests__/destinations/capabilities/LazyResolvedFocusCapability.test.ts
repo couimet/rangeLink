@@ -24,7 +24,7 @@ describe('LazyResolvedFocusCapability', () => {
     const getCommandsSpy = jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue(['sparkAi.insertText']);
 
     const tier: FocusTier = {
-      commands: ['sparkAi.insertText'],
+      commands: [['sparkAi.insertText']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
@@ -49,7 +49,7 @@ describe('LazyResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue([]);
 
     const tier: FocusTier = {
-      commands: ['nonexistent.cmd'],
+      commands: [['nonexistent.cmd']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
@@ -73,13 +73,13 @@ describe('LazyResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue(['builtin.focus']);
 
     const userTier: FocusTier = {
-      commands: ['custom.insert'],
+      commands: [['custom.insert']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
     };
     const fallbackTier: FocusTier = {
-      commands: ['builtin.focus'],
+      commands: [['builtin.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'builtinFallback',
       probeMode: 'execute',
@@ -98,7 +98,7 @@ describe('LazyResolvedFocusCapability', () => {
       {
         ...CONTEXT,
         tier: 'builtinFallback',
-        commands: ['builtin.focus'],
+        commands: [['builtin.focus']],
         logPrefix: LOG_PREFIX,
       },
       'TestAssistant: custom commands not registered, falling back to built-in commands',
@@ -110,7 +110,7 @@ describe('LazyResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue(['custom.insert']);
 
     const tier: FocusTier = {
-      commands: ['custom.insert'],
+      commands: [['custom.insert']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
@@ -130,7 +130,7 @@ describe('LazyResolvedFocusCapability', () => {
     const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
     const tier: FocusTier = {
-      commands: ['sparkAi.focus'],
+      commands: [['sparkAi.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'focusAndPasteCommands',
       probeMode: 'execute',
@@ -156,7 +156,7 @@ describe('LazyResolvedFocusCapability', () => {
     );
 
     const tier: FocusTier = {
-      commands: ['sparkAi.insertText'],
+      commands: [['sparkAi.insertText']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
@@ -182,7 +182,7 @@ describe('LazyResolvedFocusCapability', () => {
     jest.spyOn(mockAdapter, 'getCommands').mockRejectedValue(getCommandsError);
 
     const tier: FocusTier = {
-      commands: ['sparkAi.insertText'],
+      commands: [['sparkAi.insertText']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',

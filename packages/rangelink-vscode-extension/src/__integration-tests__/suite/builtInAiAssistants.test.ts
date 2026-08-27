@@ -1,5 +1,6 @@
 import {
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CLINE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
@@ -8,8 +9,13 @@ import {
   CMD_COPY_LINK_RELATIVE,
   CMD_JUMP_TO_DESTINATION,
 } from '../../constants/commandIds';
-import { DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS, DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS } from '../../constants/settingDefaults';
-import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_GEMINI_CODE_ASSIST } from '../../utils/aiAssistants/builtInAiAssistants';
+import {
+  DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
+  DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
+} from '../../constants/settingDefaults';
+import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_CLINE, EXTENSION_ID_GEMINI_CODE_ASSIST } from '../../utils/aiAssistants/builtInAiAssistants';
 import {
   assertClipboardEqualsGeneratedLink,
   assertPasteCommandSucceeded,
@@ -28,6 +34,7 @@ import * as vscode from 'vscode';
 
 const AI_ASSISTANTS_GROUP_LABEL = 'AI Assistants';
 const CLAUDE_CODE_DISPLAY_NAME = 'Claude Code Chat';
+const CLINE_DISPLAY_NAME = 'Cline';
 const GEMINI_CODE_ASSIST_DISPLAY_NAME = 'Gemini Code Assist';
 
 standardSuite('Built-in AI Assistants', (ss) => {
@@ -297,6 +304,139 @@ standardSuite('Built-in AI Assistants', (ss) => {
     assert.strictEqual(warmVerdict, 'pass', 'Human reported the warm-send RangeLink did not appear cleanly in Gemini Code Assist chat');
 
     ss.log('✓ Warm paste: content delivered to Gemini Code Assist (cold + warm both PASS)');
+  });
+
+  test('[assisted] cline-002: binding to Cline and sending a link delivers content to chat', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    const fileUri = ss.createWorkspaceFile('cline-002', 'line 1\nline 2\nline 3\n');
+    await ss.openEditor(fileUri);
+    await ss.settle();
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-002-bind');
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+    await ss.settle();
+
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    logCapture.mark('before-cline-002-send');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const sendLines = logCapture.getLinesSince('before-cline-002-send');
+
+    assertPasteCommandSucceeded(sendLines);
+
+    const verdict = await waitForHumanVerdict('cline-002', 'Did the RangeLink + selected code appear in Cline chat?', [
+      '1. The RangeLink send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in Cline chat (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    ss.log('✓ Bind status confirmed + content delivered to Cline chat');
+  });
+
+  test('[assisted] cline-003: first send after re-bind — content arrives in Cline chat via the cold-start refocus path', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    const fileUri = ss.createWorkspaceFile('cline-003', 'line 1\nline 2\nline 3\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-003');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-cline-003');
+
+    assertPasteCommandSucceeded(lines);
+
+    const verdict = await waitForHumanVerdict('cline-003', 'First-send-after-rebind: did the RangeLink appear in Cline chat?', [
+      '1. Lines 1-2 of cline-003 are already selected',
+      '2. The send was fired automatically (no keypress needed)',
+      '3. This is the first send since re-binding, so the cold-start refocus loop runs to keep the panel open while Cline initializes; the webview may already be warm from an earlier test, which is expected',
+      'Verdict:',
+    ]);
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the RangeLink did not appear in Cline chat on the first send after re-bind (code-side paste logs fired — the paste dispatched but did not reach the chat input)',
+    );
+
+    ss.log('✓ First-send-after-rebind: content delivered to Cline (verdict PASS)');
+  });
+
+  test('[assisted] cline-004: warm panel paste — second R-L delivers content without cold-start refocus', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline', '✓ RangeLink: RangeLink sent to Cline']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    const fileUri = ss.createWorkspaceFile('cline-004', 'line 1\nline 2\nline 3\nline 4\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+    await ss.settle();
+
+    // First send (cold) — warms the panel
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const coldVerdict = await waitForHumanVerdict('cline-004-cold', 'Cold send: did the RangeLink appear in Cline chat?', [
+      '1. Lines 1-2 of cline-004 are selected; cold send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(coldVerdict, 'pass', 'Human reported the cold-send RangeLink did not appear in Cline chat');
+
+    // Select lines 3-4 for warm send
+    await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(2, 0, 3, 6);
+    await ss.settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-004-warm');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-cline-004-warm');
+
+    assertPasteCommandSucceeded(lines);
+    assert.ok(!lines.some((line) => line.includes('Cold refocus loop completed')), 'Warm send must not run the cold-refocus loop');
+
+    const warmVerdict = await waitForHumanVerdict('cline-004-warm', 'Warm send: did the lines 3-4 RangeLink appear in Cline chat without refocus flicker?', [
+      '1. Lines 3-4 of cline-004 are selected; warm send was fired automatically',
+      'Verdict:',
+    ]);
+    assert.strictEqual(warmVerdict, 'pass', 'Human reported the warm-send RangeLink did not appear cleanly in Cline chat');
+
+    ss.log('✓ Warm paste: content delivered to Cline (cold + warm both PASS)');
   });
 
   test('[assisted] github-copilot-chat-002: binding to GitHub Copilot Chat and sending a link delivers content to chat', async () => {
@@ -815,6 +955,30 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     ss.log('✓ gemini-code-assist-001 — Gemini Code Assist appears in the destination picker');
   });
 
+  test('cline-001: Cline appears in destination picker when available', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_CLINE)) {
+      ss.log(`Skipping cline-001 — "${EXTENSION_ID_CLINE}" extension is not installed in this test config.`);
+      this.skip();
+    }
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-001');
+
+    await openAndDismiss(CMD_BIND_TO_DESTINATION);
+
+    const lines = logCapture.getLinesSince('before-cline-001');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry from destination picker');
+
+    const clineItem = items!.find((item) => item.displayName === CLINE_DISPLAY_NAME);
+    assert.ok(clineItem, `Expected "${CLINE_DISPLAY_NAME}" in the destination picker items`);
+    assert.strictEqual(clineItem!.itemKind, 'bindable');
+
+    ss.log('✓ cline-001 — Cline appears in the destination picker');
+  });
+
   test('gemini-code-assist-005: Cold-start default settings produce correct ColdRefocusConfig', () => {
     const config = vscode.workspace.getConfiguration('rangelink.destinations.gemini');
     const totalMs = config.get<number>('coldStartDelayMs', DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS);
@@ -825,6 +989,18 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     assert.ok(totalMs > intervalMs, `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`);
 
     ss.log('✓ Default Gemini cold-start config produces valid ColdRefocusConfig');
+  });
+
+  test('cline-005: Cold-start default settings produce correct ColdRefocusConfig', () => {
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.cline');
+    const totalMs = config.get<number>('coldStartDelayMs', DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS);
+    const intervalMs = config.get<number>('coldRefocusIntervalMs', DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS);
+
+    assert.strictEqual(totalMs, DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS, 'Expected default coldStartDelayMs');
+    assert.strictEqual(intervalMs, DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS, 'Expected default coldRefocusIntervalMs');
+    assert.ok(totalMs > intervalMs, `Expected coldStartDelayMs (${totalMs}) > coldRefocusIntervalMs (${intervalMs})`);
+
+    ss.log('✓ Default Cline cold-start config produces valid ColdRefocusConfig');
   });
 
   test('gemini-code-assist-006: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
@@ -871,5 +1047,109 @@ standardSuite('Built-in AI Assistants — Destination Picker', (ss) => {
     assert.ok(gcCtx, 'Expected gemini.getColdRefocus warning with totalMs=100, intervalMs=400');
 
     ss.log('✓ gemini-code-assist-006 — invalid config triggers fallback to defaults');
+  });
+
+  test('cline-006: Cold-start validation rejects invalid config and falls back to defaults', async function (this: MochaContext) {
+    if (!vscode.extensions.getExtension(EXTENSION_ID_CLINE)) {
+      ss.log('Skipping cline-006 — Cline extension not installed in this test config');
+      this.skip();
+    }
+
+    const INVALID_DELAY_MS = 100;
+    const INVALID_INTERVAL_MS = 400;
+
+    const config = vscode.workspace.getConfiguration('rangelink.destinations.cline');
+    const previousDelayMs = config.get<number>('coldStartDelayMs');
+    const previousIntervalMs = config.get<number>('coldRefocusIntervalMs');
+
+    try {
+      // Set delay <= interval so the validation rejects it (by default, delay >
+      // interval so the config is valid; flipping that relationship makes it invalid).
+      await config.update('coldStartDelayMs', INVALID_DELAY_MS, vscode.ConfigurationTarget.Workspace);
+      await config.update('coldRefocusIntervalMs', INVALID_INTERVAL_MS, vscode.ConfigurationTarget.Workspace);
+      await ss.settle();
+
+      await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+      ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: Focused Cline']);
+      ss.expectContextKeys({ 'rangelink.isBound': true });
+
+      const logCapture = getLogCapture();
+      logCapture.mark('before-cline-006');
+
+      // Validation lives inside getColdRefocus, which is a thunk only invoked
+      // during focus() — not at bind() time. CMD_JUMP_TO_DESTINATION triggers
+      // focusBoundDestination() → focus() → getColdRefocus() → validation warning.
+      await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+      await ss.settle();
+
+      await vscode.commands.executeCommand(CMD_JUMP_TO_DESTINATION);
+      await ss.settle();
+
+      const clineLines = getLogCapture().getLinesSince('before-cline-006');
+      const clineCtx = parseLogContext(
+        clineLines.find((l) => {
+          const c = parseLogContext(l);
+          return c?.fn === 'cline.getColdRefocus' && c.totalMs === INVALID_DELAY_MS && c.intervalMs === INVALID_INTERVAL_MS;
+        }) ?? '',
+      );
+      assert.ok(clineCtx, 'Expected cline.getColdRefocus warning with totalMs=100, intervalMs=400');
+
+      ss.log('✓ cline-006 — invalid config triggers fallback to defaults');
+    } finally {
+      await config.update('coldStartDelayMs', previousDelayMs, vscode.ConfigurationTarget.Workspace);
+      await config.update('coldRefocusIntervalMs', previousIntervalMs, vscode.ConfigurationTarget.Workspace);
+    }
+  });
+
+  test('[assisted] cline-007: first send after closing Cline — cold-refocus loop recreates an absent webview and delivers content', async () => {
+    ss.expectStatusBarMessages(['✓ RangeLink: Bound to Cline', '✓ RangeLink: RangeLink sent to Cline']);
+    ss.expectContextKeys({ 'rangelink.isBound': true });
+
+    const fileUri = ss.createWorkspaceFile('cline-007', 'line 1\nline 2\nline 3\n');
+    const doc = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(0, 0, 1, 6);
+    await ss.settle();
+
+    await ss.waitForExtensionActive(EXTENSION_ID_CLINE);
+
+    await vscode.commands.executeCommand(CMD_BIND_TO_CLINE);
+    await ss.settle();
+
+    // Close the sidebar so Cline's webview is destroyed — the first send must
+    // cold-start it again (the genuinely-absent-webview path cline-003 concedes
+    // it does not cover).
+    await vscode.commands.executeCommand('workbench.action.closeSidebar');
+    await ss.settle();
+
+    const resetVerdict = await waitForHumanVerdict('cline-007-reset', 'Is the Cline panel closed and its webview gone (sidebar hidden)?', [
+      '1. The test just hid the sidebar; Cline should no longer be visible',
+      '2. The first send relies on the cold-refocus loop to reopen and refocus Cline',
+    ]);
+    assert.strictEqual(resetVerdict, 'pass', 'Cline webview was not absent before the first send — the cold-refocus recreation premise did not hold');
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-cline-007');
+
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
+    await ss.settle();
+
+    const lines = logCapture.getLinesSince('before-cline-007');
+
+    assertPasteCommandSucceeded(lines);
+    assert.ok(
+      lines.some((line) => line.includes('Cold refocus loop completed')),
+      'First send after closing Cline must run the cold-refocus loop',
+    );
+
+    const verdict = await waitForHumanVerdict('cline-007', 'Did the RangeLink appear in Cline chat after Cline was reopened and focused?', [
+      '1. Lines 1-2 of cline-007 are selected; the send was fired automatically',
+      '2. The cold-start refocus loop should have reopened Cline and focused its input',
+      'Verdict:',
+    ]);
+    assert.strictEqual(verdict, 'pass', 'Human reported the RangeLink did not appear in Cline chat after the webview was recreated');
+
+    ss.log('✓ cline-007 — absent-webview cold start: content delivered (verdict PASS)');
   });
 });

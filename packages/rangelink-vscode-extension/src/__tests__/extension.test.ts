@@ -465,6 +465,7 @@ describe('Extension lifecycle', () => {
   // Command IDs registered (sorted alphabetically)
   const expectedCommands = [
     'rangelink.bindToClaudeCode',
+    'rangelink.bindToCline',
     'rangelink.bindToCursorAI',
     'rangelink.bindToCustomAiById',
     'rangelink.bindToDestination',

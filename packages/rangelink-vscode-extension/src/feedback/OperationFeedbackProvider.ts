@@ -10,6 +10,7 @@ import type { AutoUnbindReason, PasteContext, PasteSendOutcome } from './types';
 
 const AI_ASSISTANT_ERROR_CODES: Record<AIAssistantDestinationKind, MessageCode> = {
   'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
+  cline: MessageCode.ERROR_CLINE_NOT_AVAILABLE,
   'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
   'gemini-code-assist': MessageCode.ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE,
   'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
@@ -174,6 +175,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       case 'terminal':
         return formatMessage(MessageCode.WARN_PASTE_FAILED_TERMINAL);
       case 'claude-code':
+      case 'cline':
       case 'cursor-ai':
       case 'gemini-code-assist':
       case 'github-copilot-chat':

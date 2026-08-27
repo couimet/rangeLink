@@ -5,6 +5,7 @@
  */
 
 export const CMD_BIND_TO_CLAUDE_CODE = 'rangelink.bindToClaudeCode';
+export const CMD_BIND_TO_CLINE = 'rangelink.bindToCline';
 export const CMD_BIND_TO_CURSOR_AI = 'rangelink.bindToCursorAI';
 export const CMD_BIND_TO_CUSTOM_AI_BY_ID = 'rangelink.bindToCustomAiById';
 export const CMD_BIND_TO_DESTINATION = 'rangelink.bindToDestination';

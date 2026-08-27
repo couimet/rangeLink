@@ -210,6 +210,6 @@ describe('isGitHubCopilotChatAvailable', () => {
 
 describe('GITHUB_COPILOT_CHAT_FOCUS_COMMANDS', () => {
   it('should export focus commands array with primary and fallback commands', () => {
-    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS).toStrictEqual(['workbench.action.chat.open', 'workbench.panel.chat.view.copilot.focus']);
+    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS).toStrictEqual([['workbench.action.chat.open'], ['workbench.panel.chat.view.copilot.focus']]);
   });
 });
