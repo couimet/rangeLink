@@ -201,7 +201,7 @@ export class BoundSession implements vscode.Disposable {
     this.disposables.push(disposable);
   }
 
-  private setupFileRenameListener(): void {
+  private setupFileRenameListener = (): void => {
     const disposable = this.events.onDidRenameFiles((event) => {
       if (!isEditorDestination(this.bound)) {
         return;
@@ -230,5 +230,5 @@ export class BoundSession implements vscode.Disposable {
     });
 
     this.disposables.push(disposable);
-  }
+  };
 }
