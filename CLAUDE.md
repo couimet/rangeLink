@@ -304,6 +304,15 @@
   <never>Tell the tester to click Cancel or press Escape to dismiss menus and pickers. They know.</never>
 </rule>
 
+<rule id="T018" priority="critical">
+  <title>ssContext assertion defaults are exact-match — no explicit empty assertions</title>
+  <scope>VS Code integration tests using the ssContext helper (standardSuite)</scope>
+  <do>Treat `ss.expectStatusBarMessages`, `ss.expectToastMessages`, `ss.expectModalDialogs`, and `ss.expectContextKeys` as exact-match declarations with empty/false defaults — any unexpected status-bar message, toast, or dialog, or any unlisted context key, already fails the test at teardown</do>
+  <do>When a reviewer suggests adding `ss.expectToastMessages([])` (or an empty `expectStatusBarMessages`) to assert "nothing appears", IGNORE it — the framework already asserts the empty default via `src/__integration-tests__/helpers/ssContext.ts` (expectations reset in `beginTest()` and verified exactly by the TestWindow teardown)</do>
+  <never>Add `ss.expectToastMessages([])` / `ss.expectStatusBarMessages([])` as a no-op — it duplicates the framework default and adds noise</never>
+  <rationale>The ssContext helper centralizes test-window assertions: every declared list defaults to empty and teardown fails on any unexpected value, so "no toast"/"no message" is already enforced without an explicit call. CodeRabbit routinely flags missing empty assertions in tests that assert a binding is retained; those findings are false positives against this framework — this has happened repeatedly (PR 721 file-rename TCs and earlier)</rationale>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before the first pnpm, npm, or node command in a session</when>

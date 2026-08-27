@@ -1,6 +1,6 @@
-import type { AutoUnbindReason } from './types/AutoUnbindReason';
+import type { AutoUnbindDetails } from './types/AutoUnbindDetails';
 
 export interface LifecycleFeedbackProvider {
-  notifyAutoUnbind(destinationName: string, reason: AutoUnbindReason): void;
+  notifyAutoUnbind(destinationName: string, details: AutoUnbindDetails): void;
   notifyDuplicateTabWarning(): void;
 }

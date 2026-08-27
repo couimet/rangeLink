@@ -3,13 +3,17 @@ import { ComposablePasteDestination } from '../../destinations/ComposablePasteDe
 import { AutoPasteResult, PasteContentType } from '../../types';
 import {
   createMockComposablePasteDestination,
+  createMockEditorComposablePasteDestination,
   createMockEligibilityChecker,
   createMockFocusCapability,
   createMockFormattedLink,
+  createMockTerminal,
   createMockTerminalComposablePasteDestination,
+  createMockUri,
 } from '../helpers';
 
 import { DetailedResult } from '@couimet/detailed-result';
+import { getUniqueInt } from '@couimet/dynamic-testing';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 
 describe('ComposablePasteDestination', () => {
@@ -586,6 +590,158 @@ describe('ComposablePasteDestination', () => {
       const result = destination.getDestinationUri();
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('rawLabel getter', () => {
+    it('should return terminalName for terminal destinations with string name', () => {
+      const destination = createMockTerminalComposablePasteDestination({
+        loggingDetails: { terminalName: 'bash' },
+        logger: mockLogger,
+      });
+
+      expect(destination.rawLabel).toBe('bash');
+    });
+
+    it('should fall back to displayName for terminal destinations with non-string name', () => {
+      const destination = createMockTerminalComposablePasteDestination({
+        displayName: 'Terminal ("bash")',
+        loggingDetails: { terminalName: getUniqueInt() },
+        logger: mockLogger,
+      });
+
+      expect(destination.rawLabel).toBe('Terminal ("bash")');
+    });
+
+    it('should return editorName for editor destinations with string name', () => {
+      const destination = createMockEditorComposablePasteDestination({
+        logger: mockLogger,
+      });
+
+      expect(destination.rawLabel).toBe('file.ts');
+    });
+
+    it('should fall back to displayName for editor destinations with non-string name', () => {
+      const destination = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("file.ts")',
+        loggingDetails: { editorName: getUniqueInt() },
+        logger: mockLogger,
+      });
+
+      expect(destination.rawLabel).toBe('Text Editor ("file.ts")');
+    });
+
+    it('should return displayName for singleton destinations', () => {
+      const destination = createMockComposablePasteDestination({
+        displayName: 'Claude Code',
+        resource: { kind: 'singleton' },
+        logger: mockLogger,
+      });
+
+      expect(destination.rawLabel).toBe('Claude Code');
+    });
+  });
+
+  describe('getDestinationViewColumn()', () => {
+    it('should return view column for editor destinations', () => {
+      const viewColumn = getUniqueInt();
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'editor', uri: { toString: () => 'file:///workspace/src/file.ts' } as never, viewColumn },
+        logger: mockLogger,
+      });
+
+      const result = destination.getDestinationViewColumn();
+
+      expect(result).toBe(viewColumn);
+    });
+
+    it('should return undefined for terminal destinations', () => {
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'terminal', terminal: { name: 'bash' } as never },
+        logger: mockLogger,
+      });
+
+      expect(destination.getDestinationViewColumn()).toBeUndefined();
+    });
+
+    it('should return undefined for singleton destinations', () => {
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'singleton' },
+        logger: mockLogger,
+      });
+
+      expect(destination.getDestinationViewColumn()).toBeUndefined();
+    });
+  });
+
+  describe('editorHasActiveSelection()', () => {
+    it('should return true when the editor has an active selection', () => {
+      const destination = createMockEditorComposablePasteDestination({
+        editorHasActiveSelection: () => true,
+        logger: mockLogger,
+      });
+
+      expect(destination.editorHasActiveSelection()).toBe(true);
+    });
+
+    it('should return false when the editor has no active selection', () => {
+      const destination = createMockEditorComposablePasteDestination({
+        editorHasActiveSelection: () => false,
+        logger: mockLogger,
+      });
+
+      expect(destination.editorHasActiveSelection()).toBe(false);
+    });
+
+    it('should return false when no active-selection function is provided', () => {
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'singleton' },
+        logger: mockLogger,
+      });
+
+      expect(destination.editorHasActiveSelection()).toBe(false);
+    });
+  });
+
+  describe('static factories', () => {
+    it('createTerminal builds a terminal destination with terminal resource', async () => {
+      const terminal = createMockTerminal({ name: 'bash' });
+      const destination = ComposablePasteDestination.createTerminal({
+        terminal,
+        displayName: 'Terminal ("bash")',
+        focusCapability: createMockFocusCapability(),
+        jumpSuccessMessage: 'Jumped to terminal',
+        loggingDetails: { terminalName: 'bash' },
+        logger: mockLogger,
+        compareWith: jest.fn().mockResolvedValue(true),
+      });
+
+      expect(destination.id).toBe('terminal');
+      expect(destination.displayName).toBe('Terminal ("bash")');
+      expect(destination.resource).toStrictEqual({ kind: 'terminal', terminal });
+      await expect(destination.isAvailable()).resolves.toBe(true);
+    });
+
+    it('createEditor builds an editor destination with editor resource', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const viewColumn = getUniqueInt();
+      const destination = ComposablePasteDestination.createEditor({
+        uri: mockUri,
+        viewColumn,
+        displayName: 'Text Editor ("file.ts")',
+        focusCapability: createMockFocusCapability(),
+        eligibilityChecker: createMockEligibilityChecker(),
+        editorHasActiveSelection: () => false,
+        jumpSuccessMessage: 'Jumped to editor',
+        loggingDetails: { editorName: 'file.ts' },
+        logger: mockLogger,
+        compareWith: jest.fn().mockResolvedValue(false),
+      });
+
+      expect(destination.id).toBe('text-editor');
+      expect(destination.displayName).toBe('Text Editor ("file.ts")');
+      expect(destination.resource).toStrictEqual({ kind: 'editor', uri: mockUri, viewColumn });
+      await expect(destination.isAvailable()).resolves.toBe(true);
     });
   });
 });

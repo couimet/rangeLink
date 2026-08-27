@@ -370,6 +370,28 @@ describe('formatMessage', () => {
       expect(result).toBe('Unbound from Text Editor ("server.ts") — file was deleted from disk');
     });
 
+    it('should format STATUS_BAR_DESTINATION_UNBOUND_FILE_RENAMED with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_RENAMED, {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+
+      expect(result).toBe('Unbound from Text Editor ("server.ts") — file renamed');
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should format WARN_DESTINATION_UNBOUND_FILE_RENAMED with destinationName, oldPath and newPath params', () => {
+      const result = formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_RENAMED, {
+        destinationName: 'Text Editor ("server.ts")',
+        oldPath: 'src/old.ts',
+        newPath: 'src/new.ts',
+      });
+
+      expect(result).toBe('Unbound from Text Editor ("server.ts") — file renamed: src/old.ts → src/new.ts');
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
+    });
+
     it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {
       const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
         destinationName: 'Cursor AI Assistant',

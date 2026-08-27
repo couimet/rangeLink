@@ -2,12 +2,15 @@ import { OperationFeedbackProvider } from '../../feedback/OperationFeedbackProvi
 import { MessageCode } from '../../types';
 import { spyOnFormatMessage } from '../helpers';
 
+import * as vscode from 'vscode';
+
 const createMockVscodeAdapter = () => ({
   showErrorMessage: jest.fn().mockResolvedValue(undefined),
   setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
   setSuccessfulStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
   showInformationMessage: jest.fn().mockResolvedValue(undefined),
   showWarningMessage: jest.fn().mockResolvedValue(undefined),
+  asRelativePath: jest.fn(),
 });
 
 const createPasteContext = (overrides: Record<string, unknown> = {}) => ({
@@ -284,21 +287,22 @@ describe('OperationFeedbackProvider', () => {
 
   describe('notifyAutoUnbind', () => {
     it('shows terminal-closed status bar message', () => {
-      provider.notifyAutoUnbind('Terminal ("bash")', 'terminal-closed');
+      provider.notifyAutoUnbind('Terminal ("bash")', { reason: 'terminal-closed' });
 
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_TERMINAL_CLOSED', { destinationName: 'Terminal ("bash")' });
       expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Terminal ("bash") — terminal closed');
     });
 
     it('shows editor-closed status bar message', () => {
-      provider.notifyAutoUnbind('Text Editor ("file.ts")', 'editor-closed');
+      provider.notifyAutoUnbind('Text Editor ("file.ts")', { reason: 'editor-closed' });
 
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_EDITOR_CLOSED', { destinationName: 'Text Editor ("file.ts")' });
       expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Text Editor ("file.ts") — editor closed');
     });
 
     it('shows file-deleted status bar message and warning toast', () => {
-      provider.notifyAutoUnbind('Text Editor ("server.ts")', 'file-deleted');
+      const deletedUri = vscode.Uri.file('/workspace/src/server.ts');
+      provider.notifyAutoUnbind('Text Editor ("server.ts")', { reason: 'file-deleted', oldUri: deletedUri });
 
       expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED', {
         destinationName: 'Text Editor ("server.ts")',
@@ -310,8 +314,29 @@ describe('OperationFeedbackProvider', () => {
       expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file was deleted from disk');
     });
 
+    it('shows file-renamed status bar message and warning toast with rendered paths', () => {
+      mockAdapter.asRelativePath.mockReturnValueOnce('src/old.ts').mockReturnValueOnce('src/new.ts');
+      const oldUri = vscode.Uri.file('/workspace/src/old.ts');
+      const newUri = vscode.Uri.file('/workspace/src/new.ts');
+
+      provider.notifyAutoUnbind('Text Editor ("server.ts")', { reason: 'file-renamed', oldUri, newUri });
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('STATUS_BAR_DESTINATION_UNBOUND_FILE_RENAMED', {
+        destinationName: 'Text Editor ("server.ts")',
+      });
+      expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file renamed');
+      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(oldUri, 'PathOnly');
+      expect(mockAdapter.asRelativePath).toHaveBeenCalledWith(newUri, 'PathOnly');
+      expect(formatMessageSpy).toHaveBeenCalledWith('WARN_DESTINATION_UNBOUND_FILE_RENAMED', {
+        destinationName: 'Text Editor ("server.ts")',
+        oldPath: 'src/old.ts',
+        newPath: 'src/new.ts',
+      });
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith('Unbound from Text Editor ("server.ts") — file renamed: src/old.ts → src/new.ts');
+    });
+
     it('throws on unexpected reason', () => {
-      expect(() => provider.notifyAutoUnbind('Test', 'unknown-reason' as any)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
+      expect(() => provider.notifyAutoUnbind('Test', { reason: 'unknown-reason' } as any)).toThrowDetailedError('UNEXPECTED_SWITCH_VALUE', {
         message: 'Unexpected auto-unbind reason: "unknown-reason"',
         functionName: 'OperationFeedbackProvider.notifyAutoUnbind',
         details: { unexpectedValue: 'unknown-reason' },

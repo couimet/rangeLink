@@ -9,6 +9,7 @@ describe('createMultiColumnGuard', () => {
     onDidCloseTerminal: jest.Mock;
     onDidCloseTextDocument: jest.Mock;
     onDidChangeTabs: jest.Mock;
+    onDidRenameFiles: jest.Mock;
   };
   let mockEditors: { findVisibleEditorsByUri: jest.Mock };
   let mockFeedback: ReturnType<typeof createMockOperationFeedbackProvider>;
@@ -20,6 +21,7 @@ describe('createMultiColumnGuard', () => {
       onDidCloseTerminal: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidCloseTextDocument: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidChangeTabs: jest.fn().mockReturnValue({ dispose: jest.fn() }),
+      onDidRenameFiles: jest.fn().mockReturnValue({ dispose: jest.fn() }),
     };
     mockEditors = { findVisibleEditorsByUri: jest.fn().mockReturnValue([]) };
     mockFeedback = createMockOperationFeedbackProvider();

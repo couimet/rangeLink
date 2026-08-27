@@ -791,6 +791,48 @@ describe('BookmarksStore', () => {
       });
     });
 
+    it('sets cause to undefined when thrown value is not an Error in update', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      mockMemento.get = jest.fn(() => {
+        throw 'corrupt storage';
+      });
+
+      const result = await store.update(TEST_ID, { label: 'updated' });
+
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while updating bookmark',
+        functionName: 'BookmarksStore.update',
+      });
+    });
+
+    it('sets cause to undefined when thrown value is not an Error in remove', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      mockMemento.get = jest.fn(() => {
+        throw 'corrupt storage';
+      });
+
+      const result = await store.remove(TEST_ID);
+
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while removing bookmark',
+        functionName: 'BookmarksStore.remove',
+      });
+    });
+
+    it('sets cause to undefined when thrown value is not an Error in recordAccess', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      mockMemento.get = jest.fn(() => {
+        throw 'corrupt storage';
+      });
+
+      const result = await store.recordAccess(TEST_ID);
+
+      expect(result).toHaveDetailedError('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while recording bookmark access',
+        functionName: 'BookmarksStore.recordAccess',
+      });
+    });
+
     it('sets cause to undefined when globalState.update rejects with non-Error in save', async () => {
       mockMemento.update = jest.fn().mockRejectedValue('not an error');
 
