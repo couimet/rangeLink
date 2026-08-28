@@ -1,3 +1,4 @@
+export * from './captureSendStrategies';
 export * from './configureEmptyTabGroups';
 export * from './configureWorkspaceMocks';
 export * from './createBaseMockPasteDestination';

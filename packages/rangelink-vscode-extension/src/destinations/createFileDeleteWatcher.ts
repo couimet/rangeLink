@@ -17,6 +17,7 @@ export const createFileDeleteWatcher = (deps: {
   feedback: LifecycleFeedbackProvider;
   displayName: string;
   clearBinding: () => void;
+  getBoundUri: () => vscode.Uri | undefined;
   logger: Logger;
 }): vscode.Disposable => {
   const watcher = deps.watcherFactory.createFileSystemWatcherForFile(
@@ -26,16 +27,18 @@ export const createFileDeleteWatcher = (deps: {
     false, // don't ignore delete events
   );
 
-  const boundUriString = deps.boundUri.toString();
-
   watcher.onDidDelete((deletedUri) => {
-    if (deletedUri.toString() !== boundUriString) {
+    // A rename fires onDidDelete for the old path, and by the time this
+    // watcher's event arrives the rename listener may already have cleared
+    // the binding — the live check suppresses that stale delete.
+    const currentUri = deps.getBoundUri();
+    if (currentUri === undefined || deletedUri.toString() !== currentUri.toString()) {
       return;
     }
 
-    deps.logger.info({ fn: 'createFileDeleteWatcher', fileUri: boundUriString }, `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`);
+    deps.logger.info({ fn: 'createFileDeleteWatcher', fileUri: currentUri.toString() }, `Bound file deleted from disk: ${deps.displayName} — auto-unbinding`);
     deps.clearBinding();
-    deps.feedback.notifyAutoUnbind(deps.displayName, 'file-deleted');
+    deps.feedback.notifyAutoUnbind(deps.displayName, { reason: 'file-deleted', oldUri: deletedUri });
   });
 
   return watcher;

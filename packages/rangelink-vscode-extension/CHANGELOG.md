@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Requires the [Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) extension (`saoudrizwan.claude-dev`)
   - Configurable cold-start timing: `rangelink.destinations.cline.coldStartDelayMs` (default: `1500`) and `rangelink.destinations.cline.coldRefocusIntervalMs` (default: `300`)
   - Focus handling now supports running a sequence of commands, so jump-to-destination (R-J) lands directly in Cline's chat input rather than just its panel, even on a cold start
+- **Auto-unbind when a bound file is renamed**, matching the file-deleted behavior. Renaming a bound file in the Explorer now auto-unbinds with a status bar message and warning toast showing the before/after paths. (#613)
 
 ### Changed
 

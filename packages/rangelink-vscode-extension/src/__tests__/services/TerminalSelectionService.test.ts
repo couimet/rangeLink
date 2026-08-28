@@ -3,9 +3,11 @@ import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErr
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
 import { ExtensionResult } from '../../types';
 import {
+  captureSendStrategies,
   createMockClipboardService,
   createMockConfigReader,
   createMockDestinationManager,
+  createMockPasteDestinationForSendRouter,
   createMockTerminal,
   createMockVscodeAdapter,
   spyOnFormatMessage,
@@ -13,6 +15,8 @@ import {
 } from '../helpers';
 
 import { createMockLogger } from '@couimet/logger-contract-testing';
+
+const SELECTED_CONTENT_LENGTH = 'selected text'.length;
 
 describe('TerminalSelectionService', () => {
   let service: TerminalSelectionService;
@@ -176,10 +180,67 @@ describe('TerminalSelectionService', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
-          contentLength: 13,
+          contentLength: SELECTED_CONTENT_LENGTH,
           terminalName: 'zsh',
         },
-        'Read 13 chars from terminal selection',
+        `Read ${SELECTED_CONTENT_LENGTH} chars from terminal selection`,
+      );
+    });
+
+    it('runs the terminal copy-selection command as the capture producer', async () => {
+      const terminal = createMockTerminal({ name: 'zsh' });
+      Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      // Mimic the real ClipboardService: capture runs the producer and returns the read clipboard
+      mockClipboardService.capture.mockImplementation((producer: () => Promise<unknown>) =>
+        producer().then(() => ExtensionResult.ok({ clipboard: 'selected text', produced: undefined })),
+      );
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+      mockConfigReader.getPaddingMode.mockReturnValue('both');
+
+      const result = await service.pasteTerminalSelectionToDestination();
+
+      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.terminal.copySelection');
+      expect(result).toStrictEqual({ outcome: 'success' });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
+          contentLength: SELECTED_CONTENT_LENGTH,
+          terminalName: 'zsh',
+        },
+        `Read ${SELECTED_CONTENT_LENGTH} chars from terminal selection`,
+      );
+    });
+
+    it('wires sendFn to sendTextToDestination and isEligibleFn to content eligibility', async () => {
+      const terminal = createMockTerminal({ name: 'zsh' });
+      Object.defineProperty(mockAdapter, 'activeTerminal', { get: () => terminal });
+      mockClipboardService.capture.mockResolvedValue(ExtensionResult.ok({ clipboard: 'selected text', produced: undefined }));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+      mockConfigReader.getPaddingMode.mockReturnValue('both');
+      const strategies = captureSendStrategies<string>(mockSendRouter.sendToDestination);
+
+      await service.pasteTerminalSelectionToDestination();
+
+      const destination = createMockPasteDestinationForSendRouter();
+      await strategies.get().sendFn(' selected text ');
+      await strategies.get().isEligibleFn(destination, ' selected text ');
+
+      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(' selected text ');
+      expect(destination.isEligibleForPasteContent).toHaveBeenCalledWith(' selected text ');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
+          contentLength: SELECTED_CONTENT_LENGTH,
+          terminalName: 'zsh',
+        },
+        `Read ${SELECTED_CONTENT_LENGTH} chars from terminal selection`,
       );
     });
   });

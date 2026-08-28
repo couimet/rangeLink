@@ -2,11 +2,13 @@ import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBuffe
 import { LinkGenerator } from '../../services/LinkGenerator';
 import { DirtyBufferWarningResult } from '../../types';
 import {
+  captureSendStrategies,
   createMockConfigReader,
   createMockDestinationManager,
   createMockDocument,
   createMockEditor,
   createMockFormattedLink,
+  createMockPasteDestinationForSendRouter,
   createMockSelection,
   createMockUri,
   createMockVscodeAdapter,
@@ -495,6 +497,33 @@ describe('LinkGenerator', () => {
         },
         undefined,
       );
+    });
+
+    it('wires sendFn to sendLinkToDestination and isEligibleFn to link eligibility', async () => {
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const link = createMockFormattedLink('src/file.ts#L1');
+      mockGenLink.mockReturnValue(DetailedResult.success(link));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+      const strategies = captureSendStrategies<typeof link>(mockSendRouter.sendToDestination);
+
+      await generator.createLink();
+
+      expect(mockAdapter.getActiveTextEditorUri).toHaveBeenCalledWith();
+      expect(mockAdapter.getWorkspaceFolder).toHaveBeenCalledWith(mockDoc.uri);
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'generateLinkFromSelection', formattedLink: link }, 'Generated link: src/file.ts#L1');
+
+      const destination = createMockPasteDestinationForSendRouter();
+      await strategies.get().sendFn(link);
+      await strategies.get().isEligibleFn(destination, link);
+
+      expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(link);
+      expect(destination.isEligibleForPasteLink).toHaveBeenCalledWith(link);
     });
   });
 });

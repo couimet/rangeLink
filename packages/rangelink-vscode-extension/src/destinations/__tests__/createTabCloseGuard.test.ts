@@ -9,6 +9,7 @@ describe('createTabCloseGuard', () => {
     onDidCloseTerminal: jest.Mock;
     onDidCloseTextDocument: jest.Mock;
     onDidChangeTabs: jest.Mock;
+    onDidRenameFiles: jest.Mock;
   };
   let mockFeedback: ReturnType<typeof createMockOperationFeedbackProvider>;
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -19,13 +20,14 @@ describe('createTabCloseGuard', () => {
     closed: [{ input: { uri } }],
   });
 
-  const createGuard = () =>
+  const createGuard = (fileExists?: (uri: vscode.Uri) => boolean) =>
     createTabCloseGuard({
       boundUri: testUri,
       events: mockEvents,
       feedback: mockFeedback,
       displayName: 'Text Editor ("test.ts")',
       clearBinding,
+      fileExists: fileExists ?? (() => true),
       logger: mockLogger,
     });
 
@@ -34,6 +36,7 @@ describe('createTabCloseGuard', () => {
       onDidCloseTerminal: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidCloseTextDocument: jest.fn().mockReturnValue({ dispose: jest.fn() }),
       onDidChangeTabs: jest.fn().mockReturnValue({ dispose: jest.fn() }),
+      onDidRenameFiles: jest.fn().mockReturnValue({ dispose: jest.fn() }),
     };
     mockFeedback = createMockOperationFeedbackProvider();
     mockLogger = createMockLogger();
@@ -53,7 +56,7 @@ describe('createTabCloseGuard', () => {
       'Bound editor tab closed: Text Editor ("test.ts") — auto-unbinding',
     );
     expect(clearBinding).toHaveBeenCalledTimes(1);
-    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', 'editor-closed');
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'editor-closed' });
   });
 
   it('does not unbind when another tab of the same file is still open', () => {
@@ -68,12 +71,62 @@ describe('createTabCloseGuard', () => {
     expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
   });
 
+  it('does not unbind when the tab was replaced by a rename (bound file gone from disk)', () => {
+    createGuard(() => false);
+
+    const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+    handler(createClosedEvent(testUri));
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'createTabCloseGuard', editorUri: 'file:///test.ts' },
+      'Bound editor tab closed while file no longer exists — deferring to rename/delete listeners for Text Editor ("test.ts")',
+    );
+    expect(clearBinding).not.toHaveBeenCalled();
+    expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+  });
+
+  it('unbinds when the bound file is on disk but the last tab is closed', () => {
+    createGuard(() => true);
+
+    const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+    handler(createClosedEvent(testUri));
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'createTabCloseGuard', editorUri: 'file:///test.ts' },
+      'Bound editor tab closed: Text Editor ("test.ts") — auto-unbinding',
+    );
+    expect(clearBinding).toHaveBeenCalledTimes(1);
+    expect(mockFeedback.notifyAutoUnbind).toHaveBeenCalledWith('Text Editor ("test.ts")', { reason: 'editor-closed' });
+  });
+
   it('does nothing when a different tab is closed', () => {
     createGuard();
 
     const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
     handler(createClosedEvent(createMockUri('/other.ts')));
 
+    expect(clearBinding).not.toHaveBeenCalled();
+    expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
+  });
+
+  it('falls back to fs.existsSync when no fileExists function is injected (missing file defers to rename/delete listeners)', () => {
+    const missingUri = createMockUri('/__rangelink_missing__/file.ts');
+    createTabCloseGuard({
+      boundUri: missingUri,
+      events: mockEvents,
+      feedback: mockFeedback,
+      displayName: 'Text Editor ("file.ts")',
+      clearBinding,
+      logger: mockLogger,
+    });
+
+    const handler = mockEvents.onDidChangeTabs.mock.calls[0][0];
+    handler(createClosedEvent(missingUri));
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'createTabCloseGuard', editorUri: 'file:///__rangelink_missing__/file.ts' },
+      'Bound editor tab closed while file no longer exists — deferring to rename/delete listeners for Text Editor ("file.ts")',
+    );
     expect(clearBinding).not.toHaveBeenCalled();
     expect(mockFeedback.notifyAutoUnbind).not.toHaveBeenCalled();
   });
