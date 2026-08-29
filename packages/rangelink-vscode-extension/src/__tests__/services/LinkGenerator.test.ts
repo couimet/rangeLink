@@ -108,7 +108,6 @@ describe('LinkGenerator', () => {
       const { mockDoc, validated } = createValidatedResult();
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
-      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       const link = createMockFormattedLink('src/file.ts#L1');
       mockGenLink.mockReturnValue(DetailedResult.success(link));
       mockSendRouter.resolveDestination.mockResolvedValue({
@@ -148,7 +147,6 @@ describe('LinkGenerator', () => {
       const { mockDoc, validated } = createValidatedResult();
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
-      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(DetailedResult.failure(new Error('generation failed')));
 
       await generator.createLink();
@@ -164,7 +162,6 @@ describe('LinkGenerator', () => {
       const { mockDoc, validated } = createValidatedResult();
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
-      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
       mockGenLink.mockReturnValue(DetailedResult.success(createMockFormattedLink('src/file.ts#L1')));
       jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
 
