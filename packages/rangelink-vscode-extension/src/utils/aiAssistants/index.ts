@@ -10,6 +10,7 @@
 
 export * from './builtInAiAssistants';
 export * from './isClaudeCodeAvailable';
+export * from './isClineAvailable';
 export * from './isCursorIDEDetected';
 export * from './isGeminiCodeAssistAvailable';
 export * from './isGitHubCopilotChatAvailable';

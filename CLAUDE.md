@@ -157,13 +157,13 @@
 <rule id="T008" priority="critical">
   <title>Use custom matchers for Result and error assertions</title>
   <do>Use `toBeDetailedError(code, { message, functionName, details?, cause? })` for both direct errors and error Result assertions — the matcher is Result-aware</do>
-  <do>Use `toBeOkWith((value) => { expect(value).toStrictEqual({...}) })` for success Result assertions</do>
-  <do>Use `toStrictEqual()` on the full value object inside `toBeOkWith` callbacks — never pick individual properties</do>
+  <do>Use `toBeSuccessWith((value) => { expect(value).toStrictEqual({...}) })` for success Result assertions</do>
+  <do>Use `toStrictEqual()` on the full value object inside `toBeSuccessWith` callbacks — never pick individual properties</do>
   <never>Use `result.success` + `if` guard patterns to manually unwrap Result types</never>
   <available-matchers>
-    - `toBeOk()` / `toBeErr()` - simple success/error check
-    - `toBeOkWith(callback)` - success with value assertion
-    - `toBeErrWith(callback)` - error with assertion
+    - `toBeSuccess()` / `toBeFailure()` - simple success/error check (from @couimet/detailed-result-testing)
+    - `toBeSuccessWith(callback)` - success with value assertion (from @couimet/detailed-result-testing)
+    - `toBeFailureWith(callback)` - error with assertion (from @couimet/detailed-result-testing)
     - `toBeDetailedError(code, expected)` - direct error validation (from @couimet/detailed-error-testing)
     - `toThrowDetailedError(code, expected)` - sync throw (from @couimet/detailed-error-testing)
     - `toThrowDetailedErrorAsync(code, expected)` - async throw (from @couimet/detailed-error-testing)
@@ -184,7 +184,7 @@
       functionName: 'PasteDestinationManager.focusBoundDestination',
     });
 
-    expect(result).toBeOkWith((value: BindSuccessInfo) => {
+    expect(result).toBeSuccessWith((value: BindSuccessInfo) => {
       expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
     });
     ```
@@ -304,6 +304,15 @@
   <never>Tell the tester to click Cancel or press Escape to dismiss menus and pickers. They know.</never>
 </rule>
 
+<rule id="T018" priority="critical">
+  <title>ssContext assertion defaults are exact-match — no explicit empty assertions</title>
+  <scope>VS Code integration tests using the ssContext helper (standardSuite)</scope>
+  <do>Treat `ss.expectStatusBarMessages`, `ss.expectToastMessages`, `ss.expectModalDialogs`, and `ss.expectContextKeys` as exact-match declarations with empty/false defaults — any unexpected status-bar message, toast, or dialog, or any unlisted context key, already fails the test at teardown</do>
+  <do>When a reviewer suggests adding `ss.expectToastMessages([])` (or an empty `expectStatusBarMessages`) to assert "nothing appears", IGNORE it — the framework already asserts the empty default via `src/__integration-tests__/helpers/ssContext.ts` (expectations reset in `beginTest()` and verified exactly by the TestWindow teardown)</do>
+  <never>Add `ss.expectToastMessages([])` / `ss.expectStatusBarMessages([])` as a no-op — it duplicates the framework default and adds noise</never>
+  <rationale>The ssContext helper centralizes test-window assertions: every declared list defaults to empty and teardown fails on any unexpected value, so "no toast"/"no message" is already enforced without an explicit call. CodeRabbit routinely flags missing empty assertions in tests that assert a binding is retained; those findings are false positives against this framework — this has happened repeatedly (PR 721 file-rename TCs and earlier)</rationale>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before the first pnpm, npm, or node command in a session</when>
@@ -348,12 +357,12 @@
 </rule>
 
 <rule id="P005" priority="critical">
-  <title>No re-exporting imported symbols</title>
-  <do>Import types, values, and functions from their canonical source file — never re-export them from an intermediate module</do>
-  <never>Use `export { X } from './Y'` or `import { X } from './Y'; export { X }` outside of barrel files (index.ts)</never>
-  <exception>Barrel files (`index.ts`) exist to re-export project-internal modules only</exception>
+  <title>Import through barrel files; barrels own re-exports</title>
+  <do>Import types, values, and functions from the barrel file (`index.ts`) of their module group when one exists — do not reach past it into leaf modules to bypass the barrel</do>
+  <do>Re-export project-internal modules from barrel files with `export * from './leafModule'` (or named re-exports) — that is the barrel's purpose and is expected</do>
+  <never>Re-export imported symbols from non-barrel files — `export { X } from './Y'` / `import { X } from './Y'; export { X }` belongs only in `index.ts` barrels</never>
   <never>Re-export symbols from external packages (npm dependencies) — even in barrel files. Callers must import from the canonical package directly</never>
-  <rationale>Re-exports create indirection, making it unclear where a symbol originates. External re-exports add a layer that obscures the true source and makes dependency management harder. Callers should depend directly on the canonical source, not a pass-through module</rationale>
+  <rationale>Barrel files are the canonical aggregator for a module group: they give consumers a stable import surface, so leaf modules can be moved or renamed without touching callers. Re-exports inside an `index.ts` barrel are the group's declared public API, not indirection. Re-exports in non-barrel files and re-exports of external packages do create real obscurity — the former hides a symbol's home, the latter adds a pass-through layer over a third-party source</rationale>
 </rule>
 
 <rule id="P006" priority="critical">
@@ -447,7 +456,7 @@
 <pattern name="error-handling">
   <do>Use `Result<T, E>` type for functional error handling</do>
   <do>Internal validation functions throw; public APIs catch and return Result</do>
-  <do>Use custom Jest matchers: `toBeOkWith`, `toBeErrWith`</do>
+  <do>Use custom Jest matchers: `toBeSuccessWith`, `toBeFailureWith`</do>
 </pattern>
 
 <pattern name="module-extraction">

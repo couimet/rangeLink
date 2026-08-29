@@ -2,9 +2,11 @@ import { FilePathPaster, getReferencePath } from '../../services/FilePathPaster'
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { DirtyBufferWarningResult, PathFormat } from '../../types';
 import {
+  captureSendStrategies,
   createMockConfigReader,
   createMockDestinationManager,
   createMockDocument,
+  createMockPasteDestinationForSendRouter,
   createMockUri,
   createMockVscodeAdapter,
   createMockWorkspaceFolder,
@@ -151,6 +153,37 @@ describe('FilePathPaster', () => {
         },
         undefined,
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'FilePathPaster.pasteFilePath',
+          pathFormat: 'absolute',
+          uriSource: 'context-menu',
+          filePath: '/workspace/src/file.ts',
+        },
+        'Resolved file path: /workspace/src/file.ts',
+      );
+    });
+
+    it('wires sendFn to sendTextToDestination and isEligibleFn to content eligibility', async () => {
+      const uri = createMockUri('/workspace/src/file.ts');
+      jest.spyOn(mockAdapter, 'findOpenDocument').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+      const strategies = captureSendStrategies<string>(mockSendRouter.sendToDestination);
+
+      await paster.pasteFilePathToDestination(uri, PathFormat.Absolute);
+
+      const destination = createMockPasteDestinationForSendRouter();
+      await strategies.get().sendFn(' /workspace/src/file.ts ');
+      await strategies.get().isEligibleFn(destination, ' /workspace/src/file.ts ');
+
+      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(' /workspace/src/file.ts ');
+      expect(destination.isEligibleForPasteContent).toHaveBeenCalledWith(' /workspace/src/file.ts ');
+      expect(mockAdapter.findOpenDocument).toHaveBeenCalledWith(uri);
+      expect(mockAdapter.getWorkspaceFolder).toHaveBeenCalledWith(uri);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'FilePathPaster.pasteFilePath',

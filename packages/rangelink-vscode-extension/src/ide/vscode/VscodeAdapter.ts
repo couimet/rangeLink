@@ -100,6 +100,16 @@ export class VscodeAdapter
   ) {}
 
   /**
+   * Register event listener for file renames.
+   *
+   * @param listener - Callback invoked when files are renamed
+   * @returns Disposable to unregister the listener
+   */
+  onDidRenameFiles = (listener: (event: vscode.FileRenameEvent) => void): vscode.Disposable => {
+    return this.ideInstance.workspace.onDidRenameFiles(listener);
+  };
+
+  /**
    * Read text from clipboard using VSCode API.
    *
    * Prefer {@link ClipboardService} for logging and error handling.

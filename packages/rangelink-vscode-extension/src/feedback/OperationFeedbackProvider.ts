@@ -1,15 +1,16 @@
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type AIAssistantDestinationKind, type BindContext, type DestinationKind, isAnyAiAssistantKind, MessageCode } from '../types';
+import { type AIAssistantDestinationKind, type BindContext, type DestinationKind, isAnyAiAssistantKind, MessageCode, RelativePathFormat } from '../types';
 import { formatMessage } from '../utils';
 
 import type { BindingFeedback } from './BindingFeedback';
 import type { LifecycleFeedbackProvider } from './LifecycleFeedbackProvider';
-import type { AutoUnbindReason, PasteContext, PasteSendOutcome } from './types';
+import type { AutoUnbindDetails, PasteContext, PasteSendOutcome } from './types';
 
 const AI_ASSISTANT_ERROR_CODES: Record<AIAssistantDestinationKind, MessageCode> = {
   'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
+  cline: MessageCode.ERROR_CLINE_NOT_AVAILABLE,
   'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
   'gemini-code-assist': MessageCode.ERROR_GEMINI_CODE_ASSIST_NOT_AVAILABLE,
   'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
@@ -18,7 +19,8 @@ const AI_ASSISTANT_ERROR_CODES: Record<AIAssistantDestinationKind, MessageCode> 
 export class OperationFeedbackProvider implements LifecycleFeedbackProvider, BindingFeedback {
   constructor(private readonly vscodeAdapter: VscodeAdapter) {}
 
-  notifyAutoUnbind(destinationName: string, reason: AutoUnbindReason): void {
+  notifyAutoUnbind(destinationName: string, details: AutoUnbindDetails): void {
+    const { reason } = details;
     let messageCode: MessageCode;
     switch (reason) {
       case 'terminal-closed':
@@ -30,6 +32,9 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       case 'file-deleted':
         messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_DELETED;
         break;
+      case 'file-renamed':
+        messageCode = MessageCode.STATUS_BAR_DESTINATION_UNBOUND_FILE_RENAMED;
+        break;
       default:
         throw RangeLinkExtensionError.forUnexpectedSwitchDefault('auto-unbind reason', reason, 'OperationFeedbackProvider.notifyAutoUnbind');
     }
@@ -37,6 +42,10 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
 
     if (reason === 'file-deleted') {
       void this.vscodeAdapter.showWarningMessage(formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_DELETED, { destinationName }));
+    } else if (reason === 'file-renamed') {
+      const oldPath = this.vscodeAdapter.asRelativePath(details.oldUri, RelativePathFormat.PathOnly);
+      const newPath = this.vscodeAdapter.asRelativePath(details.newUri, RelativePathFormat.PathOnly);
+      void this.vscodeAdapter.showWarningMessage(formatMessage(MessageCode.WARN_DESTINATION_UNBOUND_FILE_RENAMED, { destinationName, oldPath, newPath }));
     }
   }
 
@@ -174,6 +183,7 @@ export class OperationFeedbackProvider implements LifecycleFeedbackProvider, Bin
       case 'terminal':
         return formatMessage(MessageCode.WARN_PASTE_FAILED_TERMINAL);
       case 'claude-code':
+      case 'cline':
       case 'cursor-ai':
       case 'gemini-code-assist':
       case 'github-copilot-chat':

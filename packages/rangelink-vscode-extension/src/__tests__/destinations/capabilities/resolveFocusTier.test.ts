@@ -19,13 +19,13 @@ describe('resolveFocusTier', () => {
 
   it('resolves to first tier when its command is registered', () => {
     const tier1: FocusTier = {
-      commands: ['sparkAi.insertText'],
+      commands: [['sparkAi.insertText']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
     };
     const tier2: FocusTier = {
-      commands: ['sparkAi.focus'],
+      commands: [['sparkAi.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'focusCommands',
       probeMode: 'execute',
@@ -50,13 +50,13 @@ describe('resolveFocusTier', () => {
 
   it('falls through to second tier when first has no registered commands', () => {
     const tier1: FocusTier = {
-      commands: ['sparkAi.insertText'],
+      commands: [['sparkAi.insertText']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
     };
     const tier2: FocusTier = {
-      commands: ['sparkAi.focus'],
+      commands: [['sparkAi.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'focusCommands',
       probeMode: 'execute',
@@ -86,7 +86,7 @@ describe('resolveFocusTier', () => {
       probeMode: 'none',
     };
     const tier2: FocusTier = {
-      commands: ['sparkAi.focus'],
+      commands: [['sparkAi.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'focusCommands',
       probeMode: 'execute',
@@ -110,7 +110,7 @@ describe('resolveFocusTier', () => {
 
   it('returns undefined when no tier has registered commands', () => {
     const tier: FocusTier = {
-      commands: ['nonexistent.cmd'],
+      commands: [['nonexistent.cmd']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
@@ -127,13 +127,13 @@ describe('resolveFocusTier', () => {
 
   it('marks resolution as fallback when winning tier is at or past fallbackTierIndex', () => {
     const userTier: FocusTier = {
-      commands: ['custom.insert'],
+      commands: [['custom.insert']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
     };
     const fallbackTier: FocusTier = {
-      commands: ['builtin.focus'],
+      commands: [['builtin.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'builtinFallback',
       probeMode: 'execute',
@@ -150,13 +150,13 @@ describe('resolveFocusTier', () => {
 
   it('marks resolution as non-fallback when winning tier is before fallbackTierIndex', () => {
     const userTier: FocusTier = {
-      commands: ['custom.insert'],
+      commands: [['custom.insert']],
       insertFactory: createMockInsertFactory(),
       label: 'insertCommands',
       probeMode: 'none',
     };
     const fallbackTier: FocusTier = {
-      commands: ['builtin.focus'],
+      commands: [['builtin.focus']],
       insertFactory: createMockInsertFactory(),
       label: 'builtinFallback',
       probeMode: 'execute',
@@ -173,7 +173,7 @@ describe('resolveFocusTier', () => {
 
   it('resolves to first registered command within a tier', () => {
     const tier: FocusTier = {
-      commands: ['primary.cmd', 'fallback.cmd'],
+      commands: [['primary.cmd'], ['fallback.cmd']],
       insertFactory: createMockInsertFactory(),
       label: 'focusAndPasteCommands',
       probeMode: 'execute',

@@ -89,7 +89,7 @@ export const createWiringServices = (deps: ExtensionDependencies, context: vscod
 
   const clipboardService = new ClipboardService(ideAdapter, configReader, logger);
   const terminalPasteService = new TerminalPasteService(ideAdapter, clipboardService, logger);
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, terminalPasteService, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, terminalPasteService, clipboardService, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
   const registry = new DestinationRegistry(focusCapabilityFactory, eligibilityCheckerFactory, ideAdapter, configReader, logger);
   const customAssistants = parseCustomAiAssistants(configReader, logger);

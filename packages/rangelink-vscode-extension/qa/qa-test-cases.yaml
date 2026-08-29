@@ -2046,6 +2046,40 @@ test_cases:
     automated: true
 
   # ---------------------------------------------------------------------------
+  # Section — Text Editor Lifecycle: Auto-Unbind on File Rename
+  # ---------------------------------------------------------------------------
+
+  - id: file-rename-auto-unbind-001
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a bound file in the Explorer triggers auto-unbind with status bar message and warning toast showing old and new paths'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file renamed". A warning toast appears: "Unbound from Text Editor (<file>) — file renamed: <oldPath> → <newPath>" with workspace-relative paths. The rangelink.isBound context key is false.'
+    automated: true
+
+  - id: file-rename-auto-unbind-002
+    feature: 'text-editor-destination'
+    scenario: 'Renaming an unrelated file does not unbind the bound text editor destination'
+    expected_result: 'No status bar message and no warning toast appear. The rangelink.isBound context key remains true.'
+    automated: true
+
+  - id: file-rename-auto-unbind-003
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a bound file outside VS Code (external disk rename) triggers auto-unbind via the file-deleted fallback'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file deleted". A warning toast appears: "Unbound from Text Editor (<file>) — file was deleted from disk". No file-renamed message appears. The rangelink.isBound context key is false.'
+    automated: true
+
+  - id: file-rename-auto-unbind-004
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a folder that contains the bound file triggers auto-unbind with status bar message and warning toast showing old and new folder paths'
+    expected_result: 'The status bar shows "RangeLink: Unbound from Text Editor (<file>) — file renamed". A warning toast appears: "Unbound from Text Editor (<file>) — file renamed: <oldFolder> → <newFolder>" with workspace-relative folder paths. The rangelink.isBound context key is false.'
+    automated: true
+
+  - id: file-rename-auto-unbind-005
+    feature: 'text-editor-destination'
+    scenario: 'Renaming a folder that is a path prefix of the bound file does not unbind the bound text editor destination'
+    expected_result: 'No status bar message and no warning toast appear. The rangelink.isBound context key remains true.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
   # Section — Navigation Clamping Feedback (#47)
   # ---------------------------------------------------------------------------
 
@@ -2579,6 +2613,76 @@ test_cases:
     expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
     command_to_run: 'pnpm test:release:with-extensions --grep "gemini-code-assist-006"'
     automated: true
+
+  - id: cline-001
+    labels:
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cline appears in destination picker when extension is active'
+    expected_result: '"Cline" is listed in the AI Assistants group of the destination picker'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-001"'
+    automated: true
+
+  - id: cline-002
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Binding to Cline and sending a link delivers content to chat'
+    expected_result: 'Cline chat opens and contains the RangeLink and selected code snippet'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-002"'
+    automated: assisted
+
+  - id: cline-003
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'First send after re-bind — content arrives in Cline chat via the cold-start refocus path (panel may already be warm from cline-002; genuinely-absent webview covered by manual release testing)'
+    expected_result: 'Content arrives in Cline chat on the first send after re-bind. Logs show paste command succeeded.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-003"'
+    automated: assisted
+
+  - id: cline-004
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'Warm panel paste verification — content arrives in Cline chat input on second R-L without cold-start refocus signals'
+    expected_result: 'Content arrives in Cline chat input. Logs show no cold-start refocus signals.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-004"'
+    automated: assisted
+
+  - id: cline-005
+    labels:
+      - requires-extensions
+      - cold-start
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cold-start default settings produce a valid ColdRefocusConfig where totalMs > intervalMs'
+    expected_result: 'Default settings produce a valid ColdRefocusConfig. coldStartDelayMs is greater than coldRefocusIntervalMs.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-005"'
+    automated: true
+
+  - id: cline-006
+    labels:
+      - requires-extensions
+      - cold-start
+      - validation
+    feature: 'built-in-ai-assistants'
+    scenario: 'Cold-start validation rejects invalid config (totalMs <= intervalMs) and falls back to defaults with a warning'
+    expected_result: 'Invalid config is rejected. Warning is logged. Defaults from coldStartDelayMs / coldRefocusIntervalMs are used as fallback.'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-006"'
+    automated: true
+
+  - id: cline-007
+    labels:
+      - clipboard
+      - requires-extensions
+    feature: 'built-in-ai-assistants'
+    scenario: 'First send after closing Cline — cold-refocus loop recreates an absent webview and delivers content'
+    expected_result: 'Content arrives in Cline chat after the webview is recreated. Logs show the cold-start refocus loop ran (Cold refocus loop completed).'
+    command_to_run: 'pnpm test:release:with-extensions --grep "cline-007"'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section — Release Notifier

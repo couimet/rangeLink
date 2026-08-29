@@ -21,10 +21,28 @@ module.exports = {
   coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json-summary'],
   coverageThreshold: {
     global: {
-      branches: 95,
-      functions: 95,
-      lines: 98,
-      statements: 98,
+      branches: 97,
+      functions: 97,
+      lines: 99,
+      statements: 99,
+    },
+    // VS Code bootstrap entry point — impractical to unit-test (require() of build
+    // artifact version.json, vscode global wiring, no-op deactivate); exercised by
+    // the release integration suite instead.
+    'src/extension.ts': {
+      branches: 60,
+      functions: 50,
+      lines: 90,
+      statements: 90,
+    },
+    // getMessages() defensive fallback is dead by invariant — currentLocale can
+    // only ever be a supported locale, so the `|| supportedLocales[DEFAULT_LOCALE]`
+    // branch is unreachable.
+    'src/i18n/LocaleManager.ts': {
+      branches: 60,
+      functions: 100,
+      lines: 100,
+      statements: 100,
     },
   },
   moduleNameMapper: {

@@ -114,6 +114,6 @@ describe('isClaudeCodeAvailable', () => {
 
 describe('CLAUDE_CODE_FOCUS_COMMANDS', () => {
   it('should export focus commands array with primary and fallback commands', () => {
-    expect(CLAUDE_CODE_FOCUS_COMMANDS).toStrictEqual(['claude-vscode.focus', 'claude-vscode.sidebar.open', 'claude-vscode.editor.open']);
+    expect(CLAUDE_CODE_FOCUS_COMMANDS).toStrictEqual([['claude-vscode.focus'], ['claude-vscode.sidebar.open'], ['claude-vscode.editor.open']]);
   });
 });

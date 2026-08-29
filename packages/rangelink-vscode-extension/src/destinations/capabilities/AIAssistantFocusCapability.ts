@@ -1,5 +1,6 @@
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../constants/aiAssistantPasteConstants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import type { FocusStages } from '../types';
 
 import type { ColdRefocusConfig } from './ColdRefocusConfig';
 import { type FocusCapability, FocusErrorReason, FocusResult } from './FocusCapability';
@@ -10,52 +11,75 @@ import type { Logger, LoggingContext } from '@couimet/logger-contract';
 /**
  * FocusCapability for AI assistant destinations.
  *
- * Executes focus commands to open the AI assistant panel.
- * On cold start (first focus after bind), re-fires focus commands
- * at intervals to keep the panel open while it initializes.
+ * Executes focus stages (OR of ANDs) to open the AI assistant panel. Each
+ * stage is a sequence of commands that must all run; focus advances to the
+ * next stage only when a command in the current stage throws. This models
+ * both simple fallback chains (single-command stages) and prerequisite-plus-
+ * action sequences (e.g., Cline: open the sidebar, then focus its input).
+ * On cold start (first focus after bind), re-fires the stages at intervals
+ * to keep the panel open while it initializes.
  * Uses InsertFactory injection for decoupled clipboard-based paste.
  *
- * Used by: Claude Code, Gemini Code Assist, Cursor AI, GitHub Copilot Chat
+ * Used by: Claude Code, Cline, Gemini Code Assist, Cursor AI, GitHub Copilot Chat
  */
 export class AIAssistantFocusCapability implements FocusCapability {
   private panelIsWarm = false;
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
-    private readonly focusCommands: string[],
+    private readonly focusStages: FocusStages,
     private readonly getColdRefocus: (() => ColdRefocusConfig) | undefined,
     private readonly insertFactory: InsertFactory<void>,
     private readonly logger: Logger,
   ) {}
 
   async focus(context: LoggingContext): Promise<FocusResult> {
-    for (const command of this.focusCommands) {
-      try {
-        await this.ideAdapter.executeCommand(command);
-        this.logger.debug({ ...context, command }, 'Focus command succeeded');
+    const stageSucceeded = await this.tryRunStages(context);
 
-        const coldRefocus = this.getColdRefocus?.();
-
-        if (!this.panelIsWarm && coldRefocus) {
-          await this.refocusDuring(context, coldRefocus);
-        } else {
-          await new Promise<void>((resolve) => setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
-        }
-
-        this.panelIsWarm = true;
-
-        return FocusResult.ok({
-          inserter: this.insertFactory.forTarget(),
-        });
-      } catch (error) {
-        this.logger.debug({ ...context, command, error }, 'Focus command failed, trying next');
-      }
+    if (!stageSucceeded) {
+      this.logger.warn({ ...context, allStagesFailed: true }, 'All focus stages failed');
+      return FocusResult.err({
+        reason: FocusErrorReason.COMMAND_FOCUS_FAILED,
+      });
     }
 
-    this.logger.warn({ ...context, allCommandsFailed: true }, 'All focus commands failed');
-    return FocusResult.err({
-      reason: FocusErrorReason.COMMAND_FOCUS_FAILED,
+    const coldRefocus = this.getColdRefocus?.();
+
+    if (!this.panelIsWarm && coldRefocus) {
+      await this.refocusDuring(context, coldRefocus);
+    } else {
+      await new Promise<void>((resolve) => setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
+    }
+
+    this.panelIsWarm = true;
+
+    return FocusResult.ok({
+      inserter: this.insertFactory.forTarget(),
     });
+  }
+
+  private async tryRunStages(context: LoggingContext): Promise<boolean> {
+    for (const stage of this.focusStages) {
+      if (stage.length === 0) {
+        // An empty stage must not count as success (skips later fallback stages).
+        continue;
+      }
+      let stageSucceeded = true;
+      for (const command of stage) {
+        try {
+          await this.ideAdapter.executeCommand(command);
+          this.logger.debug({ ...context, command, stage }, 'Focus command succeeded');
+        } catch (error) {
+          this.logger.debug({ ...context, command, stage, error }, 'Focus command failed, trying next stage');
+          stageSucceeded = false;
+          break;
+        }
+      }
+      if (stageSucceeded) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private async refocusDuring(context: LoggingContext, refocus: ColdRefocusConfig): Promise<void> {
@@ -77,14 +101,7 @@ export class AIAssistantFocusCapability implements FocusCapability {
         break;
       }
 
-      for (const command of this.focusCommands) {
-        try {
-          await this.ideAdapter.executeCommand(command);
-          break;
-        } catch {
-          // try next command
-        }
-      }
+      await this.tryRunStages(context);
     }
 
     this.logger.debug({ ...context, totalMs: Date.now() - start, intervalMs: refocus.intervalMs }, 'Cold refocus loop completed');

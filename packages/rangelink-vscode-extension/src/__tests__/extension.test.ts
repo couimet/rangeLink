@@ -74,6 +74,7 @@ jest.mock('vscode', () => ({
     openTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeConfiguration: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidRenameFiles: jest.fn(() => ({ dispose: jest.fn() })),
   },
   languages: {
     registerDocumentLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
@@ -465,6 +466,7 @@ describe('Extension lifecycle', () => {
   // Command IDs registered (sorted alphabetically)
   const expectedCommands = [
     'rangelink.bindToClaudeCode',
+    'rangelink.bindToCline',
     'rangelink.bindToCursorAI',
     'rangelink.bindToCustomAiById',
     'rangelink.bindToDestination',

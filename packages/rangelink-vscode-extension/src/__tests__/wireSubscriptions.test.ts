@@ -1,5 +1,6 @@
 import {
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CLINE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
@@ -73,6 +74,7 @@ const EXPECTED_COMMANDS = [
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CLINE,
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_GEMINI_CODE_ASSIST,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
@@ -131,7 +133,7 @@ describe('wireSubscriptions', () => {
       expect(registeredCommands).toContain(cmd);
     }
 
-    expect(registeredCommands).toHaveLength(52);
+    expect(registeredCommands).toHaveLength(53);
   });
 
   it('registers 2 terminal link providers', () => {

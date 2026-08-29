@@ -2,6 +2,7 @@ import { createBindAIAssistantCommand } from './commands/createBindAIAssistantCo
 import { createBindToCustomAiByIdCommand } from './commands/createBindToCustomAiByIdCommand';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CLINE,
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_CUSTOM_AI_BY_ID,
   CMD_BIND_TO_DESTINATION,
@@ -131,6 +132,7 @@ export const wireSubscriptions = (registrar: SubscriptionRegistrar, services: Wi
   for (const [cmd, kind] of [
     [CMD_BIND_TO_CURSOR_AI, 'cursor-ai'],
     [CMD_BIND_TO_CLAUDE_CODE, 'claude-code'],
+    [CMD_BIND_TO_CLINE, 'cline'],
     [CMD_BIND_TO_GEMINI_CODE_ASSIST, 'gemini-code-assist'],
     [CMD_BIND_TO_GITHUB_COPILOT_CHAT, 'github-copilot-chat'],
   ] satisfies [string, AIAssistantDestinationKind][]) {

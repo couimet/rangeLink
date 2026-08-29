@@ -2,6 +2,7 @@ import type { DestinationRegistry, PasteDestination } from '../../destinations';
 import { DESTINATION_KINDS, type DestinationKind } from '../../types';
 
 import { createMockClaudeCodeComposableDestination } from './createMockClaudeCodeComposableDestination';
+import { createMockClineComposableDestination } from './createMockClineComposableDestination';
 import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';
 import { createMockEditorComposablePasteDestination } from './createMockEditorComposablePasteDestination';
 import { createMockGeminiCodeAssistComposableDestination } from './createMockGeminiCodeAssistComposableDestination';
@@ -23,6 +24,7 @@ export interface MockDestinationRegistryOptions {
     terminal?: jest.Mocked<PasteDestination>;
     'text-editor'?: jest.Mocked<PasteDestination>;
     'claude-code'?: jest.Mocked<PasteDestination>;
+    cline?: jest.Mocked<PasteDestination>;
     'gemini-code-assist'?: jest.Mocked<PasteDestination>;
     'cursor-ai'?: jest.Mocked<PasteDestination>;
     'github-copilot-chat'?: jest.Mocked<PasteDestination>;
@@ -39,6 +41,7 @@ const DEFAULT_DISPLAY_NAMES: Record<DestinationKind, string> = {
   terminal: 'Terminal',
   'text-editor': 'Text Editor',
   'claude-code': 'Claude Code Chat',
+  cline: 'Cline',
   'cursor-ai': 'Cursor AI Assistant',
   'gemini-code-assist': 'Gemini Code Assist',
   'github-copilot-chat': 'GitHub Copilot Chat',
@@ -59,6 +62,7 @@ export const createMockDestinationRegistry = (options?: MockDestinationRegistryO
     terminal: createMockTerminalPasteDestination(),
     'text-editor': createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
     'claude-code': createMockClaudeCodeComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    cline: createMockClineComposableDestination() as unknown as jest.Mocked<PasteDestination>,
     'gemini-code-assist': createMockGeminiCodeAssistComposableDestination() as unknown as jest.Mocked<PasteDestination>,
     'cursor-ai': createMockCursorAIComposableDestination() as unknown as jest.Mocked<PasteDestination>,
     'github-copilot-chat': createMockGitHubCopilotChatComposableDestination() as unknown as jest.Mocked<PasteDestination>,

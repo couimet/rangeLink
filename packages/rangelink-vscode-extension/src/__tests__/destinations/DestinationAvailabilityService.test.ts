@@ -91,6 +91,12 @@ describe('DestinationAvailabilityService', () => {
 
       expect(result).toBe('INFO_GITHUB_COPILOT_CHAT_NOT_AVAILABLE');
     });
+
+    it('returns INFO_CLINE_NOT_AVAILABLE for cline', () => {
+      const result = service.getUnavailableMessageCode('cline');
+
+      expect(result).toBe('INFO_CLINE_NOT_AVAILABLE');
+    });
   });
 
   describe('getTerminalItems()', () => {

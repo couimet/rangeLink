@@ -9,12 +9,16 @@ import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants'
 import {
   DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
   DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+  DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
+  DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
   DEFAULT_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
   DEFAULT_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
 } from '../constants/settingDefaults';
 import {
   SETTING_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
   SETTING_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
+  SETTING_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
+  SETTING_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
   SETTING_DESTINATIONS_GEMINI_COLD_REFOCUS_INTERVAL_MS,
   SETTING_DESTINATIONS_GEMINI_COLD_START_DELAY_MS,
 } from '../constants/settingKeys';
@@ -24,17 +28,19 @@ import {
   formatMessage,
   getUntitledDisplayName,
   isClaudeCodeAvailable,
+  isClineAvailable,
   isCursorIDEDetected,
   isGeminiCodeAssistAvailable,
   isGitHubCopilotChatAvailable,
 } from '../utils';
-import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_GEMINI_CODE_ASSIST, EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../utils/aiAssistants/';
+import { EXTENSION_ID_CLAUDE_CODE, EXTENSION_ID_CLINE, EXTENSION_ID_GEMINI_CODE_ASSIST, EXTENSION_ID_GITHUB_COPILOT_CHAT } from '../utils/aiAssistants/';
 
 import type { ColdRefocusConfig } from './capabilities/ColdRefocusConfig';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
 import {
   CLAUDE_CODE_FOCUS_COMMANDS,
+  CLINE_FOCUS_COMMANDS,
   CURSOR_AI_FOCUS_COMMANDS,
   GEMINI_CODE_ASSIST_FOCUS_COMMANDS,
   GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
@@ -42,6 +48,7 @@ import {
 import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import type { PasteDestination } from './PasteDestination';
+import type { FocusStages } from './types';
 
 import type * as vscode from 'vscode';
 
@@ -51,7 +58,7 @@ import type * as vscode from 'vscode';
 
 interface BuiltinAiAssistantDef {
   readonly kind: AIAssistantDestinationKind;
-  readonly focusCommands: readonly string[];
+  readonly focusCommands: FocusStages;
   readonly displayName: string;
   readonly jumpMessageCode: MessageCode;
   readonly userInstructionMessageCode: MessageCode;
@@ -93,6 +100,34 @@ const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
         return {
           totalMs: DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_START_DELAY_MS,
           intervalMs: DEFAULT_DESTINATIONS_CLAUDE_CODE_COLD_REFOCUS_INTERVAL_MS,
+        };
+      }
+
+      return { totalMs, intervalMs };
+    },
+  },
+  [EXTENSION_ID_CLINE]: {
+    kind: 'cline',
+    focusCommands: CLINE_FOCUS_COMMANDS,
+    displayName: 'Cline',
+    jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CLINE,
+    userInstructionMessageCode: MessageCode.INFO_CLINE_USER_INSTRUCTIONS,
+    isAvailable: (ctx) => isClineAvailable(ctx.ideAdapter, ctx.logger),
+    getColdRefocus: (context) => {
+      const totalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
+        DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
+      ) as number;
+      const intervalMs = context.configReader.getWithDefault(
+        SETTING_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
+        DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
+      ) as number;
+
+      if (totalMs <= intervalMs) {
+        context.logger.warn({ fn: 'cline.getColdRefocus', totalMs, intervalMs }, 'coldStartDelayMs must be greater than coldRefocusIntervalMs, using defaults');
+        return {
+          totalMs: DEFAULT_DESTINATIONS_CLINE_COLD_START_DELAY_MS,
+          intervalMs: DEFAULT_DESTINATIONS_CLINE_COLD_REFOCUS_INTERVAL_MS,
         };
       }
 

@@ -1,7 +1,8 @@
+import type { ClipboardService } from '../../clipboard/ClipboardService';
 import type { CustomAiAssistantConfig } from '../../config/parseCustomAiAssistants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { TerminalPasteService } from '../../services';
-import type { FocusTier } from '../types';
+import type { FocusStages, FocusTier } from '../types';
 
 import { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
 import type { ColdRefocusConfig } from './ColdRefocusConfig';
@@ -24,6 +25,7 @@ export class FocusCapabilityFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly terminalPasteService: TerminalPasteService,
+    private readonly clipboardService: ClipboardService,
     private readonly logger: Logger,
   ) {}
 
@@ -35,12 +37,12 @@ export class FocusCapabilityFactory {
     return new TerminalFocusCapability(this.ideAdapter, terminal, new TerminalInsertFactory(this.terminalPasteService, this.logger), this.logger);
   }
 
-  createAIAssistantCapability(focusCommands: string[], getColdRefocus: (() => ColdRefocusConfig) | undefined): FocusCapability {
+  createAIAssistantCapability(focusStages: FocusStages, getColdRefocus: (() => ColdRefocusConfig) | undefined): FocusCapability {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
-      focusCommands,
+      focusStages,
       getColdRefocus,
-      new AIAssistantInsertFactory(this.ideAdapter, this.logger),
+      new AIAssistantInsertFactory(this.ideAdapter, this.clipboardService, this.logger),
       this.logger,
     );
   }
@@ -56,7 +58,7 @@ export class FocusCapabilityFactory {
 
     if (config.insertCommands && config.insertCommands.length > 0) {
       tiers.push({
-        commands: config.insertCommands.map((e) => e.command),
+        commands: config.insertCommands.map((e) => [e.command]),
         insertFactory: new DirectInsertFactory(this.ideAdapter, config.insertCommands, this.logger),
         label: 'insertCommands',
         probeMode: 'none',
@@ -65,7 +67,7 @@ export class FocusCapabilityFactory {
 
     if (config.focusAndPasteCommands && config.focusAndPasteCommands.length > 0) {
       tiers.push({
-        commands: config.focusAndPasteCommands,
+        commands: config.focusAndPasteCommands.map((command) => [command]),
         insertFactory: this.createStandardAIAssistantInsertFactory(),
         label: 'focusAndPasteCommands',
         probeMode: 'execute',
@@ -74,7 +76,7 @@ export class FocusCapabilityFactory {
 
     if (config.focusCommands && config.focusCommands.length > 0) {
       tiers.push({
-        commands: config.focusCommands,
+        commands: config.focusCommands.map((command) => [command]),
         insertFactory: new ManualPasteInsertFactory(this.logger),
         label: 'focusCommands',
         probeMode: 'execute',
@@ -87,9 +89,9 @@ export class FocusCapabilityFactory {
   /**
    * Create a FocusTier for built-in focus+paste commands (used as fallback tier).
    */
-  buildBuiltinFallbackTier(focusCommands: readonly string[]): FocusTier {
+  buildBuiltinFallbackTier(focusStages: FocusStages): FocusTier {
     return {
-      commands: focusCommands,
+      commands: focusStages,
       insertFactory: this.createStandardAIAssistantInsertFactory(),
       label: 'builtinFallback',
       probeMode: 'execute',
@@ -97,7 +99,7 @@ export class FocusCapabilityFactory {
   }
 
   private createStandardAIAssistantInsertFactory(): AIAssistantInsertFactory {
-    return new AIAssistantInsertFactory(this.ideAdapter, this.logger);
+    return new AIAssistantInsertFactory(this.ideAdapter, this.clipboardService, this.logger);
   }
 
   /**

@@ -196,11 +196,22 @@ describe('BindToTerminalCommand', () => {
           createMockTerminalQuickPickItem(terminal1, true),
           createMockTerminalQuickPickItem(terminal2),
         ]);
-        showTerminalPickerSpy.mockResolvedValue(undefined);
+        showTerminalPickerSpy.mockImplementation(
+          (
+            _terminals: readonly TerminalBindableQuickPickItem[],
+            _provider: unknown,
+            handlers: TerminalPickerHandlers<ExtensionResult<BindSuccessInfo>>,
+            _logger: unknown,
+          ) => {
+            expect(handlers.getPlaceholder()).toBe('Select terminal to bind to');
+            return Promise.resolve(undefined);
+          },
+        );
         command = new BindToTerminalCommand(mockAdapter, mockAvailabilityService, mockDestinationManager, mockSession, mockLogger);
 
         await command.execute();
 
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'BindToTerminalCommand.execute' }, 'User cancelled terminal picker');
         expect(showTerminalPickerSpy).toHaveBeenCalledWith(
           [createMockTerminalQuickPickItem(terminal1, true), createMockTerminalQuickPickItem(terminal2)],
           mockAdapter,
