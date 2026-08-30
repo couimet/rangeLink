@@ -193,6 +193,12 @@ const mockQuickPickItemKind = {
   Default: 0,
 };
 
+const mockConfigurationTarget = {
+  Global: 1,
+  Workspace: 2,
+  WorkspaceFolder: 3,
+};
+
 class MockThemeIcon {
   constructor(
     public readonly id: string,
@@ -226,6 +232,7 @@ module.exports = {
   TextEditorRevealType: mockTextEditorRevealType,
   StatusBarAlignment: mockStatusBarAlignment,
   QuickPickItemKind: mockQuickPickItemKind,
+  ConfigurationTarget: mockConfigurationTarget,
   ThemeIcon: MockThemeIcon,
   ThemeColor: MockThemeColor,
   EventEmitter: MockEventEmitter,

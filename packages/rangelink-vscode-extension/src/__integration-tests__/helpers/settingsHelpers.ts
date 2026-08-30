@@ -1,8 +1,41 @@
-import { getWorkspaceRoot } from './testEnv';
+import { getWorkspaceRoot, POLL_INTERVAL_MS, POLL_TIMEOUT_MS, settle } from './testEnv';
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+
+const SETTING_NAMESPACE = 'rangelink';
+
+export const getWorkspaceSettingsPath = (): string => path.join(getWorkspaceRoot(), '.vscode', 'settings.json');
+
+/**
+ * Overwrite the workspace `.vscode/settings.json` with the given settings object.
+ * Used to seed configuration keys that are NOT registered in package.json's
+ * contributes.configuration (e.g. the legacy `rangelink.warnOnDirtyBuffer`),
+ * because `Configuration.update()` refuses to write unregistered keys.
+ */
+export const writeWorkspaceSettingsJson = (settings: Record<string, unknown>): void => {
+  fs.writeFileSync(getWorkspaceSettingsPath(), JSON.stringify(settings, null, 2));
+};
+
+/**
+ * Poll `Configuration.inspect()` until the given key's workspace-scope value
+ * matches `expected`. Required after `writeWorkspaceSettingsJson` because VS Code
+ * reloads settings.json asynchronously via its file watcher.
+ */
+export const waitForWorkspaceSettingValue = async (key: string, expected: unknown): Promise<void> => {
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  for (;;) {
+    const inspection = vscode.workspace.getConfiguration(SETTING_NAMESPACE).inspect(key);
+    if (inspection?.workspaceValue === expected) return;
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `waitForWorkspaceSettingValue: '${SETTING_NAMESPACE}.${key}' workspaceValue did not become ${String(expected)} within ${POLL_TIMEOUT_MS}ms (inspection=${JSON.stringify(inspection)})`,
+      );
+    }
+    await settle(POLL_INTERVAL_MS);
+  }
+};
 
 let cachedRangelinkKeys: string[] | undefined;
 

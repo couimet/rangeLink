@@ -26,7 +26,7 @@ import {
   ManageBookmarksCommand,
   ShowVersionCommand,
 } from './commands';
-import { ConfigReader, DelimiterCache } from './config';
+import { ConfigReader, DelimiterCache, DirtyBufferSettingMigrator } from './config';
 import { ContextKeyService } from './contextKeys';
 import { BoundSession } from './destinations';
 import { OperationFeedbackProvider } from './feedback';
@@ -65,6 +65,7 @@ export interface WiringServices {
   documentLinkProvider: RangeLinkDocumentProvider;
   delimiterCache: DelimiterCache;
   customAssistants: CustomAiAssistantConfig[];
+  dirtyBufferSettingMigrator: DirtyBufferSettingMigrator;
 }
 
 export interface ExtensionDependencies {
@@ -130,6 +131,8 @@ export const createWiringServices = (deps: ExtensionDependencies, context: vscod
   const textSelectionPaster = new TextSelectionPaster(destinationManager, configReader, sendRouter, selectionValidator, logger);
   const statusBar = new RangeLinkStatusBar(ideAdapter, destinationManager, boundSession, availabilityService, bookmarkService, logger);
 
+  const dirtyBufferSettingMigrator = new DirtyBufferSettingMigrator(configReader, ideAdapter, logger);
+
   const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, configReader, logger);
   logger.debug({ fn: 'createWiringServices' }, 'Navigation handler created');
   const filePathNavigationHandler = new FilePathNavigationHandler(ideAdapter, logger);
@@ -167,5 +170,6 @@ export const createWiringServices = (deps: ExtensionDependencies, context: vscod
     documentLinkProvider,
     delimiterCache,
     customAssistants,
+    dirtyBufferSettingMigrator,
   };
 };

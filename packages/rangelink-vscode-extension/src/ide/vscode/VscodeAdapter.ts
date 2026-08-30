@@ -1,5 +1,11 @@
 import { displayName } from '../../../package.json';
-import { AI_ASSISTANT_PASTE_COMMANDS, CLIPBOARD_POST_PASTE_DELAY_MS, ENV_RANGELINK_CAPTURE_LOGS, FOCUS_TO_PASTE_DELAY_MS } from '../../constants';
+import {
+  AI_ASSISTANT_PASTE_COMMANDS,
+  CLIPBOARD_POST_PASTE_DELAY_MS,
+  ENV_RANGELINK_CAPTURE_LOGS,
+  ENV_RANGELINK_TEST_HOST,
+  FOCUS_TO_PASTE_DELAY_MS,
+} from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { MessageCode, RelativePathFormat, type ResolveWorkspacePathResult, TerminalFocusType } from '../../types';
 import { ExtensionResult } from '../../types/ExtensionResult';
@@ -212,6 +218,31 @@ export class VscodeAdapter
   async showWarningMessage(message: string, ...items: string[]): Promise<string | undefined> {
     this.logger.debug({ fn: 'VscodeAdapter.showWarningMessage', message, items }, 'Showing warning message');
     return await this.ideInstance.window.showWarningMessage(message, ...items);
+  }
+
+  /**
+   * Show a modal warning dialog using VSCode API.
+   *
+   * Modal dialogs give the first action button initial focus (Enter activates),
+   * make the remaining buttons Tab-reachable (Enter activates), and let Escape dismiss.
+   *
+   * @param message - Message to display
+   * @param options - Message options (e.g. { modal: true })
+   * @param items - Optional action button labels
+   * @returns Promise resolving to selected button label, or undefined if dismissed
+   */
+  async showWarningMessageWithOptions(message: string, options: vscode.MessageOptions, ...items: string[]): Promise<string | undefined> {
+    if (options.modal === true && process.env[ENV_RANGELINK_TEST_HOST] === 'true') {
+      // VS Code's test host refuses to render modal dialogs (DialogService
+      // guard). Fall back to a plain warning toast so integration tests can
+      // drive the dialog interaction.
+      return this.showWarningMessage(message, ...items);
+    }
+    this.logger.debug(
+      { fn: 'VscodeAdapter.showWarningMessageWithOptions', message, items, modal: options.modal, detail: options.detail },
+      'Showing warning message with options',
+    );
+    return await this.ideInstance.window.showWarningMessage(message, options, ...items);
   }
 
   /**
@@ -625,6 +656,20 @@ export class VscodeAdapter
    */
   getConfiguration(section: string): vscode.WorkspaceConfiguration {
     return this.ideInstance.workspace.getConfiguration(section);
+  }
+
+  /**
+   * Update a configuration value at a specific scope.
+   * Passing undefined as value removes the key (resets to default).
+   *
+   * @param section - Configuration section name
+   * @param key - Setting key within the section
+   * @param value - New value, or undefined to remove the key
+   * @param target - Configuration scope to write to
+   */
+  async updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget): Promise<void> {
+    this.logger.debug({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
+    await this.ideInstance.workspace.getConfiguration(section).update(key, value, target);
   }
 
   // ============================================================================

@@ -68,7 +68,25 @@ export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';
 export const SETTING_TERMINAL_PICKER_MAX_INLINE = 'terminalPicker.maxInline';
 
 // =============================================================================
-// Warning Settings
+// Unsaved File Action Settings
 // =============================================================================
 
-export const SETTING_WARN_ON_DIRTY_BUFFER = 'warnOnDirtyBuffer';
+/**
+ * Legacy boolean precursor of SETTING_UNSAVED_FILE_ACTION, migrated to the enum
+ * on activation and then removed.
+ *
+ * @deprecated Replaced by SETTING_UNSAVED_FILE_ACTION.
+ */
+export const LEGACY_WARN_ON_DIRTY_BUFFER = 'warnOnDirtyBuffer';
+
+export const SETTING_UNSAVED_FILE_ACTION = 'unsavedFile.action';
+
+/**
+ * Fully-qualified `unsavedFile.action` id, required only as the query argument
+ * to the `workbench.action.openSettings` command.
+ *
+ * @deprecated Prefer the namespace-relative SETTING_UNSAVED_FILE_ACTION; this
+ * full-key form is the sole exception, because openSettings queries take the
+ * fully-qualified id.
+ */
+export const SETTING_UNSAVED_FILE_ACTION_FULL = 'rangelink.unsavedFile.action';

@@ -17,11 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Configurable cold-start timing: `rangelink.destinations.cline.coldStartDelayMs` (default: `1500`) and `rangelink.destinations.cline.coldRefocusIntervalMs` (default: `300`)
   - Focus handling now supports running a sequence of commands, so jump-to-destination (R-J) lands directly in Cline's chat input rather than just its panel, even on a cold start
 - **Auto-unbind when a bound file is renamed**, matching the file-deleted behavior. Renaming a bound file in the Explorer now auto-unbinds with a status bar message and warning toast showing the before/after paths. (#613)
+- **Keyboard-only use of the dirty-buffer dialog** — the **Save & Generate** / **Save & Send** action is focused by default, so **Enter** saves and continues, and **Escape** cancels. On Linux and Windows, **Tab** then **Enter** continues without saving. On macOS, click the second action, because the modal ignores Tab. (#732)
 
 ### Changed
 
 - **Single status bar message when binding and sending in one step via the destination picker**, instead of two back-to-back messages. The merged message reads "Bound to &lt;destination&gt; — &lt;link&gt; sent". (#621)
 - **Improved warning message when a bare file path doesn't exist on disk** — changed from "Cannot find file" to "File does not exist at" to distinguish benign detection from failed navigation. (#685)
+- **The `rangelink.warnOnDirtyBuffer` boolean setting is replaced by `rangelink.unsavedFile.action`** — `prompt` (default) shows the dirty-buffer dialog, `saveAndContinue` auto-saves and continues without a dialog, `continueAnyway` continues without saving. Existing `warnOnDirtyBuffer` values migrate automatically with a one-time conversion toast. (#732)
 
 ### Fixed
 

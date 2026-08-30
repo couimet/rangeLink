@@ -751,13 +751,22 @@ describe('package.json contributions', () => {
       });
     });
 
-    describe('warning settings', () => {
-      it('rangelink.warnOnDirtyBuffer', () => {
-        expect(properties['rangelink.warnOnDirtyBuffer']).toStrictEqual({
-          type: 'boolean',
-          default: true,
-          description: 'Show warning when generating link from file with unsaved changes',
-          title: 'Warn on Unsaved Changes',
+    describe('unsaved file action settings', () => {
+      it('rangelink.unsavedFile.action', () => {
+        expect(properties['rangelink.unsavedFile.action']).toStrictEqual({
+          type: 'string',
+          enum: ['prompt', 'saveAndContinue', 'continueAnyway'],
+          default: 'prompt',
+          enumDescriptions: [
+            'Show a dialog asking whether to save before continuing',
+            'Automatically save the file, then continue without a dialog',
+            'Continue without saving or dialog, generating from the unsaved content in memory',
+          ],
+          scope: 'window',
+          description: 'Action to take when generating a link or path from a file with unsaved changes',
+          markdownDescription:
+            'Action to take when generating a link or path from a file with unsaved changes.\n\n- `prompt` — Shows a keyboard-accessible dialog; **Save & Continue** is focused and **Enter** saves, **Tab** then **Enter** continues without saving, **Escape** cancels.\n- `saveAndContinue` — Saves the file automatically, then continues without a dialog.\n- `continueAnyway` — Continues without saving or dialog; the link is generated from the unsaved content in memory.',
+          title: 'Unsaved File Action',
         });
       });
     });
@@ -867,7 +876,7 @@ describe('package.json contributions', () => {
         'rangelink.smartPadding.pasteFilePath',
         'rangelink.smartPadding.pasteLink',
         'rangelink.terminalPicker.maxInline',
-        'rangelink.warnOnDirtyBuffer',
+        'rangelink.unsavedFile.action',
       ]);
     });
   });

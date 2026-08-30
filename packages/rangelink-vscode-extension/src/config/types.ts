@@ -27,18 +27,21 @@ export type DelimiterConfigSources = {
 
 /**
  * Configuration inspection result
- * Simplified to string-only (YAGNI - we only use strings for delimiters)
  *
  * Maps to VSCode's ConfigurationInspect but with:
- * - Removed generic (we only use strings)
+ * - Removed generic
  * - key is string to match VSCode's WorkspaceConfiguration.inspect()
+ * Values are strings for delimiter settings and booleans for flag settings
+ * (e.g. the legacy warnOnDirtyBuffer setting read during migration).
  */
+export type ConfigInspectionValue = string | boolean | number;
+
 export type ConfigInspection = {
   key: string;
-  defaultValue?: string;
-  globalValue?: string;
-  workspaceValue?: string;
-  workspaceFolderValue?: string;
+  defaultValue?: ConfigInspectionValue;
+  globalValue?: ConfigInspectionValue;
+  workspaceValue?: ConfigInspectionValue;
+  workspaceFolderValue?: ConfigInspectionValue;
 };
 
 /**

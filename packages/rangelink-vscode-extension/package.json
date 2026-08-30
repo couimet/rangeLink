@@ -55,6 +55,7 @@
     "test:release": "./scripts/run-integration-tests.sh",
     "test:release:automated": "./scripts/run-integration-tests.sh --automated --exclude-label requires-extensions --exclude-label cursor",
     "test:release:cursor": "./scripts/qa-cursor.sh",
+    "test:release:development": "./scripts/run-development-tests.sh",
     "test:release:grep": "./scripts/run-integration-tests.sh --grep",
     "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && node scripts/setup-integration-test-settings.js",
     "test:release:ubuntu": "./scripts/qa-ubuntu-docker.sh run",
@@ -514,11 +515,23 @@
           "description": "Smart padding for saved bookmarks when pasting to destinations",
           "title": "Paste: Bookmark Padding"
         },
-        "rangelink.warnOnDirtyBuffer": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show warning when generating link from file with unsaved changes",
-          "title": "Warn on Unsaved Changes"
+        "rangelink.unsavedFile.action": {
+          "type": "string",
+          "enum": [
+            "prompt",
+            "saveAndContinue",
+            "continueAnyway"
+          ],
+          "default": "prompt",
+          "enumDescriptions": [
+            "Show a dialog asking whether to save before continuing",
+            "Automatically save the file, then continue without a dialog",
+            "Continue without saving or dialog, generating from the unsaved content in memory"
+          ],
+          "scope": "window",
+          "description": "Action to take when generating a link or path from a file with unsaved changes",
+          "markdownDescription": "Action to take when generating a link or path from a file with unsaved changes.\n\n- `prompt` — Shows a keyboard-accessible dialog; **Save & Continue** is focused and **Enter** saves, **Tab** then **Enter** continues without saving, **Escape** cancels.\n- `saveAndContinue` — Saves the file automatically, then continues without a dialog.\n- `continueAnyway` — Continues without saving or dialog; the link is generated from the unsaved content in memory.",
+          "title": "Unsaved File Action"
         },
         "rangelink.navigation.showNavigatedToast": {
           "type": "boolean",

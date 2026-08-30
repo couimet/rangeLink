@@ -136,6 +136,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_SELF_PASTE_LINK_SKIPPED]: 'Cannot auto-paste to same file. Link copied to clipboard. Tip: Use R-C for clipboard-only links.',
   [MessageCode.INFO_SELF_PASTE_SELECTED_TEXT_BLOCKED_BY_SELECTION]: 'Cannot paste when bound editor has an active selection.',
   [MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP]: 'Terminal text pasted to destination. Tip: Use R-V directly for terminal selections.',
+  [MessageCode.INFO_UNSAVED_FILE_SETTING_MIGRATED]:
+    'RangeLink renamed the setting rangelink.warnOnDirtyBuffer to rangelink.unsavedFile.action. Your value false is now continueAnyway.',
+  [MessageCode.INFO_UNSAVED_FILE_SETTING_MIGRATED_OPEN_SETTINGS]: 'Open Settings',
   [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
   [MessageCode.INFO_VERSION_DIRTY_INDICATOR]: ' (with uncommitted changes)',
   [MessageCode.INFO_VERSION_INFO]: 'RangeLink v{version}\nCommit: {commit}{isDirtyIndicator}\nBranch: {branch}\nBuild: {buildDate}',

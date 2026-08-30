@@ -1,3 +1,4 @@
+import { ENV_RANGELINK_TEST_HOST } from '../../../constants';
 import { projectTestStatusFields, VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
@@ -17,7 +18,7 @@ import {
 
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 
 // ============================================================================
 // Tests
@@ -264,6 +265,58 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('Delete this?', 'Yes', 'No');
       expect(result).toBe('Yes');
+    });
+  });
+
+  describe('showWarningMessageWithOptions', () => {
+    it('should forward message, options, and items to VSCode API', async () => {
+      const message = 'warning message';
+      const options: vscode.MessageOptions = { modal: true };
+      (mockVSCode.window.showWarningMessage as jest.Mock).mockResolvedValue('Save');
+
+      const result = await adapter.showWarningMessageWithOptions(message, options, 'Save', 'Skip');
+
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(message, options, 'Save', 'Skip');
+      expect(result).toBe('Save');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showWarningMessageWithOptions', message, items: ['Save', 'Skip'], modal: true, detail: undefined },
+        'Showing warning message with options',
+      );
+    });
+
+    it('should return undefined when no button is selected', async () => {
+      (mockVSCode.window.showWarningMessage as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showWarningMessageWithOptions('test', { modal: true });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('falls back to a plain warning toast under the test host, which refuses modal dialogs', async () => {
+      const originalEnv = process.env[ENV_RANGELINK_TEST_HOST];
+      process.env[ENV_RANGELINK_TEST_HOST] = 'true';
+      try {
+        (mockVSCode.window.showWarningMessage as jest.Mock).mockResolvedValue('Save');
+
+        const result = await adapter.showWarningMessageWithOptions('warning message', { modal: true }, 'Save', 'Skip');
+
+        expect(result).toBe('Save');
+        expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('warning message', 'Save', 'Skip');
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.showWarningMessage', message: 'warning message', items: ['Save', 'Skip'] },
+          'Showing warning message',
+        );
+        expect(mockLogger.debug).not.toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.showWarningMessageWithOptions', message: 'warning message', items: ['Save', 'Skip'], modal: true, detail: undefined },
+          'Showing warning message with options',
+        );
+      } finally {
+        if (originalEnv === undefined) {
+          delete process.env[ENV_RANGELINK_TEST_HOST];
+        } else {
+          process.env[ENV_RANGELINK_TEST_HOST] = originalEnv;
+        }
+      }
     });
   });
 
@@ -1379,6 +1432,42 @@ describe('VscodeAdapter', () => {
         adapter.getConfiguration('');
 
         expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith('');
+      });
+    });
+
+    describe('updateConfiguration', () => {
+      it('should update configuration at the given scope using VSCode API', async () => {
+        const section = 'rangelink';
+        const key = 'unsavedFile.action';
+        const value = 'continueAnyway';
+        const target = vscode.ConfigurationTarget.Workspace;
+        const updateMock = jest.fn().mockResolvedValue(undefined);
+        mockVSCode.workspace.getConfiguration.mockReturnValue({ update: updateMock } as never);
+
+        await adapter.updateConfiguration(section, key, value, target);
+
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith(section);
+        expect(updateMock).toHaveBeenCalledWith(key, value, target);
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
+      });
+
+      it('should log undefined value when removing a key', async () => {
+        const updateMock = jest.fn().mockResolvedValue(undefined);
+        mockVSCode.workspace.getConfiguration.mockReturnValue({ update: updateMock } as never);
+
+        await adapter.updateConfiguration('rangelink', 'warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Global);
+
+        expect(updateMock).toHaveBeenCalledWith('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Global);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'VscodeAdapter.updateConfiguration',
+            section: 'rangelink',
+            key: 'warnOnDirtyBuffer',
+            target: vscode.ConfigurationTarget.Global,
+            value: undefined,
+          },
+          'Updating configuration',
+        );
       });
     });
   });
