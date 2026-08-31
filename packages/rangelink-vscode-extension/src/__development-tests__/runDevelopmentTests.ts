@@ -32,7 +32,12 @@ export const runDevelopmentTests = async (): Promise<void> => {
     return;
   }
 
-  const result = await runner();
+  let result: DevelopmentScenarioResult;
+  try {
+    result = await runner();
+  } catch (error) {
+    result = { scenario, verdict: 'FAIL', detail: `Scenario crashed: ${error instanceof Error ? error.message : String(error)}` };
+  }
   await appendResult(reportPath, result);
   void vscode.window.showInformationMessage(`DEVELOPMENT TEST ${result.scenario}: ${result.verdict} — ${result.detail}`);
 };

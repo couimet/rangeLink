@@ -669,7 +669,10 @@ export class VscodeAdapter
    */
   async updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget): Promise<void> {
     this.logger.debug({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
-    await this.ideInstance.workspace.getConfiguration(section).update(key, value, target);
+    const resource = target === vscode.ConfigurationTarget.WorkspaceFolder ? this.ideInstance.workspace.workspaceFolders?.[0]?.uri : undefined;
+    const config =
+      resource !== undefined ? this.ideInstance.workspace.getConfiguration(section, resource) : this.ideInstance.workspace.getConfiguration(section);
+    await config.update(key, value, target);
   }
 
   // ============================================================================

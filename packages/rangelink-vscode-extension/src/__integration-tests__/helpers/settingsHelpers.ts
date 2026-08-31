@@ -15,6 +15,7 @@ export const getWorkspaceSettingsPath = (): string => path.join(getWorkspaceRoot
  * because `Configuration.update()` refuses to write unregistered keys.
  */
 export const writeWorkspaceSettingsJson = (settings: Record<string, unknown>): void => {
+  fs.mkdirSync(path.dirname(getWorkspaceSettingsPath()), { recursive: true });
   fs.writeFileSync(getWorkspaceSettingsPath(), JSON.stringify(settings, null, 2));
 };
 

@@ -57,37 +57,50 @@ export class DirtyBufferSettingMigrator {
       return { migratedScopes: 0, showedConversionToast: false };
     }
 
-    const newKeyAlreadySet = this.isNewKeySet();
     let migratedScopes = 0;
+    let wroteNewKey = false;
     let hadFalseValue = false;
+    let wroteFalseValue = false;
 
     for (const { value, target } of scopedValues) {
-      if (!newKeyAlreadySet) {
+      const newKeySetForTarget = this.isNewKeySetForTarget(target);
+      if (!newKeySetForTarget) {
         await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, SETTING_UNSAVED_FILE_ACTION, this.toUnsavedFileAction(value), target);
+        wroteNewKey = true;
+        if (value === false) {
+          wroteFalseValue = true;
+        }
       }
       await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, LEGACY_WARN_ON_DIRTY_BUFFER, undefined, target);
       migratedScopes += 1;
       if (value === false) {
         hadFalseValue = true;
       }
-      this.logger.debug({ fn, target: this.targetName(target), value, wroteNewKey: !newKeyAlreadySet }, 'Migrated warnOnDirtyBuffer scope');
+      this.logger.debug({ fn, target: this.targetName(target), value, wroteNewKey: !newKeySetForTarget }, 'Migrated warnOnDirtyBuffer scope');
     }
 
-    const showedConversionToast = hadFalseValue && !newKeyAlreadySet;
+    const showedConversionToast = wroteFalseValue;
     if (showedConversionToast) {
       await this.showConversionToast();
     }
 
-    this.logger.info({ fn, migratedScopes, newKeyAlreadySet, hadFalseValue }, 'warnOnDirtyBuffer migration complete');
+    this.logger.info({ fn, migratedScopes, wroteNewKey, hadFalseValue }, 'warnOnDirtyBuffer migration complete');
     return { migratedScopes, showedConversionToast };
   }
 
-  private isNewKeySet(): boolean {
+  private isNewKeySetForTarget(target: vscode.ConfigurationTarget): boolean {
     const inspection = this.configReader.inspect(SETTING_UNSAVED_FILE_ACTION);
-    return (
-      inspection !== undefined &&
-      (inspection.globalValue !== undefined || inspection.workspaceValue !== undefined || inspection.workspaceFolderValue !== undefined)
-    );
+    if (inspection === undefined) {
+      return false;
+    }
+    switch (target) {
+      case vscode.ConfigurationTarget.Global:
+        return inspection.globalValue !== undefined;
+      case vscode.ConfigurationTarget.Workspace:
+        return inspection.workspaceValue !== undefined;
+      default:
+        return inspection.workspaceFolderValue !== undefined;
+    }
   }
 
   private collectScopedValues(inspection: ConfigInspection): ScopedLegacyValue[] {

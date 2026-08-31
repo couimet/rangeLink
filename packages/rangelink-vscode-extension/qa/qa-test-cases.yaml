@@ -1363,8 +1363,15 @@ test_cases:
       - r-c
     feature: 'dirty-buffer-warning'
     scenario: 'unsavedFile.action=prompt — R-C on dirty file: Escape dismisses the modal dialog and aborts link generation'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-030`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-030: PASS"'
     expected_result: 'No link generated. Clipboard unchanged. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
-    automated: assisted
+    automated: false
+    non_automatable_reason: real-modal-dialog
 
   - id: dirty-buffer-warning-031
     runner:
@@ -1375,8 +1382,15 @@ test_cases:
       - r-l
     feature: 'dirty-buffer-warning'
     scenario: 'unsavedFile.action=prompt — R-L on dirty file: Escape dismisses the modal dialog and aborts link send'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-031`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-031: PASS"'
     expected_result: 'No link sent. Terminal unchanged. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
-    automated: assisted
+    automated: false
+    non_automatable_reason: real-modal-dialog
 
   - id: dirty-buffer-warning-032
     runner:
@@ -1387,8 +1401,15 @@ test_cases:
       - r-f
     feature: 'dirty-buffer-warning'
     scenario: 'unsavedFile.action=prompt — R-F on dirty file: Escape dismisses the modal dialog and aborts path send'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-032`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-032: PASS"'
     expected_result: 'No path sent. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
-    automated: assisted
+    automated: false
+    non_automatable_reason: real-modal-dialog
 
   - id: dirty-buffer-warning-033
     labels:

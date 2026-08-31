@@ -230,12 +230,22 @@ JSON
   export RANGELINK_DEVELOPMENT_REPORT="$REPORT_FILE"
 
   # Record the launch environment so a failure self-documents exactly what the
-  # app saw (cli.js forwards the parent env to the spawned app).
+  # app saw (cli.js forwards the parent env to the spawned app). An explicit
+  # allowlist keeps the report file free of secrets.
   LAUNCH_ENV_JSON="$(python3 -c '
 import json, os, sys
+ALLOW = [
+  "RANGELINK_DEVELOPMENT", "RANGELINK_DEVELOPMENT_SCENARIO",
+  "RANGELINK_DEVELOPMENT_REPORT", "RANGELINK_DEVELOPMENT_KEEP_HOST",
+  "RANGELINK_CAPTURE_LOGS", "RANGELINK_TEST_FIXTURES_ENABLED",
+  "RANGELINK_TEST_HOST", "RANGELINK_CUSTOM_AI_COUNT",
+  "NODE_OPTIONS", "ELECTRON_RUN_AS_NODE", "ELECTRON_OVERRIDE_DIST_PATH",
+  "VSCODE_IPC_HOOK_CLI",
+  "PATH", "HOME", "SHELL", "TERM", "LANG", "USER", "TMPDIR",
+]
 enc = sys.stdout.reconfigure if hasattr(sys.stdout, "reconfigure") else None
 if enc: enc(errors="replace")
-print(json.dumps({k: v for k, v in os.environ.items()}, default=str))
+print(json.dumps({k: os.environ.get(k) for k in ALLOW if k in os.environ}, default=str))
 ' 2>/dev/null || echo '{}')"
   write_event "launch_env" "\"env\":$LAUNCH_ENV_JSON"
 

@@ -1451,6 +1451,21 @@ describe('VscodeAdapter', () => {
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
       });
 
+      it('should resource-scope the configuration for WorkspaceFolder targets', async () => {
+        const section = 'rangelink';
+        const key = 'unsavedFile.action';
+        const value = 'continueAnyway';
+        const target = vscode.ConfigurationTarget.WorkspaceFolder;
+        const updateMock = jest.fn().mockResolvedValue(undefined);
+        const folderUri = mockVSCode.workspace.workspaceFolders?.[0]?.uri;
+        mockVSCode.workspace.getConfiguration.mockReturnValue({ update: updateMock } as never);
+
+        await adapter.updateConfiguration(section, key, value, target);
+
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith(section, folderUri);
+        expect(updateMock).toHaveBeenCalledWith(key, value, target);
+      });
+
       it('should log undefined value when removing a key', async () => {
         const updateMock = jest.fn().mockResolvedValue(undefined);
         mockVSCode.workspace.getConfiguration.mockReturnValue({ update: updateMock } as never);

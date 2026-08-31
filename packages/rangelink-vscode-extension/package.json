@@ -526,11 +526,11 @@
           "enumDescriptions": [
             "Show a dialog asking whether to save before continuing",
             "Automatically save the file, then continue without a dialog",
-            "Continue without saving or dialog, generating from the unsaved content in memory"
+            "Continue without saving or dialog. Links are generated from the unsaved in-memory content; file paths are sent without saving and the receiving tool may read stale on-disk content"
           ],
           "scope": "window",
           "description": "Action to take when generating a link or path from a file with unsaved changes",
-          "markdownDescription": "Action to take when generating a link or path from a file with unsaved changes.\n\n- `prompt` — Shows a keyboard-accessible dialog; **Save & Continue** is focused and **Enter** saves, **Tab** then **Enter** continues without saving, **Escape** cancels.\n- `saveAndContinue` — Saves the file automatically, then continues without a dialog.\n- `continueAnyway` — Continues without saving or dialog; the link is generated from the unsaved content in memory.",
+          "markdownDescription": "Action to take when generating a link or path from a file with unsaved changes.\n\n- `prompt` — Shows a keyboard-accessible dialog; **Save & Continue** is focused and **Enter** saves, **Tab** then **Enter** continues without saving, **Escape** cancels.\n- `saveAndContinue` — Saves the file automatically, then continues without a dialog.\n- `continueAnyway` — Continues without saving or dialog. Links are generated from the unsaved in-memory content; file paths are sent without saving and the receiving tool may read stale on-disk content.",
           "title": "Unsaved File Action"
         },
         "rangelink.navigation.showNavigatedToast": {

@@ -1,6 +1,5 @@
 import { createMockConfigReader, createMockVscodeAdapter } from '../../__tests__/helpers';
-import { SETTING_UNSAVED_FILE_ACTION } from '../../constants';
-import { LEGACY_WARN_ON_DIRTY_BUFFER } from '../../constants';
+import { LEGACY_WARN_ON_DIRTY_BUFFER, SETTING_UNSAVED_FILE_ACTION } from '../../constants';
 import { DirtyBufferSettingMigrator } from '../DirtyBufferSettingMigrator';
 import type { ConfigInspection } from '../types';
 
@@ -123,6 +122,74 @@ describe('DirtyBufferSettingMigrator', () => {
     expect(showInfoSpy).not.toHaveBeenCalled();
   });
 
+  it('migrates a scope whose target lacks the new key even when another scope has it', async () => {
+    const inspections = {
+      [LEGACY_WARN_ON_DIRTY_BUFFER]: {
+        key: LEGACY_WARN_ON_DIRTY_BUFFER,
+        globalValue: false,
+        workspaceValue: true,
+        workspaceFolderValue: undefined,
+      },
+      [SETTING_UNSAVED_FILE_ACTION]: newKeyInspection(),
+    };
+    const { migrator, updateSpy, showInfoSpy } = createMigrator(inspections);
+
+    const result = await migrator.migrate();
+
+    expect(result).toStrictEqual({ migratedScopes: 2, showedConversionToast: false });
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace);
+    expect(updateSpy).not.toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global);
+    expect(updateSpy).toHaveBeenCalledTimes(3);
+    expect(showInfoSpy).not.toHaveBeenCalled();
+  });
+
+  it('migrates a legacy value set at workspace-folder scope', async () => {
+    const { migrator, updateSpy, showInfoSpy } = createMigrator({ [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder') });
+
+    const result = await migrator.migrate();
+
+    expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: true });
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(showInfoSpy).toHaveBeenCalledWith(CONVERSION_TOAST_TEXT, OPEN_SETTINGS_BUTTON);
+  });
+
+  it('preserves an already-set unsavedFile.action at workspace-folder scope', async () => {
+    const inspections = {
+      [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder'),
+      [SETTING_UNSAVED_FILE_ACTION]: {
+        key: SETTING_UNSAVED_FILE_ACTION,
+        globalValue: undefined,
+        workspaceValue: undefined,
+        workspaceFolderValue: 'prompt',
+      },
+    };
+    const { migrator, updateSpy, showInfoSpy } = createMigrator(inspections);
+
+    const result = await migrator.migrate();
+
+    expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: false });
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    expect(showInfoSpy).not.toHaveBeenCalled();
+  });
+
+  it('migrates a workspace-folder legacy value when the new key is set only at global scope', async () => {
+    const inspections = {
+      [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder'),
+      [SETTING_UNSAVED_FILE_ACTION]: newKeyInspection(),
+    };
+    const { migrator, updateSpy, showInfoSpy } = createMigrator(inspections);
+
+    const result = await migrator.migrate();
+
+    expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: true });
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledTimes(2);
+    expect(showInfoSpy).toHaveBeenCalledWith(CONVERSION_TOAST_TEXT, OPEN_SETTINGS_BUTTON);
+  });
+
   it('opens settings when the conversion toast action is chosen', async () => {
     const { migrator, showInfoSpy, execSpy } = createMigrator({ [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'workspace') });
     showInfoSpy.mockResolvedValue(OPEN_SETTINGS_BUTTON);
@@ -139,7 +206,7 @@ describe('DirtyBufferSettingMigrator', () => {
     await migrator.migrate();
 
     expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'DirtyBufferSettingMigrator.migrate', migratedScopes: 1, newKeyAlreadySet: false, hadFalseValue: false },
+      { fn: 'DirtyBufferSettingMigrator.migrate', migratedScopes: 1, wroteNewKey: true, hadFalseValue: false },
       'warnOnDirtyBuffer migration complete',
     );
   });
