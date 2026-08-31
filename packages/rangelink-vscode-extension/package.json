@@ -992,7 +992,7 @@
   "devDependencies": {
     "@couimet/detailed-error-testing": "^0.1.5",
     "@couimet/detailed-result-testing": "^0.2.1",
-    "@couimet/dynamic-testing": "^1.0.0",
+    "@couimet/dynamic-testing": "^1.0.1",
     "@couimet/logger-contract-testing": "^1.0.2",
     "@types/jest": "^29.5.0",
     "@types/mocha": "^10.0.10",
