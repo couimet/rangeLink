@@ -448,7 +448,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -502,7 +502,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -546,7 +546,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -595,7 +595,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -631,7 +631,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -666,7 +666,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -709,7 +709,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. The AI tool may read stale content from disk.',
+        message: 'RangeLink: File has unsaved changes. The AI tool may read stale content from disk.',
         items: ['Save & Send', 'Send Anyway'],
       },
     ]);
@@ -753,7 +753,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. The AI tool may read stale content from disk.',
+        message: 'RangeLink: File has unsaved changes. The AI tool may read stale content from disk.',
         items: ['Save & Send', 'Send Anyway'],
       },
     ]);
@@ -791,7 +791,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. The AI tool may read stale content from disk.',
+        message: 'RangeLink: File has unsaved changes. The AI tool may read stale content from disk.',
         items: ['Save & Send', 'Send Anyway'],
       },
     ]);
@@ -831,7 +831,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -874,7 +874,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. The AI tool may read stale content from disk.',
+        message: 'RangeLink: File has unsaved changes. The AI tool may read stale content from disk.',
         items: ['Save & Send', 'Send Anyway'],
       },
     ]);
@@ -916,7 +916,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -960,7 +960,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -1004,7 +1004,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
@@ -1059,7 +1059,7 @@ standardSuite('Dirty Buffer Warning — Dialog Interaction', (ss) => {
     ss.expectModalDialogs([
       {
         level: 'warning',
-        message: 'File has unsaved changes. Link may point to wrong position after save.',
+        message: 'RangeLink: File has unsaved changes. Link may point to wrong position after save.',
         items: ['Save & Generate', 'Generate Anyway'],
       },
     ]);
