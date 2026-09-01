@@ -36,6 +36,9 @@ const ABORT_BUTTON_LINK = 'Generate Anyway';
 const SAVE_BUTTON_PATH = 'Save & Send';
 const ABORT_BUTTON_PATH = 'Send Anyway';
 
+const CAPTURE_SETTLE_MS = 2000;
+const CAPTURE_POLL_MS = 100;
+
 export const dirtyBufferScenarioSpecs: DirtyBufferScenarioSpec[] = [
   // R-C — clipboard verify
   {
@@ -115,6 +118,24 @@ export const dirtyBufferScenarioSpecs: DirtyBufferScenarioSpec[] = [
 ];
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Wait for terminal capture to settle before judging delivery. The
+ * sendText → renderer → pty handleInput hop is asynchronous, so capture may
+ * lag the command resolution. For delivery cases, resolve `true` as soon as
+ * any capture appears; for escape cases, wait the full window so a delayed
+ * send still counts as delivered before we declare `false`.
+ */
+export const awaitCapture = async (getCaptured: () => string, expectDelivered: boolean): Promise<boolean> => {
+  const deadline = Date.now() + CAPTURE_SETTLE_MS;
+  while (Date.now() < deadline) {
+    if (expectDelivered && getCaptured() !== '') {
+      return true;
+    }
+    await sleep(CAPTURE_POLL_MS);
+  }
+  return getCaptured() !== '';
+};
 
 const instructionText = (spec: DirtyBufferScenarioSpec): string => {
   switch (spec.keyAction) {
@@ -224,11 +245,13 @@ export const createDirtyBufferScenario = (spec: DirtyBufferScenarioSpec): (() =>
     await vscode.commands.executeCommand(spec.command);
 
     const fileSaved = !editor.document.isDirty;
-    const delivered =
-      spec.verifyMode === 'clipboard' ? (await vscode.env.clipboard.readText()) !== CLIPBOARD_SENTINEL : getCaptured !== undefined && getCaptured() !== '';
-
     const expectsSaved = spec.keyAction === 'enter';
     const expectsDelivered = spec.keyAction !== 'escape';
+    const delivered =
+      spec.verifyMode === 'clipboard'
+        ? (await vscode.env.clipboard.readText()) !== CLIPBOARD_SENTINEL
+        : getCaptured !== undefined && (await awaitCapture(getCaptured, expectsDelivered));
+
     const pass = fileSaved === expectsSaved && delivered === expectsDelivered;
 
     const deliveredLabel = spec.verifyMode === 'clipboard' ? 'linkCopied' : 'linkSent';

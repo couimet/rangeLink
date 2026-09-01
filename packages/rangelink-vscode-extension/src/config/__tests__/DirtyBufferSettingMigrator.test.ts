@@ -35,7 +35,7 @@ describe('DirtyBufferSettingMigrator', () => {
     const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage').mockResolvedValue(undefined);
     const execSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
     const migrator = new DirtyBufferSettingMigrator(configReader, mockAdapter, mockLogger);
-    return { migrator, updateSpy, showInfoSpy, execSpy };
+    return { migrator, mockAdapter, updateSpy, showInfoSpy, execSpy };
   };
 
   it('skips migration when no legacy setting is present', async () => {
@@ -74,8 +74,8 @@ describe('DirtyBufferSettingMigrator', () => {
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: true });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Global);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global, undefined);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Global, undefined);
     expect(showInfoSpy).toHaveBeenCalledWith(CONVERSION_TOAST_TEXT, OPEN_SETTINGS_BUTTON);
   });
 
@@ -85,8 +85,8 @@ describe('DirtyBufferSettingMigrator', () => {
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: false });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Workspace);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace, undefined);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Workspace, undefined);
     expect(showInfoSpy).not.toHaveBeenCalled();
   });
 
@@ -102,8 +102,8 @@ describe('DirtyBufferSettingMigrator', () => {
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 2, showedConversionToast: true });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global, undefined);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace, undefined);
     expect(showInfoSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -118,7 +118,7 @@ describe('DirtyBufferSettingMigrator', () => {
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: false });
     expect(updateSpy).toHaveBeenCalledTimes(1);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Global);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.Global, undefined);
     expect(showInfoSpy).not.toHaveBeenCalled();
   });
 
@@ -137,20 +137,21 @@ describe('DirtyBufferSettingMigrator', () => {
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 2, showedConversionToast: false });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'prompt', vscode.ConfigurationTarget.Workspace, undefined);
     expect(updateSpy).not.toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.Global);
     expect(updateSpy).toHaveBeenCalledTimes(3);
     expect(showInfoSpy).not.toHaveBeenCalled();
   });
 
   it('migrates a legacy value set at workspace-folder scope', async () => {
-    const { migrator, updateSpy, showInfoSpy } = createMigrator({ [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder') });
+    const { migrator, mockAdapter, updateSpy, showInfoSpy } = createMigrator({ [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder') });
+    const folderUri = mockAdapter.workspaceFolders?.[0]?.uri;
 
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: true });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
     expect(showInfoSpy).toHaveBeenCalledWith(CONVERSION_TOAST_TEXT, OPEN_SETTINGS_BUTTON);
   });
 
@@ -164,12 +165,13 @@ describe('DirtyBufferSettingMigrator', () => {
         workspaceFolderValue: 'prompt',
       },
     };
-    const { migrator, updateSpy, showInfoSpy } = createMigrator(inspections);
+    const { migrator, mockAdapter, updateSpy, showInfoSpy } = createMigrator(inspections);
+    const folderUri = mockAdapter.workspaceFolders?.[0]?.uri;
 
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: false });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
     expect(updateSpy).toHaveBeenCalledTimes(1);
     expect(showInfoSpy).not.toHaveBeenCalled();
   });
@@ -179,15 +181,26 @@ describe('DirtyBufferSettingMigrator', () => {
       [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder'),
       [SETTING_UNSAVED_FILE_ACTION]: newKeyInspection(),
     };
-    const { migrator, updateSpy, showInfoSpy } = createMigrator(inspections);
+    const { migrator, mockAdapter, updateSpy, showInfoSpy } = createMigrator(inspections);
+    const folderUri = mockAdapter.workspaceFolders?.[0]?.uri;
 
     const result = await migrator.migrate();
 
     expect(result).toStrictEqual({ migratedScopes: 1, showedConversionToast: true });
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder);
-    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
     expect(updateSpy).toHaveBeenCalledTimes(2);
     expect(showInfoSpy).toHaveBeenCalledWith(CONVERSION_TOAST_TEXT, OPEN_SETTINGS_BUTTON);
+  });
+
+  it('passes the owning folder URI when migrating a workspace-folder-scoped value', async () => {
+    const { migrator, mockAdapter, updateSpy } = createMigrator({ [LEGACY_WARN_ON_DIRTY_BUFFER]: legacyInspection(false, 'folder') });
+    const folderUri = mockAdapter.workspaceFolders?.[0]?.uri;
+
+    await migrator.migrate();
+
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', SETTING_UNSAVED_FILE_ACTION, 'continueAnyway', vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
+    expect(updateSpy).toHaveBeenCalledWith('rangelink', LEGACY_WARN_ON_DIRTY_BUFFER, undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUri);
   });
 
   it('opens settings when the conversion toast action is chosen', async () => {

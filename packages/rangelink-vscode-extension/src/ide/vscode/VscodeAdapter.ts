@@ -659,6 +659,15 @@ export class VscodeAdapter
   }
 
   /**
+   * Get the workspace folders open in the IDE.
+   *
+   * @returns The open workspace folders, or undefined if none are open
+   */
+  get workspaceFolders(): readonly vscode.WorkspaceFolder[] | undefined {
+    return this.ideInstance.workspace.workspaceFolders;
+  }
+
+  /**
    * Update a configuration value at a specific scope.
    * Passing undefined as value removes the key (resets to default).
    *
@@ -666,12 +675,15 @@ export class VscodeAdapter
    * @param key - Setting key within the section
    * @param value - New value, or undefined to remove the key
    * @param target - Configuration scope to write to
+   * @param resource - Workspace folder URI scoping a WorkspaceFolder-targeted update
    */
-  async updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget): Promise<void> {
+  async updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget, resource?: vscode.Uri): Promise<void> {
     this.logger.debug({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
-    const resource = target === vscode.ConfigurationTarget.WorkspaceFolder ? this.ideInstance.workspace.workspaceFolders?.[0]?.uri : undefined;
+    const scopedResource = target === vscode.ConfigurationTarget.WorkspaceFolder ? resource : undefined;
     const config =
-      resource !== undefined ? this.ideInstance.workspace.getConfiguration(section, resource) : this.ideInstance.workspace.getConfiguration(section);
+      scopedResource !== undefined
+        ? this.ideInstance.workspace.getConfiguration(section, scopedResource)
+        : this.ideInstance.workspace.getConfiguration(section);
     await config.update(key, value, target);
   }
 

@@ -63,15 +63,16 @@ export class DirtyBufferSettingMigrator {
     let wroteFalseValue = false;
 
     for (const { value, target } of scopedValues) {
+      const resource = target === vscode.ConfigurationTarget.WorkspaceFolder ? this.ideAdapter.workspaceFolders?.[0]?.uri : undefined;
       const newKeySetForTarget = this.isNewKeySetForTarget(target);
       if (!newKeySetForTarget) {
-        await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, SETTING_UNSAVED_FILE_ACTION, this.toUnsavedFileAction(value), target);
+        await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, SETTING_UNSAVED_FILE_ACTION, this.toUnsavedFileAction(value), target, resource);
         wroteNewKey = true;
         if (value === false) {
           wroteFalseValue = true;
         }
       }
-      await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, LEGACY_WARN_ON_DIRTY_BUFFER, undefined, target);
+      await this.ideAdapter.updateConfiguration(SETTING_NAMESPACE, LEGACY_WARN_ON_DIRTY_BUFFER, undefined, target, resource);
       migratedScopes += 1;
       if (value === false) {
         hadFalseValue = true;

@@ -8,5 +8,5 @@ import type * as vscode from 'vscode';
  */
 export interface ConfigurationProvider {
   getConfiguration(section: string): ConfigGetter;
-  updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget): Promise<void>;
+  updateConfiguration(section: string, key: string, value: unknown, target: vscode.ConfigurationTarget, resource?: vscode.Uri): Promise<void>;
 }

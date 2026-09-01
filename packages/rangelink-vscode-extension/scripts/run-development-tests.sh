@@ -266,7 +266,7 @@ print(json.dumps({
   echo ""
   echo "Watching $REPORT_FILE for the result..."
 
-  "$CODE_BIN" "${LAUNCH_ARGS[@]}" >"$LAUNCH_LOG" 2>&1 &
+  "$CODE_BIN" "${LAUNCH_ARGS[@]}" >"$LAUNCH_LOG" 2>&1 </dev/null &
   CLI_PID=$!
   write_event "launched" "\"pid\":$CLI_PID"
 

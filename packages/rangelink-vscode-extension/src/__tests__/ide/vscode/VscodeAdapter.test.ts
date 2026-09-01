@@ -1451,7 +1451,7 @@ describe('VscodeAdapter', () => {
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'VscodeAdapter.updateConfiguration', section, key, target, value }, 'Updating configuration');
       });
 
-      it('should resource-scope the configuration for WorkspaceFolder targets', async () => {
+      it('should scope the configuration to the supplied resource for WorkspaceFolder targets', async () => {
         const section = 'rangelink';
         const key = 'unsavedFile.action';
         const value = 'continueAnyway';
@@ -1460,7 +1460,7 @@ describe('VscodeAdapter', () => {
         const folderUri = mockVSCode.workspace.workspaceFolders?.[0]?.uri;
         mockVSCode.workspace.getConfiguration.mockReturnValue({ update: updateMock } as never);
 
-        await adapter.updateConfiguration(section, key, value, target);
+        await adapter.updateConfiguration(section, key, value, target, folderUri);
 
         expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith(section, folderUri);
         expect(updateMock).toHaveBeenCalledWith(key, value, target);
