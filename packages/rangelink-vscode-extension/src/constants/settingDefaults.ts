@@ -1,4 +1,5 @@
 import type { ClipboardPreservationMode } from '../types/ClipboardPreservationMode';
+import type { UnsavedFileAction } from '../types/UnsavedFileAction';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
@@ -50,10 +51,10 @@ export const DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING = true;
 export const DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST = true;
 
 // =============================================================================
-// Dirty Buffer Warning Defaults
+// Unsaved File Action Defaults
 // =============================================================================
 
-export const DEFAULT_WARN_ON_DIRTY_BUFFER = true;
+export const DEFAULT_UNSAVED_FILE_ACTION: UnsavedFileAction = 'prompt';
 
 // =============================================================================
 // Smart Padding Defaults

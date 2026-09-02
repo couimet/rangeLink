@@ -1,3 +1,5 @@
+import type { RangeLinkExtensionApi } from '../../types/RangeLinkExtensionApi';
+
 import assert from 'node:assert';
 import * as vscode from 'vscode';
 
@@ -25,6 +27,12 @@ export const getExtensionVersion = (): string => {
   const ext = vscode.extensions.getExtension(EXTENSION_ID);
   assert.ok(ext, `Extension ${EXTENSION_ID} not found`);
   return ext.packageJSON.version as string;
+};
+
+export const getExtensionApi = (): RangeLinkExtensionApi => {
+  const ext = vscode.extensions.getExtension<RangeLinkExtensionApi>(EXTENSION_ID);
+  assert.ok(ext && ext.isActive, `Extension ${EXTENSION_ID} must be active to access its API`);
+  return ext!.exports;
 };
 
 export const settle = (ms: number = SETTLE_MS): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, ms));

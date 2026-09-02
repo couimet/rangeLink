@@ -38,11 +38,16 @@ node /workspace/packages/rangelink-vscode-extension/scripts/resolve-qa-labels.js
 
 echo "==> Wrote $TC_FILE"
 
-# First run: populate the container-native node_modules volume (Linux binaries for esbuild etc.)
-if [[ ! -d /workspace/node_modules/.pnpm ]]; then
-  echo "==> Installing dependencies (first run, cached on subsequent runs)..."
-  cd /workspace
-  pnpm install 2>&1
+# Populate the container-native node_modules volume (Linux binaries for esbuild
+# etc.). Reinstall when the lockfile drifts from the volume's stamp; a stale
+# volume otherwise fails compile with missing modules.
+cd /workspace
+LOCK_HASH="$(sha256sum pnpm-lock.yaml | awk '{print $1}')"
+STAMP_FILE="/workspace/node_modules/.rangelink-lock-hash"
+if [[ ! -d /workspace/node_modules/.pnpm ]] || [[ "$(cat "$STAMP_FILE" 2>/dev/null || true)" != "$LOCK_HASH" ]]; then
+  echo "==> Installing dependencies (first run or lockfile changed)..."
+  pnpm install --frozen-lockfile 2>&1
+  printf '%s' "$LOCK_HASH" > "$STAMP_FILE"
   echo "==> Dependencies ready"
 fi
 

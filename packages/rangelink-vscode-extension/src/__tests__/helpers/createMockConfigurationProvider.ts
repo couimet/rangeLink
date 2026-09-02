@@ -11,4 +11,5 @@ import { createMockConfigGetter } from './createMockConfigGetter';
  */
 export const createMockConfigurationProvider = (configGetter: ConfigGetter = createMockConfigGetter()): jest.Mocked<ConfigurationProvider> => ({
   getConfiguration: jest.fn().mockReturnValue(configGetter),
+  updateConfiguration: jest.fn().mockResolvedValue(undefined),
 });

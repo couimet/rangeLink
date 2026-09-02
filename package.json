@@ -38,6 +38,7 @@
     "test:release": "pnpm --filter rangelink-vscode-extension test:release",
     "test:release:automated": "pnpm --filter rangelink-vscode-extension test:release:automated",
     "test:release:cursor": "pnpm --filter rangelink-vscode-extension test:release:cursor",
+    "test:release:development": "pnpm --filter rangelink-vscode-extension test:release:development",
     "test:release:grep": "pnpm --filter rangelink-vscode-extension test:release:grep",
     "test:release:ubuntu": "pnpm --filter rangelink-vscode-extension test:release:ubuntu",
     "test:release:with-extensions": "pnpm --filter rangelink-vscode-extension test:release:with-extensions",

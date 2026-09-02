@@ -25,6 +25,6 @@ export const BASE_CONFIG = {
   // registered" errors that contaminate test state across suites.
   version: '1.131.0',
   launchArgs: userDataDir(),
-  env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true' },
+  env: { RANGELINK_CAPTURE_LOGS: 'true', RANGELINK_TEST_FIXTURES_ENABLED: 'true', RANGELINK_TEST_HOST: 'true' },
   mocha: envMocha(),
 };

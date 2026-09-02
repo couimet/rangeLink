@@ -1,5 +1,6 @@
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { ENV_RANGELINK_DEVELOPMENT } from './constants';
 import { createWiringServices } from './createWiringServices';
 import { LogCapture } from './LogCapture';
 import { ReleaseNotifier } from './notification';
@@ -75,12 +76,42 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     logger.warn({ fn: 'activate', error }, 'Release notification failed');
   });
 
+  void services.dirtyBufferSettingMigrator.migrate().catch((error: unknown) => {
+    logger.warn({ fn: 'activate', error }, 'warnOnDirtyBuffer setting migration failed');
+  });
+
+  if (process.env[ENV_RANGELINK_DEVELOPMENT] === 'true') {
+    void loadDevelopmentTestRunner(context, logger);
+  }
+
   return {
     logCapture,
     releaseNotifier,
+    dirtyBufferSettingMigrator: services.dirtyBufferSettingMigrator,
     getContextKeyValues: () => services.contextKeyService.getLastSetValues(),
   };
 }
+
+/**
+ * Loads the development-test runner under the env gate. Dynamic require keeps
+ * the runner out of the esbuild bundle (`dist/extension.js`); it is compiled to
+ * `out/__development-tests__` by `tsc` and excluded from the shipped VSIX by
+ * `.vscodeignore`.
+ */
+const loadDevelopmentTestRunner = (context: vscode.ExtensionContext, logger: ReturnType<typeof getLogger>): Promise<void> => {
+  return (async (): Promise<void> => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { runDevelopmentTests } = require(require('node:path').join(context.extensionPath, 'out', '__development-tests__', 'runDevelopmentTests.js')) as {
+        runDevelopmentTests: () => Promise<void>;
+      };
+      await runDevelopmentTests();
+      logger.info({ fn: 'activate' }, 'Development test runner finished');
+    } catch (error) {
+      logger.warn({ fn: 'activate', error }, 'Development test runner failed — run `tsc -p tsconfig.json` so out/__development-tests__ exists');
+    }
+  })();
+};
 
 /**
  * Extension deactivation cleanup

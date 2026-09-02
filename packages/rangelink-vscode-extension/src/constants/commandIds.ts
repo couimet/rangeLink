@@ -1,5 +1,8 @@
 /**
- * Single source of truth for command IDs for all RangeLink extension commands.
+ * Single source of truth for command IDs used by the RangeLink extension.
+ *
+ * RangeLink commands use the `CMD_` prefix; VS Code built-in commands the
+ * extension invokes use the `VSC_CMD_` prefix.
  *
  * Keep entries sorted alphabetically by constant name.
  */
@@ -58,5 +61,7 @@ export const CMD_TERMINAL_COPY_LINK_GUARD = 'rangelink.terminal.copyLinkGuard';
 export const CMD_TERMINAL_LINK_BRIDGE = 'rangelink.terminal.linkBridge';
 export const CMD_TERMINAL_PASTE_SELECTED_TEXT = 'rangelink.terminal.pasteSelectedTextToDestination';
 export const CMD_UNBIND_DESTINATION = 'rangelink.unbindDestination';
+
+export const VSC_CMD_OPEN_SETTINGS = 'workbench.action.openSettings';
 
 // Keep entries sorted alphabetically by constant name.

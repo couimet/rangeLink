@@ -11,7 +11,7 @@ const STATUS_BAR_FNS = ['VscodeAdapter.setStatusBarMessage', 'VscodeAdapter.setS
 
 const TOAST_FNS = ['VscodeAdapter.showInformationMessage', 'VscodeAdapter.showWarningMessage', 'VscodeAdapter.showErrorMessage'];
 
-const MODAL_DIALOG_FNS = ['VscodeAdapter.showInformationMessage', 'VscodeAdapter.showWarningMessage'];
+const MODAL_DIALOG_FNS = ['VscodeAdapter.showInformationMessage', 'VscodeAdapter.showWarningMessage', 'VscodeAdapter.showWarningMessageWithOptions'];
 
 const EXTENSION_ID = 'couimet.rangelink-vscode-extension';
 

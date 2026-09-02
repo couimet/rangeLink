@@ -7,6 +7,9 @@
 #   feature:         Feature area
 #   scenario:        One-line description of what is tested
 #   labels:          Optional tags (e.g., cursor, ubuntu, requires-extensions)
+#   runner:          Optional list of non-standard QA runners that can execute this
+#                    TC (e.g., development). Integration coverage is expressed by
+#                    `automated`; do not list it here.
 #   preconditions:   Required setup steps — only on `automated: false` entries
 #   steps:           Ordered test actions — only on `automated: false` entries
 #   expected_result: What a passing run looks like
@@ -23,6 +26,9 @@
 #                             workspace-specific — requires devcontainer, github.dev, or
 #                                                   Remote-SSH; CI cannot provision these
 #                                                   workspace environments
+#                             real-modal-dialog  — requires keyboard focus on a real modal
+#                                                   dialog; the extension test host refuses
+#                                                   modals, so it cannot be automated or assisted
 
 test_cases:
   # ---------------------------------------------------------------------------
@@ -1071,7 +1077,7 @@ test_cases:
 
   - id: dirty-buffer-warning-004
     feature: 'dirty-buffer-warning'
-    scenario: 'Generate Anyway: generates the link without saving'
+    scenario: 'unsavedFile.action=continueAnyway — R-C generates link from unsaved content without dialog'
     expected_result: 'File still dirty (modified indicator remains). RangeLink generated from current unsaved state and sent.'
     automated: true
 
@@ -1083,7 +1089,7 @@ test_cases:
 
   - id: dirty-buffer-warning-006
     feature: 'dirty-buffer-warning'
-    scenario: 'rangelink.warnOnDirtyBuffer: false disables the dirty buffer warning entirely'
+    scenario: 'unsavedFile.action=continueAnyway — R-L sends link from unsaved content without dialog'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately.'
     automated: true
 
@@ -1097,7 +1103,7 @@ test_cases:
     labels:
       - r-f
     feature: 'dirty-buffer-warning'
-    scenario: 'warnOnDirtyBuffer=false — R-F bypasses dialog'
+    scenario: 'unsavedFile.action=continueAnyway — R-F bypasses dialog'
     expected_result: 'No dialog appears. File path copied to clipboard. "Disabled by setting" log emitted. No dialog log.'
     automated: assisted
 
@@ -1183,7 +1189,7 @@ test_cases:
     labels:
       - setting-disabled
     feature: 'dirty-buffer-warning'
-    scenario: 'R-L with warnOnDirtyBuffer=false sends link to bound destination without warning dialog'
+    scenario: 'R-L with unsavedFile.action=continueAnyway sends link to bound destination without warning dialog'
     expected_result: 'No dialog. Link sent to terminal (Pasted log). Clipboard restored to sentinel. File still dirty (setting disabled should not trigger a save). handleDirtyBufferWarning logs "disabled by setting".'
     automated: assisted
 
@@ -1233,6 +1239,220 @@ test_cases:
       LinkGenerator logs "Re-read selections after Save & Continue to account for possible format-on-save shifts" with both preSaveSelections and postSaveSelections fields. The end character of postSaveSelections is smaller than preSaveSelections by ~5 (the trimmed whitespace).
       Link sent to bound terminal correctly references the post-trim character range, not the stale pre-trim one.
     automated: assisted
+
+  - id: dirty-buffer-warning-024
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-c
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-C on dirty file: modal dialog focuses "Save & Generate" and Enter saves then copies the link'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-024`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Enter to accept the focused "Save & Generate" button'
+      - 'Confirm the driver prints "dirty-buffer-warning-024: PASS"'
+    expected_result: 'File saved (modified indicator gone). RangeLink on clipboard with #L reference. No mouse used.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-025
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-l
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-L on dirty file: modal dialog focuses "Save & Generate" and Enter saves then sends the link'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-025`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Enter to accept the focused "Save & Generate" button'
+      - 'Confirm the driver prints "dirty-buffer-warning-025: PASS"'
+    expected_result: 'File saved. Link sent to the bound terminal. No mouse used.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-026
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-f
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-F on dirty file: modal dialog focuses "Save & Send" and Enter saves then sends the path'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-026`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Enter to accept the focused "Save & Send" button'
+      - 'Confirm the driver prints "dirty-buffer-warning-026: PASS"'
+    expected_result: 'File saved. File path sent to the bound terminal. No mouse used.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-027
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-c
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-C on dirty file: abort-save ("Generate Anyway") copies the link from unsaved content'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-027`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, click "Generate Anyway"'
+      - 'Confirm the driver prints "dirty-buffer-warning-027: PASS"'
+    expected_result: 'File stays dirty. RangeLink on clipboard with #L reference generated from the unsaved content.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-028
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-l
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-L on dirty file: abort-save ("Generate Anyway") sends the link from unsaved content'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-028`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, click "Generate Anyway"'
+      - 'Confirm the driver prints "dirty-buffer-warning-028: PASS"'
+    expected_result: 'File stays dirty. Link sent to the bound terminal from the unsaved content.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-029
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-f
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-F on dirty file: abort-save ("Send Anyway") sends the path without saving'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-029`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, click "Send Anyway"'
+      - 'Confirm the driver prints "dirty-buffer-warning-029: PASS"'
+    expected_result: 'File stays dirty. File path sent to the bound terminal.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-030
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-c
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-C on dirty file: Escape dismisses the modal dialog and aborts link generation'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-030`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-030: PASS"'
+    expected_result: 'No link generated. Clipboard unchanged. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-031
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-l
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-L on dirty file: Escape dismisses the modal dialog and aborts link send'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-031`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-031: PASS"'
+    expected_result: 'No link sent. Terminal unchanged. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-032
+    runner:
+      - development
+    labels:
+      - dialog
+      - keyboard
+      - r-f
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=prompt — R-F on dirty file: Escape dismisses the modal dialog and aborts path send'
+    preconditions:
+      - 'Run `pnpm test:release:development dirty-buffer-warning-032`'
+    steps:
+      - 'Wait for the dev host window to open; the scenario runs automatically after activation'
+      - 'When the modal appears, press Escape to dismiss it'
+      - 'Confirm the driver prints "dirty-buffer-warning-032: PASS"'
+    expected_result: 'No path sent. File stays dirty. Info toast "Operation cancelled — file has unsaved changes." shown.'
+    automated: false
+    non_automatable_reason: real-modal-dialog
+
+  - id: dirty-buffer-warning-033
+    labels:
+      - setting
+      - r-c
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=saveAndContinue — R-C auto-saves the dirty file and copies the link without a dialog'
+    expected_result: 'No dialog appears. File auto-saved (modified indicator gone). RangeLink on clipboard with #L reference.'
+    automated: true
+
+  - id: dirty-buffer-warning-034
+    labels:
+      - setting
+      - r-l
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=saveAndContinue — R-L auto-saves the dirty file and sends the link without a dialog'
+    expected_result: 'No dialog appears. File auto-saved. Link sent to the bound terminal.'
+    automated: true
+
+  - id: dirty-buffer-warning-035
+    labels:
+      - setting
+      - r-f
+    feature: 'dirty-buffer-warning'
+    scenario: 'unsavedFile.action=saveAndContinue — R-F auto-saves the dirty file and sends the path without a dialog'
+    expected_result: 'No dialog appears. File auto-saved. File path sent to the bound terminal.'
+    automated: true
+
+  - id: dirty-buffer-warning-036
+    labels:
+      - migration
+    feature: 'dirty-buffer-warning'
+    scenario: 'Migration — existing warnOnDirtyBuffer=false converts to unsavedFile.action=continueAnyway with a one-time conversion toast'
+    expected_result: 'warnOnDirtyBuffer key removed. unsavedFile.action set to continueAnyway in the same scope. A one-time conversion toast explains the rename. Re-activation shows no second toast.'
+    automated: assisted
+
+  - id: dirty-buffer-warning-037
+    labels:
+      - migration
+    feature: 'dirty-buffer-warning'
+    scenario: 'Migration — warnOnDirtyBuffer=true is removed silently with unsavedFile.action=prompt; an already-set unsavedFile.action is preserved'
+    expected_result: 'warnOnDirtyBuffer key removed silently (no toast). unsavedFile.action=prompt when the old value was true. When unsavedFile.action was already set, it is left intact and only the old key is dropped.'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 9 — R-V Send Terminal Selection
