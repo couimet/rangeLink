@@ -1,12 +1,14 @@
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
+import { pickFilenameCandidate } from '../../navigation/pickFilenameCandidate';
 import { PathFormat } from '../../types/PathFormat';
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import { createMockUri, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
 
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import os from 'node:os';
 import { buildFilePathPattern, DEFAULT_DELIMITERS, extractFilePath } from 'rangelink-core-ts';
+
+jest.mock('../../navigation/pickFilenameCandidate');
 
 describe('FilePathNavigationHandler', () => {
   let handler: FilePathNavigationHandler;
@@ -136,20 +138,42 @@ describe('FilePathNavigationHandler', () => {
       );
     });
 
-    it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
-      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
-      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
+    it('should navigate to the picked candidate when resolveWorkspacePath returns candidates', async () => {
+      const candidate1 = createMockUri('/workspace/index.ts');
+      const candidate2 = createMockUri('/workspace/src/index.ts');
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ candidates: [candidate1, candidate2] });
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(undefined as any);
+      (pickFilenameCandidate as jest.Mock).mockResolvedValue(candidate2);
 
       await handler.navigateToFile('index.ts');
 
-      expect(showWarningMessageSpy).toHaveBeenCalledWith('Multiple files match: index.ts');
-      expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect(pickFilenameCandidate).toHaveBeenCalledWith(mockAdapter, [candidate1, candidate2], mockLogger);
+      expect(showTextDocumentSpy).toHaveBeenCalledWith(candidate2);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'FilePathNavigationHandler.navigateToFile', rawPath: 'index.ts' },
+        'Navigation completed successfully',
+      );
+    });
+
+    it('should cancel navigation when the filename picker is dismissed', async () => {
+      const candidate1 = createMockUri('/workspace/index.ts');
+      const candidate2 = createMockUri('/workspace/src/index.ts');
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ candidates: [candidate1, candidate2] });
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      (pickFilenameCandidate as jest.Mock).mockResolvedValue(undefined);
+
+      await handler.navigateToFile('index.ts');
+
+      expect(showTextDocumentSpy).not.toHaveBeenCalled();
+      expect(showWarningMessageSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'FilePathNavigationHandler.navigateToFile',
           rawPath: 'index.ts',
           expandedPath: 'index.ts',
         },
-        'Multiple files match bare filename',
+        'Filename picker dismissed, navigation cancelled',
       );
     });
 

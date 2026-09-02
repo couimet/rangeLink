@@ -1,7 +1,7 @@
 import type { ConfigReader } from '../../config/ConfigReader';
+import { pickFilenameCandidate } from '../../navigation/pickFilenameCandidate';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { PathFormat } from '../../types/PathFormat';
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import {
   createMockConfigReader,
   createMockDocument,
@@ -20,6 +20,8 @@ import {
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
+
+jest.mock('../../navigation/pickFilenameCandidate');
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
@@ -357,6 +359,80 @@ describe('RangeLinkNavigationHandler', () => {
     });
   });
 
+  describe('Filename candidates', () => {
+    it('should navigate to the picked candidate when resolveWorkspacePath returns candidates', async () => {
+      const parsed: ParsedLink = {
+        path: 'index.ts',
+        quotedPath: 'index.ts',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      const candidate1 = createMockUri('/workspace/index.ts');
+      const candidate2 = createMockUri('/workspace/src/index.ts');
+      const navDocument = createMockDocument({
+        uri: createMockUri('/workspace/src/index.ts'),
+        getText: createMockText('const x = 1'),
+        lineCount: 100,
+        lineAt: createMockLineAt('const x = 1'),
+      });
+      const navEditor = createMockEditor({ document: navDocument });
+      mockAdapter = createMockVscodeAdapter({
+        windowOptions: createWindowOptionsForEditor(navEditor),
+      });
+      const resolveSpy = jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ candidates: [candidate1, candidate2] });
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(navEditor);
+      const findOpenUntitledFileSpy = jest.spyOn(mockAdapter, 'findOpenUntitledFile');
+      (pickFilenameCandidate as jest.Mock).mockResolvedValue(candidate2);
+      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+
+      await handler.navigateToLink(parsed, 'index.ts#L1');
+
+      expect(resolveSpy).toHaveBeenCalledWith('index.ts', { start: { line: 1 }, end: { line: 1 } });
+      expect(pickFilenameCandidate).toHaveBeenCalledWith(mockAdapter, [candidate1, candidate2], mockLogger);
+      expect(showTextDocumentSpy).toHaveBeenCalledWith(candidate2);
+      expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
+    });
+
+    it('should cancel navigation when the filename picker is dismissed', async () => {
+      const parsed: ParsedLink = {
+        path: 'index.ts',
+        quotedPath: 'index.ts',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      const candidate1 = createMockUri('/workspace/index.ts');
+      const candidate2 = createMockUri('/workspace/src/index.ts');
+      mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ candidates: [candidate1, candidate2] });
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
+      const findOpenUntitledFileSpy = jest.spyOn(mockAdapter, 'findOpenUntitledFile');
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      (pickFilenameCandidate as jest.Mock).mockResolvedValue(undefined);
+      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+
+      await handler.navigateToLink(parsed, 'index.ts#L1');
+
+      expect(pickFilenameCandidate).toHaveBeenCalledWith(mockAdapter, [candidate1, candidate2], mockLogger);
+      expect(showTextDocumentSpy).not.toHaveBeenCalled();
+      expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
+      expect(showWarningMessageSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'index.ts#L1',
+          path: 'index.ts',
+        },
+        'Filename picker dismissed, navigation cancelled',
+      );
+    });
+  });
+
   describe('Untitled File Fallback (Issue #101)', () => {
     describe('when file does not exist on disk BUT is open as untitled', () => {
       it('should find and navigate to open untitled file "Untitled-1"', async () => {
@@ -631,42 +707,6 @@ describe('RangeLinkNavigationHandler', () => {
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-3');
         expect(mockShowWarningMessage).toHaveBeenCalledWith('Cannot find file: Untitled-3');
-      });
-    });
-
-    describe('Ambiguous filename', () => {
-      it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
-        const parsed: ParsedLink = {
-          path: 'index.ts',
-          quotedPath: 'index.ts',
-          start: { line: 1 },
-          end: { line: 1 },
-          linkType: LinkType.Regular,
-          selectionType: SelectionType.Normal,
-        };
-
-        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { showWarningMessage: mockShowWarningMessage },
-        });
-        jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
-        const findOpenUntitledFileSpy = jest.spyOn(mockAdapter, 'findOpenUntitledFile');
-        const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
-
-        await handler.navigateToLink(parsed, 'index.ts#L1');
-
-        expect(mockShowWarningMessage).toHaveBeenCalledWith('Multiple files match: index.ts');
-        expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
-        expect(showTextDocumentSpy).not.toHaveBeenCalled();
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-          {
-            fn: 'RangeLinkNavigationHandler.navigateToLink',
-            linkText: 'index.ts#L1',
-            path: 'index.ts',
-          },
-          'Multiple files match bare filename',
-        );
       });
     });
   });

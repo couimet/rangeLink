@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Generating a link from an empty selected line now works** — previously rejected as a zero-width selection, an empty line selection now correctly produces a `#L12` link. (#683)
 - **Auto-unbind when a bound file is deleted from disk**, matching the existing terminal-close behavior. Deleting a bound file now triggers an auto-unbind with a status bar message and warning toast. Previously the binding survived and subsequent paste attempts would target a non-existent file. (#611)
 - **RangeLink context menu items now appear in remote and virtual workspaces** — devcontainers, SSH remotes, WSL, Codespaces (`vscode-remote://`), and GitHub's web editor (`vscode-vfs://`). These URI schemes are now recognized as writable, so link-generation, paste-file-path, and bind commands appear in context menus where they were previously hidden. (#679) — Contributed by [@lourot](https://github.com/lourot). 🎉 First open-source contribution on the project!
+- **RangeLinks to workspace-root files navigate again when a same-named file exists deeper in the workspace** — a bare-filename link now resolves to the exact root-level file first (after validating the link's range against it), instead of refusing navigation with a "Multiple files match" warning. When no root-level file exists and several files match, navigation now shows a picker to choose the target file instead of the old warning. (#715)
 
 <!-- markdownlint-disable MD038 -->
 

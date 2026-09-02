@@ -57,6 +57,57 @@ export const createFileAt = (filename: string, content: string): vscode.Uri => {
 };
 
 /**
+ * Create a disposable subdirectory under the workspace root and track it for
+ * removal by cleanupTrackedFiles (cleanupFiles rmSyncs it recursively, so any
+ * files written beneath it — including same-named siblings in subfolders —
+ * disappear with it). Use when a test needs several files whose individual
+ * removal would otherwise be manual.
+ */
+export const createTempDir = (descriptor: string): string => {
+  fileCounter++;
+  const dirPath = path.join(getWorkspaceRoot(), `__rl-test-${descriptor}-${Date.now()}-${fileCounter}`);
+  fs.mkdirSync(dirPath, { recursive: true });
+  registerFileForCleanup(vscode.Uri.file(dirPath));
+  return dirPath;
+};
+
+/**
+ * Create a unique file inside a fresh tracked temp subdirectory (never the
+ * workspace root). Root-first resolution then misses it (stat fails), so the
+ * resolver has to find it via findFiles — which is what the filename-fallback
+ * tests exercise. The whole subdirectory is removed at cleanup.
+ */
+export const createNestedWorkspaceFile = (descriptor: string, content: string): { filename: string; filePath: string; relativePath: string } => {
+  fileCounter++;
+  const filename = `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.ts`;
+  const filePath = path.join(createTempDir(descriptor), filename);
+  fs.writeFileSync(filePath, content, 'utf8');
+  return { filename, filePath, relativePath: path.relative(getWorkspaceRoot(), filePath) };
+};
+
+/**
+ * Create two same-named files, one under an `a/` and one under a `b/`
+ * subdirectory of a fresh tracked temp dir, so a bare-filename link matches
+ * two files. The candidate picker sorts paths ascending, so the `a/` copy is
+ * the default first candidate. Everything is removed with the temp dir at
+ * cleanup.
+ */
+export const createDuplicateFiles = (descriptor: string, content: string): { filename: string; filePathA: string; filePathB: string } => {
+  fileCounter++;
+  const filename = `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.ts`;
+  const parentDir = createTempDir(descriptor);
+  const dirA = path.join(parentDir, 'a');
+  const dirB = path.join(parentDir, 'b');
+  fs.mkdirSync(dirA, { recursive: true });
+  fs.mkdirSync(dirB, { recursive: true });
+  const filePathA = path.join(dirA, filename);
+  const filePathB = path.join(dirB, filename);
+  fs.writeFileSync(filePathA, content, 'utf8');
+  fs.writeFileSync(filePathB, content, 'utf8');
+  return { filename, filePathA, filePathB };
+};
+
+/**
  * Rename a workspace file via vscode.workspace.applyEdit — the only rename path
  * that fires onDidRenameFiles (workspace.fs.rename does not). Registers the new
  * URI for cleanup since cleanupTrackedFiles only knows registered URIs.

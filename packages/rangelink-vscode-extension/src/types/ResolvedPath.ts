@@ -1,5 +1,6 @@
 import { PathFormat } from './PathFormat';
 
+import type { LinkPosition } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 /**
@@ -26,17 +27,29 @@ export interface ResolvedPath {
 }
 
 /**
- * Sentinel value returned by resolveWorkspacePath when a bare filename
- * matches multiple files in the workspace. Callers use this to show
- * a distinct "multiple matches" warning instead of the generic "not found".
+ * Start and end positions from a parsed RangeLink, used to validate that a
+ * link range fits a candidate file before navigating. Positions are
+ * 1-indexed in link format.
  */
-export const FILENAME_AMBIGUOUS = 'filename-ambiguous' as const;
+export interface LinkRange {
+  start: LinkPosition;
+  end: LinkPosition;
+}
+
+/**
+ * Bare filename matched multiple files and none could be chosen
+ * deterministically. Callers should present the candidates (e.g. a QuickPick)
+ * and let the user pick which file to navigate to.
+ */
+export interface FilenameCandidatesResult {
+  candidates: vscode.Uri[];
+}
 
 /**
  * Full return type of resolveWorkspacePath.
  *
  * - `ResolvedPath`: file found successfully
- * - `'filename-ambiguous'`: bare filename matched 2+ files (caller should warn about ambiguity)
+ * - `FilenameCandidatesResult`: bare filename matched 2+ files (caller should let the user pick)
  * - `undefined`: file not found by any strategy
  */
-export type ResolveWorkspacePathResult = ResolvedPath | typeof FILENAME_AMBIGUOUS | undefined;
+export type ResolveWorkspacePathResult = ResolvedPath | FilenameCandidatesResult | undefined;

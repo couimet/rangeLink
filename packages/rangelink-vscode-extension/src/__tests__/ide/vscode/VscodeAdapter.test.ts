@@ -810,7 +810,7 @@ describe('VscodeAdapter', () => {
 
       expect(result).toStrictEqual(mockResolved);
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(linkPath, mockVSCode);
+      expect(spy).toHaveBeenCalledWith(linkPath, mockVSCode, undefined);
     });
   });
 
