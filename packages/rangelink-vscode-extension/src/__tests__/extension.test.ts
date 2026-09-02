@@ -1,9 +1,13 @@
+import { ENV_RANGELINK_DEVELOPMENT } from '../constants';
 import * as extension from '../extension';
 import { VSCodeLogger } from '../VSCodeLogger';
 
 import { createMockCommands, createMockMemento, createMockOutputChannel, createMockStatusBarItem, createMockWindow, createMockWorkspace } from './helpers';
 
 import { pingLog, setLogger } from '@couimet/logger-contract';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import * as vscode from 'vscode';
 
 // Create reusable mocks using our utilities
@@ -619,6 +623,66 @@ describe('Extension lifecycle', () => {
     extension.deactivate();
 
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Development test runner loading', () => {
+  beforeEach(() => {
+    mockOutputChannel.appendLine.mockClear();
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
+    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(createMockConfig());
+    (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
+  });
+
+  afterEach(() => {
+    delete process.env[ENV_RANGELINK_DEVELOPMENT];
+  });
+
+  const runnerLogLines = (): string[] =>
+    (mockOutputChannel.appendLine as jest.Mock).mock.calls
+      .map((call: string[]) => String(call[0]))
+      .filter((line: string) => line.includes('Development test runner'));
+
+  it('does not load the runner when RANGELINK_DEVELOPMENT is unset', () => {
+    const context = { subscriptions: [] as vscode.Disposable[], globalState: createMockMemento() };
+
+    extension.activate(context as any);
+
+    expect(runnerLogLines()).toHaveLength(0);
+  });
+
+  it('logs a warning when RANGELINK_DEVELOPMENT=true but the runner module is missing', () => {
+    process.env[ENV_RANGELINK_DEVELOPMENT] = 'true';
+    const context = {
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
+      extensionPath: '/nonexistent/extension-path',
+    };
+
+    extension.activate(context as any);
+
+    expect(runnerLogLines()).toEqual([expect.stringMatching(/Development test runner failed/)]);
+  });
+
+  it('loads and runs the runner when RANGELINK_DEVELOPMENT=true and the module exists', async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'rl-devtest-'));
+    const runnerOutDir = join(tmpDir, 'out', '__development-tests__');
+    mkdirSync(runnerOutDir, { recursive: true });
+    writeFileSync(join(runnerOutDir, 'runDevelopmentTests.js'), 'module.exports.runDevelopmentTests = async () => {};');
+
+    process.env[ENV_RANGELINK_DEVELOPMENT] = 'true';
+    const context = {
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
+      extensionPath: tmpDir,
+    };
+
+    extension.activate(context as any);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(runnerLogLines()).toEqual([expect.stringMatching(/Development test runner finished/)]);
+    rmSync(tmpDir, { recursive: true, force: true });
   });
 });
 

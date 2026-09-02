@@ -4,6 +4,7 @@ export type { ConfigGetterFactory, ConfigSource, DelimiterConfigSources, LoadDel
 // Public classes
 export { ConfigReader } from './ConfigReader';
 export { DelimiterCache } from './DelimiterCache';
+export { DirtyBufferSettingMigrator } from './DirtyBufferSettingMigrator';
 
 // Public functions
 export { getDelimitersForExtension } from './getDelimitersForExtension';

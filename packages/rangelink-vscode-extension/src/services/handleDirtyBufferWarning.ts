@@ -1,8 +1,8 @@
 import type { ConfigReader } from '../config/ConfigReader';
-import { DEFAULT_WARN_ON_DIRTY_BUFFER, SETTING_WARN_ON_DIRTY_BUFFER } from '../constants';
+import { DEFAULT_UNSAVED_FILE_ACTION, SETTING_UNSAVED_FILE_ACTION } from '../constants';
 import { RangeLinkExtensionError } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { DirtyBufferWarningResult, MessageCode } from '../types';
+import { DirtyBufferWarningResult, MessageCode, type UnsavedFileAction } from '../types';
 import { formatMessage } from '../utils';
 
 import type { DirtyBufferMessageCodes } from './types';
@@ -11,20 +11,42 @@ import type { Logger } from '@couimet/logger-contract';
 import type * as vscode from 'vscode';
 
 /**
- * Checks whether a document has unsaved changes and, if so, shows the dirty
- * buffer warning dialog. Handles the full flow: isDirty check, setting check,
- * dialog interaction, and save.
+ * Saves the document before a dirty-buffer flow continues, mapping a failed or
+ * cancelled save to SaveFailed (with a warning toast) instead of proceeding.
+ * Shared by the auto-save and modal "Save & Generate" paths.
+ */
+const saveAndContinue = async (
+  document: vscode.TextDocument,
+  ideAdapter: VscodeAdapter,
+  messageCodes: DirtyBufferMessageCodes,
+  logger: Logger,
+): Promise<DirtyBufferWarningResult> => {
+  const fn = 'handleDirtyBufferWarning.saveAndContinue';
+  logger.debug({ fn }, 'Saving document before continuing');
+  const saved = await document.save();
+  if (!saved) {
+    logger.warn({ fn }, 'Save operation failed or was cancelled');
+    void ideAdapter.showWarningMessage(formatMessage(messageCodes.saveFailed));
+    return DirtyBufferWarningResult.SaveFailed;
+  }
+  logger.debug({ fn }, 'Document saved successfully');
+  return DirtyBufferWarningResult.SaveAndContinue;
+};
+
+/**
+ * Checks whether a document has unsaved changes and, if so, acts according to
+ * the rangelink.unsavedFile.action setting: prompts with a modal dialog,
+ * auto-saves, or continues without saving.
  *
- * Returns a result indicating the document state or the user's choice.
+ * Returns a result indicating the document state or the action taken.
  * When the document is clean, returns Clean (proceed without warning).
- * When the setting is disabled, returns ContinueAnyway with a debug log.
  *
  * @param document The document to check — caller ensures it is defined
- * @param configReader Config reader for the warnOnDirtyBuffer setting
+ * @param configReader Config reader for the unsavedFile.action setting
  * @param ideAdapter Adapter for showing messages
  * @param logger Logger instance
  * @param messageCodes Message codes for the dialog labels
- * @returns Clean if no warning needed, or the user's dialog choice
+ * @returns Clean if no warning needed, or the action taken
  */
 export const handleDirtyBufferWarning = async (
   document: vscode.TextDocument,
@@ -39,20 +61,25 @@ export const handleDirtyBufferWarning = async (
     return DirtyBufferWarningResult.Clean;
   }
 
-  const shouldWarnOnDirty = configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, DEFAULT_WARN_ON_DIRTY_BUFFER);
+  const unsavedFileAction = configReader.getWithDefault<UnsavedFileAction>(SETTING_UNSAVED_FILE_ACTION, DEFAULT_UNSAVED_FILE_ACTION);
 
-  if (!shouldWarnOnDirty) {
-    logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes but warning is disabled by setting');
+  if (unsavedFileAction === 'continueAnyway') {
+    logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes but unsavedFile.action=continueAnyway bypasses the dialog');
     return DirtyBufferWarningResult.ContinueAnyway;
   }
 
-  logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes, showing warning');
+  if (unsavedFileAction === 'saveAndContinue') {
+    logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes, unsavedFile.action=saveAndContinue auto-saving');
+    return saveAndContinue(document, ideAdapter, messageCodes, logger);
+  }
+
+  logger.debug({ fn, documentUri: document.uri.toString() }, 'Document has unsaved changes, showing modal warning');
 
   const warningMessage = formatMessage(messageCodes.warning);
   const saveLabel = formatMessage(messageCodes.save);
   const continueLabel = formatMessage(messageCodes.continueAnyway);
 
-  const choice = await ideAdapter.showWarningMessage(warningMessage, saveLabel, continueLabel);
+  const choice = await ideAdapter.showWarningMessageWithOptions(warningMessage, { modal: true }, saveLabel, continueLabel);
 
   const result: DirtyBufferWarningResult =
     choice === saveLabel
@@ -64,14 +91,7 @@ export const handleDirtyBufferWarning = async (
   switch (result) {
     case DirtyBufferWarningResult.SaveAndContinue: {
       logger.debug({ fn }, 'User chose to save and continue');
-      const saved = await document.save();
-      if (!saved) {
-        logger.warn({ fn }, 'Save operation failed or was cancelled');
-        void ideAdapter.showWarningMessage(formatMessage(messageCodes.saveFailed));
-        return DirtyBufferWarningResult.SaveFailed;
-      }
-      logger.debug({ fn }, 'Document saved successfully');
-      return result;
+      return saveAndContinue(document, ideAdapter, messageCodes, logger);
     }
     case DirtyBufferWarningResult.ContinueAnyway:
       logger.debug({ fn }, 'User chose to continue without saving');

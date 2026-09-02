@@ -8,6 +8,7 @@ const path = require('node:path');
 
 const args = process.argv.slice(2);
 const labelFilters = [];
+const runnerFilters = [];
 const featureFilters = [];
 let assistedOnly = false;
 let excludeAssisted = false;
@@ -19,10 +20,10 @@ let yamlPath = '';
 
 const printUsage = (exitCode = 2) => {
   process.stderr.write(
-    'Usage: resolve-qa-labels.js [--label <name>]... [--assisted] [--exclude-assisted]\n' +
-      '                          [--automated-only] [--exclude-label <name>]...\n' +
-      '                          [--feature <slug>]... [--exclude-feature <slug>]...\n' +
-      '                          [--json] [--yaml <path>]\n',
+    'Usage: resolve-qa-labels.js [--label <name>]... [--runner <name>]... [--assisted]\n' +
+      '                          [--exclude-assisted] [--automated-only]\n' +
+      '                          [--exclude-label <name>]... [--feature <slug>]...\n' +
+      '                          [--exclude-feature <slug>]... [--json] [--yaml <path>]\n',
   );
   process.exit(exitCode);
 };
@@ -35,6 +36,13 @@ for (let i = 0; i < args.length; i++) {
         process.exit(1);
       }
       labelFilters.push(args[++i]);
+      break;
+    case '--runner':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        process.stderr.write('Error: --runner requires a value\n');
+        process.exit(1);
+      }
+      runnerFilters.push(args[++i]);
       break;
     case '--assisted':
       assistedOnly = true;
@@ -114,6 +122,7 @@ const lines = content.split('\n');
 const testCases = [];
 let currentCase = null;
 let inLabels = false;
+let inRunner = false;
 
 const finalizeCurrent = () => {
   if (currentCase) {
@@ -121,6 +130,7 @@ const finalizeCurrent = () => {
     currentCase = null;
   }
   inLabels = false;
+  inRunner = false;
 };
 
 for (const rawLine of lines) {
@@ -133,6 +143,7 @@ for (const rawLine of lines) {
       id: idMatch[1].trim(),
       automated: '',
       labels: [],
+      runner: [],
       feature: '',
       nonAutomatableReason: '',
     };
@@ -147,6 +158,7 @@ for (const rawLine of lines) {
     currentCase.automated =
       raw.length >= 2 && ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) ? raw.slice(1, -1) : raw;
     inLabels = false;
+    inRunner = false;
     continue;
   }
 
@@ -156,6 +168,7 @@ for (const rawLine of lines) {
     currentCase.nonAutomatableReason =
       raw.length >= 2 && ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) ? raw.slice(1, -1) : raw;
     inLabels = false;
+    inRunner = false;
     continue;
   }
 
@@ -167,6 +180,7 @@ for (const rawLine of lines) {
         ? rawFeature.slice(1, -1)
         : rawFeature;
     inLabels = false;
+    inRunner = false;
     continue;
   }
 
@@ -178,11 +192,19 @@ for (const rawLine of lines) {
         ? rawScenario.slice(1, -1)
         : rawScenario;
     inLabels = false;
+    inRunner = false;
     continue;
   }
 
   if (/^\s+labels:\s*$/.test(line)) {
     inLabels = true;
+    inRunner = false;
+    continue;
+  }
+
+  if (/^\s+runner:\s*$/.test(line)) {
+    inRunner = true;
+    inLabels = false;
     continue;
   }
 
@@ -194,8 +216,20 @@ for (const rawLine of lines) {
     continue;
   }
 
+  if (inRunner && /^\s+-\s+(\S+)/.test(line)) {
+    const runnerMatch = line.match(/^\s+-\s+(\S+)/);
+    if (runnerMatch) {
+      currentCase.runner.push(runnerMatch[1].trim());
+    }
+    continue;
+  }
+
   if (inLabels && /^\s+\w+/.test(line) && !/^\s+-\s+/.test(line)) {
     inLabels = false;
+  }
+
+  if (inRunner && /^\s+\w+/.test(line) && !/^\s+-\s+/.test(line)) {
+    inRunner = false;
   }
 }
 
@@ -205,6 +239,7 @@ finalizeCurrent();
 
 const filterTc = (tc) => {
   if (labelFilters.length > 0 && !labelFilters.some((l) => tc.labels.includes(l))) return false;
+  if (runnerFilters.length > 0 && !runnerFilters.some((r) => tc.runner.includes(r))) return false;
   if (excludeLabels.length > 0 && excludeLabels.some((l) => tc.labels.includes(l))) return false;
   if (featureFilters.length > 0 && !featureFilters.includes(tc.feature)) return false;
   if (excludeFeatures.length > 0 && excludeFeatures.includes(tc.feature)) return false;

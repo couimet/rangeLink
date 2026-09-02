@@ -1,3 +1,4 @@
+import type { DirtyBufferSettingMigrator } from '../config';
 import type { LogCapture } from '../LogCapture';
 import type { ReleaseNotifier } from '../notification';
 
@@ -8,5 +9,6 @@ import type { ReleaseNotifier } from '../notification';
 export interface RangeLinkExtensionApi {
   readonly logCapture: LogCapture;
   readonly releaseNotifier: ReleaseNotifier;
+  readonly dirtyBufferSettingMigrator: DirtyBufferSettingMigrator;
   readonly getContextKeyValues: () => Record<string, unknown>;
 }
