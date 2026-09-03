@@ -30,6 +30,12 @@ jobs:
       test-command: pnpm -r compile && pnpm test
       codecov-upload: true
       codecov-files: packages/*/coverage/lcov.info
+      # Upload each package's lcov with its Codecov flag so the flag-scoped
+      # coverage badges (core-ts, vscode-extension) have data to render.
+      # The shared action also runs the single repository-wide upload first,
+      # so the aggregate repo badge keeps working.
+      codecov-per-package-flags: true
+      codecov-per-package-flags-pattern: 's|packages/rangelink-\([^/]*\)/.*|\1|'
       coverage-comment: true
     secrets:
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
