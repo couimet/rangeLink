@@ -394,6 +394,14 @@ describe('RangeLinkNavigationHandler', () => {
       expect(pickFilenameCandidate).toHaveBeenCalledWith(mockAdapter, [candidate1, candidate2], mockLogger);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(candidate2);
       expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'index.ts#L1',
+          finalSelection: { anchorLine: 0, anchorChar: 0, activeLine: 0, activeChar: 11 },
+        },
+        'Navigation completed successfully',
+      );
     });
 
     it('should cancel navigation when the filename picker is dismissed', async () => {
