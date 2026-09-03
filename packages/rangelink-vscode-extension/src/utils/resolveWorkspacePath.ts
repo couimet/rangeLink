@@ -65,9 +65,9 @@ export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof
   }
 
   // Bare-filename resolution: a root-level file's bare name IS its
-  // workspace-relative path, so check the exact join first (range-aware).
-  // Only when the root file is missing or the range clamps do we fall back
-  // to the fuzzy glob search (Issue #342/#715).
+  // workspace-relative path, so check the exact join in each folder first
+  // (range-aware). Only when no folder's root holds a range-fitting copy of
+  // the file do we fall back to the fuzzy glob search (Issue #342/#715).
   const isBareFilename = !linkPath.includes('/') && !linkPath.includes('\\');
   if (isBareFilename) {
     for (const folder of workspaceFolders) {
@@ -85,7 +85,7 @@ export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof
       try {
         doc = await ideInstance.workspace.openTextDocument(uri);
       } catch {
-        break; // cannot validate the range — let the user pick from all matches
+        continue; // cannot range-validate this folder's root — try the next folder
       }
       const startConverted = convertRangeLinkPosition(range.start, doc);
       const endConverted = convertRangeLinkPosition(range.end, doc);
@@ -93,7 +93,7 @@ export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof
       if (!anyClamping) {
         return { uri, resolvedVia: 'workspace-relative' };
       }
-      break; // range would clamp — let the user pick from all matches
+      continue; // range clamps against this folder's root — try the next folder
     }
 
     const pattern = `**/${escapeGlobPattern(linkPath)}`;

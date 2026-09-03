@@ -372,6 +372,42 @@ describe('resolveWorkspacePath', () => {
         expect(mockOpenTextDocument).toHaveBeenCalledTimes(1);
       });
 
+      it('should prefer a later workspace folder whose root file fits the range over an earlier folder whose root clamps', async () => {
+        mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockImplementation((uri: any) => {
+          if (uri.fsPath.includes('project1')) {
+            return Promise.resolve(CLAMPING_DOCUMENT);
+          }
+          return Promise.resolve(FITTING_DOCUMENT);
+        });
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 2 }, end: { line: 2 } });
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project2/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(2);
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
+
+      it('should try a later workspace folder when opening an earlier folder root file fails', async () => {
+        mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockImplementation((uri: any) => {
+          if (uri.fsPath.includes('project1')) {
+            return Promise.reject(new Error('binary file'));
+          }
+          return Promise.resolve(FITTING_DOCUMENT);
+        });
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 2 }, end: { line: 2 } });
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project2/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(2);
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
+
       it('should try each workspace folder root before falling back to findFiles', async () => {
         mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
         mockStat.mockImplementation((uri: any) => {

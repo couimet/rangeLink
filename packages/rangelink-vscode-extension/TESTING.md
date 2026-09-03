@@ -68,7 +68,7 @@ VS Code's extension host test runner provides no API to select an arbitrary Quic
 
 - `openAndDismiss(command)` — fires a command that opens a QuickPick/InputBox, waits for render + log emission, dismisses via `closeQuickOpen`, then settles. Use when a test must observe a picker's content without choosing.
 - `openAndAccept(command, ...)` — fires the command, then accepts the QuickPick's default (first) item via `acceptSelectedQuickOpenItem`. Use for flows that end in "pick the first candidate".
-- `dismissQuickPick()` / `acceptQuickInput()` — bare dismiss/accept primitives, used inside poll-retry loops when navigation happens only after the picker closes.
+- `dismissQuickPick()` — bare dismissal primitive, exported for tests that manage their own open/close cadence. There is no exported accept counterpart: the accept primitive is module-private, wrapped by `openAndAccept` in the poll-retry loop that tolerates a slow picker render.
 
 **Workaround — command bypass:** TCs that use a picker as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely.
 
