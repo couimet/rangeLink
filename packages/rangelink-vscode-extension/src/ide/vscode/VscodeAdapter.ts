@@ -7,7 +7,7 @@ import {
   FOCUS_TO_PASTE_DELAY_MS,
 } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
-import { MessageCode, RelativePathFormat, type ResolveWorkspacePathResult, TerminalFocusType } from '../../types';
+import { type LinkRange, MessageCode, RelativePathFormat, type ResolveWorkspacePathResult, TerminalFocusType } from '../../types';
 import { ExtensionResult } from '../../types/ExtensionResult';
 import { formatMessage, getUntitledDisplayName, resolveWorkspacePath, validateTerminalDefined } from '../../utils';
 import type { ClipboardProvider } from '../ClipboardProvider';
@@ -571,10 +571,11 @@ export class VscodeAdapter
    * Delegates to resolveWorkspacePath utility for path resolution logic.
    *
    * @param linkPath - File path from RangeLink (may be relative or absolute)
-   * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
+   * @param range - Optional link range used to validate that a root-file match fits before navigating
+   * @returns ResolvedPath if found, FilenameCandidatesResult if multiple matches, undefined if not found
    */
-  resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
-    return resolveWorkspacePath(linkPath, this.ideInstance);
+  resolveWorkspacePath(linkPath: string, range?: LinkRange): Promise<ResolveWorkspacePathResult> {
+    return resolveWorkspacePath(linkPath, this.ideInstance, range);
   }
 
   /**

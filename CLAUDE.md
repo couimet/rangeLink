@@ -313,6 +313,26 @@
   <rationale>The ssContext helper centralizes test-window assertions: every declared list defaults to empty and teardown fails on any unexpected value, so "no toast"/"no message" is already enforced without an explicit call. CodeRabbit routinely flags missing empty assertions in tests that assert a binding is retained; those findings are false positives against this framework — this has happened repeatedly (PR 721 file-rename TCs and earlier)</rationale>
 </rule>
 
+<rule id="T019" priority="critical">
+  <title>One .toStrictEqual() per structured assertion — no scattered per-field checks</title>
+  <do>Assert a structured return value with a single `.toStrictEqual()` over the whole object — or over a destructured literal of its declared fields when the object embeds a value that is not deep-comparable (e.g. a `vscode.Uri`, whose mock instances carry an own function property and never deep-equal across fresh constructions)</do>
+  <never>Scatter per-field `.toBe()`/`.toEqual()` checks across the fields of one returned object — `expect(result.a).toBe(...); expect(result.b).toBe(...)` lets a field that is added, removed, or silently wrong slip through the gap between the two assertions</never>
+  <rationale>A single `toStrictEqual` freezes the whole structure at once: an extra, missing, or mistyped field fails the assertion instead of passing because nothing compared it. This is the same guarantee rules T002/T004/T008 already demand for Result payloads and lists — extend it to plain returned objects. If the object has many fields and only a few matter, extract those fields into one literal and assert that literal once rather than leaving two adjacent `expect(...).toBe(...)` lines.</rationale>
+  <bad-example>
+    const resolved = expectResolvedPath(result);
+    expect(resolved.uri.fsPath).toBe('/Users/name/project/index.ts');
+    expect(resolved.resolvedVia).toBe('workspace-relative');
+  </bad-example>
+  <good-example>
+    // Raw vscode.Uri mock instances are not deep-comparable, so snapshot the
+    // declared contract fields into one literal and assert that whole object.
+    expect({ fsPath: resolved.uri.fsPath, resolvedVia: resolved.resolvedVia }).toStrictEqual({
+      fsPath: '/Users/name/project/index.ts',
+      resolvedVia: 'workspace-relative',
+    });
+  </good-example>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before the first pnpm, npm, or node command in a session</when>

@@ -1,9 +1,12 @@
-import { FILENAME_AMBIGUOUS, ResolveWorkspacePathResult } from '../types/ResolvedPath';
+import type { LinkRange, ResolveWorkspacePathResult } from '../types/ResolvedPath';
+
+import { convertRangeLinkPosition } from './convertRangeLinkPosition';
 
 import * as path from 'node:path';
 import type * as vscode from 'vscode';
 
 const AMBIGUITY_THRESHOLD = 2;
+const MAX_FILENAME_CANDIDATES = 100;
 
 const GLOB_METACHARACTERS: ReadonlyMap<string, string> = new Map([
   ['[', '[[]'],
@@ -27,9 +30,12 @@ const escapeGlobPattern = (filename: string): string => {
  *
  * Attempts to resolve the path in the following order:
  * 1. If path is absolute and exists, use it directly
- * 2. If path is a bare filename (no directory separators), search workspace
- *    via findFiles — return the URI only when exactly one match exists,
- *    return FILENAME_AMBIGUOUS when multiple matches exist
+ * 2. If path is a bare filename (no directory separators), first try the
+ *    exact workspace-relative join — the bare name of a root-level file IS
+ *    its relative path, so navigate there when it exists and the link range
+ *    fits (or when no range is given). Otherwise search the workspace via
+ *    findFiles: return the URI for a single match, return a candidate list
+ *    for multiple matches
  * 3. Try resolving relative to each workspace folder
  * 4. If no workspace or file not found, return undefined
  *
@@ -38,9 +44,10 @@ const escapeGlobPattern = (filename: string): string => {
  *
  * @param linkPath - File path from RangeLink (may be relative or absolute)
  * @param ideInstance - VSCode module instance for workspace/URI operations
- * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
+ * @param range - Optional link range used to validate that a root-file match fits before navigating
+ * @returns ResolvedPath if found, FilenameCandidatesResult if multiple matches, undefined if not found
  */
-export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof vscode): Promise<ResolveWorkspacePathResult> => {
+export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof vscode, range?: LinkRange): Promise<ResolveWorkspacePathResult> => {
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
     const uri = ideInstance.Uri.file(linkPath);
@@ -57,19 +64,46 @@ export const resolveWorkspacePath = async (linkPath: string, ideInstance: typeof
     return undefined;
   }
 
-  // Bare-filename resolution: if the path has no directory separators,
-  // use findFiles to check for ambiguity BEFORE the workspace-relative
-  // loop — otherwise a root-level match would silently win (Issue #342)
+  // Bare-filename resolution: a root-level file's bare name IS its
+  // workspace-relative path, so check the exact join in each folder first
+  // (range-aware). Only when no folder's root holds a range-fitting copy of
+  // the file do we fall back to the fuzzy glob search (Issue #342/#715).
   const isBareFilename = !linkPath.includes('/') && !linkPath.includes('\\');
   if (isBareFilename) {
+    for (const folder of workspaceFolders) {
+      const absolutePath = path.join(folder.uri.fsPath, linkPath);
+      const uri = ideInstance.Uri.file(absolutePath);
+      try {
+        await ideInstance.workspace.fs.stat(uri);
+      } catch {
+        continue; // file doesn't exist at this folder's root
+      }
+      if (range === undefined) {
+        return { uri, resolvedVia: 'workspace-relative' };
+      }
+      let doc: vscode.TextDocument;
+      try {
+        doc = await ideInstance.workspace.openTextDocument(uri);
+      } catch {
+        continue; // cannot range-validate this folder's root — try the next folder
+      }
+      const startConverted = convertRangeLinkPosition(range.start, doc);
+      const endConverted = convertRangeLinkPosition(range.end, doc);
+      const anyClamping = startConverted.lineClamped || startConverted.characterClamped || endConverted.lineClamped || endConverted.characterClamped;
+      if (!anyClamping) {
+        return { uri, resolvedVia: 'workspace-relative' };
+      }
+      continue; // range clamps against this folder's root — try the next folder
+    }
+
     const pattern = `**/${escapeGlobPattern(linkPath)}`;
     try {
-      const matches = await ideInstance.workspace.findFiles(pattern, undefined, AMBIGUITY_THRESHOLD);
+      const matches = await ideInstance.workspace.findFiles(pattern, undefined, MAX_FILENAME_CANDIDATES);
       if (matches.length === 1) {
         return { uri: matches[0], resolvedVia: 'filename-fallback' };
       }
       if (matches.length >= AMBIGUITY_THRESHOLD) {
-        return FILENAME_AMBIGUOUS;
+        return { candidates: matches };
       }
     } catch {
       // findFiles failed — fall through to undefined

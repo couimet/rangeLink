@@ -2,8 +2,10 @@ import type { ConfigReader } from '../config/ConfigReader';
 import { DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST } from '../constants/settingDefaults';
 import { SETTING_NAVIGATION_SHOW_CLAMPING_WARNING, SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST } from '../constants/settingKeys';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
+import { MessageCode } from '../types';
 import { convertRangeLinkPosition, formatClampingSummary, formatLinkPosition, formatMessage } from '../utils';
+
+import { pickFilenameCandidate } from './pickFilenameCandidate';
 
 import type { Logger } from '@couimet/logger-contract';
 import { CoreResult, DelimiterConfigGetter, ParsedLink, parseLink, SelectionType } from 'rangelink-core-ts';
@@ -61,18 +63,20 @@ export class RangeLinkNavigationHandler {
 
     const { path, start, end, selectionType } = parsed;
 
-    // Resolve path to file URI (async)
-    const resolved = await this.ideAdapter.resolveWorkspacePath(path);
+    // Resolve path to file URI (async). The range lets the resolver prefer a
+    // root-level file whose bounds fit, falling back to filename candidates.
+    const resolved = await this.ideAdapter.resolveWorkspacePath(path, { start, end });
 
-    if (resolved === FILENAME_AMBIGUOUS) {
-      this.logger.warn({ ...logCtx, path }, 'Multiple files match bare filename');
-      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path }));
-      return;
-    }
+    let fileUri: vscode.Uri | undefined;
 
-    let fileUri = resolved?.uri;
-
-    if (resolved) {
+    if (resolved !== undefined && 'candidates' in resolved) {
+      fileUri = await pickFilenameCandidate(this.ideAdapter, resolved.candidates, this.logger);
+      if (fileUri === undefined) {
+        this.logger.debug({ ...logCtx, path }, 'Filename picker dismissed, navigation cancelled');
+        return;
+      }
+    } else if (resolved) {
+      fileUri = resolved.uri;
       this.logger.debug({ ...logCtx, path, resolvedVia: resolved.resolvedVia }, 'Path resolved');
     }
 

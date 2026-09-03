@@ -2401,8 +2401,8 @@ test_cases:
 
   - id: filename-fallback-navigation-002
     feature: 'filename-only-navigation-fallback'
-    scenario: 'Bare filename with multiple matches shows ambiguity warning'
-    expected_result: 'A warning toast is shown: "Multiple files match: index.ts". No navigation occurs.'
+    scenario: 'Bare filename with multiple matches shows candidate picker; dismissal is a no-op'
+    expected_result: 'A picker lists every matching file (basename + workspace-relative path, sorted). Dismissing the picker navigates nowhere — no toast, active editor unchanged.'
     automated: true
 
   - id: filename-fallback-navigation-003
@@ -2415,6 +2415,34 @@ test_cases:
     feature: 'filename-only-navigation-fallback'
     scenario: 'Path with directory separators uses standard resolution, not fallback'
     expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
+    automated: true
+
+  - id: filename-fallback-navigation-005
+    feature: 'filename-only-navigation-fallback'
+    scenario: 'Human disambiguates multiple filename matches by picking a specific candidate'
+    expected_result: 'A candidate picker lists both same-named files. When the tester selects the entry whose description ends in "b/<filename>" and presses Enter, navigation opens exactly that file with a full-line selection and the navigated toast.'
+    automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Filename Root-First Resolution (Issue #715)
+  # ---------------------------------------------------------------------------
+
+  - id: filename-root-resolution-001
+    feature: 'filename-root-resolution'
+    scenario: 'Bare filename whose root-level file exists opens the workspace-root file despite a same-named file deeper in the workspace'
+    expected_result: 'Navigation succeeds without a picker — the root-level file opens and the link range is fully selected, even though a same-named file exists in a subdirectory.'
+    automated: true
+
+  - id: filename-root-resolution-002
+    feature: 'filename-root-resolution'
+    scenario: 'Go to Link with a bare filename whose root-level file exists navigates to the workspace-root file'
+    expected_result: 'Pasting a bare-filename RangeLink into Go to Link navigates to the root-level file with the correct selection, despite a same-named file deeper in the workspace.'
+    automated: true
+
+  - id: filename-root-resolution-003
+    feature: 'filename-root-resolution'
+    scenario: 'Bare filename with no root file and multiple matches navigates to the picked candidate'
+    expected_result: 'A picker lists all matches; accepting the first navigates to that file with a full-line selection and the navigated toast.'
     automated: true
 
   # ---------------------------------------------------------------------------

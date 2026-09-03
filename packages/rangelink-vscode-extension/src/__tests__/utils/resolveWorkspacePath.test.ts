@@ -1,13 +1,40 @@
-import { FILENAME_AMBIGUOUS, ResolvedPath, ResolveWorkspacePathResult } from '../../types/ResolvedPath';
+import { PathResolutionStrategy, ResolvedPath, ResolveWorkspacePathResult } from '../../types/ResolvedPath';
 import { resolveWorkspacePath } from '../../utils';
-import { createMockUri, createMockWorkspaceFolder } from '../helpers';
+import { createMockDocument, createMockUri, createMockWorkspaceFolder } from '../helpers';
 
 import * as path from 'node:path';
+import type * as vscode from 'vscode';
+
+const FITTING_DOCUMENT = createMockDocument({
+  lineCount: 5,
+  lineAt: (_line: number) => ({ text: 'abc' }),
+} as Partial<vscode.TextDocument>);
+
+const CLAMPING_DOCUMENT = createMockDocument({
+  lineCount: 1,
+  lineAt: (_line: number) => ({ text: 'short' }),
+} as Partial<vscode.TextDocument>);
+
+interface ResolvedPathSnapshot {
+  fsPath: string;
+  resolvedVia: PathResolutionStrategy;
+}
+
+// A ResolvedPath embeds a vscode.Uri whose mock instance carries an own
+// toString() function, so two freshly built URIs never deep-equal. Snapshot the
+// declared contract fields into one object and assert it whole with
+// toStrictEqual instead of scattering per-field toBe() checks.
+const snapshotResolvedPath = (resolved: ResolvedPath): ResolvedPathSnapshot => ({
+  fsPath: resolved.uri.fsPath,
+  resolvedVia: resolved.resolvedVia,
+});
 
 const expectResolvedPath = (result: ResolveWorkspacePathResult): ResolvedPath => {
   expect(result).toBeDefined();
-  expect(result).not.toBe(FILENAME_AMBIGUOUS);
-  return result as ResolvedPath;
+  if (result === undefined || 'candidates' in result) {
+    throw new Error('Expected a resolved path result');
+  }
+  return result;
 };
 
 describe('resolveWorkspacePath', () => {
@@ -41,8 +68,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(absolutePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(absolutePath);
-      expect(resolved.resolvedVia).toBe('absolute');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: absolutePath, resolvedVia: 'absolute' });
       expect(mockUriFile).toHaveBeenCalledWith(absolutePath);
       expect(mockStat).toHaveBeenCalledTimes(1);
     });
@@ -66,8 +92,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(absolutePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(absolutePath);
-      expect(resolved.resolvedVia).toBe('absolute');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: absolutePath, resolvedVia: 'absolute' });
       expect(mockUriFile).toHaveBeenCalledWith(absolutePath);
     });
   });
@@ -84,8 +109,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
       expect(mockUriFile).toHaveBeenCalledWith(expectedPath);
     });
 
@@ -109,8 +133,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
       expect(mockStat).toHaveBeenCalledTimes(2);
     });
 
@@ -152,10 +175,13 @@ describe('resolveWorkspacePath', () => {
 
   describe('Bare-filename fallback', () => {
     let mockFindFiles: jest.Mock;
+    let mockOpenTextDocument: jest.Mock;
 
     beforeEach(() => {
       mockFindFiles = jest.fn();
+      mockOpenTextDocument = jest.fn();
       mockVscode.workspace.findFiles = mockFindFiles;
+      mockVscode.workspace.openTextDocument = mockOpenTextDocument;
 
       const workspaceRoot = '/Users/name/project';
       mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
@@ -169,20 +195,19 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe('/Users/name/project/src/deep/auth.ts');
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/src/deep/auth.ts', resolvedVia: 'filename-fallback' });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 100);
     });
 
-    it('should return FILENAME_AMBIGUOUS when bare filename matches multiple files', async () => {
+    it('should return filename candidates when bare filename matches multiple files', async () => {
       const match1 = createMockUri('/Users/name/project/src/auth.ts');
       const match2 = createMockUri('/Users/name/project/lib/auth.ts');
       mockFindFiles.mockResolvedValueOnce([match1, match2]);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
-      expect(result).toBe(FILENAME_AMBIGUOUS);
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(result).toStrictEqual({ candidates: [match1, match2] });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 100);
     });
 
     it('should return undefined when bare filename matches no files', async () => {
@@ -191,7 +216,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('nonexistent.ts', mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockFindFiles).toHaveBeenCalledWith('**/nonexistent.ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/nonexistent.ts', undefined, 100);
     });
 
     it('should skip fallback for paths with forward slash separators', async () => {
@@ -214,7 +239,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 2);
+      expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 100);
     });
 
     it('should escape square brackets in bare filename', async () => {
@@ -224,9 +249,8 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('[id].ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe('/Users/name/project/src/routes/[id].ts');
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/[[]id[]].ts', undefined, 2);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/src/routes/[id].ts', resolvedVia: 'filename-fallback' });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/[[]id[]].ts', undefined, 100);
     });
 
     it('should escape asterisk in bare filename', async () => {
@@ -236,8 +260,8 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('file*.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/file[*].ts', undefined, 2);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/src/file*.ts', resolvedVia: 'filename-fallback' });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/file[*].ts', undefined, 100);
     });
 
     it('should escape question mark in bare filename', async () => {
@@ -247,8 +271,8 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('foo?.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/foo[?].ts', undefined, 2);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/src/foo?.ts', resolvedVia: 'filename-fallback' });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/foo[?].ts', undefined, 100);
     });
 
     it('should escape curly braces in bare filename', async () => {
@@ -258,52 +282,147 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath('{slug}.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(mockFindFiles).toHaveBeenCalledWith('**/[{]slug[}].ts', undefined, 2);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/src/{slug}.ts', resolvedVia: 'filename-fallback' });
+      expect(mockFindFiles).toHaveBeenCalledWith('**/[{]slug[}].ts', undefined, 100);
     });
 
-    it('should return FILENAME_AMBIGUOUS when bare filename exists at workspace root and subdirectory', async () => {
+    it('should resolve workspace-relative when bare filename exists at workspace root and subdirectory', async () => {
       const rootMatch = createMockUri('/Users/name/project/index.ts');
-      const subMatch = createMockUri('/Users/name/project/src/index.ts');
-      mockFindFiles.mockResolvedValueOnce([rootMatch, subMatch]);
+      mockFindFiles.mockResolvedValueOnce([rootMatch, createMockUri('/Users/name/project/src/index.ts')]);
       mockStat.mockResolvedValue({} as any);
 
       const result = await resolveWorkspacePath('index.ts', mockVscode);
 
-      expect(result).toBe(FILENAME_AMBIGUOUS);
-      expect(mockStat).not.toHaveBeenCalled();
+      const resolved = expectResolvedPath(result);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/index.ts', resolvedVia: 'workspace-relative' });
+      expect(mockFindFiles).not.toHaveBeenCalled();
+      expect(mockStat).toHaveBeenCalledTimes(1);
     });
 
-    it('should return filename-fallback when bare filename exists only at workspace root', async () => {
+    it('should return filename-fallback when root file is missing and findFiles matches one file', async () => {
       const rootMatch = createMockUri('/Users/name/project/auth.ts');
       mockFindFiles.mockResolvedValueOnce([rootMatch]);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.resolvedVia).toBe('filename-fallback');
-      expect(resolved.uri.fsPath).toBe('/Users/name/project/auth.ts');
-      expect(mockStat).not.toHaveBeenCalled();
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/auth.ts', resolvedVia: 'filename-fallback' });
+      expect(mockStat).toHaveBeenCalledTimes(1);
     });
 
-    it('should return undefined when findFiles rejects even if file exists at workspace root', async () => {
+    it('should resolve workspace-relative when file exists at workspace root even if findFiles rejects', async () => {
       mockFindFiles.mockRejectedValueOnce(new Error('workspace error'));
       mockStat.mockResolvedValue({} as any);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
-      expect(result).toBeUndefined();
-      expect(mockStat).not.toHaveBeenCalled();
+      const resolved = expectResolvedPath(result);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/auth.ts', resolvedVia: 'workspace-relative' });
+      expect(mockFindFiles).not.toHaveBeenCalled();
     });
 
-    it('should return undefined when findFiles returns empty even if workspace-relative would match', async () => {
+    it('should resolve workspace-relative when file exists at workspace root even if findFiles returns empty', async () => {
       mockFindFiles.mockResolvedValueOnce([]);
       mockStat.mockResolvedValue({} as any);
 
       const result = await resolveWorkspacePath('auth.ts', mockVscode);
 
-      expect(result).toBeUndefined();
-      expect(mockStat).not.toHaveBeenCalled();
+      const resolved = expectResolvedPath(result);
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/auth.ts', resolvedVia: 'workspace-relative' });
+      expect(mockFindFiles).not.toHaveBeenCalled();
+    });
+
+    describe('Root-first range validation', () => {
+      it('should resolve workspace-relative when the range fits the root file', async () => {
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockResolvedValue(FITTING_DOCUMENT);
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 1, character: 1 }, end: { line: 3, character: 1 } });
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(1);
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
+
+      it('should return filename candidates when the root file exists but the range clamps', async () => {
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockResolvedValue(CLAMPING_DOCUMENT);
+        const match1 = createMockUri('/Users/name/project/auth.ts');
+        const match2 = createMockUri('/Users/name/project/lib/auth.ts');
+        mockFindFiles.mockResolvedValueOnce([match1, match2]);
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 10 }, end: { line: 10 } });
+
+        expect(result).toStrictEqual({ candidates: [match1, match2] });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(1);
+        expect(mockFindFiles).toHaveBeenCalledWith('**/auth.ts', undefined, 100);
+      });
+
+      it('should return filename candidates when opening the root file fails', async () => {
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockRejectedValue(new Error('binary file'));
+        const match1 = createMockUri('/Users/name/project/auth.ts');
+        const match2 = createMockUri('/Users/name/project/lib/auth.ts');
+        mockFindFiles.mockResolvedValueOnce([match1, match2]);
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 1 }, end: { line: 1 } });
+
+        expect(result).toStrictEqual({ candidates: [match1, match2] });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(1);
+      });
+
+      it('should prefer a later workspace folder whose root file fits the range over an earlier folder whose root clamps', async () => {
+        mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockImplementation((uri: any) => {
+          if (uri.fsPath.includes('project1')) {
+            return Promise.resolve(CLAMPING_DOCUMENT);
+          }
+          return Promise.resolve(FITTING_DOCUMENT);
+        });
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 2 }, end: { line: 2 } });
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project2/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(2);
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
+
+      it('should try a later workspace folder when opening an earlier folder root file fails', async () => {
+        mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
+        mockStat.mockResolvedValue({} as any);
+        mockOpenTextDocument.mockImplementation((uri: any) => {
+          if (uri.fsPath.includes('project1')) {
+            return Promise.reject(new Error('binary file'));
+          }
+          return Promise.resolve(FITTING_DOCUMENT);
+        });
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode, { start: { line: 2 }, end: { line: 2 } });
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project2/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockOpenTextDocument).toHaveBeenCalledTimes(2);
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
+
+      it('should try each workspace folder root before falling back to findFiles', async () => {
+        mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder('/Users/name/project1'), createMockWorkspaceFolder('/Users/name/project2')];
+        mockStat.mockImplementation((uri: any) => {
+          if (uri.fsPath.includes('project1')) {
+            return Promise.reject(new Error('File not found'));
+          }
+          return Promise.resolve({} as any);
+        });
+
+        const result = await resolveWorkspacePath('auth.ts', mockVscode);
+
+        const resolved = expectResolvedPath(result);
+        expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: '/Users/name/project2/auth.ts', resolvedVia: 'workspace-relative' });
+        expect(mockFindFiles).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -319,8 +438,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
     });
 
     it('should handle paths with hash in filename', async () => {
@@ -334,8 +452,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
     });
 
     it('should handle nested relative paths', async () => {
@@ -349,8 +466,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
     });
 
     it('should handle relative paths starting with ./', async () => {
@@ -364,8 +480,7 @@ describe('resolveWorkspacePath', () => {
       const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       const resolved = expectResolvedPath(result);
-      expect(resolved.uri.fsPath).toBe(expectedPath);
-      expect(resolved.resolvedVia).toBe('workspace-relative');
+      expect(snapshotResolvedPath(resolved)).toStrictEqual({ fsPath: expectedPath, resolvedVia: 'workspace-relative' });
     });
   });
 });

@@ -1,7 +1,22 @@
 import { CMD_GO_TO_RANGELINK } from '../../constants/commandIds';
-import { assertInputBoxLogged, getLogCapture, openAndAccept, openAndDismiss, pasteIntoQuickInput, standardSuite, waitForHuman } from '../helpers';
+import {
+  assertInputBoxLogged,
+  createDuplicateFiles,
+  createFileAt,
+  createTempDir,
+  getLogCapture,
+  openAndAccept,
+  openAndDismiss,
+  pasteIntoQuickInput,
+  POLL_INTERVAL_MS,
+  POLL_TIMEOUT_MS,
+  settle,
+  standardSuite,
+  waitForHuman,
+} from '../helpers';
 
 import assert from 'node:assert';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 
@@ -13,6 +28,7 @@ const INPUT_BOX_OPTS = {
   placeHolder: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
 };
 const buildFileContent = (lineCount: number): string => Array.from({ length: lineCount }, (_, i) => `${i + 1}: ${LINE_CONTENT}`).join('\n') + '\n';
+const DUPLICATE_FILE_CONTENT = 'duplicate file content for the assisted candidate pick\n';
 
 const submitLink = (text: string): Promise<void> =>
   openAndAccept(CMD_GO_TO_RANGELINK, async () => {
@@ -160,6 +176,109 @@ standardSuite('R-G Go to Link', (ss) => {
     );
 
     ss.log('✓ Empty input produced the empty-input error toast; no parse attempted');
+  });
+
+  test('filename-root-resolution-002: bare filename with a root match navigates to the workspace-root file', async () => {
+    const rootFilename = `__rl-test-root-gtl-${Date.now()}.ts`;
+    const rootContent = Array.from({ length: TEST_FILE_LINE_COUNT }, (_, i) => `gtl root line ${i + 1}`).join('\n') + '\n';
+    const rootUri = createFileAt(rootFilename, rootContent);
+
+    const shadowDir = createTempDir('root-gtl-shadow');
+    const shadowFilePath = path.join(shadowDir, rootFilename);
+    fs.writeFileSync(shadowFilePath, 'shadow content\n', 'utf8');
+
+    const linkText = `${rootFilename}#L3-L7`;
+
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${rootFilename} @ 3-7` }]);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-gtl-root-002');
+
+    // The command is NOT awaited — navigateToLink stays pending on the navigated
+    // toast (showInformationMessage), which the test host does not auto-dismiss
+    // promptly. Navigation is detected via the active editor instead.
+    void Promise.resolve(vscode.commands.executeCommand(CMD_GO_TO_RANGELINK)).catch(() => undefined);
+    await settle();
+    await vscode.env.clipboard.writeText(linkText);
+    await pasteIntoQuickInput();
+    await settle();
+
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+      if (vscode.window.activeTextEditor?.document.uri.fsPath === rootUri.fsPath) {
+        break;
+      }
+      await settle(POLL_INTERVAL_MS);
+    }
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-gtl-root-002');
+    assertInputBoxLogged(lines, INPUT_BOX_OPTS);
+
+    const editor = vscode.window.activeTextEditor;
+    assert.ok(editor, 'Expected an active text editor after navigation');
+    assert.strictEqual(editor.document.uri.fsPath, rootUri.fsPath, 'Expected the root-level file to be opened, not the shadow copy');
+
+    const sel = editor.selection;
+    const endLineLength = editor.document.lineAt(6).text.length;
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 2, anchorChar: 0, activeLine: 6, activeChar: endLineLength },
+    );
+
+    ss.log('✓ Go-to-Link opened the root file despite a same-named file deeper in the workspace');
+  });
+
+  test('[assisted] filename-fallback-navigation-005: human disambiguates multiple filename matches by picking a specific candidate', async () => {
+    const { filename: duplicateFilename, filePathB } = createDuplicateFiles('gtl-dup', DUPLICATE_FILE_CONTENT);
+
+    const linkText = `${duplicateFilename}#L1`;
+
+    ss.expectToastMessages([{ level: 'info', message: `Navigated to ${duplicateFilename} @ 1` }]);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fallback-005');
+
+    await vscode.env.clipboard.writeText(linkText);
+
+    await waitForHuman(
+      'filename-fallback-navigation-005',
+      `Press Cmd+R Cmd+G, Cmd+V, press Enter — a candidate picker then lists two "${duplicateFilename}" files; move ↓ to the entry whose description ends in "b/${duplicateFilename}" and press Enter.`,
+      [
+        '1. Press Cmd+R Cmd+G to open the Go to Link input box',
+        `2. Press Cmd+V to paste the bare-filename link "${linkText}"`,
+        '3. Press Enter — because two files share that name, a candidate picker lists both (first ends in "a/…", second in "b/…")',
+        `4. Move the highlight (↓) onto the SECOND entry — its description ends in "b/${duplicateFilename}"`,
+        '5. Press Enter to navigate to that file',
+      ],
+    );
+
+    await settle();
+    const lines = logCapture.getLinesSince('before-fallback-005');
+    assertInputBoxLogged(lines, INPUT_BOX_OPTS);
+
+    const editor = vscode.window.activeTextEditor;
+    assert.ok(editor, 'Expected an active text editor after navigation');
+    assert.strictEqual(editor.document.uri.fsPath, filePathB, 'Expected the file the human picked (the b/ copy) to be open');
+    const sel = editor.selection;
+    const lineLength = editor.document.lineAt(0).text.length;
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 0, anchorChar: 0, activeLine: 0, activeChar: lineLength },
+    );
+
+    ss.log('✓ Human picked the b/ candidate; navigation opened that exact file with a full-line selection');
   });
 
   test('[assisted] go-to-link-007: nonexistent file path shows warning toast', async () => {

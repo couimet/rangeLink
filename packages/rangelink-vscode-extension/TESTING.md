@@ -57,26 +57,25 @@ Integration tests run inside a real VS Code process via `@vscode/test-cli`. They
 pnpm test:release
 ```
 
-### QuickPick and InputBox dismissal
+### QuickPick and InputBox interaction
 
-VS Code's extension host test runner provides no API to programmatically select QuickPick items or interact with dialogs. However, `workbench.action.closeQuickOpen` can programmatically dismiss QuickPicks and InputBoxes — meaning tests that open a picker, read its logged content, and dismiss it **can now be fully automated**.
+VS Code's extension host test runner provides no API to select an arbitrary QuickPick item. Two `workbench.action.*` commands give partial control, and together they cover the automatable cases:
 
-**`openAndDismiss` helper:** The pattern for automated picker-open-and-dismiss is encapsulated in `openAndDismiss(command)`:
+- `workbench.action.closeQuickOpen` — **dismisses** an open QuickPick or InputBox (the "cancel" path). Dismissal is a no-op on the underlying flow.
+- `workbench.action.acceptSelectedQuickOpenItem` — **accepts** the item currently highlighted in the QuickPick (the "press Enter" path). The highlight defaults to the first item, so this automates "pick the default / first candidate". It cannot move the highlight onto a non-default item.
 
-```typescript
-// Fires the command (which opens a QuickPick), waits for render + log emission,
-// dismisses with closeQuickOpen, then settles.
-await openAndDismiss(CMD_BIND_TO_DESTINATION);
-const items = extractQuickPickItemsLogged(logCapture.getLinesSince('before-test'));
-// assert on items as usual
-```
+**Encapsulated helpers:**
+
+- `openAndDismiss(command)` — fires a command that opens a QuickPick/InputBox, waits for render + log emission, dismisses via `closeQuickOpen`, then settles. Use when a test must observe a picker's content without choosing.
+- `openAndAccept(command, ...)` — fires the command, then accepts the QuickPick's default (first) item via `acceptSelectedQuickOpenItem`. Use for flows that end in "pick the first candidate".
+- `dismissQuickPick()` — bare dismissal primitive, exported for tests that manage their own open/close cadence. There is no exported accept counterpart: the accept primitive is module-private, wrapped by `openAndAccept` in the poll-retry loop that tolerates a slow picker render.
 
 **Workaround — command bypass:** TCs that use a picker as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely.
 
 **What still requires assisted mode:** TCs that need to:
 
-- Select a specific item from a picker (closeQuickOpen only dismisses, it cannot choose)
-- Navigate a multi-picker flow (select item in picker A → picker B opens → verify B's content)
+- Select a specific (non-default) item from a picker — `acceptSelectedQuickOpenItem` accepts only the currently highlighted item, and automation cannot move the highlight off the default
+- Navigate a multi-picker flow where a later picker needs a non-default choice
 - Verify dialog interactions (confirmation buttons with Yes/No)
 
 Mark these `automated: assisted` in the QA YAML. See [Assisted mode](#assisted-mode-assisted-tests) below. Only TCs that genuinely cannot be tested even with human-in-the-loop assistance should remain `automated: false`.

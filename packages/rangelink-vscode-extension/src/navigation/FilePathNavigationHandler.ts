@@ -1,9 +1,12 @@
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
+import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
+
+import { pickFilenameCandidate } from './pickFilenameCandidate';
 
 import type { Logger } from '@couimet/logger-contract';
 import os from 'node:os';
+import type * as vscode from 'vscode';
 
 /**
  * Navigation handler for plain file path navigation.
@@ -46,24 +49,27 @@ export class FilePathNavigationHandler {
 
     const resolved = await this.ideAdapter.resolveWorkspacePath(expandedPath);
 
-    if (resolved === FILENAME_AMBIGUOUS) {
-      this.logger.warn({ ...logCtx, expandedPath }, 'Multiple files match bare filename');
-      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }));
-      return;
-    }
+    let fileUri: vscode.Uri | undefined;
 
-    if (resolved) {
+    if (resolved !== undefined && 'candidates' in resolved) {
+      fileUri = await pickFilenameCandidate(this.ideAdapter, resolved.candidates, this.logger);
+      if (fileUri === undefined) {
+        this.logger.debug({ ...logCtx, expandedPath }, 'Filename picker dismissed, navigation cancelled');
+        return;
+      }
+    } else if (resolved) {
+      fileUri = resolved.uri;
       this.logger.debug({ ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia }, 'Path resolved');
     }
 
-    if (!resolved) {
+    if (!fileUri) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
       await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_FILE_PATH_DOES_NOT_EXIST, { path: rawPath }));
       return;
     }
 
     try {
-      await this.ideAdapter.showTextDocument(resolved.uri);
+      await this.ideAdapter.showTextDocument(fileUri);
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
