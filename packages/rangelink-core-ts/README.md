@@ -1,5 +1,7 @@
 # RangeLink Core (TypeScript)
 
+[![Codecov](https://img.shields.io/codecov/c/github/couimet/rangeLink?flag=core-ts)](https://app.codecov.io/gh/couimet/rangeLink/flags/core-ts)
+
 **Pure TypeScript domain model for RangeLink - zero runtime dependencies.**
 
 ## Overview
