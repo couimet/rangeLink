@@ -156,7 +156,8 @@
 
 <rule id="T008" priority="critical">
   <title>Use custom matchers for Result and error assertions</title>
-  <do>Use `toBeDetailedError(code, { message, functionName, details?, cause? })` for both direct errors and error Result assertions — the matcher is Result-aware</do>
+  <do>Use `toHaveDetailedError(code, { message, functionName, details?, cause? })` for error Result assertions — the matcher is Result-aware and asserts on the failed DetailedResult's error (from @couimet/detailed-result-testing)</do>
+  <do>Use `toBeDetailedError(code, { message, functionName, details?, cause? })` for assertions on an already-caught or directly-held error value (from @couimet/detailed-error-testing)</do>
   <do>Use `toBeSuccessWith((value) => { expect(value).toStrictEqual({...}) })` for success Result assertions</do>
   <do>Use `toStrictEqual()` on the full value object inside `toBeSuccessWith` callbacks — never pick individual properties</do>
   <never>Use `result.success` + `if` guard patterns to manually unwrap Result types</never>
@@ -164,7 +165,8 @@
     - `toBeSuccess()` / `toBeFailure()` - simple success/error check (from @couimet/detailed-result-testing)
     - `toBeSuccessWith(callback)` - success with value assertion (from @couimet/detailed-result-testing)
     - `toBeFailureWith(callback)` - error with assertion (from @couimet/detailed-result-testing)
-    - `toBeDetailedError(code, expected)` - direct error validation (from @couimet/detailed-error-testing)
+    - `toHaveDetailedError(code, expected)` - error Result assertion, Result-aware (from @couimet/detailed-result-testing)
+    - `toBeDetailedError(code, expected)` - direct/caught error validation, not Result-aware (from @couimet/detailed-error-testing)
     - `toThrowDetailedError(code, expected)` - sync throw (from @couimet/detailed-error-testing)
     - `toThrowDetailedErrorAsync(code, expected)` - async throw (from @couimet/detailed-error-testing)
   </available-matchers>
@@ -179,7 +181,7 @@
   </bad-example>
   <good-example>
     ```typescript
-    expect(result).toBeDetailedError('DESTINATION_NOT_BOUND', {
+    expect(result).toHaveDetailedError('DESTINATION_NOT_BOUND', {
       message: 'No destination is currently bound',
       functionName: 'PasteDestinationManager.focusBoundDestination',
     });
@@ -565,36 +567,6 @@
     ```
   </bad-example>
 </presentation-layer-testing>
-
-<custom-matchers>
-
-  <matcher name="toThrowRangeLinkError">
-    <when>Testing functions that throw errors</when>
-    <example>
-      ```typescript
-      expect(() => validateInputSelection(input)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_EMPTY,
-        message: 'Selections array must not be empty',
-        functionName: 'validateInputSelection',
-      });
-      ```
-    </example>
-  </matcher>
-
-  <matcher name="toBeRangeLinkErrorErr">
-    <when>Testing Result-returning functions</when>
-    <example>
-      ```typescript
-      const result = computeRangeSpec(input);
-      expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
-        message: 'Selections array must not be empty',
-        functionName: 'validateInputSelection',
-      });
-      ```
-    </example>
-  </matcher>
-
-</custom-matchers>
 
 <spy-verification>
   <do>Always verify jest.spyOn() calls were made with exact parameters</do>

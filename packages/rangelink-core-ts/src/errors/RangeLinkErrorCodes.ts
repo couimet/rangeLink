@@ -85,7 +85,7 @@ export type RangeLinkErrorCodes = RangeLinkSpecificCodes | SharedErrorCodes;
 
 /**
  * Merged error codes object.
- * Spread SharedErrorCodes LAST to avoid override issues (see sharedErrorCodes.ts docs).
+ * Spread SharedErrorCodes LAST to avoid override issues (SharedErrorCodes from @couimet/detailed-error).
  */
 export const RangeLinkErrorCodes = {
   ...RangeLinkSpecificCodes,
