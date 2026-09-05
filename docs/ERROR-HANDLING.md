@@ -178,29 +178,6 @@ export function computeRangeSpec(inputSelection: InputSelection): Result<Compute
 }
 ```
 
-### Testing with Custom Matcher
-
-Use the `toBeRangeLinkError` matcher for comprehensive error validation:
-
-```typescript
-it('returns error when selections array is empty', () => {
-  const result = computeRangeSpec({
-    selections: [],
-    selectionType: 'Normal',
-  });
-
-  expect(result).toBeErr();
-  expect(result).toBeErrWith((error) => {
-    expect(error).toBeRangeLinkError({
-      code: RangeLinkErrorCodes.SELECTION_EMPTY,
-      message: 'Selections array must not be empty',
-      functionName: 'validateInputSelection',
-      details: { selectionsLength: 0, selectionType: 'Normal' },
-    });
-  });
-});
-```
-
 ### Benefits
 
 1. **Developer Ergonomics**: Validation logic reads naturally without Result boilerplate
@@ -238,13 +215,6 @@ Error code locations by category:
 - **Source**: `packages/rangelink-core-ts/src/types/RangeLinkMessageCode.ts`
 - **Contains**: All message types: `MSG_xxxx`, `WARN_xxxx`, `ERR_xxxx` (30 total)
 - **Usage**: `logger.error(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY, 'message')`
-
-### Shared Error Infrastructure
-
-- **DetailedError**: `packages/rangelink-core-ts/src/errors/detailedError.ts` - Base class for structured errors
-- **RangeLinkError**: `packages/rangelink-core-ts/src/errors/RangeLinkError.ts` - Main error class
-- **SharedErrorCodes**: `packages/rangelink-core-ts/src/errors/sharedErrorCodes.ts` - Generic error codes
-- **Custom Matcher**: `packages/rangelink-core-ts/src/__tests__/matchers/toBeRangeLinkError.ts` - Jest matcher for error assertions
 
 ## Related Documentation
 

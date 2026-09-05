@@ -11,8 +11,9 @@ import { DetailedError, type ErrorOptions } from '@couimet/detailed-error';
  * - Contextual details object
  * - Cause chaining
  *
- * Inherits shared error codes from rangelink-core-ts (VALIDATION, UNKNOWN, UNEXPECTED_CODE_PATH)
- * and adds extension-specific codes (DESTINATION_NOT_IMPLEMENTED, GENERATE_LINK_SELECTION_EMPTY, etc.).
+ * Includes the core RangeLinkErrorCodes from rangelink-core-ts (which merge RangeLinkSpecificCodes
+ * with SharedErrorCodes from @couimet/detailed-error) and adds extension-specific codes
+ * (DESTINATION_NOT_IMPLEMENTED, GENERATE_LINK_SELECTION_EMPTY, etc.).
  */
 export class RangeLinkExtensionError extends DetailedError<RangeLinkExtensionErrorCodes> {
   constructor(options: ErrorOptions<RangeLinkExtensionErrorCodes>) {
