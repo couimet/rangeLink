@@ -1,4 +1,4 @@
-import type { ParsedLink } from 'rangelink-core-ts';
+import type { ParsedLink, ParsedTextLink } from 'rangelink-core-ts';
 
 /**
  * Common arguments for link click handlers across different provider types.
@@ -8,7 +8,8 @@ import type { ParsedLink } from 'rangelink-core-ts';
  *
  * **Properties:**
  * - `linkText`: The full link text that was detected (e.g., "src/auth.ts#L42")
- * - `parsed`: Structured link data (path, positions, selection type)
+ * - `parsed`: Structured link data. Either a numeric RangeLink (path, positions,
+ *   selection type) or a text highlight link (path + text directive).
  *
  * **Note:** This is the base interface with optional `parsed`. Use with `WithRequired`
  * for contexts where `parsed` is guaranteed to be defined.
@@ -36,9 +37,10 @@ export interface RangeLinkClickArgs {
   linkText: string;
 
   /**
-   * Parsed link data (path, line, column positions).
+   * Parsed link data. Narrow via `'directive' in parsed` to distinguish a text
+   * highlight link (`ParsedTextLink`) from a numeric RangeLink (`ParsedLink`).
    *
-   * Contains structured information about the link:
+   * For a numeric RangeLink:
    * - `path`: File path
    * - `start`: Start position (line, char)
    * - `end`: End position (line, char)
@@ -48,5 +50,5 @@ export interface RangeLinkClickArgs {
    * Required (non-optional) in this interface. Used by document link provider
    * where parsed data is always available after successful link creation.
    */
-  parsed: ParsedLink;
+  parsed: ParsedLink | ParsedTextLink;
 }

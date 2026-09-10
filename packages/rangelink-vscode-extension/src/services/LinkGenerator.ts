@@ -52,6 +52,20 @@ export class LinkGenerator {
     await this.createLinkCore(pathFormat, LinkType.Portable, MessageCode.CONTENT_NAME_PORTABLE_RANGELINK);
   }
 
+  async createHighlightLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
+    await this.createHighlightLinkCore(pathFormat);
+  }
+
+  async createHighlightLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
+    const link = await this.generateHighlightLinkFromSelection(pathFormat);
+    if (link) {
+      await this.ideAdapter.writeTextToClipboard(link);
+      this.feedbackProvider.provideCopyFeedback(MessageCode.CONTENT_NAME_TEXT_HIGHLIGHT);
+    } else {
+      this.logger.debug({ fn: 'LinkGenerator.createHighlightLinkOnly' }, 'generateHighlightLinkFromSelection returned undefined, aborting');
+    }
+  }
+
   private async createLinkCore(pathFormat: PathFormat, linkType: LinkType, contentNameCode: MessageCode): Promise<void> {
     const logCtx = { fn: 'LinkGenerator.createLinkCore', linkType };
     const formattedLink = await this.generateLinkFromSelection(pathFormat, linkType);

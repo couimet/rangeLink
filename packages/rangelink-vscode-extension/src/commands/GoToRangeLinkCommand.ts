@@ -46,16 +46,24 @@ export class GoToRangeLinkCommand {
 
     this.logger.debug({ ...logCtx, input: trimmedInput }, 'Parsing RangeLink');
 
-    const parseResult = this.navigationHandler.parseLink(trimmedInput);
+    const numericResult = this.navigationHandler.parseLink(trimmedInput);
 
-    if (!parseResult.success) {
-      this.logger.debug({ ...logCtx, input, trimmedInput, error: parseResult.error }, 'Invalid link format');
+    if (numericResult.success) {
+      this.logger.debug({ ...logCtx, parsed: numericResult.value }, 'Navigating to link');
+      await this.navigationHandler.navigateToLink(numericResult.value, trimmedInput);
+      return;
+    }
+
+    const textResult = this.navigationHandler.parseHighlightLinkText(trimmedInput);
+
+    if (!textResult.success) {
+      this.logger.debug({ ...logCtx, input, trimmedInput, error: textResult.error }, 'Invalid link format');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.INFO_NAVIGATION_INVALID_LINK, { input: trimmedInput }));
       return;
     }
 
-    this.logger.debug({ ...logCtx, parsed: parseResult.value }, 'Navigating to link');
+    this.logger.debug({ ...logCtx, parsed: textResult.value }, 'Navigating to text highlight link');
 
-    await this.navigationHandler.navigateToLink(parseResult.value, trimmedInput);
+    await this.navigationHandler.navigateToTextLink(textResult.value, trimmedInput);
   }
 }

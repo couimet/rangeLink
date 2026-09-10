@@ -1,4 +1,4 @@
-import type { ParsedLink } from 'rangelink-core-ts';
+import type { ParsedLink, ParsedTextLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 /**
@@ -32,9 +32,10 @@ export interface RangeLinkTerminalLink extends vscode.TerminalLink {
   data: string;
 
   /**
-   * Parsed link data (path, line, column positions).
+   * Parsed link data. Narrow via `'directive' in parsed` to distinguish a text
+   * highlight link (`ParsedTextLink`) from a numeric RangeLink (`ParsedLink`).
    *
-   * Contains structured information about the link:
+   * For a numeric RangeLink:
    * - `path`: File path
    * - `start`: Start position (line, char)
    * - `end`: End position (line, char)
@@ -44,5 +45,5 @@ export interface RangeLinkTerminalLink extends vscode.TerminalLink {
    * Undefined if parsing failed. Parse failures are handled gracefully -
    * links remain clickable but show a warning message instead of navigating.
    */
-  parsed?: ParsedLink;
+  parsed?: ParsedLink | ParsedTextLink;
 }
