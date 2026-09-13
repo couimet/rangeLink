@@ -9,6 +9,10 @@ allowed-tools: Bash(gh issue view *), Bash(gh issue edit *)
 
 Consulted automatically by `/create-github-issue` at its label-selection step. Adds rangeLink-only requirements on top of the base workflow. All creation mechanics stay in the base skill: draft parsing, repo resolution, issue creation, sub-issue and dependency linking. Do not re-implement any of that here.
 
+## Scope
+
+This hook applies to issues created in couimet/rangeLink only. Read the issue URL returned by the base skill, which names the repository that actually received the issue. When the URL is not under https://github.com/couimet/rangeLink/, the hook does not apply: report that, then let the base skill continue with its generic label offer. The cross-repo article-registration issue that `/release-prep` creates in couimet/couimet.github.io carries no labels, so it skips this hook.
+
 ## Required Labels
 
 Every issue created in this repo must carry exactly one `type:*` label and exactly one `priority:*` label before it is reported as created.
@@ -56,4 +60,17 @@ Do NOT use GitHub's default labels: bug, enhancement, duplicate, invalid, wontfi
 
 ## Completion Gate
 
-Report the issue as created only after confirming both required labels are on it, e.g. with `gh issue view "<ISSUE_URL>" --json labels`.
+Report the issue as created only after each prefix count equals one. Count the labels per prefix:
+
+```bash
+gh issue view "<ISSUE_URL>" --json labels --jq '[.labels[].name | select(startswith("type:"))] | length'
+gh issue view "<ISSUE_URL>" --json labels --jq '[.labels[].name | select(startswith("priority:"))] | length'
+```
+
+Each command must print `1`. When a prefix holds more than one label, the issue breaks the one-label-per-prefix contract. Remove the labels that are not the chosen one, then re-run the count:
+
+```bash
+gh issue edit "<ISSUE_URL>" --remove-label "<extra-label>"
+```
+
+The base skill creates the issue without `--label`, so a second label under a prefix comes from a manual add during the run.
