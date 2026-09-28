@@ -1,5 +1,6 @@
 import type { BindSuccessInfo } from '../destinations';
-import type { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+
+import type { ExtensionError } from './ExtensionError';
 
 /**
  * Discriminator for all quick pick bind result types.
@@ -26,5 +27,5 @@ export type QuickPickBindResult =
   | { readonly outcome: Extract<QuickPickBindOutcome, 'cancelled'> }
   | {
       readonly outcome: Extract<QuickPickBindOutcome, 'bind-failed'>;
-      readonly error: RangeLinkExtensionError;
+      readonly error: ExtensionError;
     };

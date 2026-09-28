@@ -8,6 +8,7 @@ import {
   QUOTED_TRUE_POSITIVES,
   RANGELINK_COEXISTENCE,
   SPECIAL_CHAR_PATHS,
+  TEXT_FRAGMENT_COEXISTENCE,
   URL_INPUTS,
 } from '../fixtures/pathPatternInputs';
 
@@ -309,6 +310,36 @@ describe('buildFilePathPattern', () => {
         results.push(extractFilePath(match));
       }
       expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('text-fragment coexistence', () => {
+    it('should NOT match an absolute path prefix followed by :~:text= (text fragment owns it)', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.ABSOLUTE_PREFIX_WITH_TEXT_FRAGMENT)).toStrictEqual([]);
+    });
+
+    it('should NOT match a relative path prefix followed by :~:text= (text fragment owns it)', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.RELATIVE_PREFIX_WITH_TEXT_FRAGMENT)).toStrictEqual([]);
+    });
+
+    it('should NOT match a tilde path prefix followed by :~:text= (text fragment owns it)', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.TILDE_PREFIX_WITH_TEXT_FRAGMENT)).toStrictEqual([]);
+    });
+
+    it('should NOT match a single-quoted path prefix followed by :~:text=', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.SINGLE_QUOTED_PREFIX_WITH_TEXT_FRAGMENT)).toStrictEqual([]);
+    });
+
+    it('should NOT match a double-quoted path prefix followed by :~:text=', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.DOUBLE_QUOTED_PREFIX_WITH_TEXT_FRAGMENT)).toStrictEqual([]);
+    });
+
+    it('should still match a clean relative path while skipping a text-fragment-prefixed one on the same line', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.CLEAN_RELATIVE_BESIDE_TEXT_FRAGMENT)).toStrictEqual(['./src/a.ts']);
+    });
+
+    it('should still match a plain relative path without a :~:text= suffix', () => {
+      expect(matchesPattern(TEXT_FRAGMENT_COEXISTENCE.CLEAN_RELATIVE)).toStrictEqual(['./src/a.ts']);
     });
   });
 

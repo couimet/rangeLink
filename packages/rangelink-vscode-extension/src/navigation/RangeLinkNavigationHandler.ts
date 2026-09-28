@@ -9,6 +9,7 @@ import { pickFilenameCandidate } from './pickFilenameCandidate';
 
 import type { Logger } from '@couimet/logger-contract';
 import { CoreResult, DelimiterConfigGetter, ParsedLink, parseLink, SelectionType } from 'rangelink-core-ts';
+import { ParsedTextFragment, parseTextFragment, resolveTextFragmentMatch, TextFragmentResult } from 'text-fragment-ts';
 import * as vscode from 'vscode';
 
 /**
@@ -47,6 +48,97 @@ export class RangeLinkNavigationHandler {
   }
 
   /**
+   * Parse a text-fragment link string into structured data.
+   *
+   * @param linkText - Raw text fragment link text to parse
+   */
+  parseTextFragment(linkText: string): TextFragmentResult<ParsedTextFragment> {
+    return parseTextFragment(linkText);
+  }
+
+  /**
+   * Navigate to a text-fragment link in a VSCode editor.
+   *
+   * Text fragment links identify an exact block of text by content rather than
+   * coordinates, so there is no numeric range to resolve and no clamping: the
+   * path resolves, the file opens, and the directive is matched against the raw
+   * document text (the matcher normalizes EOL itself). Exactly one match selects
+   * and reveals the range; a warning is shown without selecting when the text is
+   * missing or ambiguous.
+   *
+   * @param parsed - Parsed text fragment link data (path and directive)
+   * @param linkText - Original link text (for logging)
+   * @returns Promise that resolves when navigation completes or rejects on error
+   */
+  async navigateToTextFragmentLink(parsed: ParsedTextFragment, linkText: string): Promise<void> {
+    const logCtx = { fn: 'RangeLinkNavigationHandler.navigateToTextFragmentLink', linkText };
+    const { path, directive } = parsed;
+
+    this.logger.info({ ...logCtx, path }, 'Navigating to text fragment link');
+
+    let fileUri: vscode.Uri | undefined;
+    const resolved = await this.ideAdapter.resolveWorkspacePath(path);
+
+    if (resolved !== undefined && 'candidates' in resolved) {
+      fileUri = await pickFilenameCandidate(this.ideAdapter, resolved.candidates, this.logger);
+      if (fileUri === undefined) {
+        this.logger.debug({ ...logCtx, path }, 'Filename picker dismissed, navigation cancelled');
+        return;
+      }
+    } else if (resolved) {
+      fileUri = resolved.uri;
+      this.logger.debug({ ...logCtx, path, resolvedVia: resolved.resolvedVia }, 'Path resolved');
+    }
+
+    if (!fileUri) {
+      this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
+      await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }));
+      return;
+    }
+
+    try {
+      const editor = await this.ideAdapter.showTextDocument(fileUri);
+      const document = editor.document;
+
+      const match = resolveTextFragmentMatch(document.getText(), directive);
+
+      if (match.status === 'not-found') {
+        this.logger.warn({ ...logCtx, text: directive.start }, 'Text fragment not found in document');
+        await this.ideAdapter.showWarningMessage(formatMessage(MessageCode.WARN_NAVIGATION_TEXT_FRAGMENT_NOT_FOUND, { path, text: directive.start }));
+        return;
+      }
+
+      if (match.status === 'ambiguous') {
+        this.logger.warn({ ...logCtx, text: directive.start, count: match.count }, 'Text fragment is ambiguous in document');
+        await this.ideAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_NAVIGATION_TEXT_FRAGMENT_AMBIGUOUS, { path, text: directive.start, count: match.count }),
+        );
+        return;
+      }
+
+      const vsStart = document.positionAt(match.start);
+      const vsEnd = document.positionAt(match.end);
+
+      editor.selection = this.ideAdapter.createSelection(vsStart, vsEnd);
+      editor.revealRange(this.ideAdapter.createRange(vsStart, vsEnd), vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+
+      this.logger.info({ ...logCtx, match: { start: match.start, end: match.end }, path }, 'Text fragment navigation completed');
+
+      const toastMessage = formatMessage(MessageCode.INFO_NAVIGATION_TEXT_FRAGMENT_SUCCESS, { path });
+      if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST)) {
+        await this.ideAdapter.showInformationMessage(toastMessage);
+      } else {
+        this.logger.debug({ ...logCtx, suppressedMessage: toastMessage }, 'Navigated toast suppressed by setting');
+      }
+    } catch (error) {
+      this.logger.error({ ...logCtx, error }, 'Navigation failed');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NAVIGATION_FAILED, { path, error: errorMessage }));
+      throw error;
+    }
+  }
+
+  /**
    * Navigate to a parsed RangeLink in VSCode editor.
    *
    * Core navigation logic extracted from both terminal and document providers.
@@ -56,8 +148,8 @@ export class RangeLinkNavigationHandler {
    * @param linkText - Original link text (for logging)
    * @returns Promise that resolves when navigation completes or rejects on error
    */
-  async navigateToLink(parsed: ParsedLink, linkText: string): Promise<void> {
-    const logCtx = { fn: 'RangeLinkNavigationHandler.navigateToLink', linkText };
+  async navigateToRangeLink(parsed: ParsedLink, linkText: string): Promise<void> {
+    const logCtx = { fn: 'RangeLinkNavigationHandler.navigateToRangeLink', linkText };
 
     this.logger.info({ ...logCtx, parsed }, 'Navigating to RangeLink');
 

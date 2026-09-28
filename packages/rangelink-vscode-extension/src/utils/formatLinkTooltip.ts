@@ -1,11 +1,12 @@
 import { formatLinkPosition } from './formatLinkPosition';
 
-import type { ParsedLink, ParsedTextLink } from 'rangelink-core-ts';
+import type { ParsedLink } from 'rangelink-core-ts';
+import type { ParsedTextFragment } from 'text-fragment-ts';
 
 /**
  * Format tooltip text for a terminal or document link.
  *
- * Numeric RangeLinks show the full selection range; text highlight links show
+ * Numeric RangeLinks show the full selection range; text fragment links show
  * the directive term they identify. Both include a subtle branding suffix to
  * build awareness.
  *
@@ -16,10 +17,10 @@ import type { ParsedLink, ParsedTextLink } from 'rangelink-core-ts';
  * or missing required fields. VSCode will show no tooltip for the link, but
  * the link remains clickable.
  *
- * @param parsed - Parsed link data (numeric RangeLink or text highlight).
+ * @param parsed - Parsed link data (numeric RangeLink or text fragment).
  * @returns Formatted tooltip text with branding, or `undefined` if data is invalid
  */
-export const formatLinkTooltip = (parsed: ParsedLink | ParsedTextLink): string | undefined => {
+export const formatLinkTooltip = (parsed: ParsedLink | ParsedTextFragment): string | undefined => {
   // Defensive validation: Check parsed data is usable
   if (!parsed) {
     return undefined;
@@ -30,13 +31,13 @@ export const formatLinkTooltip = (parsed: ParsedLink | ParsedTextLink): string |
     return undefined;
   }
 
-  // Text highlight links carry a content directive instead of numeric positions
+  // Text fragment links carry a content directive instead of numeric positions
   if ('directive' in parsed) {
     const { start } = parsed.directive;
     if (!start || typeof start !== 'string' || start.trim() === '') {
       return undefined;
     }
-    return `Highlight "${start}" in ${parsed.path} • RangeLink`;
+    return `Fragment "${start}" in ${parsed.path} • RangeLink`;
   }
 
   // Validate start position exists and has valid line number

@@ -1,11 +1,10 @@
 /**
- * File-path half shared by every parsed link form.
+ * File-path half of a parsed numeric link.
  *
- * Both `ParsedLink` (numeric anchors) and `ParsedTextLink` (text highlights)
- * begin by identifying a file; this base provides that path and its quoted
- * display form, and each concrete form then adds the locator that differs
- * (coordinates vs. a text directive). Consumers distinguish the concrete
- * forms with the `'directive' in parsed` narrowing.
+ * `ParsedLink` begins by identifying a file; this base provides that path and
+ * its quoted display form, and the concrete type then adds the locator that
+ * differs (coordinates). Text fragment links carry their own path field in
+ * `text-fragment-ts` rather than extending this base.
  */
 export interface ParsedLinkBase {
   /**

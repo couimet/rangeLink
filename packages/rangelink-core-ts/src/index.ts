@@ -24,9 +24,6 @@ export * from './parsing';
 // Formatting
 export * from './formatting';
 
-// Matching
-export * from './matching';
-
 // Detection
 export * from './detection';
 

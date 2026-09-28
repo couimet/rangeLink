@@ -13,6 +13,7 @@ import {
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
+import { ParsedTextFragment } from 'text-fragment-ts';
 import type * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
@@ -73,6 +74,34 @@ describe('RangeLinkTerminalProvider', () => {
         },
         'Scanned terminal line for RangeLinks',
       );
+    });
+
+    it('should use the text fragment tooltip for a text fragment link', () => {
+      const parsedTextFragment: ParsedTextFragment = {
+        path: 'src/file.ts',
+        directive: { start: 'function' },
+      };
+      mockFindLinksInText.mockReturnValue([
+        createMockDetectedLink({
+          linkText: 'src/file.ts:~:text=function',
+          startIndex: 6,
+          length: 27,
+          parsed: parsedTextFragment,
+        }),
+      ]);
+
+      const context = createMockTerminalContext('Check src/file.ts#L10');
+      const token = createMockCancellationToken();
+      const links = provider.provideTerminalLinks(context, token) as RangeLinkTerminalLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0]).toStrictEqual({
+        startIndex: 6,
+        length: 27,
+        tooltip: 'Fragment "function" in src/file.ts • RangeLink',
+        data: 'src/file.ts:~:text=function',
+        parsed: parsedTextFragment,
+      });
     });
 
     it('should map multiple detected links', () => {
@@ -178,11 +207,32 @@ describe('RangeLinkTerminalProvider', () => {
 
       await provider.handleTerminalLink(link);
 
-      expect(mockHandler.navigateToLink).toHaveBeenCalledWith(parsedData, 'file.ts#L10');
-      expect(mockHandler.navigateToLink).toHaveBeenCalledTimes(1);
+      expect(mockHandler.navigateToRangeLink).toHaveBeenCalledWith(parsedData, 'file.ts#L10');
+      expect(mockHandler.navigateToRangeLink).toHaveBeenCalledTimes(1);
 
       expect(mockLogger.warn).not.toHaveBeenCalled();
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
+    });
+
+    it('should delegate text fragment parsed links to handler.navigateToTextFragmentLink', async () => {
+      const parsedTextFragment: ParsedTextFragment = {
+        path: 'file.ts',
+        directive: { start: 'function' },
+      };
+
+      const link: RangeLinkTerminalLink = {
+        startIndex: 0,
+        length: 27,
+        tooltip: 'Fragment "function" in file.ts',
+        data: 'file.ts:~:text=function',
+        parsed: parsedTextFragment,
+      };
+
+      await provider.handleTerminalLink(link);
+
+      expect(mockHandler.navigateToTextFragmentLink).toHaveBeenCalledTimes(1);
+      expect(mockHandler.navigateToTextFragmentLink).toHaveBeenCalledWith(parsedTextFragment, 'file.ts:~:text=function');
+      expect(mockHandler.navigateToRangeLink).not.toHaveBeenCalled();
     });
   });
 });

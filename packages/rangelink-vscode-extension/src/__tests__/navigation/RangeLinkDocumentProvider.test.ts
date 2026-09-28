@@ -16,6 +16,7 @@ import {
 import type { Logger } from '@couimet/logger-contract';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { DEFAULT_DELIMITERS, LinkType, ParsedLink, SelectionType } from 'rangelink-core-ts';
+import { ParsedTextFragment } from 'text-fragment-ts';
 import * as vscode from 'vscode';
 
 const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
@@ -58,6 +59,31 @@ describe('RangeLinkDocumentProvider', () => {
         },
         'Found 1 RangeLinks in document',
       );
+    });
+
+    it('should use the text fragment tooltip for a text fragment link', () => {
+      mockFindLinksInText.mockReturnValue([
+        createMockDetectedLink({
+          linkText: 'src/file.ts:~:text=function',
+          startIndex: 6,
+          length: 27,
+          parsed: {
+            path: 'src/file.ts',
+            directive: { start: 'function' },
+          },
+        }),
+      ]);
+
+      const document = createMockDocument({
+        getText: createMockText('Check src/file.ts#L10'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
+      const token = createMockCancellationToken();
+      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0].tooltip).toBe('Fragment "function" in src/file.ts • RangeLink');
     });
 
     it('should create command URI with encoded arguments', () => {
@@ -161,7 +187,22 @@ describe('RangeLinkDocumentProvider', () => {
   });
 
   describe('handleLinkClick', () => {
-    it('should delegate to handler.navigateToLink', async () => {
+    it('should delegate text fragment parsed links to handler.navigateToTextFragmentLink', async () => {
+      const mockParsedTextFragment: ParsedTextFragment = {
+        path: 'src/file.ts',
+        directive: { start: 'function' },
+      };
+      const linkText = 'src/file.ts:~:text=function';
+      mockHandler.navigateToTextFragmentLink.mockResolvedValue(undefined);
+
+      await provider.handleLinkClick({ linkText, parsed: mockParsedTextFragment });
+
+      expect(mockHandler.navigateToTextFragmentLink).toHaveBeenCalledTimes(1);
+      expect(mockHandler.navigateToTextFragmentLink).toHaveBeenCalledWith(mockParsedTextFragment, linkText);
+      expect(mockHandler.navigateToRangeLink).not.toHaveBeenCalled();
+    });
+
+    it('should delegate to handler.navigateToRangeLink', async () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
         quotedPath: 'src/file.ts',
@@ -171,12 +212,12 @@ describe('RangeLinkDocumentProvider', () => {
         selectionType: SelectionType.Normal,
       };
       const linkText = 'src/file.ts#L10';
-      mockHandler.navigateToLink.mockResolvedValue(undefined);
+      mockHandler.navigateToRangeLink.mockResolvedValue(undefined);
 
       await provider.handleLinkClick({ linkText, parsed: mockParsed });
 
-      expect(mockHandler.navigateToLink).toHaveBeenCalledTimes(1);
-      expect(mockHandler.navigateToLink).toHaveBeenCalledWith(mockParsed, linkText);
+      expect(mockHandler.navigateToRangeLink).toHaveBeenCalledTimes(1);
+      expect(mockHandler.navigateToRangeLink).toHaveBeenCalledWith(mockParsed, linkText);
     });
 
     it('should handle navigation errors gracefully', async () => {
@@ -190,11 +231,11 @@ describe('RangeLinkDocumentProvider', () => {
       };
       const linkText = 'src/file.ts#L10';
       const mockError = new Error('Navigation failed');
-      mockHandler.navigateToLink.mockRejectedValue(mockError);
+      mockHandler.navigateToRangeLink.mockRejectedValue(mockError);
 
       await provider.handleLinkClick({ linkText, parsed: mockParsed });
 
-      expect(mockHandler.navigateToLink).toHaveBeenCalledWith(mockParsed, linkText);
+      expect(mockHandler.navigateToRangeLink).toHaveBeenCalledWith(mockParsed, linkText);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkDocumentProvider.handleLinkClick',
@@ -214,7 +255,7 @@ describe('RangeLinkDocumentProvider', () => {
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
-      mockHandler.navigateToLink.mockRejectedValue(new Error('Failed'));
+      mockHandler.navigateToRangeLink.mockRejectedValue(new Error('Failed'));
 
       await expect(provider.handleLinkClick({ linkText: 'src/file.ts#L10', parsed: mockParsed })).resolves.toBeUndefined();
     });

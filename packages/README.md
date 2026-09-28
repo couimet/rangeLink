@@ -19,6 +19,26 @@ Pure TypeScript core library — zero dependencies, platform-agnostic.
 
 **[📖 Core Library README](./rangelink-core-ts/README.md)** | **[🔧 Development Guide](./rangelink-core-ts/DEVELOPMENT.md)**
 
+### [`text-fragment-ts/`](./text-fragment-ts)
+
+Text fragment codec — the browser-standard `:~:text=` grammar, its term matcher, and the fragment types.
+
+- ✅ Fragment directive parsing and formatting
+- ✅ Whole-document term matching (RangeLink's own rulebook)
+- ✅ Raw paths in and out; path quoting stays in the core library
+
+**[📖 Text Fragment README](./text-fragment-ts/README.md)**
+
+### [`percent-codec-ts/`](./percent-codec-ts)
+
+RFC 3986 plus strict UTF-8 percent codec, used by the text fragment codec for term encoding.
+
+- ✅ Percent encoding and decoding
+- ✅ Strict UTF-8 validation with recoverable errors
+- ✅ No dependencies
+
+**[📖 Percent Codec README](./percent-codec-ts/README.md)**
+
 ### [`rangelink-vscode-extension/`](./rangelink-vscode-extension)
 
 VS Code extension — thin wrapper around the core library.

@@ -1,0 +1,2 @@
+export { MAX_LINK_LENGTH } from './maxLinkLength';
+export { TEXT_FRAGMENT_DIRECTIVE, TEXT_FRAGMENT_DIRECTIVE_PREFIX, TEXT_FRAGMENT_SEPARATOR } from './textFragment';

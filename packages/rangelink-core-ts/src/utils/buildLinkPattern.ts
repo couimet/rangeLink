@@ -1,14 +1,15 @@
-import { HIGHLIGHT_TEXT_DIRECTIVE } from '../constants/highlightLink';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 
 import { escapeRegex } from './escapeRegex';
+
+import { TEXT_FRAGMENT_DIRECTIVE } from 'text-fragment-ts';
 
 /**
  * URL exclusion patterns for RangeLink and file path detection.
  *
  * These prevent web URLs from being matched as links:
  * - NOT_AFTER_URL_CHAR: Lookbehind to block matches mid-URL (exported for reuse in file path detection)
- * - NO_WEB_URL_SCHEME: Lookahead to block matches at URL scheme start (exported for reuse in highlight detection)
+ * - NO_WEB_URL_SCHEME: Lookahead to block matches at URL scheme start (exported for reuse in text fragment detection)
  */
 export const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
 export const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
@@ -25,7 +26,7 @@ export const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
  * ] is excluded to prevent matching the markdown link boundary `](url)` as part of a path.
  * NOT excluded: ( ) [ { } — these appear in real directory/file names.
  *
- * Exported for reuse in highlight link detection.
+ * Exported for reuse in text fragment link detection.
  */
 export const PATH_CHAR = '[^\\s\\x60\\x27\\x22<>\\x5d]';
 
@@ -171,10 +172,10 @@ export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
 
   // Backtracking guard: (?!\w) prevents \w+ from giving back chars to let the
   // RangeLink suffix slip through. The hash alternative blocks single-hash,
-  // double-hash (rectangular), and custom-delimiter suffixes. The highlight
-  // alternative blocks a text-highlight marker so `./src/a.ts:~:text=foo` is
-  // never underlined as a bare file path — the highlight pass owns that span.
-  const notBeforeRangeLink = `(?!\\w|(?:${escapedHash}){1,2}${escapedLine}\\d|${HIGHLIGHT_TEXT_DIRECTIVE})`;
+  // double-hash (rectangular), and custom-delimiter suffixes. The text fragment
+  // alternative blocks a text fragment marker so `./src/a.ts:~:text=foo` is
+  // never underlined as a bare file path — the text fragment pass owns that span.
+  const notBeforeRangeLink = `(?!\\w|(?:${escapedHash}){1,2}${escapedLine}\\d|${TEXT_FRAGMENT_DIRECTIVE})`;
 
   // Unquoted patterns: NOT_AFTER_URL_CHAR prevents matching path segments that
   // are embedded inside web URLs (e.g., https://example.com/./file.ts or ~/user).

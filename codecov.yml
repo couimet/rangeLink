@@ -14,6 +14,16 @@ coverage:
         threshold: 0%
         flags:
           - vscode-extension
+      text-fragment-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - text-fragment-ts
+      percent-codec-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - percent-codec-ts
 
     patch:
       default:
@@ -30,6 +40,12 @@ flags:
   vscode-extension:
     paths:
       - packages/rangelink-vscode-extension/
+  text-fragment-ts:
+    paths:
+      - packages/text-fragment-ts/
+  percent-codec-ts:
+    paths:
+      - packages/percent-codec-ts/
 
 comment:
   layout: 'reach, diff, flags, files, footer'

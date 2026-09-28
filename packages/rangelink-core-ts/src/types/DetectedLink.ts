@@ -1,12 +1,13 @@
 import { ParsedLink } from './ParsedLink';
-import { ParsedTextLink } from './ParsedTextLink';
+
+import type { ParsedTextFragment } from 'text-fragment-ts';
 
 /**
  * A link detected in text by findLinksInText().
  *
  * Represents unquoted links (matched by the standard pattern), quoted links
  * (wrapped in single or double quotes to support paths with spaces), and text
- * highlight links (matched by the highlight pass).
+ * fragment links (matched by the text fragment pass).
  *
  * This is a data-only type — presentation concerns like tooltips are added
  * by the consuming layer (e.g., VSCode extension).
@@ -18,6 +19,6 @@ export interface DetectedLink {
   readonly startIndex: number;
   /** Length in the source text (includes surrounding quotes if present) */
   readonly length: number;
-  /** Parsed link data — numeric/range links parse to ParsedLink, highlights to ParsedTextLink (distinguish via `'directive' in parsed`) */
-  readonly parsed: ParsedLink | ParsedTextLink;
+  /** Parsed link data — numeric/range links parse to ParsedLink, text fragments to ParsedTextFragment (distinguish via `'directive' in parsed`) */
+  readonly parsed: ParsedLink | ParsedTextFragment;
 }

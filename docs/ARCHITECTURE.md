@@ -51,6 +51,25 @@ For details on the monorepo structure and package organization, see **[packages/
 │ ┌─────────────────────────────┐ │
 │ │ Domain Models               │ │  ← Types, enums
 │ └─────────────────────────────┘ │
+└────────────┬────────────────────┘
+             │ depends on
+┌────────────▼────────────────────┐
+│ text-fragment-ts                │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ Fragment Directives         │ │  ← Parse/format :~:text=
+│ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │ Term Matching               │ │  ← Resolve against a file
+│ └─────────────────────────────┘ │
+└────────────┬────────────────────┘
+             │ depends on
+┌────────────▼────────────────────┐
+│ percent-codec-ts                │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ Percent Codec               │ │  ← RFC 3986 + strict UTF-8
+│ └─────────────────────────────┘ │
 └─────────────────────────────────┘
 ```
 
@@ -95,14 +114,18 @@ export function formatLink(selection: Selection): string {
 
 ### 2. Zero Dependencies
 
-**Principle:** Core library has zero runtime dependencies.
+**Principle:** No third-party runtime dependencies.
 
 **Rationale:** Minimize bundle size, maximize portability, reduce security surface.
 
 **Current dependencies:**
 
-- **Core:** None (only `typescript` as devDependency)
-- **Extension:** Only `rangelink-core-ts` (and VSCode engine)
+- **percent-codec-ts:** none
+- **text-fragment-ts:** only `percent-codec-ts`
+- **Core:** `text-fragment-ts`, which pulls in `percent-codec-ts`
+- **Extension:** `rangelink-core-ts`, `text-fragment-ts`, `percent-codec-ts`, and `nanoid` (plus the VSCode engine)
+
+The `@couimet/*` packages they declare are RangeLink's own error base class, Result type, and logging contract, not third-party runtime dependencies.
 
 **Benefits:**
 
@@ -557,6 +580,9 @@ rangeLink/
   packages/
     rangelink-core-ts/            # TypeScript implementation
       src/ ... tests/contracts/   # Runs spec/contracts/**/*.json
+
+    text-fragment-ts/             # Shared text fragment codec (any language port)
+    percent-codec-ts/             # Percent codec used by text-fragment-ts
 
     rangelink-core-java/          # Java implementation
       src/ ... tests/contracts/   # Runs same contracts

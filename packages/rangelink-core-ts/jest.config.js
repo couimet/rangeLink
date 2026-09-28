@@ -15,6 +15,13 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/matchers.ts'],
+
+  // Sibling workspace packages resolve to their sources so jest.spyOn() can
+  // replace a barrel export (the compiled CJS barrel defines it non-configurably)
+  moduleNameMapper: {
+    '^percent-codec-ts$': '<rootDir>/../percent-codec-ts/src/index.ts',
+    '^text-fragment-ts$': '<rootDir>/../text-fragment-ts/src/index.ts',
+  },
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.test.ts',

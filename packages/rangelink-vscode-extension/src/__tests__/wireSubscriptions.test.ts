@@ -37,6 +37,10 @@ import {
   CMD_COPY_LINK_RELATIVE,
   CMD_COPY_PORTABLE_LINK_ABSOLUTE,
   CMD_COPY_PORTABLE_LINK_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_RELATIVE,
   CMD_GO_TO_RANGELINK,
   CMD_HANDLE_DOCUMENT_LINK_CLICK,
   CMD_HANDLE_FILE_PATH_CLICK,
@@ -66,6 +70,10 @@ const EXPECTED_COMMANDS = [
   CMD_COPY_PORTABLE_LINK_ABSOLUTE,
   CMD_COPY_LINK_ONLY_RELATIVE,
   CMD_COPY_LINK_ONLY_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE,
   CMD_PASTE_TO_DESTINATION,
   CMD_SHOW_VERSION,
   CMD_BIND_TO_TERMINAL,
@@ -133,7 +141,7 @@ describe('wireSubscriptions', () => {
       expect(registeredCommands).toContain(cmd);
     }
 
-    expect(registeredCommands).toHaveLength(53);
+    expect(registeredCommands).toHaveLength(57);
   });
 
   it('registers 2 terminal link providers', () => {
@@ -243,6 +251,26 @@ describe('wireSubscriptions', () => {
     it('CMD_COPY_LINK_ONLY_ABSOLUTE delegates to linkGenerator.createLinkOnly', () => {
       registrar.getHandler(CMD_COPY_LINK_ONLY_ABSOLUTE)();
       expect(services.linkGenerator.createLinkOnly).toHaveBeenCalledWith('absolute');
+    });
+
+    it('CMD_COPY_TEXT_FRAGMENT_RELATIVE delegates to linkGenerator.createTextFragmentLink', () => {
+      registrar.getHandler(CMD_COPY_TEXT_FRAGMENT_RELATIVE)();
+      expect(services.linkGenerator.createTextFragmentLink).toHaveBeenCalledWith('workspace-relative');
+    });
+
+    it('CMD_COPY_TEXT_FRAGMENT_ABSOLUTE delegates to linkGenerator.createTextFragmentLink', () => {
+      registrar.getHandler(CMD_COPY_TEXT_FRAGMENT_ABSOLUTE)();
+      expect(services.linkGenerator.createTextFragmentLink).toHaveBeenCalledWith('absolute');
+    });
+
+    it('CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE delegates to linkGenerator.createTextFragmentLinkOnly', () => {
+      registrar.getHandler(CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE)();
+      expect(services.linkGenerator.createTextFragmentLinkOnly).toHaveBeenCalledWith('workspace-relative');
+    });
+
+    it('CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE delegates to linkGenerator.createTextFragmentLinkOnly', () => {
+      registrar.getHandler(CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE)();
+      expect(services.linkGenerator.createTextFragmentLinkOnly).toHaveBeenCalledWith('absolute');
     });
 
     it('CMD_GO_TO_RANGELINK delegates to goToRangeLinkCommand.execute', () => {

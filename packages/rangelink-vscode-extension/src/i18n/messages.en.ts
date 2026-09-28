@@ -35,7 +35,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_PORTABLE_RANGELINK]: 'Portable RangeLink',
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
-  [MessageCode.CONTENT_NAME_TEXT_HIGHLIGHT]: 'Text highlight',
+  [MessageCode.CONTENT_NAME_TEXT_FRAGMENT]: 'Text fragment',
 
   [MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE]: 'Claude Code Chat',
   [MessageCode.DESTINATION_DISPLAY_NAME_CLINE]: 'Cline',
@@ -87,11 +87,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE]: 'Bound editor is no longer visible. Re-open the file and bind again.',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]: 'Cannot bind to read-only editor ({scheme})',
-  [MessageCode.ERROR_TEXT_HIGHLIGHT_GENERATION_FAILED]: 'Failed to generate text highlight link',
-  [MessageCode.ERROR_TEXT_HIGHLIGHT_MULTIPLE_SELECTIONS]:
-    'Cannot generate a text highlight link from multiple selections. Select a single block of text and try again.',
-  [MessageCode.ERROR_TEXT_HIGHLIGHT_TEXT_NOT_UNIQUE]:
-    'Cannot generate a text highlight link - the selected text is not unique in the file. Select a longer block of text and try again.',
+  [MessageCode.ERROR_TEXT_FRAGMENT_GENERATION_FAILED]: 'Failed to generate text fragment link',
+  [MessageCode.ERROR_TEXT_FRAGMENT_MULTIPLE_SELECTIONS]:
+    'Cannot generate a text fragment link from multiple selections. Select a single block of text and try again.',
+  [MessageCode.ERROR_TEXT_FRAGMENT_TEXT_NOT_UNIQUE]:
+    'Cannot generate a text fragment link - the selected text is not unique in the file. Select a longer block of text and try again.',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.FILE_PICKER_ACTIVE_BADGE]: 'active',
@@ -133,7 +133,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
   [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "Invalid link format: '{input}'",
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'Navigated to {path} @ {position}',
-  [MessageCode.INFO_NAVIGATION_TEXT_SUCCESS]: 'Navigated to {path}',
+  [MessageCode.INFO_NAVIGATION_TEXT_FRAGMENT_SUCCESS]: 'Navigated to {path}',
   [MessageCode.INFO_NEW_VERSION_NOTIFICATION]: 'RangeLink updated to v{version}. See what changed!',
   [MessageCode.INFO_NEW_VERSION_SKIP_BUTTON]: 'Skip for this version',
   [MessageCode.INFO_NEW_VERSION_WHATS_NEW_BUTTON]: "What's New",
@@ -223,6 +223,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER]: 'column exceeded line length',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_LINE]: 'line exceeded file length',
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'Cannot find file: {path}',
+  [MessageCode.WARN_NAVIGATION_TEXT_FRAGMENT_AMBIGUOUS]: 'Text "{text}" appears {count} times in {path}',
+  [MessageCode.WARN_NAVIGATION_TEXT_FRAGMENT_NOT_FOUND]: 'Text "{text}" not found in {path}',
   [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]: 'Could not send to editor. Make sure the bound editor is visible and focused.',
   [MessageCode.WARN_PASTE_FAILED_TERMINAL]: 'Could not send to terminal. Terminal may be closed or not accepting input.',
   [MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS]: 'Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',

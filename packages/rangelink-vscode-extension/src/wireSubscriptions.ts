@@ -39,6 +39,10 @@ import {
   CMD_COPY_LINK_RELATIVE,
   CMD_COPY_PORTABLE_LINK_ABSOLUTE,
   CMD_COPY_PORTABLE_LINK_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE,
+  CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE,
+  CMD_COPY_TEXT_FRAGMENT_RELATIVE,
   CMD_GO_TO_RANGELINK,
   CMD_HANDLE_DOCUMENT_LINK_CLICK,
   CMD_HANDLE_FILE_PATH_CLICK,
@@ -122,6 +126,10 @@ export const wireSubscriptions = (registrar: SubscriptionRegistrar, services: Wi
   registrar.registerCommand(CMD_COPY_PORTABLE_LINK_ABSOLUTE, () => linkGenerator.createPortableLink(PathFormat.Absolute));
   registrar.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () => linkGenerator.createLinkOnly(PathFormat.WorkspaceRelative));
   registrar.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () => linkGenerator.createLinkOnly(PathFormat.Absolute));
+  registrar.registerCommand(CMD_COPY_TEXT_FRAGMENT_RELATIVE, () => linkGenerator.createTextFragmentLink(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_COPY_TEXT_FRAGMENT_ABSOLUTE, () => linkGenerator.createTextFragmentLink(PathFormat.Absolute));
+  registrar.registerCommand(CMD_COPY_TEXT_FRAGMENT_ONLY_RELATIVE, () => linkGenerator.createTextFragmentLinkOnly(PathFormat.WorkspaceRelative));
+  registrar.registerCommand(CMD_COPY_TEXT_FRAGMENT_ONLY_ABSOLUTE, () => linkGenerator.createTextFragmentLinkOnly(PathFormat.Absolute));
   registrar.registerCommand(CMD_PASTE_TO_DESTINATION, () => textSelectionPaster.pasteSelectedTextToDestination());
   registrar.registerCommand(CMD_SHOW_VERSION, () => showVersionCommand.execute());
   registrar.registerCommand(CMD_BIND_TO_TERMINAL, bindToTerminalHandler);

@@ -9,7 +9,7 @@ export * from './formatLinkPosition';
 export * from './formatLinkTooltip';
 export * from './formatMessage';
 export * from './generateLinkFromSelections';
-export * from './generateTextHighlightLink';
+export * from './generateTextFragmentLink';
 export * from './getUntitledDisplayName';
 export * from './interpolateArgs';
 export * from './isBinaryFile';

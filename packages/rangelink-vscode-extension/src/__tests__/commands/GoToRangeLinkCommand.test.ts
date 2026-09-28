@@ -4,6 +4,7 @@ import { createMockNavigationHandler, createMockVscodeAdapter } from '../helpers
 import { DetailedResult } from '@couimet/detailed-result';
 import { createMockLogger } from '@couimet/logger-contract-testing';
 import { LinkType, ParsedLink, RangeLinkError, RangeLinkErrorCodes, SelectionType } from 'rangelink-core-ts';
+import { ParsedTextFragment, TextFragmentError, TextFragmentErrorCodes, TextFragmentResult } from 'text-fragment-ts';
 
 describe('GoToRangeLinkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -42,7 +43,7 @@ describe('GoToRangeLinkCommand', () => {
           placeHolder: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
         });
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
-        expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
+        expect(mockNavigationHandler.navigateToRangeLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'User cancelled input');
       });
     });
@@ -63,7 +64,7 @@ describe('GoToRangeLinkCommand', () => {
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
-        expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
+        expect(mockNavigationHandler.navigateToRangeLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Empty input provided');
       });
 
@@ -82,7 +83,7 @@ describe('GoToRangeLinkCommand', () => {
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('Please enter a link to navigate');
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
-        expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
+        expect(mockNavigationHandler.navigateToRangeLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Empty input provided');
       });
     });
@@ -93,8 +94,13 @@ describe('GoToRangeLinkCommand', () => {
         message: 'Invalid link format',
         functionName: 'parseLink',
       });
+      const mockTextError = new TextFragmentError({
+        code: TextFragmentErrorCodes.PARSE_TEXT_FRAGMENT_NO_SEPARATOR,
+        message: 'Link must contain :~:text= separator',
+        functionName: 'parseTextFragment',
+      });
 
-      it('shows error message with input when parseLink fails', async () => {
+      it('shows error message with input when both numeric and text parsing fail', async () => {
         const invalidInput = 'not-a-valid-link';
         const mockShowInputBox = jest.fn().mockResolvedValue(invalidInput);
         const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
@@ -105,19 +111,22 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.failure(mockError));
+        mockNavigationHandler.parseTextFragment.mockReturnValue(TextFragmentResult.err(mockTextError));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(invalidInput);
+        expect(mockNavigationHandler.parseTextFragment).toHaveBeenCalledWith(invalidInput);
         expect(mockShowErrorMessage).toHaveBeenCalledWith("Invalid link format: 'not-a-valid-link'");
-        expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
+        expect(mockNavigationHandler.navigateToRangeLink).not.toHaveBeenCalled();
+        expect(mockNavigationHandler.navigateToTextFragmentLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'GoToRangeLinkCommand.execute',
             input: invalidInput,
             trimmedInput: invalidInput,
-            error: mockError,
+            error: mockTextError,
           },
           'Invalid link format',
         );
@@ -135,6 +144,7 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(DetailedResult.failure(mockError));
+        mockNavigationHandler.parseTextFragment.mockReturnValue(TextFragmentResult.err(mockTextError));
         const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
@@ -146,7 +156,7 @@ describe('GoToRangeLinkCommand', () => {
             fn: 'GoToRangeLinkCommand.execute',
             input: inputWithWhitespace,
             trimmedInput,
-            error: mockError,
+            error: mockTextError,
           },
           'Invalid link format',
         );
@@ -177,7 +187,7 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(validLink);
-        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, validLink);
+        expect(mockNavigationHandler.navigateToRangeLink).toHaveBeenCalledWith(mockParsedLink, validLink);
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute' }, 'Showing input box for RangeLink');
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', input: validLink }, 'Parsing RangeLink');
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink }, 'Navigating to link');
@@ -198,9 +208,77 @@ describe('GoToRangeLinkCommand', () => {
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(trimmedLink);
-        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, trimmedLink);
+        expect(mockNavigationHandler.navigateToRangeLink).toHaveBeenCalledWith(mockParsedLink, trimmedLink);
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', input: trimmedLink }, 'Parsing RangeLink');
         expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink }, 'Navigating to link');
+      });
+    });
+
+    describe('user enters valid text fragment link', () => {
+      const textFragmentLink = 'src/file.ts:~:text=function';
+      const mockParsedTextFragment: ParsedTextFragment = {
+        path: 'src/file.ts',
+        directive: { start: 'function' },
+      };
+
+      it('falls back to text parsing and navigates when numeric parsing fails', async () => {
+        const mockShowInputBox = jest.fn().mockResolvedValue(textFragmentLink);
+        const mockAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            showInputBox: mockShowInputBox,
+          },
+        });
+        mockNavigationHandler.parseLink.mockReturnValue(
+          DetailedResult.failure(
+            new RangeLinkError({
+              code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
+              message: 'Link must contain # separator',
+              functionName: 'parseLink',
+            }),
+          ),
+        );
+        mockNavigationHandler.parseTextFragment.mockReturnValue(TextFragmentResult.ok(mockParsedTextFragment));
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
+
+        await command.execute();
+
+        expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(textFragmentLink);
+        expect(mockNavigationHandler.parseTextFragment).toHaveBeenCalledWith(textFragmentLink);
+        expect(mockNavigationHandler.navigateToTextFragmentLink).toHaveBeenCalledWith(mockParsedTextFragment, textFragmentLink);
+        expect(mockNavigationHandler.navigateToRangeLink).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedTextFragment },
+          'Navigating to text fragment link',
+        );
+      });
+
+      it('trims whitespace from a text fragment link before parsing', async () => {
+        const inputWithWhitespace = '  src/file.ts:~:text=function  ';
+        const trimmedLink = 'src/file.ts:~:text=function';
+        const mockShowInputBox = jest.fn().mockResolvedValue(inputWithWhitespace);
+        const mockAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            showInputBox: mockShowInputBox,
+          },
+        });
+        mockNavigationHandler.parseLink.mockReturnValue(
+          DetailedResult.failure(
+            new RangeLinkError({
+              code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
+              message: 'Link must contain # separator',
+              functionName: 'parseLink',
+            }),
+          ),
+        );
+        mockNavigationHandler.parseTextFragment.mockReturnValue(TextFragmentResult.ok(mockParsedTextFragment));
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
+
+        await command.execute();
+
+        expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(trimmedLink);
+        expect(mockNavigationHandler.parseTextFragment).toHaveBeenCalledWith(trimmedLink);
+        expect(mockNavigationHandler.navigateToTextFragmentLink).toHaveBeenCalledWith(mockParsedTextFragment, trimmedLink);
+        expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'GoToRangeLinkCommand.execute', input: trimmedLink }, 'Parsing RangeLink');
       });
     });
   });

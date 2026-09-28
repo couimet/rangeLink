@@ -2,8 +2,8 @@ import type { DelimiterConfig } from '../types/DelimiterConfig';
 import type { DetectedLink } from '../types/DetectedLink';
 import { buildLinkPattern } from '../utils/buildLinkPattern';
 
-import { detectHighlightLinks } from './detectHighlightLinks';
 import { detectQuotedLinks } from './detectQuotedLinks';
+import { detectTextFragments } from './detectTextFragments';
 import { detectUnquotedLinks } from './detectUnquotedLinks';
 import type { Cancellable } from './types';
 
@@ -13,13 +13,13 @@ export type { Cancellable } from './types';
 
 /**
  * Find all RangeLinks in text, including quoted links with spaces and text
- * highlight links.
+ * fragment links.
  *
  * Three-pass detection:
- * 1. Highlight pass for `:~:text=` links (via the highlight regex), whose spans
- *    are claimed so later passes skip them
+ * 1. Text fragment pass for `:~:text=` links (via the text fragment regex),
+ *    whose spans are claimed so later passes skip them
  * 2. Standard regex pass for unquoted numeric links (using buildLinkPattern),
- *    skipping ranges already claimed by the highlight pass
+ *    skipping ranges already claimed by the text fragment pass
  * 3. Quoted fallback: scans for single- and double-quoted segments and validates inner content via parseLink
  *
  * The quoted pass enables detection of links with spaces in file/directory names
@@ -37,27 +37,27 @@ export const findLinksInText = (text: string, delimiters: DelimiterConfig, logge
 
   const pattern = buildLinkPattern(delimiters);
 
-  const highlight = detectHighlightLinks(text, logger, token);
-  const unquoted = detectUnquotedLinks(text, pattern, delimiters, highlight.occupiedRanges, logger, token);
+  const textFragments = detectTextFragments(text, logger, token);
+  const unquoted = detectUnquotedLinks(text, pattern, delimiters, textFragments.occupiedRanges, logger, token);
 
-  const links = [...highlight.links, ...unquoted.links];
-  const occupiedRanges = [...highlight.occupiedRanges, ...unquoted.occupiedRanges];
+  const links = [...textFragments.links, ...unquoted.links];
+  const occupiedRanges = [...textFragments.occupiedRanges, ...unquoted.occupiedRanges];
 
   const { quotedCandidates, quotedParseFailures, quotedReplacements } = detectQuotedLinks(text, links, occupiedRanges, delimiters, logger, token);
 
-  const hasActivity = links.length > 0 || unquoted.parseFailures > 0 || highlight.parseFailures > 0 || quotedCandidates > 0;
+  const hasActivity = links.length > 0 || unquoted.parseFailures > 0 || textFragments.parseFailures > 0 || quotedCandidates > 0;
   if (hasActivity) {
     logger.debug(
       {
         ...logCtx,
         textLength: text.length,
-        highlightCandidates: highlight.highlightCandidates,
+        textFragmentCandidates: textFragments.textFragmentCandidates,
         unquotedMatches: unquoted.unquotedMatches,
         quotedCandidates,
         quotedReplacements,
         linksDetected: links.length,
         parseFailures: unquoted.parseFailures,
-        highlightParseFailures: highlight.parseFailures,
+        textFragmentParseFailures: textFragments.parseFailures,
         quotedParseFailures,
       },
       'Link detection complete',

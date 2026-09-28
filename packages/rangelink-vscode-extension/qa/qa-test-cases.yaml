@@ -2993,99 +2993,99 @@ test_cases:
     automated: assisted
 
   # ---------------------------------------------------------------------------
-  # Section — Text Highlight Links (issues/749)
+  # Section — Text Fragment Links (issues/749)
   # ---------------------------------------------------------------------------
 
-  - id: text-highlight-generation-001
+  - id: text-fragment-generation-001
     labels:
       - clipboard
-    feature: 'text-highlight-links'
-    scenario: 'R-Alt-C on a unique selection copies a workspace-relative text highlight link'
-    expected_result: 'Clipboard holds "<relative-path>:~:text=<encoded selection>" (no numeric anchor); status bar shows "Text highlight copied to clipboard"'
+    feature: 'text-fragment-links'
+    scenario: 'R-Alt-C on a unique selection copies a workspace-relative text fragment link'
+    expected_result: 'Clipboard holds "<relative-path>:~:text=<encoded selection>" (no numeric anchor); status bar shows "Text fragment copied to clipboard"'
     automated: true
 
-  - id: text-highlight-generation-002
+  - id: text-fragment-generation-002
     labels:
       - clipboard
-    feature: 'text-highlight-links'
-    scenario: 'R-Alt-Shift-C on a unique selection copies an absolute-path text highlight link'
+    feature: 'text-fragment-links'
+    scenario: 'R-Alt-Shift-C on a unique selection copies an absolute-path text fragment link'
     expected_result: 'Clipboard holds "<absolute-path>:~:text=<encoded selection>"; the workspace-relative form is not emitted'
     automated: true
 
-  - id: text-highlight-generation-003
+  - id: text-fragment-generation-003
     labels:
       - clipboard
       - terminal
-    feature: 'text-highlight-links'
-    scenario: 'R-H on a unique selection sends the highlight link to a bound terminal and copies the raw link'
-    expected_result: 'Terminal receives the smart-padded link; clipboard holds the unpadded link; status bar confirms the send'
+    feature: 'text-fragment-links'
+    scenario: 'R-H on a unique selection sends the text fragment link to a bound terminal'
+    expected_result: 'Terminal receives the smart-padded link; status bar confirms the send; the clipboard is restored to its prior value'
     automated: true
 
-  - id: text-highlight-generation-004
+  - id: text-fragment-generation-004
     labels:
       - clipboard
       - terminal
-    feature: 'text-highlight-links'
-    scenario: 'R-Shift-H on a unique selection sends the absolute-path highlight link to a bound terminal'
-    expected_result: 'Terminal receives the smart-padded absolute-path link; clipboard holds the unpadded link'
+    feature: 'text-fragment-links'
+    scenario: 'R-Shift-H on a unique selection sends the absolute-path text fragment link to a bound terminal'
+    expected_result: 'Terminal receives the smart-padded absolute-path link; the clipboard is restored to its prior value'
     automated: true
 
-  - id: text-highlight-generation-005
+  - id: text-fragment-generation-005
     labels:
       - clipboard
-    feature: 'text-highlight-links'
-    scenario: 'Generating a highlight link from text that appears more than once is refused'
-    expected_result: 'Error notification: "Cannot generate a text highlight link - the selected text is not unique in the file..."; clipboard is left untouched'
+    feature: 'text-fragment-links'
+    scenario: 'Generating a text fragment link from text that appears more than once is refused'
+    expected_result: 'Error notification: "Cannot generate a text fragment link - the selected text is not unique in the file..."; clipboard is left untouched'
     automated: true
 
-  - id: text-highlight-generation-006
+  - id: text-fragment-generation-006
     labels:
       - clipboard
-    feature: 'text-highlight-links'
+    feature: 'text-fragment-links'
     scenario: 'A multi-line selection in a CRLF document encodes the line break as %0A'
     expected_result: 'Generated link contains %0A between the two lines and never %0D'
     automated: true
 
-  - id: text-highlight-navigation-001
-    feature: 'text-highlight-links'
-    scenario: 'Clicking a highlight link whose text occurs once selects exactly that text'
-    expected_result: 'Selection covers precisely the highlighted text (no surrounding lines); info notification confirms navigation'
+  - id: text-fragment-navigation-001
+    feature: 'text-fragment-links'
+    scenario: 'Clicking a text fragment link whose text occurs once selects exactly that text'
+    expected_result: 'Selection covers precisely the target text (no surrounding lines); info notification confirms navigation'
     automated: true
 
-  - id: text-highlight-navigation-002
-    feature: 'text-highlight-links'
-    scenario: 'A %0A highlight link resolves against a CRLF document with exact offsets'
-    expected_result: 'Selection starts on the first line of the highlight and ends after the last line; offsets are remapped across the removed CRs'
+  - id: text-fragment-navigation-002
+    feature: 'text-fragment-links'
+    scenario: 'A %0A text fragment link resolves against a CRLF document with exact offsets'
+    expected_result: 'Selection starts on the first line of the target text and ends after the last line; offsets are remapped across the removed CRs'
     automated: true
 
-  - id: text-highlight-navigation-003
-    feature: 'text-highlight-links'
-    scenario: 'Clicking a highlight link whose text is absent from the document'
-    expected_result: 'Warning "Text \\"<text>\\" not found in <path>"; the editor selection is left untouched'
+  - id: text-fragment-navigation-003
+    feature: 'text-fragment-links'
+    scenario: 'Clicking a text fragment link whose text is absent from the document'
+    expected_result: 'Warning "Text "<text>" not found in <path>"; the editor selection is left untouched'
     automated: true
 
-  - id: text-highlight-navigation-004
-    feature: 'text-highlight-links'
-    scenario: 'Clicking a highlight link whose text occurs multiple times in the document'
-    expected_result: 'Warning "Text \\"<text>\\" appears <count> times in <path>"; the editor selection is left untouched'
+  - id: text-fragment-navigation-004
+    feature: 'text-fragment-links'
+    scenario: 'Clicking a text fragment link whose text occurs multiple times in the document'
+    expected_result: 'Warning "Text "<text>" appears <count> times in <path>"; the editor selection is left untouched'
     automated: true
 
-  - id: text-highlight-detection-001
-    scenario: 'A text highlight link in an open document is detected with its exact range and tooltip'
-    feature: 'text-highlight-links'
-    expected_result: 'One document link spanning the whole link text; tooltip reads "Highlight \\"<text>\\" in <path> • RangeLink"'
+  - id: text-fragment-detection-001
+    feature: 'text-fragment-links'
+    scenario: 'A text fragment link in an open document is detected with its exact range and tooltip'
+    expected_result: 'One document link spanning the whole link text; tooltip reads "Fragment "<text>" in <path> • RangeLink"'
     automated: true
 
-  - id: text-highlight-detection-002
-    scenario: 'A text highlight link and a numeric RangeLink coexist in one document'
-    feature: 'text-highlight-links'
-    expected_result: 'Both links are detected with their own exact ranges and tooltips; the highlight link is reported first'
+  - id: text-fragment-detection-002
+    feature: 'text-fragment-links'
+    scenario: 'A text fragment link and a numeric RangeLink coexist in one document'
+    expected_result: 'Both links are detected with their own exact ranges and tooltips; the text fragment link is reported first'
     automated: true
 
-  - id: text-highlight-detection-003
+  - id: text-fragment-detection-003
     labels:
       - terminal
-    feature: 'text-highlight-links'
-    scenario: 'A text highlight link echoed to a terminal is clickable and navigates'
-    expected_result: 'Cmd+click opens the target file with the highlighted text selected'
+    feature: 'text-fragment-links'
+    scenario: 'A text fragment link echoed to a terminal is clickable and navigates'
+    expected_result: 'Cmd+click opens the target file with the target text selected'
     automated: assisted

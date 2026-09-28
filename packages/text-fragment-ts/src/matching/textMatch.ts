@@ -1,9 +1,9 @@
 import { TextDirective } from '../types/TextDirective';
 
 /**
- * Result of resolving a text highlight directive against a document's text.
+ * Result of resolving a text fragment directive against a document's text.
  *
- * `start`/`end` are RAW offsets into the text passed to `resolveTextHighlight`
+ * `start`/`end` are RAW offsets into the text passed to `resolveTextFragmentMatch`
  * (the document's own bytes, CRLF included). Offsets are UTF-16 code-unit
  * indices, matching what VS Code's `document.positionAt` expects.
  */
@@ -15,7 +15,7 @@ export type TextMatchResult = { status: 'matched'; start: number; end: number } 
  * Used on both the generation side and here so hand-authored `%0A` links also
  * match text in CRLF documents. Search offsets are computed against the
  * normalized text; callers translate them back to raw offsets with the
- * breakpoint map built alongside (see `resolveTextHighlight`).
+ * breakpoint map built alongside (see `resolveTextFragmentMatch`).
  */
 export const normalizeEOL = (text: string): string => text.replace(/\r\n/g, '\n');
 
@@ -43,7 +43,7 @@ export const findOccurrences = (text: string, needle: string): number[] => {
 };
 
 /**
- * Resolve a decoded text highlight directive against document text.
+ * Resolve a decoded text fragment directive against document text.
  *
  * RangeLink's own matching rulebook (not browser semantics):
  * - whole-document, exact, case-sensitive substring search;
@@ -58,7 +58,7 @@ export const findOccurrences = (text: string, needle: string): number[] => {
  * `not-found` to the user rather than guessing, per the feature's "never
  * guess" guarantee.
  */
-export const resolveTextHighlight = (rawText: string, directive: TextDirective): TextMatchResult => {
+export const resolveTextFragmentMatch = (rawText: string, directive: TextDirective): TextMatchResult => {
   // CRLF -> LF collapse, tracking where `\r`s were removed so matched
   // normalized offsets can be mapped back to raw document offsets.
   const { normalized, toRawOffset } = normalizeWithRawOffsets(rawText);

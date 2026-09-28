@@ -194,7 +194,7 @@ standardSuite('R-G Go to Link', (ss) => {
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-root-002');
 
-    // The command is NOT awaited — navigateToLink stays pending on the navigated
+    // The command is NOT awaited — navigateToRangeLink stays pending on the navigated
     // toast (showInformationMessage), which the test host does not auto-dismiss
     // promptly. Navigation is detected via the active editor instead.
     void Promise.resolve(vscode.commands.executeCommand(CMD_GO_TO_RANGELINK)).catch(() => undefined);

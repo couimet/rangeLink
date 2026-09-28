@@ -94,7 +94,11 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     this.logger.debug({ ...logCtx, parsed }, 'Document link clicked - delegating to handler');
 
     try {
-      await this.handler.navigateToLink(parsed, linkText);
+      if ('directive' in parsed) {
+        await this.handler.navigateToTextFragmentLink(parsed, linkText);
+      } else {
+        await this.handler.navigateToRangeLink(parsed, linkText);
+      }
     } catch (error) {
       this.logger.debug({ ...logCtx, error }, 'Document link handling completed with error (already handled by navigation handler)');
     }

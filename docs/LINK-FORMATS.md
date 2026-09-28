@@ -131,6 +131,76 @@ These characters **cannot be used** as custom delimiters:
 
 **Full BYOD documentation:** See [BYOD.md](./BYOD.md) for comprehensive guide including validation, parsing rules, and error handling.
 
+## Text Fragment Links
+
+A text fragment link points at a block of text instead of a line range, using the
+[text fragment](https://wicg.github.io/scroll-to-text-fragment/) grammar that browsers
+and terminals already understand. The referenced text survives edits that shift line
+numbers, and any consumer that supports `:~:text=` can resolve the link without
+line arithmetic.
+
+### Format
+
+```text
+<file-path>:~:text=<start>
+```
+
+```text
+recipes/baking/chickenpie.ts:~:text=Preheat%20the%20oven
+```
+
+The full grammar accepts up to four percent-encoded terms:
+
+```text
+<file-path>:~:text=[prefix-,]start[,end][,-suffix]
+```
+
+| Term     | Meaning                                     |
+| -------- | ------------------------------------------- |
+| `prefix` | Text that must immediately precede `start`  |
+| `start`  | First word(s) of the target text (required) |
+| `end`    | Last word(s) of the target text             |
+| `suffix` | Text that must immediately follow `end`     |
+
+RangeLink **generates** the `start`-only form. It **parses and navigates** the full
+grammar, so a text fragment link produced elsewhere (a browser's "Copy link to highlight",
+a documentation tool, another editor) resolves correctly here.
+
+### Encoding
+
+Term values are percent-encoded UTF-8. Space becomes `%20` and the line feed of a
+multi-line selection becomes `%0A`; `,` and `%` are always escaped, and a `-` is escaped
+when it would otherwise be read as the prefix or suffix marker. Line endings are
+normalized before encoding, so a selection spanning lines in a CRLF file is emitted with
+`%0A` and never `%0D`.
+
+### Detection and Coexistence
+
+Text fragment links are matched before numeric RangeLinks, and a bare file path is never
+underlined when either kind of suffix follows it. That guard means a text fragment link and
+a numeric RangeLink can sit on separate lines of the same document and both be detected:
+
+```text
+src/alpha.ts:~:text=FIRST%20HERE
+src/beta.ts#L5
+```
+
+Each gets its own range and its own tooltip — `Fragment "<start>" in <path> • RangeLink`
+for the text fragment link, `Open <path>:<line> • RangeLink` for the numeric one.
+
+### Navigation Behavior
+
+Clicking a text fragment link searches the target file for the target text:
+
+- **Exactly one match** — the text is selected and revealed.
+- **No match** — a warning reports `Text "<start>" not found in <path>` and the current
+  selection is left untouched.
+- **More than one match** — a warning reports `Text "<start>" appears <count> times in <path>`
+  and the current selection is left untouched.
+
+RangeLink never guesses between candidates: an ambiguous or missing match leaves the
+editor exactly where it was.
+
 ## Parsing Rules
 
 ### Valid Link Requirements
@@ -331,6 +401,7 @@ recipes/baking/chickenpie.ts##L3C14-L15C9
 | With columns      | `path#L<line>C<col>-L<line>C<col>`  | `recipes/baking/chickenpie.ts#L3C14-L15C9`            |
 | Rectangular       | `path##L<start>C<col>-L<end>C<col>` | `recipes/baking/chickenpie.ts##L3C14-L15C9`           |
 | Portable (BYOD)   | `path#L<range>~<delimiters>~`       | `recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~`        |
+| Text fragment     | `path:~:text=<start>`               | `recipes/baking/chickenpie.ts:~:text=Preheat%20oven`  |
 | Custom delimiters | Configurable                        | `recipes/baking/chickenpie.ts@l3:l15` (if configured) |
 
 ---

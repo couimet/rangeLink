@@ -1,6 +1,7 @@
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 
 import type { ParsedLink } from 'rangelink-core-ts';
+import type { ParsedTextFragment } from 'text-fragment-ts';
 import * as vscode from 'vscode';
 
 const STABLE_MS = 300;
@@ -12,10 +13,13 @@ const TIMEOUT_MS = 10000;
  * Uses a debounce pattern: resolves 300ms after the last selection change event for the target file.
  * This skips the initial selection from showTextDocument and captures the final selection set by
  * the navigation handler.
+ *
+ * Accepts both parsed link kinds — the click command branches on the presence of a `directive`,
+ * so numeric RangeLinks and text fragment links travel the same path.
  */
 export const navigateViaHandleLinkClick = (
   linkText: string,
-  parsed: ParsedLink,
+  parsed: ParsedLink | ParsedTextFragment,
   testFilename: string,
 ): Promise<{ sel: vscode.Selection; doc: vscode.TextDocument }> =>
   new Promise((resolve, reject) => {

@@ -1,5 +1,5 @@
 /**
- * A parsed text-fragment directive: `text=[prefix-,]start[,end][,-suffix]`.
+ * A parsed text fragment directive: `text=[prefix-,]start[,end][,-suffix]`.
  *
  * Every term is the percent-decoded literal text as it appears in the document.
  * `prefix`, `end`, and `suffix` are absent when the source directive omitted

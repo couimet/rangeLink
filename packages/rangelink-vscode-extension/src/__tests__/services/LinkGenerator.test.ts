@@ -1,3 +1,4 @@
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { LinkGenerator } from '../../services/LinkGenerator';
 import { DirtyBufferWarningResult } from '../../types';
@@ -14,6 +15,7 @@ import {
   createMockVscodeAdapter,
   spyOnFormatMessage,
   spyOnGenerateLinkFromSelections,
+  spyOnGenerateTextFragmentLink,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
@@ -23,6 +25,9 @@ import { type DelimiterConfig, type DelimiterConfigGetter } from 'rangelink-core
 
 const DELIMITERS: DelimiterConfig = { line: 'L', position: 'C', hash: '#', range: '-' };
 const getDelimiters: DelimiterConfigGetter = () => DELIMITERS;
+
+const TEXT_FRAGMENT_LINK = 'src/file.ts:~:text=hello%20world';
+const PADDED_TEXT_FRAGMENT_LINK = ` ${TEXT_FRAGMENT_LINK} `;
 
 const createValidatedResult = (overrides: { isDirty?: boolean } = {}) => {
   const mockDoc = createMockDocument({
@@ -60,6 +65,7 @@ describe('LinkGenerator', () => {
     mapSelectionsForLogging: jest.Mock;
   };
   let mockGenLink: jest.SpyInstance;
+  let mockGenerateTextFragmentLink: jest.SpyInstance;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
@@ -101,6 +107,7 @@ describe('LinkGenerator', () => {
     );
     formatMessageSpy = spyOnFormatMessage();
     mockGenLink = spyOnGenerateLinkFromSelections();
+    mockGenerateTextFragmentLink = spyOnGenerateTextFragmentLink();
   });
 
   describe('createLink', () => {
@@ -135,7 +142,7 @@ describe('LinkGenerator', () => {
             isEligibleFn: expect.any(Function) as unknown,
           },
           contentNameCode: 'CONTENT_NAME_RANGELINK',
-          fnName: 'copyToClipboardAndDestination',
+          fnName: 'deliverFormattedLink',
           selfPastePolicy: 'block-on-uri',
           writeClipboardOnSelfPasteBlock: true,
         },
@@ -153,7 +160,7 @@ describe('LinkGenerator', () => {
 
       expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
+        { fn: 'LinkGenerator.createContentCore', contentNameCode: 'CONTENT_NAME_RANGELINK' },
         'generateLinkFromSelection returned undefined, aborting',
       );
     });
@@ -168,7 +175,10 @@ describe('LinkGenerator', () => {
       await generator.createLink();
 
       expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'LinkGenerator.createLinkCore', linkType: 'regular' }, 'Active editor URI unavailable, aborting');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'LinkGenerator.createContentCore', contentNameCode: 'CONTENT_NAME_RANGELINK' },
+        'Active editor URI unavailable, aborting',
+      );
     });
 
     it('aborts when picker is cancelled', async () => {
@@ -255,7 +265,7 @@ describe('LinkGenerator', () => {
             isEligibleFn: expect.any(Function) as unknown,
           },
           contentNameCode: 'CONTENT_NAME_PORTABLE_RANGELINK',
-          fnName: 'copyToClipboardAndDestination',
+          fnName: 'deliverFormattedLink',
           selfPastePolicy: 'block-on-uri',
           writeClipboardOnSelfPasteBlock: true,
         },
@@ -447,7 +457,7 @@ describe('LinkGenerator', () => {
     });
   });
 
-  describe('copyToClipboardAndDestination', () => {
+  describe('deliverFormattedLink', () => {
     it('logs and sends link with padding mode', async () => {
       const { mockDoc, validated } = createValidatedResult();
       mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
@@ -464,7 +474,7 @@ describe('LinkGenerator', () => {
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'LinkGenerator.copyToClipboardAndDestination',
+          fn: 'deliverFormattedLink',
           link: link.link,
           rawLink: link.rawLink,
         },
@@ -488,7 +498,7 @@ describe('LinkGenerator', () => {
             isEligibleFn: expect.any(Function) as unknown,
           },
           contentNameCode: 'CONTENT_NAME_RANGELINK',
-          fnName: 'copyToClipboardAndDestination',
+          fnName: 'deliverFormattedLink',
           selfPastePolicy: 'block-on-uri',
           writeClipboardOnSelfPasteBlock: true,
         },
@@ -521,6 +531,234 @@ describe('LinkGenerator', () => {
 
       expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(link);
       expect(destination.isEligibleForPasteLink).toHaveBeenCalledWith(link);
+    });
+  });
+
+  describe('createTextFragmentLink', () => {
+    it('generates text fragment link and sends to destination when bound', async () => {
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.success(TEXT_FRAGMENT_LINK));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+
+      await generator.createTextFragmentLink();
+
+      const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: TEXT_FRAGMENT_LINK,
+            send: PADDED_TEXT_FRAGMENT_LINK,
+            sourceUri: mockDoc.uri,
+            sourceViewColumn: expectedViewColumn,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_TEXT_FRAGMENT',
+          fnName: 'deliverTextFragment',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
+    });
+
+    it('aborts when picker is cancelled', async () => {
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.success(TEXT_FRAGMENT_LINK));
+      mockSendRouter.resolveDestination.mockResolvedValue({ canProceed: false });
+
+      await generator.createTextFragmentLink();
+
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
+      expect(mockGenerateTextFragmentLink).toHaveBeenCalledWith({
+        referencePath: '/workspace/src/file.ts',
+        document: mockDoc,
+        selections: validated.selections,
+        logger: mockLogger,
+      });
+    });
+  });
+
+  describe('createTextFragmentLinkOnly', () => {
+    it('sends to clipboard only when text fragment link generated', async () => {
+      const { validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.success(TEXT_FRAGMENT_LINK));
+
+      await generator.createTextFragmentLinkOnly();
+
+      expect(clipboardSpy).toHaveBeenCalledWith(TEXT_FRAGMENT_LINK);
+      expect(mockFeedbackProvider.provideCopyFeedback).toHaveBeenCalledWith('CONTENT_NAME_TEXT_FRAGMENT');
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
+      expect(mockSendRouter.resolveDestination).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when no text fragment link generated', async () => {
+      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(undefined);
+
+      await generator.createTextFragmentLinkOnly();
+
+      expect(clipboardSpy).not.toHaveBeenCalled();
+      expect(mockFeedbackProvider.provideCopyFeedback).not.toHaveBeenCalled();
+      expect(mockSendRouter.sendToDestination).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'LinkGenerator.createTextFragmentLinkOnly' },
+        'generateTextFragmentLinkFromSelection returned undefined, aborting',
+      );
+    });
+  });
+
+  describe('generateTextFragmentLinkFromSelection', () => {
+    it('returns undefined when validation fails', async () => {
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(undefined);
+
+      await generator.createTextFragmentLink();
+
+      expect(mockGenerateTextFragmentLink).not.toHaveBeenCalled();
+    });
+
+    it('shows generic error when link generation fails with an unmapped code', async () => {
+      const { validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const error = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_NO_SELECTION,
+        message: 'No selections provided',
+        functionName: 'generateTextFragmentLink',
+      });
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.failure(error));
+
+      await generator.createTextFragmentLinkOnly();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_GENERATION_FAILED');
+      expect(formatMessageSpy).not.toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_MULTIPLE_SELECTIONS');
+      expect(formatMessageSpy).not.toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_TEXT_NOT_UNIQUE');
+      expect(mockFeedbackProvider.showError).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateTextFragmentLinkFromSelection', error }, 'Failed to generate text fragment link');
+    });
+
+    it('shows multiple-selection error when generation fails with MULTIPLE_SELECTIONS code', async () => {
+      const { validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const error = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_FRAGMENT_MULTIPLE_SELECTIONS,
+        message: 'Text fragment links require exactly one selection',
+        functionName: 'generateTextFragmentLink',
+        details: { selectionCount: 2 },
+      });
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.failure(error));
+
+      await generator.createTextFragmentLinkOnly();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_MULTIPLE_SELECTIONS');
+      expect(formatMessageSpy).not.toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_TEXT_NOT_UNIQUE');
+      expect(mockFeedbackProvider.showError).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateTextFragmentLinkFromSelection', error }, 'Failed to generate text fragment link');
+    });
+
+    it('shows text-not-unique error when generation fails with TEXT_NOT_UNIQUE code', async () => {
+      const { validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      const error = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_FRAGMENT_TEXT_NOT_UNIQUE,
+        message: 'Selected text must be unique to generate a text fragment link',
+        functionName: 'generateTextFragmentLink',
+        details: { count: 3 },
+      });
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.failure(error));
+
+      await generator.createTextFragmentLinkOnly();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_TEXT_NOT_UNIQUE');
+      expect(formatMessageSpy).not.toHaveBeenCalledWith('ERROR_TEXT_FRAGMENT_MULTIPLE_SELECTIONS');
+      expect(mockFeedbackProvider.showError).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'generateTextFragmentLinkFromSelection', error }, 'Failed to generate text fragment link');
+    });
+  });
+
+  describe('deliverTextFragment', () => {
+    it('logs and sends the text fragment with padding mode', async () => {
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.success(TEXT_FRAGMENT_LINK));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+
+      await generator.createTextFragmentLink();
+
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'deliverTextFragment', link: TEXT_FRAGMENT_LINK }, 'Sending text fragment link to destination');
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledTimes(1);
+      const expectedViewColumn = mockAdapter.getActiveEditorViewColumn();
+      expect(mockSendRouter.sendToDestination).toHaveBeenCalledWith(
+        {
+          control: {
+            contentType: 'Text',
+          },
+          content: {
+            clipboard: TEXT_FRAGMENT_LINK,
+            send: PADDED_TEXT_FRAGMENT_LINK,
+            sourceUri: mockDoc.uri,
+            sourceViewColumn: expectedViewColumn,
+          },
+          strategies: {
+            sendFn: expect.any(Function) as unknown,
+            isEligibleFn: expect.any(Function) as unknown,
+          },
+          contentNameCode: 'CONTENT_NAME_TEXT_FRAGMENT',
+          fnName: 'deliverTextFragment',
+          selfPastePolicy: 'block-on-uri',
+          writeClipboardOnSelfPasteBlock: true,
+        },
+        undefined,
+      );
+    });
+
+    it('wires sendFn to sendTextToDestination and isEligibleFn to content eligibility', async () => {
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockGenerateTextFragmentLink.mockReturnValue(DetailedResult.success(TEXT_FRAGMENT_LINK));
+      mockSendRouter.resolveDestination.mockResolvedValue({
+        canProceed: true,
+        bindPerformed: false,
+      });
+      const strategies = captureSendStrategies<string>(mockSendRouter.sendToDestination);
+
+      await generator.createTextFragmentLink();
+
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'deliverTextFragment', link: TEXT_FRAGMENT_LINK }, 'Sending text fragment link to destination');
+
+      const destination = createMockPasteDestinationForSendRouter();
+      await strategies.get().sendFn(TEXT_FRAGMENT_LINK);
+      await strategies.get().isEligibleFn(destination, TEXT_FRAGMENT_LINK);
+
+      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(TEXT_FRAGMENT_LINK);
+      expect(destination.isEligibleForPasteContent).toHaveBeenCalledWith(TEXT_FRAGMENT_LINK);
     });
   });
 });

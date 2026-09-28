@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Focus handling now supports running a sequence of commands, so jump-to-destination (R-J) lands directly in Cline's chat input rather than just its panel, even on a cold start
 - **Auto-unbind when a bound file is renamed**, matching the file-deleted behavior. Renaming a bound file in the Explorer now auto-unbinds with a status bar message and warning toast showing the before/after paths. (#613)
 - **Keyboard-only use of the dirty-buffer dialog** — the **Save & Generate** / **Save & Send** action is focused by default, so **Enter** saves and continues, and **Escape** cancels. On Linux and Windows, **Tab** then **Enter** continues without saving. On macOS, click the second action, because the modal ignores Tab. (#732)
+- **Text Fragment Links** — reference a block of text instead of a line range, using the browser-standard text fragment grammar: `recipes/baking/chickenpie.ts:~:text=Preheat%20the%20oven`. Because the link names the words rather than the lines, it keeps pointing at the same code after edits shift the lines above it. (#749)
+  - Select text and press `Cmd+R Cmd+H` / `Ctrl+R Ctrl+H` to send the text fragment link to your bound destination, or `Cmd+R Cmd+Alt+C` / `Ctrl+R Ctrl+Alt+C` to copy it. Adding `Shift` to either shortcut uses an absolute path. All four are also in the editor right-click menu.
+  - Clicking a text fragment link — in an editor, in a terminal, or in an AI assistant's chat — selects exactly the target text. If the text is gone from the file, or appears more than once, RangeLink shows a warning and leaves your selection alone rather than guessing which occurrence you meant.
+  - Generating a text fragment link requires a selection that appears exactly once in its file; a repeated or multi-block selection is refused with an error.
 
 ### Changed
 

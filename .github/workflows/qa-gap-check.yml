@@ -50,6 +50,12 @@ jobs:
           if grep -qE '^packages/rangelink-core-ts/src/' /tmp/changed-files.txt; then
             RELEVANT=true
           fi
+          if grep -qE '^packages/text-fragment-ts/src/' /tmp/changed-files.txt; then
+            RELEVANT=true
+          fi
+          if grep -qE '^packages/percent-codec-ts/src/' /tmp/changed-files.txt; then
+            RELEVANT=true
+          fi
           if grep -q 'package.json' /tmp/changed-files.txt; then
             if git diff origin/${{ github.event.pull_request.base.ref }}...HEAD -- '*/package.json' | grep -qE '^\+.*"(commands|menus|keybindings|configuration)"'; then
               RELEVANT=true

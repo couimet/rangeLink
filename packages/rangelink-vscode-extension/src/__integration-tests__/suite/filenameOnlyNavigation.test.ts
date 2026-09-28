@@ -27,7 +27,7 @@ const NESTED_FILE_CONTENT = Array.from({ length: 25 }, (_, i) => `line ${i + 1} 
 /**
  * Fire a command that opens the filename candidate picker, keep accepting the
  * QuickPick's selected (first) item, and wait until navigation lands on the
- * expected file. The command is NOT awaited — navigateToLink stays pending on
+ * expected file. The command is NOT awaited — navigateToRangeLink stays pending on
  * the navigated toast (showInformationMessage), which the test host does not
  * auto-dismiss promptly. Navigation is detected via the active editor instead.
  */

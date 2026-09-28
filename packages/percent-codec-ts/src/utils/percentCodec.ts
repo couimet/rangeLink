@@ -1,6 +1,6 @@
-import { RangeLinkError } from '../errors/RangeLinkError';
-import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import { CoreResult } from '../types/CoreResult';
+import { PercentCodecError } from '../errors/PercentCodecError';
+import { PercentCodecErrorCodes } from '../errors/PercentCodecErrorCodes';
+import { PercentCodecResult } from '../types/PercentCodecResult';
 
 // Octets percent-encoding leaves untouched. Mirrors the raw set kept by
 // `encodeURIComponent` (unreserved marks plus `!~*'()`), not the text-fragment
@@ -70,7 +70,7 @@ const toUtf8Bytes = (codePoint: number): number[] => {
  * sequences that are not well-formed UTF-8 (bad continuations, overlong
  * encodings, surrogate code points, out-of-range 4-byte values).
  */
-export const decodePercentUTF8 = (encoded: string): CoreResult<string> => {
+export const decodePercentUTF8 = (encoded: string): PercentCodecResult<string> => {
   const bytes: number[] = [];
   for (let i = 0; i < encoded.length; i++) {
     const char = encoded[i];
@@ -80,9 +80,9 @@ export const decodePercentUTF8 = (encoded: string): CoreResult<string> => {
       const hi = hiChar === undefined ? -1 : HEX.indexOf(hiChar.toUpperCase());
       const lo = loChar === undefined ? -1 : HEX.indexOf(loChar.toUpperCase());
       if (hi === -1 || lo === -1) {
-        return CoreResult.err(
-          new RangeLinkError({
-            code: RangeLinkErrorCodes.TEXT_HIGHLIGHT_PERCENT_DECODE_MALFORMED,
+        return PercentCodecResult.err(
+          new PercentCodecError({
+            code: PercentCodecErrorCodes.PERCENT_DECODE_MALFORMED,
             message: `Malformed percent-encoding at index ${i}: '%' must be followed by two hex digits`,
             functionName: 'decodePercentUTF8',
             details: { index: i },
@@ -103,11 +103,11 @@ export const decodePercentUTF8 = (encoded: string): CoreResult<string> => {
   return decodeUtf8Bytes(bytes);
 };
 
-const decodeUtf8Bytes = (bytes: number[]): CoreResult<string> => {
-  const invalid = (byteIndex: number): CoreResult<string> =>
-    CoreResult.err(
-      new RangeLinkError({
-        code: RangeLinkErrorCodes.TEXT_HIGHLIGHT_PERCENT_DECODE_INVALID_UTF8,
+const decodeUtf8Bytes = (bytes: number[]): PercentCodecResult<string> => {
+  const invalid = (byteIndex: number): PercentCodecResult<string> =>
+    PercentCodecResult.err(
+      new PercentCodecError({
+        code: PercentCodecErrorCodes.PERCENT_DECODE_INVALID_UTF8,
         message: 'Invalid UTF-8 byte sequence',
         functionName: 'decodePercentUTF8',
         details: { byteIndex },
@@ -158,7 +158,7 @@ const decodeUtf8Bytes = (bytes: number[]): CoreResult<string> => {
     out += String.fromCodePoint(codePoint);
     i += width;
   }
-  return CoreResult.ok(out);
+  return PercentCodecResult.ok(out);
 };
 
 // Rejects overlong encodings (a code point squeezed into more bytes than it

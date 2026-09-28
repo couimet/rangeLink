@@ -98,7 +98,11 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<Ra
     }
 
     try {
-      await this.handler.navigateToLink(link.parsed, linkText);
+      if ('directive' in link.parsed) {
+        await this.handler.navigateToTextFragmentLink(link.parsed, linkText);
+      } else {
+        await this.handler.navigateToRangeLink(link.parsed, linkText);
+      }
     } catch (error) {
       this.logger.debug({ ...logCtx, error }, 'Terminal link handling completed with error (already handled by navigation handler)');
     }

@@ -30,7 +30,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
 
     const lines = logCapture.getLinesSince('before-toast-settings-001');
     assertSuppressionLogged(lines, {
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      fn: 'RangeLinkNavigationHandler.navigateToRangeLink',
       suppressedMessage: `Navigated to ${testFilename} @ 5`,
     });
   });
@@ -55,7 +55,7 @@ standardSuite('Navigation Toast Settings', (ss) => {
 
     const lines = logCapture.getLinesSince('before-toast-settings-002');
     assertSuppressionLogged(lines, {
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      fn: 'RangeLinkNavigationHandler.navigateToRangeLink',
       suppressedMessage: `Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
     });
   });

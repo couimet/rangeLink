@@ -3,13 +3,14 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import { ExtensionResult } from '../types';
 
 import type { Logger } from '@couimet/logger-contract';
-import { findOccurrences, formatHighlightLink, normalizeEOL } from 'rangelink-core-ts';
+import { quoteLink } from 'rangelink-core-ts';
+import { findOccurrences, formatTextFragment, normalizeEOL } from 'text-fragment-ts';
 import * as vscode from 'vscode';
 
 /**
- * Options for generating a text highlight link from a single selection.
+ * Options for generating a text fragment link from a single selection.
  */
-export interface GenerateTextHighlightLinkOptions {
+export interface GenerateTextFragmentLinkOptions {
   /**
    * The reference path to include in the link (workspace-relative or absolute).
    */
@@ -21,7 +22,7 @@ export interface GenerateTextHighlightLinkOptions {
   document: vscode.TextDocument;
 
   /**
-   * The selections to build the highlight from - must be exactly one
+   * The selections to build the fragment from - must be exactly one
    * non-empty, non-rectangular selection.
    */
   selections: readonly vscode.Selection[];
@@ -32,10 +33,10 @@ export interface GenerateTextHighlightLinkOptions {
   logger: Logger;
 }
 
-const FN_NAME = 'generateTextHighlightLink';
+const FN_NAME = 'generateTextFragmentLink';
 
 /**
- * Generate a text highlight link (`<path>:~:text=<start>`) from a single editor
+ * Generate a text fragment link (`<path>:~:text=<start>`) from a single editor
  * selection.
  *
  * This is a pure utility function that:
@@ -46,9 +47,12 @@ const FN_NAME = 'generateTextHighlightLink';
  *   emitted directive never carries `%0D`
  * - Requires the normalized selection text to occur exactly once in the
  *   normalized document text, so the generated link always resolves
- *   unambiguously (core `findOccurrences`)
- * - Delegates percent-encoding, quoting, and `MAX_LINK_LENGTH` enforcement to
- *   core `formatHighlightLink`, which percent-encodes the LF-normalized text
+ *   unambiguously (`findOccurrences` from the text fragment package)
+ * - Delegates percent-encoding and `MAX_LINK_LENGTH` enforcement to the text
+ *   fragment package's `formatTextFragment`, which percent-encodes the
+ *   LF-normalized text
+ * - Applies `quoteLink` from core, because the codec returns a raw unquoted
+ *   link and outbound quoting policy lives with the caller
  *
  * The function does NOT show error messages - the caller is responsible for
  * presenting errors to the user appropriately.
@@ -56,7 +60,7 @@ const FN_NAME = 'generateTextHighlightLink';
  * @param options - Configuration for link generation
  * @returns Result containing the full quoted link string on success, or an error on failure
  */
-export const generateTextHighlightLink = (options: GenerateTextHighlightLinkOptions): ExtensionResult<string> => {
+export const generateTextFragmentLink = (options: GenerateTextFragmentLinkOptions): ExtensionResult<string> => {
   const { referencePath, document, selections, logger } = options;
 
   if (selections.length === 0) {
@@ -82,12 +86,12 @@ export const generateTextHighlightLink = (options: GenerateTextHighlightLinkOpti
 
   if (selections.length > 1) {
     const error = new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_HIGHLIGHT_MULTIPLE_SELECTIONS,
-      message: 'Text highlight links require exactly one selection',
+      code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_FRAGMENT_MULTIPLE_SELECTIONS,
+      message: 'Text fragment links require exactly one selection',
       functionName: FN_NAME,
       details: { selectionCount: selections.length },
     });
-    logger.debug({ fn: FN_NAME, selectionCount: selections.length }, 'Text highlight links require exactly one selection');
+    logger.debug({ fn: FN_NAME, selectionCount: selections.length }, 'Text fragment links require exactly one selection');
     return ExtensionResult.err(error);
   }
 
@@ -98,8 +102,8 @@ export const generateTextHighlightLink = (options: GenerateTextHighlightLinkOpti
   const occurrences = findOccurrences(normalizedDocumentText, normalizedSelectionText);
   if (occurrences.length !== 1) {
     const error = new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_HIGHLIGHT_TEXT_NOT_UNIQUE,
-      message: 'Selected text must be unique to generate a text highlight link',
+      code: RangeLinkExtensionErrorCodes.GENERATE_TEXT_FRAGMENT_TEXT_NOT_UNIQUE,
+      message: 'Selected text must be unique to generate a text fragment link',
       functionName: FN_NAME,
       details: { count: occurrences.length },
     });
@@ -107,13 +111,13 @@ export const generateTextHighlightLink = (options: GenerateTextHighlightLinkOpti
     return ExtensionResult.err(error);
   }
 
-  const result = formatHighlightLink(referencePath, { start: normalizedSelectionText });
+  const result = formatTextFragment(referencePath, { start: normalizedSelectionText });
   if (!result.success) {
-    logger.error({ fn: FN_NAME, error: result.error }, 'Failed to generate text highlight link');
+    logger.error({ fn: FN_NAME, error: result.error }, 'Failed to generate text fragment link');
     return ExtensionResult.err(result.error);
   }
 
-  const link = result.value;
-  logger.info({ fn: FN_NAME, link }, `Generated text highlight link: ${link}`);
+  const link = quoteLink(result.value, referencePath);
+  logger.info({ fn: FN_NAME, link }, `Generated text fragment link: ${link}`);
   return ExtensionResult.ok(link);
 };

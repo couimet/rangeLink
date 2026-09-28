@@ -1,0 +1,1 @@
+export { parseTextFragment } from './parseTextFragment';

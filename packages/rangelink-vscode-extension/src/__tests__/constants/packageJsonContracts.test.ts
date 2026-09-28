@@ -36,7 +36,7 @@ interface MenuContribution {
 }
 
 const EXPECTED_AI_ASSISTANT_KIND_COUNT = 5;
-const EXPECTED_COMMAND_COUNT = 50;
+const EXPECTED_COMMAND_COUNT = 54;
 
 /**
  * Contract tests for package.json contributions.
@@ -105,6 +105,48 @@ describe('package.json contributions', () => {
         expect(findCommand('rangelink.copyLinkOnlyWithAbsolutePath')).toStrictEqual({
           command: 'rangelink.copyLinkOnlyWithAbsolutePath',
           title: 'Copy RangeLink (Absolute)',
+          category: 'RangeLink',
+          icon: '$(clippy)',
+          enablement: 'editorHasSelection',
+        });
+      });
+    });
+
+    describe('text fragment link commands', () => {
+      it('rangelink.copyTextFragmentLinkWithRelativePath', () => {
+        expect(findCommand('rangelink.copyTextFragmentLinkWithRelativePath')).toStrictEqual({
+          command: 'rangelink.copyTextFragmentLinkWithRelativePath',
+          title: 'Send Text Fragment Link',
+          category: 'RangeLink',
+          icon: '$(link)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyTextFragmentLinkWithAbsolutePath', () => {
+        expect(findCommand('rangelink.copyTextFragmentLinkWithAbsolutePath')).toStrictEqual({
+          command: 'rangelink.copyTextFragmentLinkWithAbsolutePath',
+          title: 'Send Text Fragment Link (Absolute)',
+          category: 'RangeLink',
+          icon: '$(link-external)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyTextFragmentLinkOnlyWithRelativePath', () => {
+        expect(findCommand('rangelink.copyTextFragmentLinkOnlyWithRelativePath')).toStrictEqual({
+          command: 'rangelink.copyTextFragmentLinkOnlyWithRelativePath',
+          title: 'Copy Text Fragment Link',
+          category: 'RangeLink',
+          icon: '$(clippy)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyTextFragmentLinkOnlyWithAbsolutePath', () => {
+        expect(findCommand('rangelink.copyTextFragmentLinkOnlyWithAbsolutePath')).toStrictEqual({
+          command: 'rangelink.copyTextFragmentLinkOnlyWithAbsolutePath',
+          title: 'Copy Text Fragment Link (Absolute)',
           category: 'RangeLink',
           icon: '$(clippy)',
           enablement: 'editorHasSelection',
@@ -940,6 +982,42 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.copyTextFragmentLinkWithRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyTextFragmentLinkWithRelativePath')).toStrictEqual({
+        command: 'rangelink.copyTextFragmentLinkWithRelativePath',
+        key: 'ctrl+r ctrl+h',
+        mac: 'cmd+r cmd+h',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyTextFragmentLinkWithAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyTextFragmentLinkWithAbsolutePath')).toStrictEqual({
+        command: 'rangelink.copyTextFragmentLinkWithAbsolutePath',
+        key: 'ctrl+r ctrl+shift+h',
+        mac: 'cmd+r cmd+shift+h',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyTextFragmentLinkOnlyWithRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyTextFragmentLinkOnlyWithRelativePath')).toStrictEqual({
+        command: 'rangelink.copyTextFragmentLinkOnlyWithRelativePath',
+        key: 'ctrl+r ctrl+alt+c',
+        mac: 'cmd+r cmd+alt+c',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyTextFragmentLinkOnlyWithAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyTextFragmentLinkOnlyWithAbsolutePath')).toStrictEqual({
+        command: 'rangelink.copyTextFragmentLinkOnlyWithAbsolutePath',
+        key: 'ctrl+r ctrl+alt+shift+c',
+        mac: 'cmd+r cmd+alt+shift+c',
+        when: 'editorHasSelection',
+      });
+    });
+
     it('rangelink.pasteSelectedTextToDestination keybinding', () => {
       expect(findKeybinding('rangelink.pasteSelectedTextToDestination')).toStrictEqual({
         command: 'rangelink.pasteSelectedTextToDestination',
@@ -1054,7 +1132,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(19);
+      expect(keybindings).toHaveLength(23);
     });
   });
 
@@ -1063,7 +1141,7 @@ describe('package.json contributions', () => {
       const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
 
       it('has the expected number of editor context menu items', () => {
-        expect(editorContextMenu).toHaveLength(10);
+        expect(editorContextMenu).toHaveLength(14);
       });
 
       it('editorContext.copyLink at top of RangeLink group', () => {
@@ -1114,8 +1192,40 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('editorContent.pasteFilePath in context menu', () => {
+      it('copyTextFragmentLinkWithRelativePath in context menu', () => {
         expect(editorContextMenu[6]).toStrictEqual({
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)',
+          command: 'rangelink.copyTextFragmentLinkWithRelativePath',
+          group: '8_rangelink@6',
+        });
+      });
+
+      it('copyTextFragmentLinkWithAbsolutePath in context menu', () => {
+        expect(editorContextMenu[7]).toStrictEqual({
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)',
+          command: 'rangelink.copyTextFragmentLinkWithAbsolutePath',
+          group: '8_rangelink@7',
+        });
+      });
+
+      it('copyTextFragmentLinkOnlyWithRelativePath in context menu', () => {
+        expect(editorContextMenu[8]).toStrictEqual({
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)',
+          command: 'rangelink.copyTextFragmentLinkOnlyWithRelativePath',
+          group: '8_rangelink@8',
+        });
+      });
+
+      it('copyTextFragmentLinkOnlyWithAbsolutePath in context menu', () => {
+        expect(editorContextMenu[9]).toStrictEqual({
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)',
+          command: 'rangelink.copyTextFragmentLinkOnlyWithAbsolutePath',
+          group: '8_rangelink@9',
+        });
+      });
+
+      it('editorContent.pasteFilePath in context menu', () => {
+        expect(editorContextMenu[10]).toStrictEqual({
           when: 'resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs',
           command: 'rangelink.editorContent.pasteFilePath',
           group: '8_rangelink_files@0',
@@ -1123,7 +1233,7 @@ describe('package.json contributions', () => {
       });
 
       it('editorContent.pasteRelativeFilePath in context menu', () => {
-        expect(editorContextMenu[7]).toStrictEqual({
+        expect(editorContextMenu[11]).toStrictEqual({
           when: 'resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs',
           command: 'rangelink.editorContent.pasteRelativeFilePath',
           group: '8_rangelink_files@1',
@@ -1131,7 +1241,7 @@ describe('package.json contributions', () => {
       });
 
       it('editorContent.bind for text editors', () => {
-        expect(editorContextMenu[8]).toStrictEqual({
+        expect(editorContextMenu[12]).toStrictEqual({
           command: 'rangelink.editorContent.bind',
           group: '8_rangelink_files@2',
           when: 'resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs',
@@ -1139,7 +1249,7 @@ describe('package.json contributions', () => {
       });
 
       it('editorContent.unbind shows when bound', () => {
-        expect(editorContextMenu[9]).toStrictEqual({
+        expect(editorContextMenu[13]).toStrictEqual({
           when: 'rangelink.isBound',
           command: 'rangelink.editorContent.unbind',
           group: '8_rangelink_files@3',
