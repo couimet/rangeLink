@@ -4,16 +4,31 @@
 coverage:
   status:
     project:
-      core-ts:
+      rangelink-core-ts:
         target: 100%
         threshold: 0%
         flags:
-          - core-ts
-      vscode-extension:
+          - rangelink-core-ts
+      rangelink-vscode-extension:
         target: 98%
         threshold: 0%
         flags:
-          - vscode-extension
+          - rangelink-vscode-extension
+      rangelink-text-fragment-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - rangelink-text-fragment-ts
+      text-fragment-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - text-fragment-ts
+      percent-codec-ts:
+        target: 100%
+        threshold: 0%
+        flags:
+          - percent-codec-ts
 
     patch:
       default:
@@ -24,12 +39,21 @@ flag_management:
     carryforward: true
 
 flags:
-  core-ts:
+  rangelink-core-ts:
     paths:
       - packages/rangelink-core-ts/
-  vscode-extension:
+  rangelink-vscode-extension:
     paths:
       - packages/rangelink-vscode-extension/
+  rangelink-text-fragment-ts:
+    paths:
+      - packages/rangelink-text-fragment-ts/
+  text-fragment-ts:
+    paths:
+      - packages/text-fragment-ts/
+  percent-codec-ts:
+    paths:
+      - packages/percent-codec-ts/
 
 comment:
   layout: 'reach, diff, flags, files, footer'

@@ -54,6 +54,22 @@ For details on the monorepo structure and package organization, see **[packages/
 └─────────────────────────────────┘
 ```
 
+The text fragment codec is its own chain of packages, and the extension reaches it directly rather than through the core library:
+
+```text
+┌─────────────────────────────────┐
+│ rangelink-text-fragment-ts      │  ← RangeLink's text fragment policy
+└──────────────┬──────────────────┘
+               │ depends on
+┌──────────────▼──────────────────┐
+│ text-fragment-ts                │  ← Browser-faithful `:~:text=` codec
+└──────────────┬──────────────────┘
+               │ depends on
+┌──────────────▼──────────────────┐
+│ percent-codec-ts                │  ← RFC 3986 percent codec
+└─────────────────────────────────┘
+```
+
 ---
 
 ## Design Principles
@@ -101,8 +117,11 @@ export function formatLink(selection: Selection): string {
 
 **Current dependencies:**
 
-- **Core:** None (only `typescript` as devDependency)
-- **Extension:** Only `rangelink-core-ts` (and VSCode engine)
+- **Core:** The shared `@couimet` error, result and logger types (only `typescript` as devDependency)
+- **Extension:** `rangelink-core-ts`, `rangelink-text-fragment-ts`, `nanoid` and the shared `@couimet` types (plus the VSCode engine)
+- **Text fragment codec:** `percent-codec-ts` and the shared `@couimet` types
+- **RangeLink text fragment layer:** `text-fragment-ts`
+- **Percent codec:** The shared `@couimet` types
 
 **Benefits:**
 
@@ -557,6 +576,10 @@ rangeLink/
   packages/
     rangelink-core-ts/            # TypeScript implementation
       src/ ... tests/contracts/   # Runs spec/contracts/**/*.json
+
+    rangelink-text-fragment-ts/   # RangeLink's text fragment policy
+    text-fragment-ts/             # Shared text fragment codec (any language port)
+    percent-codec-ts/             # Percent codec used by text-fragment-ts
 
     rangelink-core-java/          # Java implementation
       src/ ... tests/contracts/   # Runs same contracts

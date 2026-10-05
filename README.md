@@ -103,7 +103,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 ## Monorepo Structure
 
-RangeLink is organized as a pnpm workspace with a platform-agnostic core library and editor-specific extensions. The core has zero dependencies and targets 100% test coverage.
+RangeLink is organized as a pnpm workspace with a platform-agnostic core library, the codec packages it builds on, and editor-specific extensions. The library packages carry no third-party runtime dependencies, and each targets 100% test coverage.
 
 **[📁 See packages/ for details →](./packages/#readme)**
 

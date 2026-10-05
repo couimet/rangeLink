@@ -1,0 +1,219 @@
+import { MAX_LINK_LENGTH } from '../constants/maxLinkLength';
+import { TEXT_FRAGMENT_DIRECTIVE } from '../constants/textFragment';
+import { TextFragmentError } from '../errors/TextFragmentError';
+import { TextFragmentErrorCodes } from '../errors/TextFragmentErrorCodes';
+import { ParsedTextFragment } from '../types/ParsedTextFragment';
+import { TextDirective } from '../types/TextDirective';
+import { TextFragmentResult } from '../types/TextFragmentResult';
+
+import { decodePercentUTF8, PercentCodecError } from 'percent-codec-ts';
+
+const FUNCTION_NAME = 'parseTextFragment';
+
+const HEX_DIGIT = /^[0-9a-fA-F]$/;
+
+const isHexDigit = (character: string | undefined): boolean => character !== undefined && HEX_DIGIT.test(character);
+
+/**
+ * Decode one directive term with the browser's tolerance for malformed escapes.
+ *
+ * Well-formed runs still decode through percent-codec-ts, so strict UTF-8
+ * validation stays in the package that owns it: a run whose bytes are not valid
+ * UTF-8 still fails there, with that package's error and function name.
+ */
+const decodeDirectiveTerm = (raw: string): string => {
+  const parts: string[] = [];
+  let runStart = 0;
+  let index = 0;
+  while (index < raw.length) {
+    const isStrayPercent = raw[index] === '%' && !(isHexDigit(raw[index + 1]) && isHexDigit(raw[index + 2]));
+    if (isStrayPercent) {
+      if (index > runStart) {
+        parts.push(decodeWellFormedRun(raw.slice(runStart, index)));
+      }
+      parts.push('%');
+      index += 1;
+      runStart = index;
+      continue;
+    }
+    index += 1;
+  }
+  if (raw.length > runStart) {
+    parts.push(decodeWellFormedRun(raw.slice(runStart)));
+  }
+  return parts.join('');
+};
+
+const decodeWellFormedRun = (run: string): string => {
+  const decodedResult = decodePercentUTF8(run);
+  if (!decodedResult.success) {
+    throw decodedResult.error;
+  }
+  return decodedResult.value;
+};
+
+/**
+ * Parse a text fragment link into its path and directive.
+ *
+ * Supported format: `<path>:~:text=[prefix-,]start[,end][,-suffix]`
+ * where each term is percent-encoded UTF-8 and the terms are decoded here.
+ *
+ * Decoding follows the browser, not RFC 3986: a percent sign that two
+ * hexadecimal digits do not follow is literal text. Chrome resolves
+ * `#:~:text=%` against a document containing `%`, so rejecting the escape here
+ * would refuse a link a browser follows.
+ *
+ * The returned path is raw (unquoted): inbound quotes are stripped because
+ * reading a quoted link is part of parsing, but re-quoting is the caller's
+ * policy, not this package's.
+ *
+ * The directive terms are split on the raw `,` before any decoding, then each
+ * term is classified structurally and decoded, mirroring the order Chrome's
+ * own text-fragment parser uses:
+ * - a leading term ending in `-` is the `prefix`,
+ * - a trailing term starting with `-` is the `suffix`,
+ * - the remaining middle must be exactly one term (`start`) or two
+ *   (`start,end`).
+ * Empty terms (after decoding) and structural noise are rejected rather than
+ * guessed at, so RangeLink never resolves a fragment it cannot name exactly.
+ */
+export const parseTextFragment = (linkInput: string): TextFragmentResult<ParsedTextFragment> => {
+  try {
+    return TextFragmentResult.ok(parseTextFragmentOrThrow(linkInput));
+  } catch (error) {
+    if (error instanceof TextFragmentError || error instanceof PercentCodecError) {
+      return TextFragmentResult.err(error);
+    }
+    throw error; // Re-throw unexpected errors
+  }
+};
+
+const parseTextFragmentOrThrow = (linkInput: string): ParsedTextFragment => {
+  // Strip surrounding quotes (single or double) so quoted links round-trip correctly
+  const firstChar = linkInput[0];
+  const lastChar = linkInput[linkInput.length - 1];
+  const isQuoted = linkInput.length > 2 && ((firstChar === "'" && lastChar === "'") || (firstChar === '"' && lastChar === '"'));
+  const link = isQuoted ? linkInput.slice(1, -1) : linkInput;
+
+  if (link.length > MAX_LINK_LENGTH) {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_LINK_TOO_LONG,
+      message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
+      functionName: FUNCTION_NAME,
+      details: { received: link.length, maximum: MAX_LINK_LENGTH },
+    });
+  }
+
+  if (!link || link.trim() === '') {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_EMPTY_LINK,
+      message: 'Link cannot be empty',
+      functionName: FUNCTION_NAME,
+    });
+  }
+
+  // Reject web URLs - RangeLink should not hijack browser/terminal URL handling.
+  // Exception: file:// URLs are allowed (they're valid local file references).
+  if (link.includes('://') && !/^file:\/\//i.test(link)) {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_URL_NOT_SUPPORTED,
+      message: 'Web URLs are not supported - use local file paths',
+      functionName: FUNCTION_NAME,
+      details: { link },
+    });
+  }
+
+  const separatorIndex = link.indexOf(TEXT_FRAGMENT_DIRECTIVE);
+  if (separatorIndex === -1) {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_TEXT_FRAGMENT_NO_SEPARATOR,
+      message: `Link must contain ${TEXT_FRAGMENT_DIRECTIVE} separator`,
+      functionName: FUNCTION_NAME,
+    });
+  }
+
+  const path = link.slice(0, separatorIndex);
+  if (path.trim() === '') {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_EMPTY_PATH,
+      message: 'Path cannot be empty',
+      functionName: FUNCTION_NAME,
+    });
+  }
+
+  const directiveValue = link.slice(separatorIndex + TEXT_FRAGMENT_DIRECTIVE.length);
+  const directive = parseDirectiveValueOrThrow(directiveValue);
+
+  return { path, directive };
+};
+
+const parseDirectiveValueOrThrow = (directiveValue: string): TextDirective => {
+  if (directiveValue.length === 0) {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_TEXT_FRAGMENT_EMPTY_VALUE,
+      message: 'Text fragment directive cannot be empty',
+      functionName: FUNCTION_NAME,
+    });
+  }
+
+  const terms = directiveValue.split(',');
+
+  // Structural classification: a trailing hyphen marks the term as prefix or
+  // suffix only when other terms exist (a lone "foo-" is start text "foo-").
+  const lastIndex = terms.length - 1;
+  const hasPrefix = lastIndex >= 1 && terms[0].endsWith('-');
+  const hasSuffix = lastIndex >= 1 && terms[lastIndex].startsWith('-');
+
+  const firstMiddleIndex = hasPrefix ? 1 : 0;
+  const lastMiddleIndex = hasSuffix ? lastIndex - 1 : lastIndex;
+  const middleTerms = terms.slice(firstMiddleIndex, lastMiddleIndex + 1);
+
+  if (middleTerms.length !== 1 && middleTerms.length !== 2) {
+    throw new TextFragmentError({
+      code: TextFragmentErrorCodes.PARSE_TEXT_FRAGMENT_BAD_STRUCTURE,
+      message: 'Invalid text directive structure - expected [prefix-,]start[,end][,-suffix]',
+      functionName: FUNCTION_NAME,
+      details: { termCount: middleTerms.length },
+    });
+  }
+
+  const startRaw = middleTerms[0];
+  const endRaw = middleTerms.length === 2 ? middleTerms[1] : undefined;
+  const prefixRaw = hasPrefix ? terms[0].slice(0, -1) : undefined;
+  const suffixRaw = hasSuffix ? terms[lastIndex].slice(1) : undefined;
+
+  const requireNonEmpty = (termName: string, decoded: string): void => {
+    if (decoded.length === 0) {
+      throw new TextFragmentError({
+        code: TextFragmentErrorCodes.PARSE_TEXT_FRAGMENT_EMPTY_TERM,
+        message: 'Text directive term cannot be empty',
+        functionName: FUNCTION_NAME,
+        details: { term: termName },
+      });
+    }
+  };
+
+  const prefix = prefixRaw !== undefined ? decodeDirectiveTerm(prefixRaw) : undefined;
+  const start = decodeDirectiveTerm(startRaw);
+  const end = endRaw !== undefined ? decodeDirectiveTerm(endRaw) : undefined;
+  const suffix = suffixRaw !== undefined ? decodeDirectiveTerm(suffixRaw) : undefined;
+
+  if (prefix !== undefined) {
+    requireNonEmpty('prefix', prefix);
+  }
+  requireNonEmpty('start', start);
+  if (end !== undefined) {
+    requireNonEmpty('end', end);
+  }
+  if (suffix !== undefined) {
+    requireNonEmpty('suffix', suffix);
+  }
+
+  const directive: TextDirective = {
+    start,
+    ...(prefix !== undefined && { prefix }),
+    ...(end !== undefined && { end }),
+    ...(suffix !== undefined && { suffix }),
+  };
+  return directive;
+};

@@ -1,0 +1,1 @@
+export { matchTextFragmentInDocument } from './matchTextFragmentInDocument';
