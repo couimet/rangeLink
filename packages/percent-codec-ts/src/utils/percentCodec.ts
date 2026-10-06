@@ -26,6 +26,10 @@ const isEncodeSafeAscii = (code: number): boolean => {
 
 const HEX = '0123456789ABCDEF';
 
+// The largest code point a single UTF-16 code unit can hold. A code point
+// above it occupies two code units, so the scan advances a second step.
+const MAX_BMP_CODE_POINT = 0xffff;
+
 /**
  * Encode a UTF-8 string as percent-encoded octets.
  *
@@ -94,8 +98,13 @@ export const decodePercentUTF8 = (encoded: string): PercentCodecResult<string> =
       continue;
     }
     // Raw octet: foreign encoders keep the raw set unescaped, so treat any
-    // literal character as its own UTF-8 bytes rather than an error.
-    const codePoint = char.codePointAt(0)!;
+    // literal character as its own UTF-8 bytes rather than an error. The scan
+    // reads code points, not code units, so a character outside the basic
+    // multilingual plane enters as one code point instead of a surrogate half.
+    const codePoint = encoded.codePointAt(i)!;
+    if (codePoint > MAX_BMP_CODE_POINT) {
+      i += 1;
+    }
     for (const byte of toUtf8Bytes(codePoint)) {
       bytes.push(byte);
     }

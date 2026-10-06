@@ -65,17 +65,23 @@ interface MatchContext {
  * needs.
  */
 export const resolveTextFragmentMatch = (rawText: string, directive: TextDirective, options: TextMatchOptions = {}): TextFragmentResult<MatchCandidate[]> => {
-  const document = normalizeDocument(rawText, options.collapseWhitespace ?? DEFAULT_COLLAPSE_WHITESPACE);
+  const collapseWhitespace = options.collapseWhitespace ?? DEFAULT_COLLAPSE_WHITESPACE;
+  const document = normalizeDocument(rawText, collapseWhitespace);
+  const terms = normalizeDirectiveTerms(directive, collapseWhitespace);
   const context: MatchContext = {
     document,
     caseSensitivity: options.caseSensitivity ?? DEFAULT_CASE_SENSITIVITY,
     blockSpans: mapBlockSpans(options.blockSpans, document),
   };
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
+  // The end term's occurrences do not depend on the start index, and a single
+  // document can hold many start indexes, so the scan runs once here rather
+  // than once per start index.
+  const endOccurrences = terms.end === undefined ? [] : findOccurrences(document.text, terms.end, context.caseSensitivity);
 
   const candidates: MatchCandidate[] = [];
-  for (const startIndex of findStartIndexes(directive, context)) {
-    for (const resolved of resolveFromStart(directive, startIndex, context)) {
+  for (const startIndex of findStartIndexes(terms, context)) {
+    for (const resolved of resolveFromStart(terms, startIndex, context, endOccurrences)) {
       if (candidates.length >= maxCandidates) {
         return TextFragmentResult.err(
           new TextFragmentError({
@@ -90,6 +96,42 @@ export const resolveTextFragmentMatch = (rawText: string, directive: TextDirecti
     }
   }
   return TextFragmentResult.ok(candidates);
+};
+
+/**
+ * Prepare a directive for a search over a normalized document.
+ *
+ * Every term must reach the search in the document's own shape, or a term cut
+ * from a CRLF file, or one that carries a run of whitespace, never matches the
+ * text it came from. Terms are normalized with the same setting as the
+ * document, so the two sides always agree.
+ */
+const normalizeDirectiveTerms = (directive: TextDirective, collapseWhitespace: boolean): TextDirective => {
+  const term = (value: string): string => normalizeDocument(value, collapseWhitespace).text;
+  return {
+    start: term(directive.start),
+    ...(directive.prefix !== undefined && { prefix: term(directive.prefix) }),
+    ...(directive.end !== undefined && { end: term(directive.end) }),
+    ...(directive.suffix !== undefined && { suffix: term(directive.suffix) }),
+  };
+};
+
+/**
+ * The position of the first occurrence at or after `index`, for an ascending
+ * occurrence list.
+ */
+const firstOccurrenceAtOrAfter = (occurrences: ReadonlyArray<number>, index: number): number => {
+  let low = 0;
+  let high = occurrences.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (occurrences[middle] < index) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  return low;
 };
 
 const matchesAt = (text: string, index: number, needle: string, caseSensitivity: CaseSensitivity): boolean => {
@@ -177,7 +219,7 @@ const suffixMatchesAt = (suffix: string, index: number, context: MatchContext): 
  * span is the one the specification would return, because the specification
  * stops at the first end occurrence that satisfies it.
  */
-const resolveFromStart = (directive: TextDirective, startIndex: number, context: MatchContext): BlockSpan[] => {
+const resolveFromStart = (directive: TextDirective, startIndex: number, context: MatchContext, endOccurrences: ReadonlyArray<number>): BlockSpan[] => {
   const { text } = context.document;
   const { start, end, suffix } = directive;
   const startEnd = startIndex + start.length;
@@ -196,8 +238,9 @@ const resolveFromStart = (directive: TextDirective, startIndex: number, context:
   }
 
   const spans: BlockSpan[] = [];
-  for (const endIndex of findOccurrences(text, end, context.caseSensitivity)) {
-    if (endIndex < startEnd || !isWordStartBoundary(text, endIndex)) {
+  for (let occurrence = firstOccurrenceAtOrAfter(endOccurrences, startEnd); occurrence < endOccurrences.length; occurrence++) {
+    const endIndex = endOccurrences[occurrence];
+    if (!isWordStartBoundary(text, endIndex)) {
       continue;
     }
     if (!isInsideOneBlock(context.blockSpans, endIndex, endIndex + end.length)) {

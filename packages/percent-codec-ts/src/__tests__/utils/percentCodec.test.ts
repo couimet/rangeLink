@@ -97,6 +97,8 @@ describe('decodePercentUTF8', () => {
       const result = decodePercentUTF8('café');
 
       expect(result).toBeSuccess('café');
+      expect(decodePercentUTF8('中')).toBeSuccess('中');
+      expect(decodePercentUTF8('a😀b')).toBeSuccess('a😀b');
     });
   });
 

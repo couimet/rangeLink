@@ -54,7 +54,7 @@ For details on the monorepo structure and package organization, see **[packages/
 └─────────────────────────────────┘
 ```
 
-The text fragment codec is its own chain of packages, and the extension reaches it directly rather than through the core library:
+The text fragment codec is its own chain of packages. The chain stands apart from the core library and from the extension, and no module of either one imports it yet:
 
 ```text
 ┌─────────────────────────────────┐
@@ -118,7 +118,7 @@ export function formatLink(selection: Selection): string {
 **Current dependencies:**
 
 - **Core:** The shared `@couimet` error, result and logger types (only `typescript` as devDependency)
-- **Extension:** `rangelink-core-ts`, `rangelink-text-fragment-ts`, `nanoid` and the shared `@couimet` types (plus the VSCode engine)
+- **Extension:** `rangelink-core-ts`, `nanoid` and the shared `@couimet` types (plus the VSCode engine)
 - **Text fragment codec:** `percent-codec-ts` and the shared `@couimet` types
 - **RangeLink text fragment layer:** `text-fragment-ts`
 - **Percent codec:** The shared `@couimet` types

@@ -8,6 +8,6 @@
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "out", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "out", "src/**/*.test.ts", "src/__tests__/**"],
   "references": [{ "path": "../text-fragment-ts" }]
 }

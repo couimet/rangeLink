@@ -1,6 +1,26 @@
 import { MAX_LINK_LENGTH } from '../../constants/maxLinkLength';
 import { formatTextFragment } from '../../formatting/formatTextFragment';
 import { parseTextFragment } from '../../parsing/parseTextFragment';
+import { TextDirective } from '../../types';
+
+// A directive read back compares by value, not by property order, so the
+// comparison flattens the four terms into a fixed-order array.
+const canonicalDirective = (directive: TextDirective): string => JSON.stringify([directive.start, directive.prefix, directive.end, directive.suffix]);
+
+const roundTripOffender = (directive: TextDirective): string | undefined => {
+  const link = formatTextFragment('src/file.ts', directive);
+  if (!link.success) {
+    return `${JSON.stringify(directive)} -> format failed with ${link.error.code}`;
+  }
+  const parsed = parseTextFragment(link.value);
+  if (!parsed.success) {
+    return `${JSON.stringify(directive)} -> ${link.value} -> parse failed with ${parsed.error.code}`;
+  }
+  if (canonicalDirective(parsed.value.directive) === canonicalDirective(directive)) {
+    return undefined;
+  }
+  return `${JSON.stringify(directive)} -> ${link.value} -> ${JSON.stringify(parsed.value.directive)}`;
+};
 
 describe('formatTextFragment', () => {
   describe('valid output', () => {
@@ -34,16 +54,34 @@ describe('formatTextFragment', () => {
       expect(result).toBeSuccess('src/file.ts:~:text=foo%2D,-ctx');
     });
 
-    it('should not re-encode a trailing start hyphen without a following term', () => {
+    it('should re-encode a trailing start hyphen without a following term', () => {
       const result = formatTextFragment('src/file.ts', { start: 'foo-' });
 
-      expect(result).toBeSuccess('src/file.ts:~:text=foo-');
+      expect(result).toBeSuccess('src/file.ts:~:text=foo%2D');
     });
 
-    it('should not re-encode a start hyphen when a prefix disambiguates', () => {
+    it('should re-encode a trailing start hyphen after a prefix', () => {
       const result = formatTextFragment('src/file.ts', { prefix: 'pre', start: 'foo-', end: 'bar' });
 
-      expect(result).toBeSuccess('src/file.ts:~:text=pre-,foo-,bar');
+      expect(result).toBeSuccess('src/file.ts:~:text=pre-,foo%2D,bar');
+    });
+
+    it('should re-encode a leading start hyphen after a prefix', () => {
+      const result = formatTextFragment('src/file.ts', { prefix: 'pre', start: '-foo' });
+
+      expect(result).toBeSuccess('src/file.ts:~:text=pre-,%2Dfoo');
+    });
+
+    it('should re-encode a leading end hyphen without a suffix', () => {
+      const result = formatTextFragment('src/file.ts', { start: 'foo', end: '-bar' });
+
+      expect(result).toBeSuccess('src/file.ts:~:text=foo,%2Dbar');
+    });
+
+    it('should keep interior hyphens literal in a start and in an end term', () => {
+      const result = formatTextFragment('src/file.ts', { start: 'a-b', end: 'c-d' });
+
+      expect(result).toBeSuccess('src/file.ts:~:text=a-b,c-d');
     });
 
     it('should round-trip a term boundary through parse', () => {
@@ -57,6 +95,17 @@ describe('formatTextFragment', () => {
       });
     });
 
+    it('should round-trip a leading end hyphen through parse', () => {
+      const link = formatTextFragment('src/file.ts', { start: 'foo', end: '-bar' });
+
+      expect(link).toBeSuccess('src/file.ts:~:text=foo,%2Dbar');
+      const parsed = parseTextFragment('src/file.ts:~:text=foo,%2Dbar');
+      expect(parsed).toBeSuccess({
+        path: 'src/file.ts',
+        directive: { start: 'foo', end: '-bar' },
+      });
+    });
+
     it('should leave an unsafe path unquoted', () => {
       const result = formatTextFragment('My Folder/file.ts', { start: 'foo' });
 
@@ -67,6 +116,29 @@ describe('formatTextFragment', () => {
       const result = formatTextFragment('src/file.ts', { prefix: 'a-b', start: 'foo' });
 
       expect(result).toBeSuccess('src/file.ts:~:text=a-b-,foo');
+    });
+
+    it('should round-trip every boundary-hyphen shape', () => {
+      const prefixValues = [undefined, 'p', 'p-'];
+      const startValues = ['s', '-s', 's-'];
+      const endValues = [undefined, 'e', '-e', 'e-'];
+      const suffixValues = [undefined, 'x', '-x'];
+      const shapes: TextDirective[] = prefixValues.flatMap((prefix) =>
+        startValues.flatMap((start) =>
+          endValues.flatMap((end) =>
+            suffixValues.map((suffix) => ({
+              start,
+              ...(prefix !== undefined && { prefix }),
+              ...(end !== undefined && { end }),
+              ...(suffix !== undefined && { suffix }),
+            })),
+          ),
+        ),
+      );
+
+      expect(shapes).toHaveLength(prefixValues.length * startValues.length * endValues.length * suffixValues.length);
+      const offenders = shapes.map(roundTripOffender).filter((offender) => offender !== undefined);
+      expect(offenders).toStrictEqual([]);
     });
   });
 

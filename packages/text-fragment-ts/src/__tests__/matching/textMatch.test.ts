@@ -467,6 +467,72 @@ describe('resolveTextFragmentMatch', () => {
     });
   });
 
+  describe('directive terms with line endings', () => {
+    it('should match a start term that carries the document line ending', () => {
+      const result = resolveTextFragmentMatch('foo\nbar', { start: 'foo\nbar' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 7 }]);
+      });
+    });
+
+    it('should match a CRLF start term against an LF document', () => {
+      const result = resolveTextFragmentMatch('foo\nbar', { start: 'foo\r\nbar' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 7 }]);
+      });
+    });
+
+    it('should match a CRLF start term against a CRLF document', () => {
+      const result = resolveTextFragmentMatch('foo\r\nbar', { start: 'foo\r\nbar' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 8 }]);
+      });
+    });
+
+    it('should match a prefix term that carries the document line ending', () => {
+      const result = resolveTextFragmentMatch('a b\nc d', { prefix: 'b\nc', start: 'd' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 6, end: 7 }]);
+      });
+    });
+
+    it('should match an end term that carries the document line ending', () => {
+      const result = resolveTextFragmentMatch('a b\nc d', { start: 'a', end: 'b\nc' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 5 }]);
+      });
+    });
+
+    it('should match a suffix term that carries the document line ending', () => {
+      const result = resolveTextFragmentMatch('a b\nc', { start: 'a', suffix: 'b\nc' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 1 }]);
+      });
+    });
+
+    it('should read a whitespace run inside a term as one space by default', () => {
+      const result = resolveTextFragmentMatch('foo bar', { start: 'foo  bar' });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([{ start: 0, end: 7 }]);
+      });
+    });
+
+    it('should compare a whitespace run inside a term exactly when collapsing is off', () => {
+      const result = resolveTextFragmentMatch('foo bar', { start: 'foo  bar' }, { collapseWhitespace: false });
+
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([]);
+      });
+    });
+  });
+
   describe('candidate maximum', () => {
     const withinLimit = 'a '.repeat(DEFAULT_MAX_CANDIDATES).trim();
     const overLimit = 'a '.repeat(DEFAULT_MAX_CANDIDATES + 1).trim();

@@ -16,7 +16,7 @@ The port brought over every case it could, and adapted each one to a text-level 
 
 Each case becomes one test. The test title carries the case identifier, the source description word for word, and a permalink to the exact line the case was transcribed from. The permalink embeds the revision above, so it keeps pointing at the lines this port was written against, whatever the upstream files do later.
 
-The case data lives in src/**tests**/fixtures/wpt/. The tests that run the data live in src/**tests**/matching/wpt/. A fixture test beside the data checks each case for a pinned permalink, a unique identifier, and a block name its own document holds.
+The case data lives in `src/__tests__/fixtures/wpt/`. The tests that run the data live in `src/__tests__/matching/wpt/`. A fixture test beside the data checks each case for a pinned permalink, a unique identifier, and a block name its own document holds.
 
 ### Cases that do not run
 
