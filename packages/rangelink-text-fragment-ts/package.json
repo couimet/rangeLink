@@ -1,0 +1,44 @@
+{
+  "name": "rangelink-text-fragment-ts",
+  "version": "0.1.0",
+  "description": "RangeLink's text fragment policy - re-exports the text fragment codec and resolves directives with RangeLink's own rules",
+  "keywords": [
+    "text-fragments",
+    "scroll-to-text",
+    "fragment-directive",
+    "rangelink",
+    "code-navigation"
+  ],
+  "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-text-fragment-ts#readme",
+  "bugs": {
+    "url": "https://github.com/couimet/rangelink/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/couimet/rangelink",
+    "directory": "packages/rangelink-text-fragment-ts"
+  },
+  "license": "MIT",
+  "author": "RangeLink Contributors",
+  "main": "./out/index.js",
+  "types": "./out/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf out coverage *.tsbuildinfo",
+    "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log",
+    "compile": "tsc --build",
+    "test": "jest --coverage",
+    "watch": "tsc -p . --watch"
+  },
+  "dependencies": {
+    "text-fragment-ts": "workspace:*"
+  },
+  "devDependencies": {
+    "@couimet/detailed-error-testing": "^0.1.5",
+    "@couimet/detailed-result-testing": "^0.2.1",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.3"
+  }
+}

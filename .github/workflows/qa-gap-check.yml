@@ -44,10 +44,7 @@ jobs:
         run: |
           RELEVANT=false
 
-          if grep -qE '^packages/rangelink-vscode-extension/src/' /tmp/changed-files.txt; then
-            RELEVANT=true
-          fi
-          if grep -qE '^packages/rangelink-core-ts/src/' /tmp/changed-files.txt; then
+          if grep -qE '^packages/[^/]+/src/' /tmp/changed-files.txt; then
             RELEVANT=true
           fi
           if grep -q 'package.json' /tmp/changed-files.txt; then
@@ -93,7 +90,7 @@ jobs:
           - Changed clipboard behavior
           - Changed navigation behavior (go-to-link, document links)
           - New or changed file path detection patterns
-          - Changes to the core library (rangelink-core-ts) that affect link generation or parsing
+          - Changes to the shared libraries (rangelink-core-ts, rangelink-text-fragment-ts, text-fragment-ts, percent-codec-ts) that affect link generation or parsing
 
           ## What does NOT need QA test cases
 

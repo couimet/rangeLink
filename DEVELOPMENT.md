@@ -15,13 +15,16 @@ cd rangelink
 
 ## Monorepo Structure
 
-RangeLink uses pnpm workspaces with two packages:
+RangeLink uses pnpm workspaces:
 
 ```text
 rangeLink/
   packages/
+    percent-codec-ts/             # Percent codec for text fragment terms
     rangelink-core-ts/            # Pure TypeScript core library
+    rangelink-text-fragment-ts/   # RangeLink's text fragment policy
     rangelink-vscode-extension/   # VSCode extension
+    text-fragment-ts/             # Text fragment codec
   docs/                           # Project documentation
 ```
 
