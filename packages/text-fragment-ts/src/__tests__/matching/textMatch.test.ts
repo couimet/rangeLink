@@ -566,6 +566,30 @@ describe('resolveTextFragmentMatch', () => {
     });
   });
 
+  describe('end term scan', () => {
+    // Every end occurrence below fails the word-end boundary check, so the
+    // directive produces no span at all. That absence is what makes the shape
+    // worth timing: a candidate maximum bounds the spans a search collects, and
+    // a search that collects none is bounded by nothing else. Eligibility is
+    // settled once per call, so the budget below holds with room to spare; a
+    // per-start re-check spends seconds here and trips the assertion first.
+    const INELIGIBLE_END_REPETITIONS = 20_000;
+    const DOCUMENT = 'a bX '.repeat(INELIGIBLE_END_REPETITIONS);
+    const SCAN_BUDGET_MS = 1000;
+
+    it('should resolve a directive whose end occurrences are all ineligible within the budget', () => {
+      const startedAt = Date.now();
+
+      const result = resolveTextFragmentMatch(DOCUMENT, { start: 'a', end: 'b' });
+
+      const elapsedMs = Date.now() - startedAt;
+      expect(result).toBeSuccessWith((candidates: Array<{ start: number; end: number }>) => {
+        expect(candidates).toStrictEqual([]);
+      });
+      expect(elapsedMs).toBeLessThan(SCAN_BUDGET_MS);
+    });
+  });
+
   describe('CRLF documents', () => {
     it('should remap a match on a later line to raw offsets', () => {
       const result = resolveTextFragmentMatch('ab\r\ncd', { start: 'cd' });

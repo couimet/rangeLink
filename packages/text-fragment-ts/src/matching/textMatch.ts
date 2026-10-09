@@ -74,10 +74,14 @@ export const resolveTextFragmentMatch = (rawText: string, directive: TextDirecti
     blockSpans: mapBlockSpans(options.blockSpans, document),
   };
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
-  // The end term's occurrences do not depend on the start index, and a single
-  // document can hold many start indexes, so the scan runs once here rather
-  // than once per start index.
-  const endOccurrences = terms.end === undefined ? [] : findOccurrences(document.text, terms.end, context.caseSensitivity);
+  // Neither the end term's occurrences nor their eligibility depends on the
+  // start index, and a single document can hold many start indexes, so both run
+  // once here rather than once per start index.
+  const { end: endTerm, suffix } = terms;
+  const endOccurrences =
+    endTerm === undefined
+      ? []
+      : findOccurrences(document.text, endTerm, context.caseSensitivity).filter((endIndex) => canEndRangeAt(endIndex, endTerm, suffix, context));
 
   const candidates: MatchCandidate[] = [];
   for (const startIndex of findStartIndexes(terms, context)) {
@@ -150,6 +154,27 @@ const matchesAt = (text: string, index: number, needle: string, caseSensitivity:
 const isInsideOneBlock = (blockSpans: ReadonlyArray<BlockSpan>, start: number, end: number): boolean =>
   blockSpans.length === 0 || blockSpans.some((span) => span.start <= start && end <= span.end);
 
+/**
+ * Whether an end term occurrence can close a range.
+ *
+ * None of these rules reads the start index, so one pass over the end term's
+ * occurrences settles every start at once. An occurrence that fails here can
+ * never become a span, which is why the caller filters before it iterates
+ * starts: `maxCandidates` bounds the candidates a search collects, and a
+ * filtered-out occurrence collects none.
+ */
+const canEndRangeAt = (endIndex: number, endTerm: string, suffix: string | undefined, context: MatchContext): boolean => {
+  const { text } = context.document;
+  if (!isWordStartBoundary(text, endIndex)) {
+    return false;
+  }
+  const rangeEnd = endIndex + endTerm.length;
+  if (!isInsideOneBlock(context.blockSpans, endIndex, rangeEnd)) {
+    return false;
+  }
+  return suffix === undefined ? isWordEndBoundary(text, rangeEnd) : suffixMatchesAt(suffix, rangeEnd, context);
+};
+
 const mapBlockSpans = (rawSpans: ReadonlyArray<BlockSpan> | undefined, document: NormalizedDocument): ReadonlyArray<BlockSpan> =>
   (rawSpans ?? []).map((span) => ({ start: document.toNormalizedOffset(span.start), end: document.toNormalizedOffset(span.end) }));
 
@@ -214,10 +239,13 @@ const suffixMatchesAt = (suffix: string, index: number, context: MatchContext): 
  * The spans a start term at `startIndex` resolves to, in document order.
  *
  * Empty when the start term resolves to nothing. A start term with no end term
- * yields at most one span; with an end term it yields one per qualifying end
- * occurrence, which is what lets a caller offer the reader a choice. The first
- * span is the one the specification would return, because the specification
- * stops at the first end occurrence that satisfies it.
+ * yields at most one span; with an end term it yields one per end occurrence,
+ * which is what lets a caller offer the reader a choice. The first span is the
+ * one the specification would return, because the specification stops at the
+ * first end occurrence that satisfies it.
+ *
+ * The caller passes the end term's occurrences already filtered by
+ * `canEndRangeAt`, so every one of them closes a range.
  */
 const resolveFromStart = (directive: TextDirective, startIndex: number, context: MatchContext, endOccurrences: ReadonlyArray<number>): BlockSpan[] => {
   const { text } = context.document;
@@ -239,17 +267,7 @@ const resolveFromStart = (directive: TextDirective, startIndex: number, context:
 
   const spans: BlockSpan[] = [];
   for (let occurrence = firstOccurrenceAtOrAfter(endOccurrences, startEnd); occurrence < endOccurrences.length; occurrence++) {
-    const endIndex = endOccurrences[occurrence];
-    if (!isWordStartBoundary(text, endIndex)) {
-      continue;
-    }
-    if (!isInsideOneBlock(context.blockSpans, endIndex, endIndex + end.length)) {
-      continue;
-    }
-    const rangeEnd = endIndex + end.length;
-    if (suffix === undefined ? !isWordEndBoundary(text, rangeEnd) : !suffixMatchesAt(suffix, rangeEnd, context)) {
-      continue;
-    }
+    const rangeEnd = endOccurrences[occurrence] + end.length;
     spans.push({ start: startIndex, end: rangeEnd });
   }
   return spans;
