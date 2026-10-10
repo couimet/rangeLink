@@ -2,7 +2,7 @@
 
 [![Codecov](https://img.shields.io/codecov/c/github/couimet/rangeLink?flag=rangelink-core-ts)](https://app.codecov.io/gh/couimet/rangeLink/flags/rangelink-core-ts)
 
-**Pure TypeScript domain model for RangeLink - zero runtime dependencies.**
+**Pure TypeScript domain model for RangeLink - no third-party runtime dependencies.**
 
 ## Overview
 
@@ -15,7 +15,7 @@ This package contains the pure business logic for RangeLink, completely decouple
 
 ## Design Principles
 
-1. **Zero External Dependencies**: Pure TypeScript, no runtime deps
+1. **No Third-Party Runtime Dependencies**: The package uses `text-fragment-ts` and `percent-codec-ts`, plus the shared `@couimet` error, result and logger types.
 2. **Platform Agnostic**: No VSCode, Node.js, or filesystem APIs
 3. **Functional Error Handling**: `Result<T, E>` types throughout
 4. **Dependency Injection**: Logger interface for optional logging

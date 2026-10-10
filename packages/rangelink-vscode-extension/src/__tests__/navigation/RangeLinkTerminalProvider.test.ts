@@ -103,6 +103,41 @@ describe('RangeLinkTerminalProvider', () => {
       expect(links[1].data).toBe('src/b.ts#L2-L3');
     });
 
+    it('should skip text fragment links', () => {
+      const detected = createMockDetectedLink();
+      mockFindLinksInText.mockReturnValue([
+        detected,
+        createMockDetectedLink({
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 30,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        }),
+      ]);
+
+      const context = createMockTerminalContext('First: src/file.ts#L10 and second: src/a.ts:~:text=foo');
+      const token = createMockCancellationToken();
+      const links = provider.provideTerminalLinks(context, token) as RangeLinkTerminalLink[];
+
+      expect(links).toStrictEqual([
+        {
+          startIndex: 6,
+          length: 15,
+          tooltip: 'Open src/file.ts:10 • RangeLink',
+          data: 'src/file.ts#L10',
+          parsed: detected.parsed,
+        },
+      ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
+          lineLength: 54,
+          linksFound: 2,
+        },
+        'Scanned terminal line for RangeLinks',
+      );
+    });
+
     it('should return empty array when no links detected', () => {
       mockFindLinksInText.mockReturnValue([]);
 

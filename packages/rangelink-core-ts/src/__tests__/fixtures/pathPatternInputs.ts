@@ -168,6 +168,22 @@ export const RANGELINK_COEXISTENCE = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Text-fragment coexistence inputs — path prefixes immediately followed by a
+// `:~:text=` marker. The text fragment pass owns those spans, so the file-path
+// provider must never underline the bare path prefix.
+// ---------------------------------------------------------------------------
+
+export const TEXT_FRAGMENT_COEXISTENCE = {
+  ABSOLUTE_PREFIX_WITH_TEXT_FRAGMENT: '/abs/file.ts:~:text=foo',
+  RELATIVE_PREFIX_WITH_TEXT_FRAGMENT: './src/a.ts:~:text=buildAll',
+  TILDE_PREFIX_WITH_TEXT_FRAGMENT: '~/config.ts:~:text=value',
+  SINGLE_QUOTED_PREFIX_WITH_TEXT_FRAGMENT: "'/abs/file.ts:~:text=setup'",
+  DOUBLE_QUOTED_PREFIX_WITH_TEXT_FRAGMENT: '"/path/to/file.ts:~:text=config"',
+  CLEAN_RELATIVE_BESIDE_TEXT_FRAGMENT: './src/a.ts and ./src/b.ts:~:text=x',
+  CLEAN_RELATIVE: './src/a.ts',
+} as const;
+
+// ---------------------------------------------------------------------------
 // Multiple-match inputs — lines containing more than one detectable path
 // ---------------------------------------------------------------------------
 

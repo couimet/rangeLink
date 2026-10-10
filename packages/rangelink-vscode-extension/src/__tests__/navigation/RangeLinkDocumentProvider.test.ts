@@ -115,6 +115,37 @@ describe('RangeLinkDocumentProvider', () => {
       );
     });
 
+    it('should skip text fragment links', () => {
+      mockFindLinksInText.mockReturnValue([
+        createMockDetectedLink(),
+        createMockDetectedLink({
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 30,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        }),
+      ]);
+
+      const document = createMockDocument({
+        getText: createMockText('First: src/file.ts#L10 and second: src/a.ts:~:text=foo'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
+      const token = createMockCancellationToken();
+      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0].tooltip).toBe('Open src/file.ts:10 • RangeLink');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 2,
+        },
+        'Found 2 RangeLinks in document',
+      );
+    });
+
     it('should return empty array when no links detected', () => {
       mockFindLinksInText.mockReturnValue([]);
 
