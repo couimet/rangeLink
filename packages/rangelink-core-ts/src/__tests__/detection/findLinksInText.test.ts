@@ -29,67 +29,127 @@ describe('findLinksInText', () => {
     it('should detect a single unquoted link', () => {
       const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('src/auth.ts#L10');
-      expect(results[0].startIndex).toBe(6);
-      expect(results[0].length).toBe(15);
-      expect(results[0].parsed.path).toBe('src/auth.ts');
-      expect(results[0].parsed.start.line).toBe(10);
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/auth.ts#L10',
+          startIndex: 6,
+          length: 15,
+          parsed: {
+            path: 'src/auth.ts',
+            quotedPath: 'src/auth.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should detect multiple unquoted links', () => {
       const results = findLinksInText('See src/a.ts#L1 and src/b.ts#L2-L5', DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(2);
-      expect(results[0].linkText).toBe('src/a.ts#L1');
-      expect(results[1].linkText).toBe('src/b.ts#L2-L5');
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/a.ts#L1',
+          startIndex: 4,
+          length: 11,
+          parsed: {
+            path: 'src/a.ts',
+            quotedPath: 'src/a.ts',
+            start: { line: 1 },
+            end: { line: 1 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+        {
+          linkText: 'src/b.ts#L2-L5',
+          startIndex: 20,
+          length: 14,
+          parsed: {
+            path: 'src/b.ts',
+            quotedPath: 'src/b.ts',
+            start: { line: 2 },
+            end: { line: 5 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should return empty array for text with no links', () => {
       const results = findLinksInText('No links here', DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(0);
+      expect(results).toStrictEqual([]);
     });
 
     describe('surrounding punctuation trimming', () => {
       it('should strip leading and trailing parens from a matched link', () => {
         const results = findLinksInText('(path#L1-L2)', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('path#L1-L2');
-        expect(results[0].startIndex).toBe(1);
-        expect(results[0].length).toBe(10);
-        expect(results[0].parsed.path).toBe('path');
-        expect(results[0].parsed.start.line).toBe(1);
-        expect(results[0].parsed.end.line).toBe(2);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'path#L1-L2',
+            startIndex: 1,
+            length: 10,
+            parsed: {
+              path: 'path',
+              quotedPath: 'path',
+              start: { line: 1 },
+              end: { line: 2 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should strip leading paren when link is followed by trailing punctuation', () => {
         const results = findLinksInText('(path#L1-L2):', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('path#L1-L2');
-        expect(results[0].startIndex).toBe(1);
-        expect(results[0].length).toBe(10);
-        expect(results[0].parsed.path).toBe('path');
-        expect(results[0].parsed.start.line).toBe(1);
-        expect(results[0].parsed.end.line).toBe(2);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'path#L1-L2',
+            startIndex: 1,
+            length: 10,
+            parsed: {
+              path: 'path',
+              quotedPath: 'path',
+              start: { line: 1 },
+              end: { line: 2 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should not produce a link from bare punctuation with no valid path', () => {
         const results = findLinksInText('()', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(0);
+        expect(results).toStrictEqual([]);
       });
 
       it('should leave a clean path unchanged', () => {
         const results = findLinksInText('path#L1-L2', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('path#L1-L2');
-        expect(results[0].startIndex).toBe(0);
-        expect(results[0].length).toBe(10);
-        expect(results[0].parsed.path).toBe('path');
+        expect(results).toStrictEqual([
+          {
+            linkText: 'path#L1-L2',
+            startIndex: 0,
+            length: 10,
+            parsed: {
+              path: 'path',
+              quotedPath: 'path',
+              start: { line: 1 },
+              end: { line: 2 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       describe('prefix-only (opening character without matching closer)', () => {
@@ -104,11 +164,21 @@ describe('findLinksInText', () => {
         ])('should detect link with prefix-only %s', (_label, text, expectedStartIndex) => {
           const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
 
-          expect(results).toHaveLength(1);
-          expect(results[0].linkText).toBe('path#L5');
-          expect(results[0].startIndex).toBe(expectedStartIndex);
-          expect(results[0].parsed.path).toBe('path');
-          expect(results[0].parsed.start.line).toBe(5);
+          expect(results).toStrictEqual([
+            {
+              linkText: 'path#L5',
+              startIndex: expectedStartIndex,
+              length: 7,
+              parsed: {
+                path: 'path',
+                quotedPath: 'path',
+                start: { line: 5 },
+                end: { line: 5 },
+                linkType: 'regular',
+                selectionType: 'Normal',
+              },
+            },
+          ]);
         });
       });
 
@@ -124,11 +194,21 @@ describe('findLinksInText', () => {
         ])('should detect link with suffix-only %s', (_label, text) => {
           const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
 
-          expect(results).toHaveLength(1);
-          expect(results[0].linkText).toBe('path#L5');
-          expect(results[0].startIndex).toBe(0);
-          expect(results[0].parsed.path).toBe('path');
-          expect(results[0].parsed.start.line).toBe(5);
+          expect(results).toStrictEqual([
+            {
+              linkText: 'path#L5',
+              startIndex: 0,
+              length: 7,
+              parsed: {
+                path: 'path',
+                quotedPath: 'path',
+                start: { line: 5 },
+                end: { line: 5 },
+                linkType: 'regular',
+                selectionType: 'Normal',
+              },
+            },
+          ]);
         });
       });
 
@@ -144,7 +224,7 @@ describe('findLinksInText', () => {
         ])('should return empty when text is just %s', (_label, text) => {
           const results = findLinksInText(text, DEFAULT_DELIMITERS, logger);
 
-          expect(results).toHaveLength(0);
+          expect(results).toStrictEqual([]);
         });
       });
     });
@@ -153,19 +233,41 @@ describe('findLinksInText', () => {
       it('should detect the path from a simple markdown link', () => {
         const results = findLinksInText('[text](src/auth.ts#L10)', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('src/auth.ts#L10');
-        expect(results[0].parsed.path).toBe('src/auth.ts');
-        expect(results[0].parsed.start.line).toBe(10);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'src/auth.ts#L10',
+            startIndex: 7,
+            length: 15,
+            parsed: {
+              path: 'src/auth.ts',
+              quotedPath: 'src/auth.ts',
+              start: { line: 10 },
+              end: { line: 10 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect the path from a simple markdown link embedded in prose', () => {
         const results = findLinksInText('See [text](src/auth.ts#L10) for details', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('src/auth.ts#L10');
-        expect(results[0].parsed.path).toBe('src/auth.ts');
-        expect(results[0].parsed.start.line).toBe(10);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'src/auth.ts#L10',
+            startIndex: 11,
+            length: 15,
+            parsed: {
+              path: 'src/auth.ts',
+              quotedPath: 'src/auth.ts',
+              start: { line: 10 },
+              end: { line: 10 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect the correct link from a standalone backtick-labelled markdown link', () => {
@@ -175,10 +277,21 @@ describe('findLinksInText', () => {
           logger,
         );
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
-        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
-        expect(results[0].parsed.start.line).toBe(876);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+            startIndex: 28,
+            length: 64,
+            parsed: {
+              path: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+              quotedPath: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+              start: { line: 876 },
+              end: { line: 876 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect the correct link from a backtick-labelled markdown link in prose (issue #379)', () => {
@@ -186,40 +299,94 @@ describe('findLinksInText', () => {
           '2. `copyAndSendToDestination` at [`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876) — uses `isSelfPaste`';
         const results = findLinksInText(line, DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876');
-        expect(results[0].parsed.path).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
-        expect(results[0].parsed.start.line).toBe(876);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+            startIndex: 61,
+            length: 64,
+            parsed: {
+              path: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+              quotedPath: 'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+              start: { line: 876 },
+              end: { line: 876 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect a range link inside a markdown link', () => {
         const results = findLinksInText('[text](src/auth.ts#L10-L20)', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
-        expect(results[0].parsed.path).toBe('src/auth.ts');
-        expect(results[0].parsed.start.line).toBe(10);
-        expect(results[0].parsed.end.line).toBe(20);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'src/auth.ts#L10-L20',
+            startIndex: 7,
+            length: 19,
+            parsed: {
+              path: 'src/auth.ts',
+              quotedPath: 'src/auth.ts',
+              start: { line: 10 },
+              end: { line: 20 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect a range link inside a markdown link embedded in prose', () => {
         const results = findLinksInText('Check [text](src/auth.ts#L10-L20) above', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(1);
-        expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
-        expect(results[0].parsed.path).toBe('src/auth.ts');
-        expect(results[0].parsed.start.line).toBe(10);
-        expect(results[0].parsed.end.line).toBe(20);
+        expect(results).toStrictEqual([
+          {
+            linkText: 'src/auth.ts#L10-L20',
+            startIndex: 13,
+            length: 19,
+            parsed: {
+              path: 'src/auth.ts',
+              quotedPath: 'src/auth.ts',
+              start: { line: 10 },
+              end: { line: 20 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
 
       it('should detect both links when multiple markdown links appear in one line', () => {
         const results = findLinksInText('Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)', DEFAULT_DELIMITERS, logger);
 
-        expect(results).toHaveLength(2);
-        expect(results[0].linkText).toBe('src/a.ts#L1');
-        expect(results[0].parsed.path).toBe('src/a.ts');
-        expect(results[1].linkText).toBe('src/b.ts#L2');
-        expect(results[1].parsed.path).toBe('src/b.ts');
+        expect(results).toStrictEqual([
+          {
+            linkText: 'src/a.ts#L1',
+            startIndex: 12,
+            length: 11,
+            parsed: {
+              path: 'src/a.ts',
+              quotedPath: 'src/a.ts',
+              start: { line: 1 },
+              end: { line: 1 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+          {
+            linkText: 'src/b.ts#L2',
+            startIndex: 34,
+            length: 11,
+            parsed: {
+              path: 'src/b.ts',
+              quotedPath: 'src/b.ts',
+              start: { line: 2 },
+              end: { line: 2 },
+              linkType: 'regular',
+              selectionType: 'Normal',
+            },
+          },
+        ]);
       });
     });
   });
@@ -228,47 +395,87 @@ describe('findLinksInText', () => {
     it('should detect single-quoted links with spaces in paths', () => {
       const results = findLinksInText("Open 'My Folder/file.ts#L10' to see", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('My Folder/file.ts#L10');
-      expect(results[0].startIndex).toBe(5);
-      expect(results[0].length).toBe(23);
-      expect(results[0].parsed.path).toBe('My Folder/file.ts');
-      expect(results[0].parsed.start.line).toBe(10);
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Folder/file.ts#L10',
+          startIndex: 5,
+          length: 23,
+          parsed: {
+            path: 'My Folder/file.ts',
+            quotedPath: "'My Folder/file.ts'",
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should detect double-quoted links with spaces in paths', () => {
       const results = findLinksInText('"My Folder/file.ts#L10"', DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('My Folder/file.ts#L10');
-      expect(results[0].parsed.path).toBe('My Folder/file.ts');
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Folder/file.ts#L10',
+          startIndex: 0,
+          length: 23,
+          parsed: {
+            path: 'My Folder/file.ts',
+            quotedPath: "'My Folder/file.ts'",
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should detect quoted links with column positions', () => {
       const results = findLinksInText("'Meslo Slashed/LICENSE.txt#L10C24-L11C24'", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('Meslo Slashed/LICENSE.txt#L10C24-L11C24');
-      expect(results[0].parsed.path).toBe('Meslo Slashed/LICENSE.txt');
-      expect(results[0].parsed.start.line).toBe(10);
-      expect(results[0].parsed.start.character).toBe(24);
-      expect(results[0].parsed.end.line).toBe(11);
-      expect(results[0].parsed.end.character).toBe(24);
+      expect(results).toStrictEqual([
+        {
+          linkText: 'Meslo Slashed/LICENSE.txt#L10C24-L11C24',
+          startIndex: 0,
+          length: 41,
+          parsed: {
+            path: 'Meslo Slashed/LICENSE.txt',
+            quotedPath: "'Meslo Slashed/LICENSE.txt'",
+            start: { line: 10, character: 24 },
+            end: { line: 11, character: 24 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should detect rectangular quoted links', () => {
       const results = findLinksInText("'My Dir/file.ts##L5C1-L7C8'", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('My Dir/file.ts##L5C1-L7C8');
-      expect(results[0].parsed.path).toBe('My Dir/file.ts');
-      expect(results[0].parsed.selectionType).toBe('Rectangular');
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Dir/file.ts##L5C1-L7C8',
+          startIndex: 0,
+          length: 27,
+          parsed: {
+            path: 'My Dir/file.ts',
+            quotedPath: "'My Dir/file.ts'",
+            start: { line: 5, character: 1 },
+            end: { line: 7, character: 8 },
+            linkType: 'regular',
+            selectionType: 'Rectangular',
+          },
+        },
+      ]);
     });
 
     it('should skip quoted segments that are not valid links', () => {
       const results = findLinksInText("Some 'random text' and 'not a link' here", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(0);
+      expect(results).toStrictEqual([]);
     });
   });
 
@@ -276,26 +483,87 @@ describe('findLinksInText', () => {
     it('should detect both unquoted and quoted links in same text', () => {
       const results = findLinksInText("See src/a.ts#L1 and 'My Dir/b.ts#L5-L10'", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(2);
-      expect(results[0].linkText).toBe('src/a.ts#L1');
-      expect(results[1].linkText).toBe('My Dir/b.ts#L5-L10');
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/a.ts#L1',
+          startIndex: 4,
+          length: 11,
+          parsed: {
+            path: 'src/a.ts',
+            quotedPath: 'src/a.ts',
+            start: { line: 1 },
+            end: { line: 1 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+        {
+          linkText: 'My Dir/b.ts#L5-L10',
+          startIndex: 20,
+          length: 20,
+          parsed: {
+            path: 'My Dir/b.ts',
+            quotedPath: "'My Dir/b.ts'",
+            start: { line: 5 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should detect both single- and double-quoted links in same text', () => {
       const results = findLinksInText(`Check 'My Dir/a.ts#L1' and "Other Dir/b.ts#L2"`, DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(2);
-      expect(results[0].linkText).toBe('My Dir/a.ts#L1');
-      expect(results[1].linkText).toBe('Other Dir/b.ts#L2');
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Dir/a.ts#L1',
+          startIndex: 6,
+          length: 16,
+          parsed: {
+            path: 'My Dir/a.ts',
+            quotedPath: "'My Dir/a.ts'",
+            start: { line: 1 },
+            end: { line: 1 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+        {
+          linkText: 'Other Dir/b.ts#L2',
+          startIndex: 27,
+          length: 19,
+          parsed: {
+            path: 'Other Dir/b.ts',
+            quotedPath: "'Other Dir/b.ts'",
+            start: { line: 2 },
+            end: { line: 2 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
 
     it('should replace partial unquoted match when quoted segment encompasses it', () => {
       const results = findLinksInText("Check 'src/file.ts#L10' here", DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(1);
-      expect(results[0].linkText).toBe('src/file.ts#L10');
-      expect(results[0].startIndex).toBe(6);
-      expect(results[0].length).toBe(17);
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/file.ts#L10',
+          startIndex: 6,
+          length: 17,
+          parsed: {
+            path: 'src/file.ts',
+            quotedPath: 'src/file.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
     });
   });
 
@@ -304,14 +572,14 @@ describe('findLinksInText', () => {
       const token = { isCancellationRequested: true };
       const results = findLinksInText('src/a.ts#L1 and src/b.ts#L2', DEFAULT_DELIMITERS, logger, token);
 
-      expect(results).toHaveLength(0);
+      expect(results).toStrictEqual([]);
     });
 
     it('should respect cancellation token during quoted pass', () => {
       const token = { isCancellationRequested: true };
       const results = findLinksInText("'My Folder/file.ts#L10'", DEFAULT_DELIMITERS, logger, token);
 
-      expect(results).toHaveLength(0);
+      expect(results).toStrictEqual([]);
     });
   });
 
@@ -326,7 +594,7 @@ describe('findLinksInText', () => {
 
       const results = findLinksInText('Check src/auth.ts#L10 for details', DEFAULT_DELIMITERS, logger);
 
-      expect(results).toHaveLength(0);
+      expect(results).toStrictEqual([]);
       expect(logger.debug).toHaveBeenCalledWith({ fn: 'detectUnquotedLinks', link: 'src/auth.ts#L10', error: mockError }, 'Skipping link that failed to parse');
     });
 
@@ -349,6 +617,8 @@ describe('findLinksInText', () => {
           quotedReplacements: 0,
           linksDetected: 0,
           parseFailures: 1,
+          textFragmentCandidates: 0,
+          textFragmentParseFailures: 0,
           quotedParseFailures: 0,
         },
         'Link detection complete',
@@ -369,6 +639,8 @@ describe('findLinksInText', () => {
           quotedReplacements: 0,
           linksDetected: 1,
           parseFailures: 0,
+          textFragmentCandidates: 0,
+          textFragmentParseFailures: 0,
           quotedParseFailures: 0,
         },
         'Link detection complete',
@@ -393,6 +665,8 @@ describe('findLinksInText', () => {
           quotedReplacements: 0,
           linksDetected: 0,
           parseFailures: 0,
+          textFragmentCandidates: 0,
+          textFragmentParseFailures: 0,
           quotedParseFailures: 2,
         },
         'Link detection complete',
@@ -411,6 +685,8 @@ describe('findLinksInText', () => {
           quotedReplacements: 1,
           linksDetected: 1,
           parseFailures: 0,
+          textFragmentCandidates: 0,
+          textFragmentParseFailures: 0,
           quotedParseFailures: 0,
         },
         'Link detection complete',
@@ -434,6 +710,8 @@ describe('findLinksInText', () => {
           quotedReplacements: 1,
           linksDetected: 1,
           parseFailures: 0,
+          textFragmentCandidates: 0,
+          textFragmentParseFailures: 0,
           quotedParseFailures: 0,
         },
         'Link detection complete',
@@ -453,9 +731,135 @@ describe('findLinksInText', () => {
 
       const result = detectQuotedLinks(text, links, occupiedRanges, DEFAULT_DELIMITERS, logger);
 
-      expect(result.quotedCandidates).toBe(1);
-      expect(result.quotedReplacements).toBe(0);
-      expect(links).toHaveLength(0);
+      expect(result).toStrictEqual({ quotedCandidates: 1, quotedReplacements: 0, quotedParseFailures: 0 });
+      expect(links).toStrictEqual([]);
+    });
+  });
+
+  describe('text fragment links and numeric coexistence', () => {
+    it('should detect a text fragment link as a parsed text fragment', () => {
+      const results = findLinksInText('src/a.ts:~:text=foo', DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 0,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ]);
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'findLinksInText',
+          textLength: 19,
+          textFragmentCandidates: 1,
+          unquotedMatches: 0,
+          quotedCandidates: 0,
+          quotedReplacements: 0,
+          linksDetected: 1,
+          parseFailures: 0,
+          textFragmentParseFailures: 0,
+          quotedParseFailures: 0,
+        },
+        'Link detection complete',
+      );
+    });
+
+    it('should not turn the path prefix of a text fragment link into a numeric link', () => {
+      const results = findLinksInText('Check src/a.ts:~:text=foo for the method', DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 6,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ]);
+    });
+
+    it('should still detect a numeric link next to a text fragment link', () => {
+      const results = findLinksInText('See src/a.ts#L10 and src/b.ts:~:text=value', DEFAULT_DELIMITERS, logger);
+
+      // The text fragment pass runs before the unquoted pass, so the fragment link comes first.
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/b.ts:~:text=value',
+          startIndex: 21,
+          length: 21,
+          parsed: { path: 'src/b.ts', directive: { start: 'value' } },
+        },
+        {
+          linkText: 'src/a.ts#L10',
+          startIndex: 4,
+          length: 12,
+          parsed: {
+            path: 'src/a.ts',
+            quotedPath: 'src/a.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
+    });
+
+    it('should skip a numeric match that would otherwise form inside a text fragment value', () => {
+      // `foo#L10` looks like a numeric RangeLink to the unquoted pass, but the
+      // text fragment pass has already claimed the span, so only the text link survives.
+      const results = findLinksInText('src/a.ts:~:text=foo#L10', DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 0,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ]);
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'findLinksInText',
+          textLength: 23,
+          textFragmentCandidates: 1,
+          unquotedMatches: 1,
+          quotedCandidates: 0,
+          quotedReplacements: 0,
+          linksDetected: 1,
+          parseFailures: 0,
+          textFragmentParseFailures: 0,
+          quotedParseFailures: 0,
+        },
+        'Link detection complete',
+      );
+    });
+
+    it('should count and log a text fragment link that fails to parse', () => {
+      // Three middle terms — the codec rejects any structure that is not
+      // [prefix-,]start[,end][,-suffix]. A stray percent sign would not fail:
+      // the codec reads it as literal text, matching the browser.
+      const results = findLinksInText('See src/a.ts:~:text=foo,,bar here', DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([]);
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'findLinksInText',
+          textLength: 33,
+          textFragmentCandidates: 1,
+          unquotedMatches: 0,
+          quotedCandidates: 0,
+          quotedReplacements: 0,
+          linksDetected: 0,
+          parseFailures: 0,
+          textFragmentParseFailures: 1,
+          quotedParseFailures: 0,
+        },
+        'Link detection complete',
+      );
     });
   });
 });

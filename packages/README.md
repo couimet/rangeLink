@@ -1,8 +1,6 @@
 # RangeLink Packages
 
-<div align="center">
-  <img src="../assets/icon.png" alt="RangeLink Logo" width="80" />
-</div>
+<div align="center"><img src="../assets/icon.png" alt="RangeLink Logo" width="80" /></div>
 
 This directory contains the RangeLink monorepo packages. Each package has its own `README` with detailed usage information.
 
@@ -20,7 +18,7 @@ RFC 3986 plus strict UTF-8 percent codec, used by the text fragment codec for te
 
 ### [`rangelink-core-ts/`](./rangelink-core-ts)
 
-Pure TypeScript core library — zero dependencies, platform-agnostic.
+Pure TypeScript core library — no third-party runtime dependencies, platform-agnostic.
 
 - ✅ Link generation and parsing
 - ✅ Selection analysis (rectangular detection)

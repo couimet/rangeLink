@@ -51,24 +51,29 @@ For details on the monorepo structure and package organization, see **[packages/
 │ ┌─────────────────────────────┐ │
 │ │ Domain Models               │ │  ← Types, enums
 │ └─────────────────────────────┘ │
+└────────────┬────────────────────┘
+             │ depends on
+┌────────────▼────────────────────┐
+│ text-fragment-ts                │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ Fragment Directives         │ │  ← Parse/format :~:text=
+│ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │ Term Matching               │ │  ← Resolve against a file
+│ └─────────────────────────────┘ │
+└────────────┬────────────────────┘
+             │ depends on
+┌────────────▼────────────────────┐
+│ percent-codec-ts                │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ Percent Codec               │ │  ← RFC 3986 + strict UTF-8
+│ └─────────────────────────────┘ │
 └─────────────────────────────────┘
 ```
 
-The text fragment codec is its own chain of packages. The chain stands apart from the core library and from the extension, and no module of either one imports it yet:
-
-```text
-┌─────────────────────────────────┐
-│ rangelink-text-fragment-ts      │  ← RangeLink's text fragment policy
-└──────────────┬──────────────────┘
-               │ depends on
-┌──────────────▼──────────────────┐
-│ text-fragment-ts                │  ← Browser-faithful `:~:text=` codec
-└──────────────┬──────────────────┘
-               │ depends on
-┌──────────────▼──────────────────┐
-│ percent-codec-ts                │  ← RFC 3986 percent codec
-└─────────────────────────────────┘
-```
+The core library depends on the text fragment codec, so one call detects a `:~:text=` link and a numeric RangeLink together. `rangelink-text-fragment-ts` is a separate policy layer that matches a parsed fragment against a document's text. No module imports it yet.
 
 ---
 
@@ -111,17 +116,19 @@ export function formatLink(selection: Selection): string {
 
 ### 2. Zero Dependencies
 
-**Principle:** Core library has zero runtime dependencies.
+**Principle:** No third-party runtime dependencies.
 
 **Rationale:** Minimize bundle size, maximize portability, reduce security surface.
 
 **Current dependencies:**
 
-- **Core:** The shared `@couimet` error, result and logger types (only `typescript` as devDependency)
+- **Core:** `text-fragment-ts`, which pulls in `percent-codec-ts`, plus the shared `@couimet` error, result and logger types (only `typescript` as devDependency)
 - **Extension:** `rangelink-core-ts`, `nanoid` and the shared `@couimet` types (plus the VSCode engine)
 - **Text fragment codec:** `percent-codec-ts` and the shared `@couimet` types
 - **RangeLink text fragment layer:** `text-fragment-ts`
 - **Percent codec:** The shared `@couimet` types
+
+The `@couimet/*` packages are RangeLink's own error base class, Result type, and logging contract, not third-party runtime dependencies.
 
 **Benefits:**
 
