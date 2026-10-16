@@ -80,6 +80,196 @@ describe('detectTextFragments', () => {
     });
   });
 
+  it('should trim a trailing closing paren that prose put around the link', () => {
+    const result = detectTextFragments('See (src/a.ts:~:text=foo)', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 5,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ],
+      occupiedRanges: [{ start: 5, end: 24 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should keep parens that balance inside a term', () => {
+    const result = detectTextFragments('See src/a.ts:~:text=foo(bar)', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo(bar)',
+          startIndex: 4,
+          length: 24,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo(bar)' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 28 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should trim a sentence period that follows the link', () => {
+    const result = detectTextFragments('See src/a.ts:~:text=foo.', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 4,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 23 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should detect a link that a trailing comma used to make unparseable', () => {
+    const result = detectTextFragments('See src/a.ts:~:text=foo, then stop', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 4,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 23 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should keep a comma that separates the start and end terms', () => {
+    const result = detectTextFragments('See src/a.ts:~:text=foo,bar', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo,bar',
+          startIndex: 4,
+          length: 23,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo', end: 'bar' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 27 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should detect a single-quoted text fragment link whose path holds a space', () => {
+    const result = detectTextFragments("Open 'My Folder/file.ts:~:text=build' now", logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'My Folder/file.ts:~:text=build',
+          startIndex: 5,
+          length: 32,
+          parsed: { path: 'My Folder/file.ts', directive: { start: 'build' } },
+        },
+      ],
+      occupiedRanges: [{ start: 5, end: 37 }],
+      textFragmentCandidates: 2,
+      parseFailures: 0,
+    });
+    expect(logger.debug).toHaveBeenCalledWith(
+      { fn: 'detectTextFragments', link: "Folder/file.ts:~:text=build'" },
+      'Skipping candidate already claimed by a quoted text fragment link',
+    );
+  });
+
+  it('should detect a double-quoted text fragment link whose path holds a space', () => {
+    const result = detectTextFragments('Open "My Folder/file.ts:~:text=build" now', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'My Folder/file.ts:~:text=build',
+          startIndex: 5,
+          length: 32,
+          parsed: { path: 'My Folder/file.ts', directive: { start: 'build' } },
+        },
+      ],
+      occupiedRanges: [{ start: 5, end: 37 }],
+      textFragmentCandidates: 2,
+      parseFailures: 0,
+    });
+  });
+
+  it('should keep the closing quote out of a quoted link whose path holds no space', () => {
+    const result = detectTextFragments("See 'src/a.ts:~:text=build' now", logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=build',
+          startIndex: 4,
+          length: 23,
+          parsed: { path: 'src/a.ts', directive: { start: 'build' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 27 }],
+      textFragmentCandidates: 2,
+      parseFailures: 0,
+    });
+  });
+
+  it('should not match a quoted segment that holds the marker but no link', () => {
+    const result = detectTextFragments("See 'the :~:text= marker' here", logger);
+
+    expect(result).toStrictEqual({ links: [], occupiedRanges: [], textFragmentCandidates: 0, parseFailures: 0 });
+  });
+
+  it('should not pair an apostrophe pair in prose into a fragment candidate', () => {
+    const result = detectTextFragments("Don't break src/a.ts:~:text=foo now", logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=foo',
+          startIndex: 12,
+          length: 19,
+          parsed: { path: 'src/a.ts', directive: { start: 'foo' } },
+        },
+      ],
+      occupiedRanges: [{ start: 12, end: 31 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
+  it('should keep a directive value that is itself punctuation', () => {
+    const result = detectTextFragments('See src/a.ts:~:text=.', logger);
+
+    expect(result).toStrictEqual({
+      links: [
+        {
+          linkText: 'src/a.ts:~:text=.',
+          startIndex: 4,
+          length: 17,
+          parsed: { path: 'src/a.ts', directive: { start: '.' } },
+        },
+      ],
+      occupiedRanges: [{ start: 4, end: 21 }],
+      textFragmentCandidates: 1,
+      parseFailures: 0,
+    });
+  });
+
   it('should return empty when no text fragment link is present', () => {
     const result = detectTextFragments('No links here', logger);
 
@@ -115,5 +305,12 @@ describe('detectTextFragments', () => {
     const result = detectTextFragments('src/a.ts:~:text=foo', logger, token);
 
     expect(result).toStrictEqual({ links: [], occupiedRanges: [], textFragmentCandidates: 1, parseFailures: 0 });
+  });
+
+  it('should respect a cancelled token before parsing quoted candidates', () => {
+    const token = { isCancellationRequested: true };
+    const result = detectTextFragments("See 'src/a.ts:~:text=build' now", logger, token);
+
+    expect(result).toStrictEqual({ links: [], occupiedRanges: [], textFragmentCandidates: 2, parseFailures: 0 });
   });
 });

@@ -16,8 +16,8 @@ export type { Cancellable } from './types';
  * fragment links.
  *
  * Three-pass detection:
- * 1. Text fragment pass for `:~:text=` links (via the text fragment regex),
- *    whose spans are claimed so later passes skip them
+ * 1. Text fragment pass for `:~:text=` links (a quoted sub-pass, then the
+ *    unquoted pattern), whose spans are claimed so later passes skip them
  * 2. Standard regex pass for unquoted numeric links (using buildLinkPattern),
  *    skipping ranges already claimed by the text fragment pass
  * 3. Quoted fallback: scans for single- and double-quoted segments and validates inner content via parseLink

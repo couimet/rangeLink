@@ -25,7 +25,9 @@ export interface QuotedDetectionStats {
  * (e.g., `'Meslo Slashed/LICENSE.txt#L10C24-L11C24'`).
  *
  * When a quoted link fully encompasses existing unquoted matches,
- * the unquoted matches are replaced with the quoted one.
+ * the unquoted matches are replaced with the quoted one. A quoted segment whose
+ * span another pass already claimed in full is skipped, so a quoted text
+ * fragment link does not count as a numeric parse failure.
  *
  * Mutates `links` and `occupiedRanges` arrays in place.
  *
@@ -60,6 +62,13 @@ export const detectQuotedLinks = (
     const quoteStart = quotedMatch.index!;
     const quoteLength = quotedMatch[0].length;
     const quoteEnd = quoteStart + quoteLength;
+
+    // An earlier pass owns this exact span (a quoted text fragment link), so
+    // the numeric parser has nothing to add and its failure is not a defect.
+    // Equality is the test: a quoted numeric link merely encompasses a shorter
+    // inner match, and keeps its replacement behaviour.
+    const isClaimedByAnotherPass = occupiedRanges.some((range) => range.start === quoteStart && range.end === quoteEnd);
+    if (isClaimedByAnotherPass) continue;
 
     const overlap = classifyOverlap(quoteStart, quoteEnd, occupiedRanges);
     if (overlap.type === 'partial') continue;

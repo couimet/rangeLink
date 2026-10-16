@@ -861,5 +861,62 @@ describe('findLinksInText', () => {
         'Link detection complete',
       );
     });
+
+    it('should detect a quoted text fragment link with a space in its path as one link', () => {
+      const results = findLinksInText("Open 'My Folder/file.ts:~:text=build' now", DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Folder/file.ts:~:text=build',
+          startIndex: 5,
+          length: 32,
+          parsed: { path: 'My Folder/file.ts', directive: { start: 'build' } },
+        },
+      ]);
+
+      // The quoted pass hands the span to the numeric parser only when no other
+      // pass claimed it, so the claimed span keeps `quotedParseFailures` at zero.
+      expect(logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'findLinksInText',
+          textLength: 41,
+          textFragmentCandidates: 2,
+          unquotedMatches: 0,
+          quotedCandidates: 1,
+          quotedReplacements: 0,
+          linksDetected: 1,
+          parseFailures: 0,
+          textFragmentParseFailures: 0,
+          quotedParseFailures: 0,
+        },
+        'Link detection complete',
+      );
+    });
+
+    it('should keep a numeric link that sits outside a quoted text fragment link', () => {
+      const results = findLinksInText("Open 'My Folder/file.ts:~:text=build' and src/b.ts#L10", DEFAULT_DELIMITERS, logger);
+
+      expect(results).toStrictEqual([
+        {
+          linkText: 'My Folder/file.ts:~:text=build',
+          startIndex: 5,
+          length: 32,
+          parsed: { path: 'My Folder/file.ts', directive: { start: 'build' } },
+        },
+        {
+          linkText: 'src/b.ts#L10',
+          startIndex: 42,
+          length: 12,
+          parsed: {
+            path: 'src/b.ts',
+            quotedPath: 'src/b.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          },
+        },
+      ]);
+    });
   });
 });
