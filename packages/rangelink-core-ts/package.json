@@ -33,7 +33,8 @@
   "dependencies": {
     "@couimet/detailed-error": "^1.0.0",
     "@couimet/detailed-result": "^0.1.1",
-    "@couimet/logger-contract": "^1.0.0"
+    "@couimet/logger-contract": "^1.0.0",
+    "text-fragment-ts": "workspace:*"
   },
   "devDependencies": {
     "@couimet/detailed-error-testing": "^0.1.5",

@@ -9,6 +9,7 @@ export { InputSelection } from './InputSelection';
 export { LinkPosition } from './LinkPosition';
 export { LinkType } from './LinkType';
 export { ParsedLink } from './ParsedLink';
+export { ParsedLinkBase } from './ParsedLinkBase';
 export { PathFormat } from './PathFormat';
 export { RangeFormat } from './RangeFormat';
 export { RangeNotation } from './RangeNotation';

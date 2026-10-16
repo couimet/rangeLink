@@ -5,7 +5,7 @@ import { formatLinkTooltip } from '../utils';
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 
 import type { Logger } from '@couimet/logger-contract';
-import { DelimiterConfigGetter, findLinksInText } from 'rangelink-core-ts';
+import { DelimiterConfigGetter, type DetectedLink, findLinksInText, type ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 /**
@@ -66,17 +66,20 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
       `Found ${detectedLinks.length} RangeLinks in document`,
     );
 
-    return detectedLinks.map(({ linkText, startIndex, length, parsed }) => {
-      const startPos = document.positionAt(startIndex);
-      const endPos = document.positionAt(startIndex + length);
-      const range = this.ideAdapter.createRange(startPos, endPos);
+    // TODO [2026-10-20]: #758 make text fragment links navigable — only numeric RangeLinks become document links today.
+    return detectedLinks
+      .filter((link): link is DetectedLink & { parsed: ParsedLink } => !('directive' in link.parsed))
+      .map(({ linkText, startIndex, length, parsed }) => {
+        const startPos = document.positionAt(startIndex);
+        const endPos = document.positionAt(startIndex + length);
+        const range = this.ideAdapter.createRange(startPos, endPos);
 
-      const docLink = new vscode.DocumentLink(range);
-      docLink.tooltip = formatLinkTooltip(parsed);
-      docLink.target = this.ideAdapter.parseUri(`command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`);
+        const docLink = new vscode.DocumentLink(range);
+        docLink.tooltip = formatLinkTooltip(parsed);
+        docLink.target = this.ideAdapter.parseUri(`command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`);
 
-      return docLink;
-    });
+        return docLink;
+      });
   }
 
   /**

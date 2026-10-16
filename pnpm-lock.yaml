@@ -69,6 +69,9 @@ importers:
       '@couimet/logger-contract':
         specifier: ^1.0.0
         version: 1.0.0
+      text-fragment-ts:
+        specifier: workspace:*
+        version: link:../text-fragment-ts
     devDependencies:
       '@couimet/detailed-error-testing':
         specifier: ^0.1.5
