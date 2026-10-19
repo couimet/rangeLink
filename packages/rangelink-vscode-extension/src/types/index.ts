@@ -14,6 +14,7 @@ export * from './DirtyBufferWarningResult';
 export type * from './EligibleFile';
 export type * from './EligibleTerminal';
 export * from './ExtensionError';
+export * from './ExtensionErrorCode';
 export * from './ExtensionResult';
 export type * from './FilePathClickArgs';
 export type * from './FilePathTerminalLink';

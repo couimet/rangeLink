@@ -111,6 +111,34 @@
         "enablement": "editorHasSelection"
       },
       {
+        "command": "rangelink.copyTextFragmentLinkWithRelativePath",
+        "title": "Send Text Fragment Link",
+        "category": "RangeLink",
+        "icon": "$(link)",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkWithAbsolutePath",
+        "title": "Send Text Fragment Link (Absolute)",
+        "category": "RangeLink",
+        "icon": "$(link-external)",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkOnlyWithRelativePath",
+        "title": "Copy Text Fragment Link",
+        "category": "RangeLink",
+        "icon": "$(clippy)",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkOnlyWithAbsolutePath",
+        "title": "Copy Text Fragment Link (Absolute)",
+        "category": "RangeLink",
+        "icon": "$(clippy)",
+        "enablement": "editorHasSelection"
+      },
+      {
         "command": "rangelink.pasteSelectedTextToDestination",
         "title": "Send Selected Text",
         "category": "RangeLink",
@@ -674,6 +702,30 @@
         "when": "editorHasSelection"
       },
       {
+        "command": "rangelink.copyTextFragmentLinkWithRelativePath",
+        "key": "ctrl+r ctrl+h",
+        "mac": "cmd+r cmd+h",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkWithAbsolutePath",
+        "key": "ctrl+r ctrl+shift+h",
+        "mac": "cmd+r cmd+shift+h",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkOnlyWithRelativePath",
+        "key": "ctrl+r ctrl+alt+c",
+        "mac": "cmd+r cmd+alt+c",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyTextFragmentLinkOnlyWithAbsolutePath",
+        "key": "ctrl+r ctrl+alt+shift+c",
+        "mac": "cmd+r cmd+alt+shift+c",
+        "when": "editorHasSelection"
+      },
+      {
         "command": "rangelink.pasteSelectedTextToDestination",
         "key": "ctrl+r ctrl+v",
         "mac": "cmd+r cmd+v",
@@ -899,6 +951,26 @@
           "group": "8_rangelink@5"
         },
         {
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
+          "command": "rangelink.copyTextFragmentLinkWithRelativePath",
+          "group": "8_rangelink@6"
+        },
+        {
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
+          "command": "rangelink.copyTextFragmentLinkWithAbsolutePath",
+          "group": "8_rangelink@7"
+        },
+        {
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
+          "command": "rangelink.copyTextFragmentLinkOnlyWithRelativePath",
+          "group": "8_rangelink@8"
+        },
+        {
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs)",
+          "command": "rangelink.copyTextFragmentLinkOnlyWithAbsolutePath",
+          "group": "8_rangelink@9"
+        },
+        {
           "when": "resourceScheme == file || resourceScheme == untitled || resourceScheme == vscode-remote || resourceScheme == vscode-vfs",
           "command": "rangelink.editorContent.pasteFilePath",
           "group": "8_rangelink_files@0"
@@ -1000,7 +1072,9 @@
     "@couimet/detailed-result": "^0.1.1",
     "@couimet/logger-contract": "^1.0.0",
     "nanoid": "^5.1.6",
-    "rangelink-core-ts": "workspace:*"
+    "percent-codec-ts": "workspace:*",
+    "rangelink-core-ts": "workspace:*",
+    "text-fragment-ts": "workspace:*"
   },
   "devDependencies": {
     "@couimet/detailed-error-testing": "^0.1.5",

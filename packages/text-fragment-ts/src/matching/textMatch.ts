@@ -9,6 +9,17 @@ import { isWordEndBoundary, isWordStartBoundary } from './wordBoundaries';
 const FUNCTION_NAME = 'resolveTextFragmentMatch';
 
 /**
+ * Collapse CRLF pairs to bare LF.
+ *
+ * A text fragment directive encodes a line break as `%0A` and never as `%0D`,
+ * so generation normalizes both the selected text and the document before it
+ * searches. Normalizing both sides keeps the occurrence count meaningful in a
+ * CRLF document, where a raw comparison would see `\r\n` and never match the
+ * normalized directive text.
+ */
+export const normalizeEOL = (text: string): string => text.replace(/\r\n/g, '\n');
+
+/**
  * Return every start index at which `needle` occurs in `text`, ascending.
  *
  * Overlapping occurrences are distinct candidates: searching `aa` in `aaa`

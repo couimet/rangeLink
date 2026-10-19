@@ -1,5 +1,5 @@
 import { DEFAULT_MAX_CANDIDATES } from '../../constants/textMatch';
-import { findOccurrences, normalizeDocument, resolveTextFragmentMatch } from '../../matching';
+import { findOccurrences, normalizeDocument, normalizeEOL, resolveTextFragmentMatch } from '../../matching';
 
 describe('findOccurrences', () => {
   it('should return every distinct start index, overlapping included', () => {
@@ -24,6 +24,24 @@ describe('findOccurrences', () => {
 
   it('should return the upper-case occurrence alone when case sensitivity is requested', () => {
     expect(findOccurrences('aAa', 'A', 'sensitive')).toStrictEqual([1]);
+  });
+});
+
+describe('normalizeEOL', () => {
+  it('should collapse every CRLF pair to a bare LF', () => {
+    expect(normalizeEOL('a\r\nb\r\nc')).toBe('a\nb\nc');
+  });
+
+  it('should leave a bare LF untouched', () => {
+    expect(normalizeEOL('a\nb')).toBe('a\nb');
+  });
+
+  it('should leave a lone CR untouched', () => {
+    expect(normalizeEOL('a\rb')).toBe('a\rb');
+  });
+
+  it('should return an empty string unchanged', () => {
+    expect(normalizeEOL('')).toBe('');
   });
 });
 

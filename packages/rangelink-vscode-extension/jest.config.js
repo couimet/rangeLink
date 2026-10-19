@@ -59,6 +59,8 @@ module.exports = {
     // Resolve rangelink-core-ts to source so jest.spyOn works (compiled CJS __exportStar uses
     // non-configurable Object.defineProperty on barrel exports, blocking spyOn)
     '^rangelink-core-ts$': '<rootDir>/../rangelink-core-ts/src/index.ts',
+    '^percent-codec-ts$': '<rootDir>/../percent-codec-ts/src/index.ts',
+    '^text-fragment-ts$': '<rootDir>/../text-fragment-ts/src/index.ts',
   },
   transform: {
     '^.+\\.ts$': 'ts-jest',

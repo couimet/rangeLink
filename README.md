@@ -69,6 +69,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 | **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code                                                           |
 | **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                                                                        |
 | **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                                                                     |
+| **Text Fragments**        | `:~:text=` links point at a block of text and survive line-number shifts <sup>Unreleased</sup>                                   |
 | **R-Keybinding Family**   | R-L (link), R-C (clipboard), R-V (paste text), R-J (jump to destination)                                                         |
 
 **📖 [Full Feature Guide →](./packages/rangelink-vscode-extension/#readme)**

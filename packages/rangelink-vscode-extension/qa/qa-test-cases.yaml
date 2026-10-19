@@ -2991,3 +2991,85 @@ test_cases:
     scenario: 'Hovering the R-M icon shows bound destination name and prominent color when bound, "no destination bound" when unbound'
     expected_result: 'Bound: tooltip shows destination name (e.g., "RangeLink — Terminal (bash)") and icon uses prominent theme color. Unbound: tooltip shows "RangeLink — no destination bound" and icon uses default color.'
     automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section 15 — text-fragment-generation
+  # ---------------------------------------------------------------------------
+
+  - id: text-fragment-generation-001
+    feature: 'text-fragment-generation'
+    scenario: 'Copy Text Fragment Link writes a workspace-relative text fragment link to the clipboard'
+    expected_result: 'The clipboard holds "<relative path>:~:text=<encoded selection>". The status bar shows "✓ RangeLink: Text fragment copied to clipboard". No text goes to a bound destination.'
+    automated: true
+
+  - id: text-fragment-generation-002
+    feature: 'text-fragment-generation'
+    scenario: 'Copy Text Fragment Link (Absolute) writes the absolute path'
+    expected_result: 'The clipboard holds "<absolute path>:~:text=<encoded selection>". The path starts at the file system root.'
+    automated: true
+
+  - id: text-fragment-generation-003
+    feature: 'text-fragment-generation'
+    scenario: 'Send Text Fragment Link delivers a padded relative link to a bound terminal and restores the clipboard'
+    expected_result: 'The terminal receives the workspace-relative link with smart padding. The status bar confirms the send. The clipboard holds its value from before the command.'
+    automated: true
+
+  - id: text-fragment-generation-004
+    feature: 'text-fragment-generation'
+    scenario: 'Send Text Fragment Link (Absolute) delivers the absolute link to a bound terminal'
+    expected_result: 'The terminal receives the absolute link with smart padding. The status bar confirms the send. The clipboard holds its value from before the command.'
+    automated: true
+
+  - id: text-fragment-generation-005
+    feature: 'text-fragment-generation'
+    scenario: 'A selection that occurs more than once shows the not-unique error and writes nothing'
+    expected_result: 'An error toast shows "Cannot generate a text fragment link - the selected text is not unique in the file. Select a longer block of text and try again." The clipboard does not change.'
+    automated: true
+
+  - id: text-fragment-generation-006
+    feature: 'text-fragment-generation'
+    scenario: 'More than one selection shows the multiple-selection error and writes nothing'
+    expected_result: 'An error toast shows "Cannot generate a text fragment link from multiple selections. Select a single block of text and try again." The clipboard does not change.'
+    automated: true
+
+  - id: text-fragment-generation-007
+    feature: 'text-fragment-generation'
+    scenario: 'A multi-line CRLF selection encodes line breaks as %0A and never %0D'
+    expected_result: 'The link contains %0A at the line break. The link does not contain %0D.'
+    automated: true
+
+  - id: text-fragment-generation-008
+    feature: 'text-fragment-generation'
+    scenario: 'Reserved and non-ASCII characters in the selection encode per the codec'
+    expected_result: 'The link ends with ":~:text=pick%2C%20tag%231%20%26%2050%25%20caf%C3%A9%3B%20answer%20%3D%2042%3B%20%F0%9F%9A%80". A space, a comma, a hash, an ampersand, a percent sign, a semicolon, an equals sign, an accented letter, and an emoji each use their UTF-8 percent escape.'
+    automated: true
+
+  - id: text-fragment-generation-009
+    feature: 'text-fragment-generation'
+    scenario: 'An edge hyphen in the selection encodes as %2D while an interior hyphen stays raw'
+    expected_result: 'The link ends with ":~:text=%2Dleft%20edge%20and%20in-between%20and%20right%20edge%2D". The leading hyphen and the trailing hyphen encode as %2D. The hyphen inside "in-between" stays as "-".'
+    automated: true
+
+  - id: text-fragment-generation-010
+    feature: 'text-fragment-generation'
+    scenario: 'A path with a space produces a quoted link and an apostrophe in the text is POSIX-escaped'
+    expected_result: 'The clipboard holds ''dir with space/file.txt:~:text=it''\''''s%20unique%20here''. The link starts and ends with a single quote. The apostrophe in the selected text becomes the POSIX escape ''\''''. The space in the selected text becomes %20.'
+    automated: true
+
+  - id: text-fragment-generation-011
+    feature: 'text-fragment-generation'
+    scenario: 'A selection that differs from another occurrence only by case is refused as not unique'
+    expected_result: 'An error toast shows "Cannot generate a text fragment link - the selected text is not unique in the file. Select a longer block of text and try again." The clipboard does not change.'
+    automated: true
+
+  - id: text-fragment-generation-012
+    feature: 'text-fragment-generation'
+    scenario: 'A selection that produces a link longer than the limit shows the generation-failed error and writes nothing'
+    expected_result: 'An error toast shows "Failed to generate text fragment link". The clipboard does not change.'
+    automated: true
+
+  - id: text-fragment-generation-013
+    feature: 'text-fragment-generation'
+    scenario: 'Copy Text Fragment Link with no selection shows the no-text-selected error and writes nothing'
+    expected_result: 'An error toast shows "No text selected. Click in the file, select text, and try again." The clipboard does not change.'
+    automated: true
