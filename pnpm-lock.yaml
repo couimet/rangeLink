@@ -143,9 +143,15 @@ importers:
       nanoid:
         specifier: ^5.1.6
         version: 5.1.16
+      percent-codec-ts:
+        specifier: workspace:*
+        version: link:../percent-codec-ts
       rangelink-core-ts:
         specifier: workspace:*
         version: link:../rangelink-core-ts
+      text-fragment-ts:
+        specifier: workspace:*
+        version: link:../text-fragment-ts
     devDependencies:
       '@couimet/detailed-error-testing':
         specifier: ^0.1.5

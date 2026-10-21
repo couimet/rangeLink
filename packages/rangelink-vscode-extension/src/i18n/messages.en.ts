@@ -35,6 +35,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_PORTABLE_RANGELINK]: 'Portable RangeLink',
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
+  [MessageCode.CONTENT_NAME_TEXT_FRAGMENT]: 'Text fragment',
 
   [MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE]: 'Claude Code Chat',
   [MessageCode.DESTINATION_DISPLAY_NAME_CLINE]: 'Cline',
@@ -86,6 +87,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE]: 'Bound editor is no longer visible. Re-open the file and bind again.',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]: 'Cannot bind to read-only editor ({scheme})',
+  [MessageCode.ERROR_TEXT_FRAGMENT_GENERATION_FAILED]: 'Failed to generate text fragment link',
+  [MessageCode.ERROR_TEXT_FRAGMENT_MULTIPLE_SELECTIONS]:
+    'Cannot generate a text fragment link from multiple selections. Select a single block of text and try again.',
+  [MessageCode.ERROR_TEXT_FRAGMENT_TEXT_NOT_UNIQUE]:
+    'Cannot generate a text fragment link - the selected text is not unique in the file. Select a longer block of text and try again.',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.FILE_PICKER_ACTIVE_BADGE]: 'active',

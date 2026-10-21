@@ -131,6 +131,55 @@ These characters **cannot be used** as custom delimiters:
 
 **Full BYOD documentation:** See [BYOD.md](./BYOD.md) for comprehensive guide including validation, parsing rules, and error handling.
 
+## Text Fragment Links
+
+A text fragment link points at a block of text instead of a line range, using the [text fragment](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments) grammar that browsers and terminals already understand. The referenced text survives edits that shift line numbers, so the link keeps its target after an unrelated change moves the code.
+
+The feature is not an official standard yet. MDN documents the grammar and points to the [WICG draft specification](https://wicg.github.io/scroll-to-text-fragment/). Browsers adopted the feature before the specification reached a final state.
+
+### Format
+
+```text
+<file-path>:~:text=<start>
+```
+
+```text
+recipes/baking/chickenpie.ts:~:text=Preheat%20the%20oven
+```
+
+The full grammar accepts up to four percent-encoded terms:
+
+```text
+<file-path>:~:text=[prefix-,]start[,end][,-suffix]
+```
+
+| Term     | Meaning                                     |
+| -------- | ------------------------------------------- |
+| `prefix` | Text that must immediately precede `start`  |
+| `start`  | First word(s) of the target text (required) |
+| `end`    | Last word(s) of the target text             |
+| `suffix` | Text that must immediately follow `end`     |
+
+RangeLink currently generates the `start`-only form. The grammar has no way to name a specific occurrence by position, so RangeLink refuses a selection that occurs more than once in the file. Select a longer block of text that includes distinguishing context. A planned expansion will use the `prefix`, `suffix`, and `end` terms to tell repeated selections apart when their surrounding text differs: https://github.com/couimet/rangeLink/issues/763.
+
+RangeLink wraps the link in single quotes when the path holds a character outside the safe set: letters, digits, `_`, `-`, `.`, `/`, and `:`. An inner single quote becomes the POSIX escape `'\''`:
+
+```text
+'dir with space/file.txt:~:text=it'\''s%20unique%20here'
+```
+
+### Encoding
+
+Term values are percent-encoded UTF-8. The text fragment package applies these rules:
+
+- A space becomes `%20`.
+- `,` `;` `=` `#` `&` and `%` always use their percent escape.
+- A `-` at the start or end of the term becomes `%2D`. An interior `-` stays raw.
+- A non-ASCII character uses its UTF-8 percent escape: `é` becomes `%C3%A9`, and `🚀` becomes `%F0%9F%9A%80`.
+- A line feed becomes `%0A`. RangeLink normalizes line endings before encoding, so a selection in a CRLF file is emitted with `%0A` and never `%0D`.
+
+A link longer than 3000 characters is refused with an error.
+
 ## Parsing Rules
 
 ### Valid Link Requirements

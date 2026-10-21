@@ -1,4 +1,4 @@
-import type { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import type { ExtensionError } from './ExtensionError';
 
 /**
  * Discriminator for all jump-to-destination result types.
@@ -21,5 +21,5 @@ export type JumpToDestinationResult =
   | { readonly outcome: Extract<JumpToDestinationOutcome, 'cancelled'> }
   | {
       readonly outcome: Extract<JumpToDestinationOutcome, 'focus-failed'>;
-      readonly error: RangeLinkExtensionError;
+      readonly error: ExtensionError;
     };

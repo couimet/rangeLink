@@ -31,6 +31,8 @@ export const createMockWiringServices = (): jest.Mocked<WiringServices> =>
       createLink: jest.fn(),
       createPortableLink: jest.fn(),
       createLinkOnly: jest.fn(),
+      createTextFragmentLink: jest.fn(),
+      createTextFragmentLinkOnly: jest.fn(),
     },
     textSelectionPaster: { pasteSelectedTextToDestination: jest.fn() },
     filePathPaster: {
