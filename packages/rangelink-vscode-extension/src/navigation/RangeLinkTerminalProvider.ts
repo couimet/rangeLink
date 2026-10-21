@@ -5,7 +5,7 @@ import { formatLinkTooltip, formatMessage } from '../utils';
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 
 import type { Logger } from '@couimet/logger-contract';
-import { DelimiterConfigGetter, findLinksInText } from 'rangelink-core-ts';
+import { DelimiterConfigGetter, type DetectedLink, findLinksInText, type ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 /**
@@ -60,13 +60,16 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider<Ra
       'Scanned terminal line for RangeLinks',
     );
 
-    return detectedLinks.map(({ linkText, startIndex, length, parsed }) => ({
-      startIndex,
-      length,
-      tooltip: formatLinkTooltip(parsed),
-      data: linkText,
-      parsed,
-    }));
+    // TODO [2026-10-20]: #758 make text fragment links navigable — only numeric RangeLinks become terminal links today.
+    return detectedLinks
+      .filter((link): link is DetectedLink & { parsed: ParsedLink } => !('directive' in link.parsed))
+      .map(({ linkText, startIndex, length, parsed }) => ({
+        startIndex,
+        length,
+        tooltip: formatLinkTooltip(parsed),
+        data: linkText,
+        parsed,
+      }));
   }
 
   /**

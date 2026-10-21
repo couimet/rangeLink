@@ -34,4 +34,11 @@ module.exports = {
   coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json-summary'],
   coverageDirectory: 'coverage',
   verbose: true,
+  moduleNameMapper: {
+    // Resolve sibling workspace packages to source so jest.mock/jest.spyOn can replace a barrel
+    // export (the compiled CJS __exportStar uses non-configurable Object.defineProperty on barrels);
+    // percent-codec-ts is mapped because text-fragment-ts imports it.
+    '^percent-codec-ts$': '<rootDir>/../percent-codec-ts/src/index.ts',
+    '^text-fragment-ts$': '<rootDir>/../text-fragment-ts/src/index.ts',
+  },
 };

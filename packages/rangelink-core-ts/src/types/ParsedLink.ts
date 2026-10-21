@@ -1,5 +1,6 @@
 import { LinkPosition } from './LinkPosition';
 import { LinkType } from './LinkType';
+import { ParsedLinkBase } from './ParsedLinkBase';
 import { SelectionType } from './SelectionType';
 
 /**
@@ -8,25 +9,7 @@ import { SelectionType } from './SelectionType';
  * Represents the output of parsing a RangeLink string into its components.
  * Contains the file path, position range, link type, and selection type.
  */
-export interface ParsedLink {
-  /**
-   * File path extracted from the link (always raw/unquoted).
-   * May be relative (e.g., "src/file.ts") or absolute (e.g., "/Users/name/project/file.ts").
-   *
-   * Use for filesystem operations — this is the semantic path.
-   */
-  path: string;
-
-  /**
-   * The path wrapped in single quotes when it contains unsafe characters.
-   *
-   * When safe: `quotedPath === path` (e.g., `"src/file.ts"`)
-   * When unsafe: path is quoted (e.g., `"'My Folder/file.ts'"`)
-   *
-   * Provides API symmetry with FormattedLink's `link`/`rawLink` duality.
-   */
-  quotedPath: string;
-
+export interface ParsedLink extends ParsedLinkBase {
   /**
    * Start position within the file.
    */
